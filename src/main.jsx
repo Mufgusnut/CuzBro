@@ -24,7 +24,7 @@ function App(){
   const [weather,setWeather]=useState({});
   const scroller=useRef(null);
 
-  useEffect(()=>{ fetch('/data/gallery.json').then(r=>r.json()).then(setGallery); },[]);
+  useEffect(()=>{ fetch(import.meta.env.BASE_URL + 'data/gallery.json').then(r=>r.json()).then(setGallery); },[]);
   useEffect(()=>{
     locations.forEach(async loc=>{
       try{
