@@ -22,6 +22,7 @@ function scoreWeather(w){
 function App(){
   const [gallery,setGallery]=useState([]);
   const [weather,setWeather]=useState({});
+  const [selectedIndex, setSelectedIndex] = useState(null);
     {
     "title": "Dumbbell Nebula",
     "subtitle": "M27 planetary nebula",
