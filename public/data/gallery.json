@@ -1,0 +1,38 @@
+[
+  {
+    "title": "M13",
+    "subtitle": "Great Hercules Cluster",
+    "category": "Astrophotography",
+    "date": "June 2026",
+    "equipment": "Celestron CPC 800 with iPhone 16 Pro",
+    "notes": "A bright globular cluster and one of the first showcase targets for CuzBro.",
+    "image": "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1600&auto=format&fit=crop"
+  },
+  {
+    "title": "Albireo",
+    "subtitle": "Colorful double star",
+    "category": "Astrophotography",
+    "date": "June 2026",
+    "equipment": "Celestron CPC 800 with iPhone 16 Pro",
+    "notes": "A beautiful blue and gold double star in Cygnus.",
+    "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1600&auto=format&fit=crop"
+  },
+  {
+    "title": "Dumbbell Nebula",
+    "subtitle": "M27 planetary nebula",
+    "category": "Astrophotography",
+    "date": "Coming soon",
+    "equipment": "Celestron CPC 800",
+    "notes": "A future deep-sky target for the gallery.",
+    "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop"
+  },
+  {
+    "title": "Moon",
+    "subtitle": "Our closest neighbor",
+    "category": "Astrophotography",
+    "date": "Coming soon",
+    "equipment": "Celestron CPC 800",
+    "notes": "Lunar captures and video stacking experiments.",
+    "image": "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?q=80&w=1600&auto=format&fit=crop"
+  }
+]
