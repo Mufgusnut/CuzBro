@@ -23,15 +23,6 @@ function App(){
   const [gallery,setGallery]=useState([]);
   const [weather,setWeather]=useState({});
   const [selectedIndex, setSelectedIndex] = useState(null);
-    {
-    "title": "Dumbbell Nebula",
-    "subtitle": "M27 planetary nebula",
-    "category": "Astrophotography",
-    "date": "Coming soon",
-    "equipment": "Celestron CPC 800",
-    "notes": "A future deep-sky target for the gallery.",
-    "image": "images/deepsky/M27.jpg"
-  },
   const scroller=useRef(null);
   const selectedPhoto = selectedIndex !== null ? gallery[selectedIndex] : null;
 
