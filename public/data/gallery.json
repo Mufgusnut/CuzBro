@@ -6,7 +6,7 @@
     "date": "June 2026",
     "equipment": "Celestron CPC 800 with iPhone 16 Pro",
     "notes": "A bright globular cluster and one of the first showcase targets for CuzBro.",
-    "image": "/Images/Deep-Sky/M13.jpg"
+    "image": "/images/deepsky/M13.jpg"
   },
   {
     "title": "Albireo",
@@ -15,7 +15,7 @@
     "date": "June 2026",
     "equipment": "Celestron CPC 800 with iPhone 16 Pro",
     "notes": "A beautiful blue and gold double star in Cygnus.",
-    "image": "/CuzBro/Images/Deep-Sky/Albireo.jpg"
+    "image": "/images/deepsky/Albireo.jpg"
   },
   {
     "title": "Dumbbell Nebula",
@@ -24,7 +24,7 @@
     "date": "Coming soon",
     "equipment": "Celestron CPC 800",
     "notes": "A future deep-sky target for the gallery.",
-    "image": "/Images/Deep-Sky/M27.jpg"
+    "image": "/images/deepsky/M27.jpg"
   },
   {
     "title": "Moon",
@@ -33,6 +33,6 @@
     "date": "Coming soon",
     "equipment": "Celestron CPC 800",
     "notes": "Lunar captures and video stacking experiments.",
-    "image": "/Images/Deep-Sky/Half Moon.jpg"
+    "image": "/images/deepsky/Half Moon.jpg"
   }
 ]
