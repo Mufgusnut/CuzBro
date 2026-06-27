@@ -39,7 +39,7 @@ function App(){
 
   return <>
     <header className="nav">
-      <img src="/assets/cuzbro-logo.png" className="logo" />
+      <img src={import.meta.env.BASE_URL + "assets/cuzbro-logo.png"} className="logo" />
       <nav><a>Home</a><a>Gallery</a><a>Observatory</a><a>Gear</a><a>Crew</a><a>About</a></nav>
     </header>
     <section className="hero">
@@ -104,7 +104,7 @@ function App(){
       <section className="sectionHeader"><h2>🚀 Coming Soon</h2></section>
       <div className="coming"><Card icon={<Rocket/>} title="Observing Logs" text="Star-hopping notes, targets, conditions, and summaries."/><Card icon={<Camera/>} title="Gear Notes" text="Real-world telescope and camera notes."/><Card icon={<PawPrint/>} title="The Crew" text="Gus, Muffy, Hazelnut, Beau, and Echo."/></div>
     </main>
-    <footer><img src="/assets/cuzbro-logo.png"/><p>Look up. Stay curious.</p></footer>
+    <footer><img src={import.meta.env.BASE_URL + "assets/cuzbro-logo.png"} /><p>Look up. Stay curious.</p></footer>
   </>
 }
 function Card({icon,title,text}){return <article className="soon">{icon}<h3>{title}</h3><p>{text}</p><span>Coming soon</span></article>}
