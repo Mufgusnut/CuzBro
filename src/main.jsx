@@ -22,7 +22,27 @@ function scoreWeather(w){
 function App(){
   const [gallery,setGallery]=useState([]);
   const [weather,setWeather]=useState({});
+    {
+    "title": "Dumbbell Nebula",
+    "subtitle": "M27 planetary nebula",
+    "category": "Astrophotography",
+    "date": "Coming soon",
+    "equipment": "Celestron CPC 800",
+    "notes": "A future deep-sky target for the gallery.",
+    "image": "images/deepsky/M27.jpg"
+  },
   const scroller=useRef(null);
+  const selectedPhoto = selectedIndex !== null ? gallery[selectedIndex] : null;
+
+const closeLightbox = () => setSelectedIndex(null);
+
+const showNextPhoto = () => {
+  setSelectedIndex((current) => (current + 1) % gallery.length);
+};
+
+const showPreviousPhoto = () => {
+  setSelectedIndex((current) => (current - 1 + gallery.length) % gallery.length);
+};
 
   useEffect(()=>{ fetch(import.meta.env.BASE_URL + 'data/gallery.json').then(r=>r.json()).then(setGallery); },[]);
   useEffect(()=>{
@@ -98,12 +118,53 @@ function App(){
     <main>
       <section className="quick"><div><Telescope/>Deep Sky<span>Explore the cosmos</span></div><div><Camera/>Gear & Setup<span>Tools of the trade</span></div><div><Rocket/>Observing Logs<span>Notes & sessions</span></div><div><PawPrint/>The Crew<span>Meet the team</span></div></section>
       <section id="gallery" className="sectionHeader"><h2>✣ Featured Gallery</h2><a>View all galleries →</a></section>
-      <div className="carouselWrap"><button onClick={()=>scroll(-1)}><ChevronLeft/></button><div className="carousel" ref={scroller}>{gallery.map((g,i)=><article className="photoCard" key={g.title}><img src={import.meta.env.BASE_URL + g.image} /><div><h3>{g.title}</h3><p>{g.subtitle}</p><small>{g.equipment}</small></div></article>)}</div><button onClick={()=>scroll(1)}><ChevronRight/></button></div>
+      <div className="carouselWrap"><button onClick={()=>scroll(-1)}><ChevronLeft/></button><div className="carousel" ref={scroller}>{gallery.map((g,i)=><article className="photoCard" key={g.title} onClick={() => setSelectedIndex(i)}><img src={import.meta.env.BASE_URL + g.image} /><div><h3>{g.title}</h3><p>{g.subtitle}</p><small>{g.equipment}</small></div></article>)}</div><button onClick={()=>scroll(1)}><ChevronRight/></button></div>
       <section id="observatory" className="sectionHeader"><h2>☼ Observing Conditions</h2><span>Live conditions for key CuzBro locations</span></section>
       <div className="weatherGrid">{locations.map(loc=>{const w=weather[loc.name]; const [rating,badge]=scoreWeather(w); return <article className="weather" key={loc.name}><div className="weatherTop"><h3>{loc.name}</h3><b>{badge}</b></div><div className="rating"><Moon size={48}/><div><strong>{rating}</strong><span>{w?`${Math.round(w.temperature_2m)}°F`:'Loading...'}</span></div></div><p>Cloud Cover <em>{w?Math.round(w.cloud_cover):'--'}%</em></p><p>Humidity <em>{w?Math.round(w.relative_humidity_2m):'--'}%</em></p><p>Wind <em>{w?Math.round(w.wind_speed_10m):'--'} mph</em></p><div className="chips"><span>Deep Sky</span><span>Moon</span><span>Planets</span></div></article>})}</div>
       <section className="sectionHeader"><h2>🚀 Coming Soon</h2></section>
       <div className="coming"><Card icon={<Rocket/>} title="Observing Logs" text="Star-hopping notes, targets, conditions, and summaries."/><Card icon={<Camera/>} title="Gear Notes" text="Real-world telescope and camera notes."/><Card icon={<PawPrint/>} title="The Crew" text="Gus, Muffy, Hazelnut, Beau, and Echo."/></div>
     </main>
+    {selectedPhoto && (
+  <div className="lightbox" role="dialog" aria-modal="true">
+    <button className="lightboxClose" onClick={closeLightbox}>×</button>
+
+    <button className="lightboxArrow left" onClick={showPreviousPhoto}>
+      <ChevronLeft />
+    </button>
+
+    <div className="lightboxContent">
+      <img
+        src={import.meta.env.BASE_URL + selectedPhoto.image}
+        alt={selectedPhoto.title}
+      />
+
+      <aside className="lightboxInfo">
+        <small>{selectedPhoto.category}</small>
+        <h2>{selectedPhoto.title}</h2>
+        <p>{selectedPhoto.subtitle}</p>
+
+        <dl>
+          <div>
+            <dt>Date</dt>
+            <dd>{selectedPhoto.date}</dd>
+          </div>
+          <div>
+            <dt>Equipment</dt>
+            <dd>{selectedPhoto.equipment}</dd>
+          </div>
+          <div>
+            <dt>Notes</dt>
+            <dd>{selectedPhoto.notes}</dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+
+    <button className="lightboxArrow right" onClick={showNextPhoto}>
+      <ChevronRight />
+    </button>
+  </div>
+)}
     <footer><img src={import.meta.env.BASE_URL + "assets/cuzbro-logo.png"} /><p>Look up. Stay curious.</p></footer>
   </>
 }

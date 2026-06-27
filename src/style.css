@@ -722,3 +722,138 @@ footer p {
     line-height:1.6;
 
 }
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: rgba(2, 7, 16, .92);
+  backdrop-filter: blur(18px);
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.lightboxContent {
+  width: min(1200px, 92vw);
+  max-height: 86vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.lightboxContent img {
+  width: 100%;
+  height: 86vh;
+  object-fit: contain;
+  border-radius: 18px;
+  background: #000;
+}
+
+.lightboxInfo {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(7, 16, 34, .86);
+  padding: 28px;
+  overflow: auto;
+}
+
+.lightboxInfo small {
+  color: #72d9ff;
+  text-transform: uppercase;
+  letter-spacing: .22em;
+}
+
+.lightboxInfo h2 {
+  font-size: 34px;
+  margin: 12px 0 6px;
+}
+
+.lightboxInfo p {
+  color: #cbd3e2;
+  line-height: 1.6;
+}
+
+.lightboxInfo dl {
+  margin: 24px 0 0;
+}
+
+.lightboxInfo div {
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+
+.lightboxInfo dt {
+  color: #8fb6ff;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.lightboxInfo dd {
+  margin: 6px 0 0;
+  color: #eef3ff;
+  line-height: 1.5;
+}
+
+.lightboxClose,
+.lightboxArrow {
+  position: fixed;
+  border: 1px solid var(--line);
+  background: rgba(7, 16, 34, .8);
+  color: white;
+  cursor: pointer;
+  transition: transform .2s, border-color .2s;
+}
+
+.lightboxClose:hover,
+.lightboxArrow:hover {
+  transform: scale(1.08);
+  border-color: rgba(255,157,28,.55);
+}
+
+.lightboxClose {
+  top: 24px;
+  right: 24px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.lightboxArrow {
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.lightboxArrow.left {
+  left: 24px;
+}
+
+.lightboxArrow.right {
+  right: 24px;
+}
+
+@media(max-width: 900px) {
+  .lightbox {
+    padding: 70px 18px 24px;
+  }
+
+  .lightboxContent {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .lightboxContent img {
+    height: 52vh;
+  }
+
+  .lightboxInfo {
+    max-height: 34vh;
+  }
+}
