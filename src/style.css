@@ -1169,8 +1169,7 @@ footer p {
 }
 
 .missionImagePanel img.zoomed {
-  transform: scale(1.45);
-  cursor: zoom-out;
+  transform: none;
 }
 
 .zoomHint {
@@ -1444,5 +1443,12 @@ footer p {
 }
 .missionImagePanel.cinemaMode img.inspectZoom {
   transform: scale(2.4) !important;
+  cursor: zoom-out;
+}
+.missionImagePanel.cinemaMode img {
+  cursor: zoom-in;
+}
+
+.missionImagePanel.cinemaMode img.inspectZoom {
   cursor: zoom-out;
 }
