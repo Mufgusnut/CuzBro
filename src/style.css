@@ -373,3 +373,24 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   width: 125px;
   filter: drop-shadow(0 0 10px rgba(74,140,255,.25));
 }
+.galleryFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -8px 0 20px;
+}
+
+.galleryFilters button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(7,16,34,.62);
+  color: #cbd3e2;
+  cursor: pointer;
+}
+
+.galleryFilters button.active {
+  border-color: rgba(255,157,28,.8);
+  background: rgba(255,157,28,.14);
+  color: white;
+}

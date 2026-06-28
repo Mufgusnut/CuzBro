@@ -14,6 +14,7 @@ const locations = [
 
 export default function App() {
   const [gallery, setGallery] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("All");
   const [weather, setWeather] = useState({});
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [viewerMode, setViewerMode] = useState("report");
@@ -71,7 +72,10 @@ useEffect(() => {
   };
 
   window.addEventListener("scroll", onScroll);
-
+const filteredGallery =
+  activeFilter === "All"
+    ? gallery
+    : gallery.filter((photo) => photo.objectType === activeFilter);
   return () => window.removeEventListener("scroll", onScroll);
 }, []);
   useEffect(() => {
@@ -110,7 +114,9 @@ useEffect(() => {
         <QuickLinks />
 
         <Gallery
-          gallery={gallery}
+          gallery={filteredGallery}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
           scroller={scroller}
           scroll={scroll}
           setSelectedIndex={setSelectedIndex}

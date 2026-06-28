@@ -1,6 +1,14 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function Gallery({ gallery, scroller, scroll, setSelectedIndex }) {
+export default function Gallery({
+  gallery,
+  scroller,
+  scroll,
+  setSelectedIndex,
+  activeFilter,
+  setActiveFilter
+})
+ {const filters = ["All", "Planetary Nebula", "Emission Nebula", "Globular Cluster", "Double Star", "Lunar"];
   return (
     <>
       <section id="gallery" className="sectionHeader">
