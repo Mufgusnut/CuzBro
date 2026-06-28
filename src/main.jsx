@@ -46,20 +46,20 @@ const showPreviousPhoto = () => {
       }catch(e){ setWeather(prev=>({...prev,[loc.name]:null})); }
     })
   },[]);
-  useEffect(() => {
+useEffect(() => {
   const handleKeyDown = (event) => {
-    if (selectedIndex === null) return;
+    if (selectedIndex === null || gallery.length === 0) return;
 
     if (event.key === 'Escape') {
-      closeLightbox();
+      setSelectedIndex(null);
     }
 
     if (event.key === 'ArrowRight') {
-      showNextPhoto();
+      setSelectedIndex((current) => (current + 1) % gallery.length);
     }
 
     if (event.key === 'ArrowLeft') {
-      showPreviousPhoto();
+      setSelectedIndex((current) => (current - 1 + gallery.length) % gallery.length);
     }
   };
 
