@@ -2,6 +2,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Lightbox({
   selectedPhoto,
+  gallery,
+  selectedIndex,
+  setSelectedIndex,
   isZoomed,
   setIsZoomed,
   closeLightbox,
@@ -50,7 +53,24 @@ export default function Lightbox({
           <p>{selectedPhoto.nextGoal || 'Capture again with improved settings.'}</p>
         </aside>
       </div>
-
+      <div className="filmstrip">
+  {gallery.map((photo, index) => (
+    <button
+      key={photo.title}
+      className={index === selectedIndex ? "active" : ""}
+      onClick={() => {
+        setIsZoomed(false);
+        setSelectedIndex(index);
+      }}
+    >
+      <img
+        src={import.meta.env.BASE_URL + photo.image}
+        alt={photo.title}
+      />
+      <span>{photo.title}</span>
+    </button>
+  ))}
+</div>
       <button className="lightboxArrow right" onClick={showNextPhoto}>
         <ChevronRight />
       </button>

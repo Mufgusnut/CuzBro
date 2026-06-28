@@ -110,14 +110,16 @@ export default function App() {
   setSelectedIndex={setSelectedIndex}
 />
       <Lightbox
-        selectedPhoto={selectedPhoto}
-        isZoomed={isZoomed}
-        setIsZoomed={setIsZoomed}
-        closeLightbox={closeLightbox}
-        showPreviousPhoto={showPreviousPhoto}
-        showNextPhoto={showNextPhoto}
-      />
-
+  selectedPhoto={selectedPhoto}
+  gallery={gallery}
+  selectedIndex={selectedIndex}
+  setSelectedIndex={setSelectedIndex}
+  isZoomed={isZoomed}
+  setIsZoomed={setIsZoomed}
+  closeLightbox={closeLightbox}
+  showPreviousPhoto={showPreviousPhoto}
+  showNextPhoto={showNextPhoto}
+/>
       <footer>
         <img src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'} />
         <p>Look up. Stay curious.</p>

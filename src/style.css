@@ -915,3 +915,48 @@ footer p {
     grid-template-columns: 1fr;
   }
 }
+.filmstrip {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  max-width: min(760px, 82vw);
+  overflow-x: auto;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(7, 16, 34, .82);
+  backdrop-filter: blur(14px);
+}
+
+.filmstrip button {
+  min-width: 96px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.filmstrip button.active {
+  border-color: rgba(255,157,28,.8);
+  box-shadow: 0 0 18px rgba(255,157,28,.28);
+}
+
+.filmstrip img {
+  width: 84px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.filmstrip span {
+  display: block;
+  font-size: 11px;
+  margin-top: 5px;
+  color: #cbd3e2;
+}
