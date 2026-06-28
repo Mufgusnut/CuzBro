@@ -60,10 +60,14 @@ section[id] { scroll-margin-top: 50px; }
 
 /* Hero */
 .hero {
+  position: relative;
+  min-height: 860px;
   display: grid;
-  grid-template-columns: minmax(0,1.4fr) minmax(320px,420px);
+  grid-template-columns: minmax(0, 1fr) 390px;
   align-items: center;
-  gap: 48px;
+  gap: 44px;
+  padding: 170px 6vw 130px;
+  overflow: hidden;
 }
 
 .hero:before {
@@ -110,7 +114,16 @@ section[id] { scroll-margin-top: 50px; }
   animation: meteor 9s linear infinite;
 }
 
-.heroText, .heroCard { position: relative; z-index: 2; }
+.heroText,
+.heroCard {
+  position: relative;
+  z-index: 2;
+}
+
+.heroText {
+  min-width: 0;
+  max-width: 900px;
+}
 
 .eyebrow {
   letter-spacing: .42em;
@@ -120,17 +133,17 @@ section[id] { scroll-margin-top: 50px; }
 }
 
 .hero h1 {
-  font-size: clamp(58px, 9vw, 112px);
+  font-size: clamp(54px, 7vw, 102px);
   line-height: .9;
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: .14em;
+  letter-spacing: .12em;
   text-shadow: 0 0 35px rgba(0,0,0,.65);
 }
 
 .hero h1 span {
   font-weight: 800;
-  letter-spacing: .12em;
+  letter-spacing: .10em;
   background: linear-gradient(90deg, var(--blue), #8a74ff, var(--orange));
   -webkit-background-clip: text;
   background-clip: text;
@@ -146,7 +159,12 @@ section[id] { scroll-margin-top: 50px; }
   text-shadow: 0 0 18px #000;
 }
 
-.buttons { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 30px; }
+.buttons {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
 
 .buttons a {
   display: inline-flex;
@@ -159,16 +177,30 @@ section[id] { scroll-margin-top: 50px; }
   transition: transform .2s, box-shadow .2s, border-color .2s;
 }
 
-.buttons a:hover { transform: translateY(-3px); }
-.primary { background: linear-gradient(135deg, #245eff, #7c4dff); box-shadow: 0 0 28px rgba(74,140,255,.35); }
-.secondary { border-color: var(--orange) !important; box-shadow: inset 0 0 20px rgba(255,157,28,.08); }
-.secondary:hover { box-shadow: 0 0 28px rgba(255,157,28,.22); }
+.buttons a:hover {
+  transform: translateY(-3px);
+}
+
+.primary {
+  background: linear-gradient(135deg, #245eff, #7c4dff);
+  box-shadow: 0 0 28px rgba(74,140,255,.35);
+}
+
+.secondary {
+  border-color: var(--orange) !important;
+  box-shadow: inset 0 0 20px rgba(255,157,28,.08);
+}
+
+.secondary:hover {
+  box-shadow: 0 0 28px rgba(255,157,28,.22);
+}
 
 /* Hero Mission Card */
 .heroCard {
-  width: min(420px, 100%);
+  width: 100%;
+  max-width: 390px;
   justify-self: end;
-  padding: 34px;
+  padding: 30px;
   border: 1px solid var(--line);
   border-radius: 24px;
   background: rgba(7, 16, 34, .78);
@@ -184,16 +216,68 @@ section[id] { scroll-margin-top: 50px; }
   font-weight: 700;
 }
 
-.heroCard h2 { margin: 10px 0 18px; font-size: 32px; }
-.missionStatus { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; color: #d8e5ff; }
-.online { width: 12px; height: 12px; border-radius: 50%; background: #53ff8b; box-shadow: 0 0 12px #53ff8b; }
-.missionStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; text-align: center; margin-bottom: 28px; }
-.missionStats strong { display: block; font-size: 34px; color: white; }
-.missionStats span { color: #9db0d5; font-size: 13px; }
-.missionTarget { border-top: 1px solid rgba(255,255,255,.12); padding-top: 20px; }
-.missionTarget small { color: var(--cyan); letter-spacing: .2em; text-transform: uppercase; }
-.missionTarget h3 { margin: 10px 0; font-size: 24px; }
-.missionTarget p { color: #b8c5db; line-height: 1.6; }
+.heroCard h2 {
+  margin: 10px 0 18px;
+  font-size: 30px;
+}
+
+.missionStatus {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  color: #d8e5ff;
+}
+
+.online {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #53ff8b;
+  box-shadow: 0 0 12px #53ff8b;
+}
+
+.missionStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.missionStats strong {
+  display: block;
+  font-size: 30px;
+  color: white;
+}
+
+.missionStats span {
+  display: block;
+  color: #9db0d5;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.missionTarget {
+  border-top: 1px solid rgba(255,255,255,.12);
+  padding-top: 20px;
+}
+
+.missionTarget small {
+  color: var(--cyan);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+.missionTarget h3 {
+  margin: 10px 0;
+  font-size: 23px;
+}
+
+.missionTarget p {
+  color: #b8c5db;
+  line-height: 1.6;
+}
 
 /* Layout */
 main { padding: 0 4vw 70px; }
