@@ -10,16 +10,16 @@ export default function Hero({ imageCount }) {
         />
 
         <nav>
-          <a>Home</a>
-          <a>Gallery</a>
-          <a>Observatory</a>
-          <a>Gear</a>
-          <a>Crew</a>
-          <a>About</a>
-        </nav>
+  <a href="#home">Home</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#observatory">Observatory</a>
+  <a href="#gear">Gear</a>
+  <a href="#crew">Crew</a>
+  <a href="#about">About</a>
+</nav>
       </header>
 
-      <section className="hero">
+      <section id="home" className="hero">
         <div className="stars"></div>
 
         <div className="heroText">
