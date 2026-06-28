@@ -100,7 +100,6 @@ useEffect(() => {
     <footer><img src={import.meta.env.BASE_URL + "assets/cuzbro-logo.png"} /><p>Look up. Stay curious.</p></footer>
   </>
 }
-function Card({icon,title,text}){return <article className="soon">{icon}<h3>{title}</h3><p>{text}</p><span>Coming soon</span></article>}
 export default App;
 import Hero from './components/Hero.jsx';
 <Hero imageCount={gallery.length} />
