@@ -880,3 +880,17 @@ footer p {
     transform: translateY(0) scale(1);
   }
 }
+.lightboxContent img {
+  cursor: zoom-in;
+}
+
+.lightboxContent img.zoomed {
+  transform: scale(1.65);
+  cursor: zoom-out;
+  transition: transform .25s ease;
+  z-index: 2;
+}
+
+.lightboxContent img:not(.zoomed) {
+  transition: transform .25s ease;
+}
