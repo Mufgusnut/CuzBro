@@ -494,3 +494,22 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   border: 1px solid rgba(114,217,255,.18);
   color: #bfeeff;
 }
+/* Hero layout final override */
+.hero {
+  grid-template-columns: minmax(0, 52%) minmax(360px, 420px) !important;
+  gap: 72px !important;
+}
+
+.heroText {
+  max-width: 720px !important;
+}
+
+.hero h1 {
+  font-size: clamp(48px, 5.5vw, 82px) !important;
+  letter-spacing: .10em !important;
+}
+
+.heroCard {
+  max-width: 420px !important;
+  justify-self: end !important;
+}
