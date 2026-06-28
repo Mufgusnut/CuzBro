@@ -1,3 +1,4 @@
+import Lightbox from './components/Lightbox.jsx';
 import React, {useEffect, useRef, useState} from 'react';
 import { createRoot } from 'react-dom/client';
 import { Camera, Cloud, Moon, PawPrint, Rocket, Telescope, ChevronLeft, ChevronRight, Star } from 'lucide-react';
@@ -145,81 +146,14 @@ useEffect(() => {
       <section className="sectionHeader"><h2>🚀 Coming Soon</h2></section>
       <div className="coming"><Card icon={<Rocket/>} title="Observing Logs" text="Star-hopping notes, targets, conditions, and summaries."/><Card icon={<Camera/>} title="Gear Notes" text="Real-world telescope and camera notes."/><Card icon={<PawPrint/>} title="The Crew" text="Gus, Muffy, Hazelnut, Beau, and Echo."/></div>
     </main>
-    {selectedPhoto && (
-  <div className="lightbox" role="dialog" aria-modal="true">
-    <button className="lightboxClose" onClick={closeLightbox}>×</button>
-
-    <button className="lightboxArrow left" onClick={showPreviousPhoto}>
-      <ChevronLeft />
-    </button>
-
-    <div className="lightboxContent">
-      <img
-  className={isZoomed ? "zoomed" : ""}
- src={selectedPhoto ? import.meta.env.BASE_URL + selectedPhoto.image : ""}
-  alt={selectedPhoto.title}
-  onClick={() => setIsZoomed(!isZoomed)}
+    <Lightbox
+  selectedPhoto={selectedPhoto}
+  isZoomed={isZoomed}
+  setIsZoomed={setIsZoomed}
+  closeLightbox={closeLightbox}
+  showPreviousPhoto={showPreviousPhoto}
+  showNextPhoto={showNextPhoto}
 />
-
-      <aside className="lightboxInfo">
-<small className="missionLabel">MISSION REPORT</small>
-
-<h2>{selectedPhoto.title}</h2>
-<h3>{selectedPhoto.subtitle}</h3>
-
-<div className="infoGrid">
-
-<div>
-<strong>Object</strong>
-<span>{selectedPhoto.objectType}</span>
-</div>
-
-<div>
-<strong>Constellation</strong>
-<span>{selectedPhoto.constellation}</span>
-</div>
-
-<div>
-<strong>Distance</strong>
-<span>{selectedPhoto.distance}</span>
-</div>
-
-<div>
-<strong>Captured</strong>
-<span>{selectedPhoto.captureDate}</span>
-</div>
-
-<div>
-<strong>Exposure</strong>
-<span>{selectedPhoto.exposure}</span>
-</div>
-
-<div>
-<strong>Processing</strong>
-<span>{selectedPhoto.processing}</span>
-</div>
-
-</div>
-
-<h4>Equipment</h4>
-
-<p>{selectedPhoto.equipment}</p>
-
-<h4>Observing Notes</h4>
-
-<p>{selectedPhoto.notes}</p>
-
-<h4>Next Goal</h4>
-
-<p>{selectedPhoto.nextGoal}</p>
-      </aside>
-    </div>
-
-    <button className="lightboxArrow right" onClick={showNextPhoto}>
-      <ChevronRight />
-    </button>
-  </div>
-)}
     <footer><img src={import.meta.env.BASE_URL + "assets/cuzbro-logo.png"} /><p>Look up. Stay curious.</p></footer>
   </>
 }
