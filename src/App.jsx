@@ -22,12 +22,15 @@ export default function App() {
   const [scrolled, setScrolled] = useState(false);
 
   const selectedPhoto = selectedIndex !== null ? gallery[selectedIndex] : null;
-
+  const filteredGallery =
+  activeFilter === "All"
+    ? gallery
+    : gallery.filter((photo) => photo.objectType === activeFilter);
   const closeLightbox = () => {
     setViewerMode("report");
     setSelectedIndex(null);
   };
-
+  const selectedPhoto = selectedIndex !== null ? filteredGallery[selectedIndex] : null;
   const showNextPhoto = () => {
     setIsZoomed(false);
     setSelectedIndex((current) => (current + 1) % gallery.length);
