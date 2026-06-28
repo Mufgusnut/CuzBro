@@ -162,24 +162,56 @@ useEffect(() => {
 />
 
       <aside className="lightboxInfo">
-        <small>{selectedPhoto.category}</small>
-        <h2>{selectedPhoto.title}</h2>
-        <p>{selectedPhoto.subtitle}</p>
+<small className="missionLabel">MISSION REPORT</small>
 
-        <dl>
-          <div>
-            <dt>Date</dt>
-            <dd>{selectedPhoto.date}</dd>
-          </div>
-          <div>
-            <dt>Equipment</dt>
-            <dd>{selectedPhoto.equipment}</dd>
-          </div>
-          <div>
-            <dt>Notes</dt>
-            <dd>{selectedPhoto.notes}</dd>
-          </div>
-        </dl>
+<h2>{selectedPhoto.title}</h2>
+<h3>{selectedPhoto.subtitle}</h3>
+
+<div className="infoGrid">
+
+<div>
+<strong>Object</strong>
+<span>{selectedPhoto.objectType}</span>
+</div>
+
+<div>
+<strong>Constellation</strong>
+<span>{selectedPhoto.constellation}</span>
+</div>
+
+<div>
+<strong>Distance</strong>
+<span>{selectedPhoto.distance}</span>
+</div>
+
+<div>
+<strong>Captured</strong>
+<span>{selectedPhoto.captureDate}</span>
+</div>
+
+<div>
+<strong>Exposure</strong>
+<span>{selectedPhoto.exposure}</span>
+</div>
+
+<div>
+<strong>Processing</strong>
+<span>{selectedPhoto.processing}</span>
+</div>
+
+</div>
+
+<h4>Equipment</h4>
+
+<p>{selectedPhoto.equipment}</p>
+
+<h4>Observing Notes</h4>
+
+<p>{selectedPhoto.notes}</p>
+
+<h4>Next Goal</h4>
+
+<p>{selectedPhoto.nextGoal}</p>
       </aside>
     </div>
 

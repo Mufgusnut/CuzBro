@@ -1,13 +1,20 @@
 [
   {
-    "title": "M13",
-    "subtitle": "Great Hercules Cluster",
-    "category": "Astrophotography",
-    "date": "June 2026",
-    "equipment": "Celestron CPC 800 with iPhone 16 Pro",
-    "notes": "A bright globular cluster and one of the first showcase targets for CuzBro.",
-    "image": "/images/deepsky/M13.jpg"
-  },
+  "title": "M13",
+  "subtitle": "Great Hercules Cluster",
+  "constellation": "Hercules",
+  "distance": "22,200 light-years",
+  "objectType": "Globular Cluster",
+  "captureDate": "June 2026",
+  "equipment": "Celestron CPC 800 + iPhone 16 Pro",
+  "exposure": "30 seconds",
+  "processing": "AstroShader",
+  "rating": 5,
+  "favorite": true,
+  "notes": "First successful globular cluster. Better color than expected using a smartphone.",
+  "nextGoal": "Capture again using the ASI294MC Pro.",
+  "image": "images/deepsky/M13.jpg"
+},
   {
     "title": "Albireo",
     "subtitle": "Colorful double star",
