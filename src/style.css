@@ -60,14 +60,10 @@ section[id] { scroll-margin-top: 50px; }
 
 /* Hero */
 .hero {
-  position: relative;
-  min-height: 860px;
   display: grid;
-  grid-template-columns: 1.25fr .75fr;
+  grid-template-columns: minmax(0,1.4fr) minmax(320px,420px);
   align-items: center;
   gap: 48px;
-  padding: 170px 6vw 130px;
-  overflow: hidden;
 }
 
 .hero:before {
