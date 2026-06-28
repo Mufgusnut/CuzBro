@@ -722,175 +722,62 @@ footer p {
     line-height:1.6;
 
 }
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 99;
-  background: rgba(2, 7, 16, .92);
-  backdrop-filter: blur(18px);
-  display: grid;
-  place-items: center;
-  padding: 32px;
+/* ============================
+   Mission Report
+============================ */
+
+.lightboxInfo h3{
+    margin-top:-8px;
+    color:#9fb3da;
+    font-weight:400;
 }
 
-.lightboxContent {
-  width: min(1200px, 92vw);
-  max-height: 86vh;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 24px;
-  align-items: stretch;
+.lightboxInfo h4{
+    margin-top:26px;
+    margin-bottom:8px;
+    color:#76b2ff;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-size:12px;
 }
 
-.lightboxContent img {
-  width: 100%;
-  height: 86vh;
-  object-fit: contain;
-  border-radius: 18px;
-  background: #000;
+.infoGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-top:22px;
 }
 
-.lightboxInfo {
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(7, 16, 34, .86);
-  padding: 28px;
-  overflow: auto;
+.infoGrid div{
+    padding:14px;
+    border-radius:12px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.08);
 }
 
-.lightboxInfo small {
-  color: #72d9ff;
-  text-transform: uppercase;
-  letter-spacing: .22em;
+.infoGrid strong{
+    display:block;
+    font-size:11px;
+    color:#79aaff;
+    letter-spacing:.12em;
+    text-transform:uppercase;
 }
 
-.lightboxInfo h2 {
-  font-size: 34px;
-  margin: 12px 0 6px;
+.infoGrid span{
+    display:block;
+    margin-top:6px;
+    font-size:15px;
+    color:white;
 }
 
-.lightboxInfo p {
-  color: #cbd3e2;
-  line-height: 1.6;
+.missionLabel{
+    color:#ffb347;
+    letter-spacing:.28em;
+    font-size:11px;
+    text-transform:uppercase;
 }
 
-.lightboxInfo dl {
-  margin: 24px 0 0;
-}
-
-.lightboxInfo div {
-  border-top: 1px solid var(--line);
-  padding: 14px 0;
-}
-
-.lightboxInfo dt {
-  color: #8fb6ff;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: .12em;
-}
-
-.lightboxInfo dd {
-  margin: 6px 0 0;
-  color: #eef3ff;
-  line-height: 1.5;
-}
-
-.lightboxClose,
-.lightboxArrow {
-  position: fixed;
-  border: 1px solid var(--line);
-  background: rgba(7, 16, 34, .8);
-  color: white;
-  cursor: pointer;
-  transition: transform .2s, border-color .2s;
-}
-
-.lightboxClose:hover,
-.lightboxArrow:hover {
-  transform: scale(1.08);
-  border-color: rgba(255,157,28,.55);
-}
-
-.lightboxClose {
-  top: 24px;
-  right: 24px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  font-size: 34px;
-  line-height: 1;
-}
-
-.lightboxArrow {
-  top: 50%;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-}
-
-.lightboxArrow.left {
-  left: 24px;
-}
-
-.lightboxArrow.right {
-  right: 24px;
-}
-
-@media(max-width: 900px) {
-  .lightbox {
-    padding: 70px 18px 24px;
-  }
-
-  .lightboxContent {
-    grid-template-columns: 1fr;
-    max-height: none;
-  }
-
-  .lightboxContent img {
-    height: 52vh;
-  }
-
-  .lightboxInfo {
-    max-height: 34vh;
-  }
-}
-.lightbox {
-  animation: fadeIn .22s ease-out;
-}
-
-.lightboxContent {
-  animation: slideUp .28s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(22px) scale(.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-.lightboxContent img {
-  cursor: zoom-in;
-}
-
-.lightboxContent img.zoomed {
-  transform: scale(1.65);
-  cursor: zoom-out;
-  transition: transform .25s ease;
-  z-index: 2;
-}
-
-.lightboxContent img:not(.zoomed) {
-  transition: transform .25s ease;
+.lightboxInfo p{
+    color:#d2d9e8;
+    line-height:1.65;
 }
