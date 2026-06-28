@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 export default function Lightbox({
   selectedPhoto,
   gallery,
@@ -20,13 +21,15 @@ export default function Lightbox({
         <ChevronLeft />
       </button>
 
-      <div className="lightboxContent">
-        <img
-          className={isZoomed ? "zoomed" : ""}
-          src={import.meta.env.BASE_URL + selectedPhoto.image}
-          alt={selectedPhoto.title}
-          onClick={() => setIsZoomed(!isZoomed)}
-        />
+      <div className="lightboxShell">
+        <div className="lightboxMainImage">
+          <img
+            className={isZoomed ? 'zoomed' : ''}
+            src={import.meta.env.BASE_URL + selectedPhoto.image}
+            alt={selectedPhoto.title}
+            onClick={() => setIsZoomed(!isZoomed)}
+          />
+        </div>
 
         <aside className="lightboxInfo">
           <small className="missionLabel">MISSION REPORT</small>
@@ -38,8 +41,6 @@ export default function Lightbox({
             <div><strong>Constellation</strong><span>{selectedPhoto.constellation || 'Unknown'}</span></div>
             <div><strong>Distance</strong><span>{selectedPhoto.distance || 'Unknown'}</span></div>
             <div><strong>Captured</strong><span>{selectedPhoto.captureDate || selectedPhoto.date}</span></div>
-            <div><strong>Exposure</strong><span>{selectedPhoto.exposure || 'Not listed'}</span></div>
-            <div><strong>Processing</strong><span>{selectedPhoto.processing || 'Not listed'}</span></div>
           </div>
 
           <h4>Equipment</h4>
@@ -47,30 +48,28 @@ export default function Lightbox({
 
           <h4>Observing Notes</h4>
           <p>{selectedPhoto.notes}</p>
-
-          <h4>Next Goal</h4>
-          <p>{selectedPhoto.nextGoal || 'Capture again with improved settings.'}</p>
         </aside>
+
+        <div className="filmstrip">
+          {gallery.map((photo, index) => (
+            <button
+              type="button"
+              key={photo.title}
+              className={index === selectedIndex ? 'filmstripItem active' : 'filmstripItem'}
+              onClick={() => {
+                setIsZoomed(false);
+                setSelectedIndex(index);
+              }}
+            >
+              <img
+                src={import.meta.env.BASE_URL + photo.image}
+                alt={photo.title}
+              />
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="filmstrip">
-  {gallery.map((photo, index) => (
-    <button
-      type="button"
-      key={photo.title}
-      className={index === selectedIndex ? "filmstripItem active" : "filmstripItem"}
-      onClick={() => {
-        setIsZoomed(false);
-        setSelectedIndex(index);
-      }}
-    >
-      <img
-        src={import.meta.env.BASE_URL + photo.image}
-        alt={photo.title}
-      />
-      <span>{photo.title}</span>
-    </button>
-  ))}
-</div>
+
       <button className="lightboxArrow right" onClick={showNextPhoto}>
         <ChevronRight />
       </button>
