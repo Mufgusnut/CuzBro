@@ -139,12 +139,7 @@ useEffect(() => {
   className="photoCard"
   key={g.title}
   onClick={() => setSelectedIndex(i)}
-><img
-  className={isZoomed ? "zoomed" : ""}
-  src={import.meta.env.BASE_URL + selectedPhoto.image}
-  alt={selectedPhoto.title}
-  onClick={() => setIsZoomed(!isZoomed)}
-/><div><h3>{g.title}</h3><p>{g.subtitle}</p><small>{g.equipment}</small></div></article>)}</div><button onClick={()=>scroll(1)}><ChevronRight/></button></div>
+><img src={import.meta.env.BASE_URL + g.image} /><div><h3>{g.title}</h3><p>{g.subtitle}</p><small>{g.equipment}</small></div></article>)}</div><button onClick={()=>scroll(1)}><ChevronRight/></button></div>
       <section id="observatory" className="sectionHeader"><h2>☼ Observing Conditions</h2><span>Live conditions for key CuzBro locations</span></section>
       <div className="weatherGrid">{locations.map(loc=>{const w=weather[loc.name]; const [rating,badge]=scoreWeather(w); return <article className="weather" key={loc.name}><div className="weatherTop"><h3>{loc.name}</h3><b>{badge}</b></div><div className="rating"><Moon size={48}/><div><strong>{rating}</strong><span>{w?`${Math.round(w.temperature_2m)}°F`:'Loading...'}</span></div></div><p>Cloud Cover <em>{w?Math.round(w.cloud_cover):'--'}%</em></p><p>Humidity <em>{w?Math.round(w.relative_humidity_2m):'--'}%</em></p><p>Wind <em>{w?Math.round(w.wind_speed_10m):'--'} mph</em></p><div className="chips"><span>Deep Sky</span><span>Moon</span><span>Planets</span></div></article>})}</div>
       <section className="sectionHeader"><h2>🚀 Coming Soon</h2></section>
@@ -160,9 +155,11 @@ useEffect(() => {
 
     <div className="lightboxContent">
       <img
-        src={import.meta.env.BASE_URL + selectedPhoto.image}
-        alt={selectedPhoto.title}
-      />
+  className={isZoomed ? "zoomed" : ""}
+  src={import.meta.env.BASE_URL + selectedPhoto.image}
+  alt={selectedPhoto.title}
+  onClick={() => setIsZoomed(!isZoomed)}
+/>
 
       <aside className="lightboxInfo">
         <small>{selectedPhoto.category}</small>
