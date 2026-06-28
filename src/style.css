@@ -15,7 +15,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 145px;
+  scroll-padding-top: 180px;
 }
 
 body {
@@ -29,7 +29,7 @@ body {
 
 a { color: inherit; text-decoration: none; }
 
-section[id] { scroll-margin-top: 145px; }
+section[id] { scroll-margin-top: 180px; }
 
 /* Navigation */
 .nav {
