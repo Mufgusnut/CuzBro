@@ -1,4 +1,11 @@
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  ZoomIn,
+  ZoomOut,
+  X
+} from 'lucide-react';
 
 export default function Lightbox({
   selectedPhoto,
@@ -48,12 +55,30 @@ const handleImageClick = () => {
         <div className="missionGrid">
           <section className={isCinema ? "missionImagePanel cinemaMode" : "missionImagePanel"}>
             <button
-              className="zoomHint"
-              onClick={handleImageClick}
-            >
-              <Search size={16} />
-              Click image to zoom
-            </button>
+  className="zoomHint"
+  onClick={handleImageClick}
+>
+  {viewerMode === "report" && (
+    <>
+      <Search size={16} />
+      Enter Cinema Mode
+    </>
+  )}
+
+  {viewerMode === "cinema" && (
+    <>
+      <ZoomIn size={16} />
+      Zoom to 100%
+    </>
+  )}
+
+  {viewerMode === "inspect" && (
+    <>
+      <ZoomOut size={16} />
+      Return to Cinema View
+    </>
+  )}
+</button>
 
             <img
               className={isInspect ? 'inspectZoom' : ''}
