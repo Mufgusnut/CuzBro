@@ -46,6 +46,29 @@ const showPreviousPhoto = () => {
       }catch(e){ setWeather(prev=>({...prev,[loc.name]:null})); }
     })
   },[]);
+  useEffect(() => {
+  const handleKeyDown = (event) => {
+    if (selectedIndex === null) return;
+
+    if (event.key === 'Escape') {
+      closeLightbox();
+    }
+
+    if (event.key === 'ArrowRight') {
+      showNextPhoto();
+    }
+
+    if (event.key === 'ArrowLeft') {
+      showPreviousPhoto();
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyDown);
+
+  return () => {
+    window.removeEventListener('keydown', handleKeyDown);
+  };
+}, [selectedIndex, gallery.length]);
 
   const scroll=(dir)=> scroller.current?.scrollBy({left: dir*360, behavior:'smooth'});
 

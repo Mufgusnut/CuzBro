@@ -857,3 +857,26 @@ footer p {
     max-height: 34vh;
   }
 }
+.lightbox {
+  animation: fadeIn .22s ease-out;
+}
+
+.lightboxContent {
+  animation: slideUp .28s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
