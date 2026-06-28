@@ -849,3 +849,16 @@ footer p {
   color: #d2d9e8;
   line-height: 1.65;
 }
+.infoGrid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+  margin: 24px 0 !important;
+}
+
+.infoGrid div {
+  padding: 14px !important;
+  border-radius: 12px !important;
+  background: rgba(255, 157, 28, .12) !important;
+  border: 1px solid rgba(255, 157, 28, .35) !important;
+}
