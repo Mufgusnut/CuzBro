@@ -156,7 +156,7 @@ useEffect(() => {
     <div className="lightboxContent">
       <img
   className={isZoomed ? "zoomed" : ""}
-  src={import.meta.env.BASE_URL + selectedPhoto.image}
+ src={selectedPhoto ? import.meta.env.BASE_URL + selectedPhoto.image : ""}
   alt={selectedPhoto.title}
   onClick={() => setIsZoomed(!isZoomed)}
 />
