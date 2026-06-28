@@ -38,7 +38,7 @@ export default function Lightbox({
         </button>
 
         <div className="missionGrid">
-          <section className="missionImagePanel">
+          <section className={isZoomed ? "missionImagePanel cinemaMode" : "missionImagePanel"}>
             <button
               className="zoomHint"
               onClick={() => setIsZoomed(!isZoomed)}
@@ -57,7 +57,7 @@ export default function Lightbox({
             <p className="imageCaption">{selectedPhoto.title} — {selectedPhoto.subtitle}</p>
           </section>
 
-          <aside className="missionPanel">
+          <aside className={isZoomed ? "missionPanel hiddenPanel" : "missionPanel"}>
             <small>MISSION REPORT</small>
             <h2>{selectedPhoto.title}</h2>
             <h3>{selectedPhoto.subtitle}</h3>
@@ -105,7 +105,7 @@ export default function Lightbox({
           </aside>
         </div>
 
-        <div className="missionFilmstrip">
+        <div className={isZoomed ? "missionFilmstrip hiddenFilmstrip" : "missionFilmstrip"}>
           <button className="filmNav" onClick={showPreviousPhoto}>
             <ChevronLeft />
           </button>
@@ -133,7 +133,7 @@ export default function Lightbox({
           </button>
         </div>
 
-        <div className="missionFooter">
+        <div className={isZoomed ? "missionFooter hiddenFilmstrip" : "missionFooter"}>
           <span>Click image to zoom</span>
           <span>ESC to close</span>
           <span>← → to navigate</span>
