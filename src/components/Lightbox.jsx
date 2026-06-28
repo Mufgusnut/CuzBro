@@ -1,5 +1,4 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
 export default function Lightbox({
   selectedPhoto,
   gallery,
@@ -56,8 +55,9 @@ export default function Lightbox({
       <div className="filmstrip">
   {gallery.map((photo, index) => (
     <button
+      type="button"
       key={photo.title}
-      className={index === selectedIndex ? "active" : ""}
+      className={index === selectedIndex ? "filmstripItem active" : "filmstripItem"}
       onClick={() => {
         setIsZoomed(false);
         setSelectedIndex(index);
