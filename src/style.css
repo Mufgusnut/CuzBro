@@ -394,3 +394,20 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   background: rgba(255,157,28,.14);
   color: white;
 }
+.skyStars {
+  display: flex;
+  gap: 3px;
+  margin-top: 8px;
+  color: var(--orange);
+}
+
+.weatherTop b {
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.chips span {
+  background: rgba(114,217,255,.10);
+  border: 1px solid rgba(114,217,255,.18);
+  color: #bfeeff;
+}
