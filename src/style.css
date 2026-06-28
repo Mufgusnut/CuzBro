@@ -122,7 +122,7 @@ section[id] { scroll-margin-top: 50px; }
 
 .heroText {
   min-width: 0;
-  max-width: 900px;
+  max-width: 760px;
 }
 
 .eyebrow {
@@ -133,8 +133,8 @@ section[id] { scroll-margin-top: 50px; }
 }
 
 .hero h1 {
-  font-size: clamp(54px, 7vw, 102px);
-  line-height: .9;
+  font-size: clamp(54px, 6.6vw, 96px);
+  line-height: .94;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: .12em;
@@ -198,12 +198,12 @@ section[id] { scroll-margin-top: 50px; }
 /* Hero Mission Card */
 .heroCard {
   width: 100%;
-  max-width: 390px;
+  max-width: 420px;
   justify-self: end;
-  padding: 30px;
-  border: 1px solid var(--line);
+  padding: 34px;
+  border: 1px solid rgba(255,255,255,.18);
   border-radius: 24px;
-  background: rgba(7, 16, 34, .78);
+  background: rgba(7, 16, 34, .82);
   box-shadow: 0 0 60px rgba(74,140,255,.18);
   backdrop-filter: blur(16px);
 }
@@ -413,7 +413,10 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   .nav { position: relative; display: block; }
   .nav nav { overflow: auto; padding-top: 12px; }
   .logo { width: 150px; }
-  .hero { display: block; padding: 55px 22px 90px; min-height: auto; }
+  .heroText {
+  min-width: 0;
+  max-width: 760px;
+}
   .heroCard { width: auto; margin-top: 34px; }
   .quick, .weatherGrid { grid-template-columns: 1fr; }
   .carousel { grid-auto-columns: 86%; }
