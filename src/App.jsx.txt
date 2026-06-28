@@ -1,11 +1,10 @@
-import Weather from './components/Weather.jsx';
-import QuickLinks from "./components/QuickLinks";
+import React, { useEffect, useRef, useState } from 'react';
+
+import Hero from './components/Hero.jsx';
+import QuickLinks from './components/QuickLinks.jsx';
 import Gallery from './components/Gallery.jsx';
+import Weather from './components/Weather.jsx';
 import Lightbox from './components/Lightbox.jsx';
-import React, {useEffect, useRef, useState} from 'react';
-import { createRoot } from 'react-dom/client';
-import { Camera, Cloud, Moon, PawPrint, Rocket, Telescope, ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import './style.css';
 
 const locations = [
   { name: 'Eliot, ME', lat: 43.1531, lon: -70.7828 },
@@ -13,93 +12,113 @@ const locations = [
   { name: 'New York City, NY', lat: 40.7128, lon: -74.0060 }
 ];
 
-function scoreWeather(w){
-  if(!w) return ['Loading','--'];
-  const clouds = w.cloud_cover ?? 0;
-  const wind = w.wind_speed_10m ?? 0;
-  if(clouds < 20 && wind < 12) return ['Excellent','Best tonight'];
-  if(clouds < 45) return ['Good','Good'];
-  if(clouds < 70) return ['Fair','Fair'];
-  return ['Poor','Cloudy'];
-}
-
-function App(){
-  const [gallery,setGallery]=useState([]);
-  const [weather,setWeather]=useState({});
+export default function App() {
+  const [gallery, setGallery] = useState([]);
+  const [weather, setWeather] = useState({});
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [isZoomed, setIsZoomed] = useState(false);
-  const scroller=useRef(null);
+  const scroller = useRef(null);
+
   const selectedPhoto = selectedIndex !== null ? gallery[selectedIndex] : null;
 
-const closeLightbox = () => setSelectedIndex(null);
-
-const showNextPhoto = () => {
-  setSelectedIndex((current) => (current + 1) % gallery.length);
-};
-
-const showPreviousPhoto = () => {
-  setSelectedIndex((current) => (current - 1 + gallery.length) % gallery.length);
-};
-
-  useEffect(()=>{ fetch(import.meta.env.BASE_URL + 'data/gallery.json').then(r=>r.json()).then(setGallery); },[]);
-  useEffect(()=>{
-    locations.forEach(async loc=>{
-      try{
-        const url=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,cloud_cover,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
-        const data=await fetch(url).then(r=>r.json());
-        setWeather(prev=>({...prev,[loc.name]:data.current}));
-      }catch(e){ setWeather(prev=>({...prev,[loc.name]:null})); }
-    })
-  },[]);
-useEffect(() => {
-  const handleKeyDown = (event) => {
-    if (selectedIndex === null || gallery.length === 0) return;
-
-   if (event.key === 'Escape') {
-  setIsZoomed(false);
-  setSelectedIndex(null);
-}
-
-    if (event.key === 'ArrowRight') {
-      setSelectedIndex((current) => (current + 1) % gallery.length);
-    }
-
-    if (event.key === 'ArrowLeft') {
-      setSelectedIndex((current) => (current - 1 + gallery.length) % gallery.length);
-    }
+  const closeLightbox = () => {
+    setIsZoomed(false);
+    setSelectedIndex(null);
   };
 
-  window.addEventListener('keydown', handleKeyDown);
-
-  return () => {
-    window.removeEventListener('keydown', handleKeyDown);
+  const showNextPhoto = () => {
+    setIsZoomed(false);
+    setSelectedIndex((current) => (current + 1) % gallery.length);
   };
-}, [selectedIndex, gallery.length]);
 
-  const scroll=(dir)=> scroller.current?.scrollBy({left: dir*360, behavior:'smooth'});
+  const showPreviousPhoto = () => {
+    setIsZoomed(false);
+    setSelectedIndex((current) => (current - 1 + gallery.length) % gallery.length);
+  };
 
-  return <>
-    <main>
-<QuickLinks />
-<Gallery
-  gallery={gallery}
-  scroller={scroller}
-  scroll={scroll}
-  setSelectedIndex={setSelectedIndex}
-/>
-      <Weather locations={locations} weather={weather} />
-    </main>
-    <Lightbox
-  selectedPhoto={selectedPhoto}
-  isZoomed={isZoomed}
-  setIsZoomed={setIsZoomed}
-  closeLightbox={closeLightbox}
-  showPreviousPhoto={showPreviousPhoto}
-  showNextPhoto={showNextPhoto}
-/>
-    <footer><img src={import.meta.env.BASE_URL + "assets/cuzbro-logo.png"} /><p>Look up. Stay curious.</p></footer>
-  </>
+  const scroll = (dir) => {
+    scroller.current?.scrollBy({ left: dir * 360, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    fetch(import.meta.env.BASE_URL + 'data/gallery.json')
+      .then((r) => r.json())
+      .then(setGallery);
+  }, []);
+
+  useEffect(() => {
+    locations.forEach(async (loc) => {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,cloud_cover,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+        const data = await fetch(url).then((r) => r.json());
+
+        setWeather((prev) => ({
+          ...prev,
+          [loc.name]: data.current
+        }));
+      } catch (e) {
+        setWeather((prev) => ({
+          ...prev,
+          [loc.name]: null
+        }));
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (selectedIndex === null || gallery.length === 0) return;
+
+      if (event.key === 'Escape') {
+        closeLightbox();
+      }
+
+      if (event.key === 'ArrowRight') {
+        showNextPhoto();
+      }
+
+      if (event.key === 'ArrowLeft') {
+        showPreviousPhoto();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedIndex, gallery.length]);
+
+  return (
+    <>
+      <Hero imageCount={gallery.length} />
+
+      <main>
+        <QuickLinks />
+
+        <Gallery
+          gallery={gallery}
+          scroller={scroller}
+          scroll={scroll}
+          setSelectedIndex={setSelectedIndex}
+        />
+
+        <Weather locations={locations} weather={weather} />
+      </main>
+
+      <Lightbox
+        selectedPhoto={selectedPhoto}
+        isZoomed={isZoomed}
+        setIsZoomed={setIsZoomed}
+        closeLightbox={closeLightbox}
+        showPreviousPhoto={showPreviousPhoto}
+        showNextPhoto={showNextPhoto}
+      />
+
+      <footer>
+        <img src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'} />
+        <p>Look up. Stay curious.</p>
+      </footer>
+    </>
+  );
 }
-export default App;
-import Hero from './components/Hero.jsx';
-<Hero imageCount={gallery.length} />
