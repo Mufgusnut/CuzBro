@@ -7,14 +7,27 @@ export default function Gallery({
   setSelectedIndex,
   activeFilter,
   setActiveFilter
-})
- {const filters = ["All", "Planetary Nebula", "Emission Nebula", "Globular Cluster", "Double Star", "Lunar"];
+}) {
+  const filters = ["All", "Planetary Nebula", "Emission Nebula", "Globular Cluster", "Double Star", "Lunar"];
+
   return (
     <>
       <section id="gallery" className="sectionHeader">
         <h2>✣ Featured Gallery</h2>
         <a>View all galleries →</a>
       </section>
+
+      <div className="galleryFilters">
+        {filters.map((filter) => (
+          <button
+            key={filter}
+            className={activeFilter === filter ? "active" : ""}
+            onClick={() => setActiveFilter(filter)}
+          >
+            {filter}
+          </button>
+        ))}
+      </div>
 
       <div className="carouselWrap">
         <button onClick={() => scroll(-1)}>
