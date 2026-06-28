@@ -865,3 +865,53 @@ footer p {
 .coming {
   display: none !important;
 }
+.featuredCapture {
+  margin: 58px 0 20px;
+  display: grid;
+  grid-template-columns: .9fr 1.1fr;
+  gap: 28px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 28px;
+  background: linear-gradient(135deg, rgba(12,25,48,.86), rgba(3,10,22,.92));
+}
+
+.featuredCapture small {
+  color: #ffb347;
+  text-transform: uppercase;
+  letter-spacing: .25em;
+}
+
+.featuredCapture h2 {
+  font-size: 44px;
+  margin: 12px 0 4px;
+}
+
+.featuredCapture p {
+  color: #cbd3e2;
+  line-height: 1.6;
+}
+
+.featuredCapture button {
+  margin-top: 14px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,157,28,.45);
+  background: rgba(255,157,28,.12);
+  color: white;
+  cursor: pointer;
+}
+
+.featuredCapture img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+@media(max-width: 900px) {
+  .featuredCapture {
+    grid-template-columns: 1fr;
+  }
+}
