@@ -5,13 +5,21 @@ export default function Lightbox({
   gallery,
   selectedIndex,
   setSelectedIndex,
-  isZoomed,
-  setIsZoomed,
+  viewerMode,
+setViewerMode,
   closeLightbox,
   showPreviousPhoto,
   showNextPhoto
 }) {
   if (!selectedPhoto) return null;
+  const isCinema = viewerMode === "cinema" || viewerMode === "inspect";
+const isInspect = viewerMode === "inspect";
+
+const handleImageClick = () => {
+  if (viewerMode === "report") setViewerMode("cinema");
+  else if (viewerMode === "cinema") setViewerMode("inspect");
+  else setViewerMode("cinema");
+};
 
   return (
     <div className="lightbox" role="dialog" aria-modal="true">
@@ -38,26 +46,26 @@ export default function Lightbox({
         </button>
 
         <div className="missionGrid">
-          <section className={isZoomed ? "missionImagePanel cinemaMode" : "missionImagePanel"}>
+          <section className={isCinema ? "missionImagePanel cinemaMode" : "missionImagePanel"}>
             <button
               className="zoomHint"
-              onClick={() => setIsZoomed(!isZoomed)}
+              onClick={handleImageClick}
             >
               <Search size={16} />
               Click image to zoom
             </button>
 
             <img
-              className={isZoomed ? 'zoomed' : ''}
+              className={isInspect ? 'inspectZoom' : ''}
               src={import.meta.env.BASE_URL + selectedPhoto.image}
               alt={selectedPhoto.title}
-              onClick={() => setIsZoomed(!isZoomed)}
+              onClick={handleImageClick}
             />
 
             <p className="imageCaption">{selectedPhoto.title} — {selectedPhoto.subtitle}</p>
           </section>
-
-          <aside className={isZoomed ? "missionPanel hiddenPanel" : "missionPanel"}>
+<aside className={isCinema ? "missionPanel hiddenPanel" : "missionPanel"}>
+          
             <small>MISSION REPORT</small>
             <h2>{selectedPhoto.title}</h2>
             <h3>{selectedPhoto.subtitle}</h3>
@@ -105,7 +113,7 @@ export default function Lightbox({
           </aside>
         </div>
 
-        <div className={isZoomed ? "missionFilmstrip hiddenFilmstrip" : "missionFilmstrip"}>
+        <div className={isCinema ? "missionFilmstrip hiddenFilmstrip" : "missionFilmstrip"}>
           <button className="filmNav" onClick={showPreviousPhoto}>
             <ChevronLeft />
           </button>
@@ -117,7 +125,7 @@ export default function Lightbox({
                 key={photo.title}
                 className={index === selectedIndex ? 'filmCard active' : 'filmCard'}
                 onClick={() => {
-                  setIsZoomed(false);
+                  setViewerMode("report");
                   setSelectedIndex(index);
                 }}
               >
@@ -133,7 +141,7 @@ export default function Lightbox({
           </button>
         </div>
 
-        <div className={isZoomed ? "missionFooter hiddenFilmstrip" : "missionFooter"}>
+        <div className={isCinema ? "missionFooter hiddenFilmstrip" : "missionFooter"}>
           <span>Click image to zoom</span>
           <span>ESC to close</span>
           <span>← → to navigate</span>

@@ -1442,3 +1442,7 @@ footer p {
   right: 0;
   bottom: 0;
 }
+.missionImagePanel.cinemaMode img.inspectZoom {
+  transform: scale(2.4) !important;
+  cursor: zoom-out;
+}

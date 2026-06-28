@@ -16,13 +16,13 @@ export default function App() {
   const [gallery, setGallery] = useState([]);
   const [weather, setWeather] = useState({});
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [viewerMode, setViewerMode] = useState("report");
   const scroller = useRef(null);
 
   const selectedPhoto = selectedIndex !== null ? gallery[selectedIndex] : null;
 
   const closeLightbox = () => {
-    setIsZoomed(false);
+    setViewerMode("report");
     setSelectedIndex(null);
   };
 
@@ -114,8 +114,8 @@ export default function App() {
   gallery={gallery}
   selectedIndex={selectedIndex}
   setSelectedIndex={setSelectedIndex}
-  isZoomed={isZoomed}
-  setIsZoomed={setIsZoomed}
+  viewerMode={viewerMode}
+setViewerMode={setViewerMode}
   closeLightbox={closeLightbox}
   showPreviousPhoto={showPreviousPhoto}
   showNextPhoto={showNextPhoto}
