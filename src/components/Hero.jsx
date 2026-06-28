@@ -1,4 +1,32 @@
+import { useEffect, useState } from 'react';
 import { Camera, Star } from 'lucide-react';
+
+function CountUp({ end }) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    let frame;
+    const duration = 900;
+    const startTime = performance.now();
+
+    const animate = (time) => {
+      const progress = Math.min((time - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      setValue(Math.round(end * eased));
+
+      if (progress < 1) {
+        frame = requestAnimationFrame(animate);
+      }
+    };
+
+    frame = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(frame);
+  }, [end]);
+
+  return <>{value}</>;
+}
 
 export default function Hero({ imageCount, scrolled }) {
   return (
@@ -10,13 +38,13 @@ export default function Hero({ imageCount, scrolled }) {
         />
 
         <nav>
-  <a href="#home">Home</a>
-  <a href="#gallery">Gallery</a>
-  <a href="#observatory">Observatory</a>
-  <a href="#gear">Gear</a>
-  <a href="#crew">Crew</a>
-  <a href="#about">About</a>
-</nav>
+          <a href="#home">Home</a>
+          <a href="#gallery">Gallery</a>
+          <a href="#observatory">Observatory</a>
+          <a href="#gear">Gear</a>
+          <a href="#crew">Crew</a>
+          <a href="#about">About</a>
+        </nav>
       </header>
 
       <section id="home" className="hero">
@@ -41,7 +69,7 @@ export default function Hero({ imageCount, scrolled }) {
               Explore the Sky
             </a>
 
-            <a href="#photos" className="secondary">
+            <a href="#gallery" className="secondary">
               <Camera size={18} />
               Photography
             </a>
@@ -49,7 +77,6 @@ export default function Hero({ imageCount, scrolled }) {
         </div>
 
         <div className="heroCard">
-
           <small className="missionLabel">MISSION CONTROL</small>
 
           <h2>Current Mission</h2>
@@ -61,17 +88,17 @@ export default function Hero({ imageCount, scrolled }) {
 
           <div className="missionStats">
             <div>
-              <strong>3</strong>
+              <strong><CountUp end={3} /></strong>
               <span>Observatories</span>
             </div>
 
             <div>
-              <strong>{imageCount}</strong>
+              <strong><CountUp end={imageCount} /></strong>
               <span>Images</span>
             </div>
 
             <div>
-              <strong>5</strong>
+              <strong><CountUp end={5} /></strong>
               <span>Crew Pets</span>
             </div>
           </div>
@@ -86,7 +113,6 @@ export default function Hero({ imageCount, scrolled }) {
               astronomy, technology, and curiosity.
             </p>
           </div>
-
         </div>
       </section>
     </>
