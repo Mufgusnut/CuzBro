@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-
 import Hero from './components/Hero.jsx';
 import QuickLinks from './components/QuickLinks.jsx';
 import Gallery from './components/Gallery.jsx';
