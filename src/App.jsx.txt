@@ -76,63 +76,6 @@ useEffect(() => {
   const scroll=(dir)=> scroller.current?.scrollBy({left: dir*360, behavior:'smooth'});
 
   return <>
-    <header className="nav">
-      <img src={import.meta.env.BASE_URL + "assets/cuzbro-logo.png"} className="logo" />
-      <nav><a>Home</a><a>Gallery</a><a>Observatory</a><a>Gear</a><a>Crew</a><a>About</a></nav>
-    </header>
-    <section className="hero">
-      <div className="stars"></div>
-      <div className="heroText">
-        <p className="eyebrow">WELCOME TO</p>
-        <h1>CuzBro<br/><span>Observatory</span></h1>
-        <p className="tagline">Fueled by curiosity, questionable sleep schedules, and stubborn optimism.</p>
-        <div className="buttons"><a href="#gallery" className="primary"><Star size={18}/> Explore the Sky</a><a href="#photos" className="secondary"><Camera size={18}/> Photography</a></div>
-      </div>
-<div className="heroCard">
-
-  <small className="missionLabel">MISSION CONTROL</small>
-
-  <h2>Current Mission</h2>
-
-  <div className="missionStatus">
-    <span className="online"></span>
-    Crew Online
-  </div>
-
-  <div className="missionStats">
-
-    <div>
-      <strong>3</strong>
-      <span>Observatories</span>
-    </div>
-
-    <div>
-      <strong>{gallery.length}</strong>
-      <span>Images</span>
-    </div>
-
-    <div>
-      <strong>5</strong>
-      <span>Crew Pets</span>
-    </div>
-
-  </div>
-
-  <div className="missionTarget">
-
-    <small>Current Target</small>
-
-    <h3>Explore the Cosmos</h3>
-
-    <p>
-      Building a shared observatory for photography,
-      astronomy, technology, and curiosity.
-    </p>
-
-  </div>
-
-</div>
-    </section>
     <main>
       <section className="quick"><div><Telescope/>Deep Sky<span>Explore the cosmos</span></div><div><Camera/>Gear & Setup<span>Tools of the trade</span></div><div><Rocket/>Observing Logs<span>Notes & sessions</span></div><div><PawPrint/>The Crew<span>Meet the team</span></div></section>
       <section id="gallery" className="sectionHeader"><h2>✣ Featured Gallery</h2><a>View all galleries →</a></section>
@@ -159,3 +102,5 @@ useEffect(() => {
 }
 function Card({icon,title,text}){return <article className="soon">{icon}<h3>{title}</h3><p>{text}</p><span>Coming soon</span></article>}
 export default App;
+import Hero from './components/Hero.jsx';
+<Hero imageCount={gallery.length} />
