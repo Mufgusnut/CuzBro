@@ -18,6 +18,7 @@ export default function App() {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [viewerMode, setViewerMode] = useState("report");
   const scroller = useRef(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const selectedPhoto = selectedIndex !== null ? gallery[selectedIndex] : null;
 
@@ -64,7 +65,15 @@ export default function App() {
       }
     });
   }, []);
+useEffect(() => {
+  const onScroll = () => {
+    setScrolled(window.scrollY > 80);
+  };
 
+  window.addEventListener("scroll", onScroll);
+
+  return () => window.removeEventListener("scroll", onScroll);
+}, []);
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (selectedIndex === null || gallery.length === 0) return;
@@ -80,6 +89,7 @@ export default function App() {
       if (event.key === 'ArrowLeft') {
         showPreviousPhoto();
       }
+      
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -91,7 +101,10 @@ export default function App() {
 
   return (
     <>
-      <Hero imageCount={gallery.length} />
+      <Hero
+  imageCount={gallery.length}
+  scrolled={scrolled}
+/>
 
       <main>
         <QuickLinks />

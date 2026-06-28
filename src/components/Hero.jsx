@@ -1,9 +1,9 @@
 import { Camera, Star } from 'lucide-react';
 
-export default function Hero({ imageCount }) {
+export default function Hero({ imageCount, scrolled }) {
   return (
     <>
-      <header className="nav">
+      <header className={scrolled ? "nav navSmall" : "nav"}>
         <img
           src={import.meta.env.BASE_URL + "assets/cuzbro-logo.png"}
           className="logo"
