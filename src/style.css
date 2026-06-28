@@ -1073,3 +1073,331 @@ footer p {
     max-height: 48vh;
   }
 }
+/* ============================
+   Cinematic Mission Viewer
+============================ */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(74,140,255,.18), transparent 28%),
+    radial-gradient(circle at 80% 20%, rgba(255,157,28,.12), transparent 24%),
+    rgba(2,7,16,.96);
+  backdrop-filter: blur(18px);
+  display: grid;
+  place-items: center;
+}
+
+.missionViewer {
+  position: relative;
+  width: min(1380px, 96vw);
+  max-height: 94vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid rgba(114,217,255,.22);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(5,13,26,.94), rgba(2,7,16,.96));
+  box-shadow: 0 0 70px rgba(0,0,0,.8);
+}
+
+.missionTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.missionBrand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #aebbd4;
+}
+
+.missionBrand strong {
+  color: var(--orange);
+  letter-spacing: .14em;
+}
+
+.crosshair {
+  color: var(--orange);
+  font-size: 28px;
+}
+
+.lightboxClose {
+  position: static;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(7,16,34,.78);
+  color: white;
+  display: grid;
+  place-items: center;
+}
+
+.missionGrid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 430px;
+  gap: 20px;
+}
+
+.missionImagePanel {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 16px;
+  background: #000;
+  overflow: hidden;
+}
+
+.missionImagePanel img {
+  width: 100%;
+  height: 100%;
+  max-height: 58vh;
+  object-fit: contain;
+  display: block;
+  cursor: zoom-in;
+  transition: transform .25s ease;
+}
+
+.missionImagePanel img.zoomed {
+  transform: scale(1.45);
+  cursor: zoom-out;
+}
+
+.zoomHint {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(2,7,16,.78);
+  color: #d9e4f7;
+}
+
+.imageCaption {
+  margin: 0;
+  padding: 12px;
+  text-align: center;
+  color: #cbd3e2;
+  background: rgba(2,7,16,.8);
+}
+
+.missionPanel {
+  overflow: auto;
+  padding: 26px;
+  border-radius: 16px;
+  border: 1px solid rgba(114,217,255,.22);
+  background: linear-gradient(180deg, rgba(7,19,38,.86), rgba(2,7,16,.9));
+}
+
+.missionPanel small,
+.missionPanel h4 {
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.missionPanel h2 {
+  margin: 12px 0 4px;
+  font-size: 32px;
+}
+
+.missionPanel h3 {
+  margin: 0 0 20px;
+  color: var(--cyan);
+  font-weight: 400;
+}
+
+.missionFacts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.missionFacts div {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.missionFacts b {
+  display: block;
+  color: var(--cyan);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+
+.missionFacts span {
+  display: block;
+  margin-top: 6px;
+  color: white;
+}
+
+.missionPanel h4 {
+  margin: 22px 0 8px;
+  font-size: 12px;
+}
+
+.missionPanel p {
+  color: #c8d2e4;
+  line-height: 1.55;
+}
+
+.missionFilmstrip {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 58px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(2,7,16,.72);
+}
+
+.filmItems {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filmItems::-webkit-scrollbar {
+  display: none;
+}
+
+.filmCard {
+  flex: 0 0 150px;
+  height: 120px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(7,16,34,.7);
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.filmCard.active {
+  border-color: rgba(255,157,28,.9);
+  box-shadow: 0 0 18px rgba(255,157,28,.34);
+}
+
+.filmCard img {
+  width: 100%;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 7px;
+  display: block;
+  margin-bottom: 7px;
+}
+
+.filmCard strong {
+  display: block;
+  font-size: 13px;
+}
+
+.filmCard span {
+  display: block;
+  color: #aebbd4;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filmNav {
+  height: 58px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(7,16,34,.84);
+  color: white;
+  display: grid;
+  place-items: center;
+}
+
+.lightboxArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 58px;
+  height: 88px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(7,16,34,.72);
+  color: white;
+  display: grid;
+  place-items: center;
+}
+
+.lightboxArrow.left {
+  left: -58px;
+}
+
+.lightboxArrow.right {
+  right: -58px;
+}
+
+.missionFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #9caac4;
+  font-size: 13px;
+}
+
+@media(max-width: 1000px) {
+  .lightbox {
+    padding: 14px;
+  }
+
+  .missionViewer {
+    max-height: 96vh;
+    overflow: auto;
+  }
+
+  .missionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .missionImagePanel img {
+    max-height: 44vh;
+  }
+
+  .missionFilmstrip {
+    grid-template-columns: 1fr;
+  }
+
+  .filmNav {
+    display: none;
+  }
+
+  .filmCard {
+    flex-basis: 120px;
+  }
+
+  .lightboxArrow {
+    display: none;
+  }
+
+  .missionFooter {
+    flex-wrap: wrap;
+  }
+}
