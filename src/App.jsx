@@ -18,27 +18,31 @@ export default function App() {
   const [weather, setWeather] = useState({});
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [viewerMode, setViewerMode] = useState("report");
-  const scroller = useRef(null);
   const [scrolled, setScrolled] = useState(false);
 
-  const selectedPhoto = selectedIndex !== null ? gallery[selectedIndex] : null;
+  const scroller = useRef(null);
+
   const filteredGallery =
-  activeFilter === "All"
-    ? gallery
-    : gallery.filter((photo) => photo.objectType === activeFilter);
+    activeFilter === "All"
+      ? gallery
+      : gallery.filter((photo) => photo.objectType === activeFilter);
+
+  const selectedPhoto =
+    selectedIndex !== null ? filteredGallery[selectedIndex] : null;
+
   const closeLightbox = () => {
     setViewerMode("report");
     setSelectedIndex(null);
   };
-  const selectedPhoto = selectedIndex !== null ? filteredGallery[selectedIndex] : null;
+
   const showNextPhoto = () => {
-    setIsZoomed(false);
-    setSelectedIndex((current) => (current + 1) % gallery.length);
+    setViewerMode("report");
+    setSelectedIndex((current) => (current + 1) % filteredGallery.length);
   };
 
   const showPreviousPhoto = () => {
-    setIsZoomed(false);
-    setSelectedIndex((current) => (current - 1 + gallery.length) % gallery.length);
+    setViewerMode("report");
+    setSelectedIndex((current) => (current - 1 + filteredGallery.length) % filteredGallery.length);
   };
 
   const scroll = (dir) => {
@@ -69,21 +73,20 @@ export default function App() {
       }
     });
   }, []);
-useEffect(() => {
-  const onScroll = () => {
-    setScrolled(window.scrollY > 80);
-  };
 
-  window.addEventListener("scroll", onScroll);
-const filteredGallery =
-  activeFilter === "All"
-    ? gallery
-    : gallery.filter((photo) => photo.objectType === activeFilter);
-  return () => window.removeEventListener("scroll", onScroll);
-}, []);
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 80);
+    };
+
+    window.addEventListener("scroll", onScroll);
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (selectedIndex === null || gallery.length === 0) return;
+      if (selectedIndex === null || filteredGallery.length === 0) return;
 
       if (event.key === 'Escape') {
         closeLightbox();
@@ -96,7 +99,6 @@ const filteredGallery =
       if (event.key === 'ArrowLeft') {
         showPreviousPhoto();
       }
-      
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -104,14 +106,14 @@ const filteredGallery =
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedIndex, gallery.length]);
+  }, [selectedIndex, filteredGallery.length]);
 
   return (
     <>
       <Hero
-  imageCount={gallery.length}
-  scrolled={scrolled}
-/>
+        imageCount={gallery.length}
+        scrolled={scrolled}
+      />
 
       <main>
         <QuickLinks />
@@ -126,22 +128,25 @@ const filteredGallery =
         />
 
         <Weather locations={locations} weather={weather} />
+
+        <FeaturedCapture
+          photo={gallery[0]}
+          setSelectedIndex={setSelectedIndex}
+        />
       </main>
-      <FeaturedCapture
-  photo={gallery[0]}
-  setSelectedIndex={setSelectedIndex}
-/>
+
       <Lightbox
-  selectedPhoto={selectedPhoto}
-  gallery={gallery}
-  selectedIndex={selectedIndex}
-  setSelectedIndex={setSelectedIndex}
-  viewerMode={viewerMode}
-setViewerMode={setViewerMode}
-  closeLightbox={closeLightbox}
-  showPreviousPhoto={showPreviousPhoto}
-  showNextPhoto={showNextPhoto}
-/>
+        selectedPhoto={selectedPhoto}
+        gallery={filteredGallery}
+        selectedIndex={selectedIndex}
+        setSelectedIndex={setSelectedIndex}
+        viewerMode={viewerMode}
+        setViewerMode={setViewerMode}
+        closeLightbox={closeLightbox}
+        showPreviousPhoto={showPreviousPhoto}
+        showNextPhoto={showNextPhoto}
+      />
+
       <footer>
         <img src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'} />
         <p>Look up. Stay curious.</p>
