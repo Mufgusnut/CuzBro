@@ -46,13 +46,19 @@ function formatTime(date) {
 function getPlanetStatus(body, observer) {
   const now = new Date();
 
+  // Find the next rise and next set, regardless of current visibility.
   const rise = SearchRiseSet(body, observer, +1, now, 2);
+  const set = SearchRiseSet(body, observer, -1, now, 2);
 
-  if (rise?.date) {
-    return `▲ ${formatTime(rise.date)}`;
-  }
+  const riseText = rise?.date
+    ? formatTime(rise.date)
+    : "--";
 
-  return "Not tonight";
+  const setText = set?.date
+    ? formatTime(set.date)
+    : "--";
+
+  return `↑ ${riseText}  ↓ ${setText}`;
 }
 
 function getSkyTargets(loc) {
