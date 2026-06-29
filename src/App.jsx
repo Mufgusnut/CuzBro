@@ -1,3 +1,4 @@
+import InfoSections from './components/InfoSections.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 import Hero from './components/Hero.jsx';
@@ -128,7 +129,7 @@ export default function App() {
         />
 
         <Weather locations={locations} weather={weather} />
-
+<InfoSections />
         <FeaturedCapture
           photo={gallery[0]}
           setSelectedIndex={setSelectedIndex}

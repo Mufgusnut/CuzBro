@@ -1191,3 +1191,48 @@ footer p {
     font-size: 15px;
   }
 }
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.infoCard,
+.aboutPanel {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(12,25,48,.84), rgba(3,10,22,.9));
+  box-shadow: 0 12px 38px #0009;
+  backdrop-filter: blur(14px);
+}
+
+.infoCard {
+  padding: 24px;
+}
+
+.infoCard svg {
+  color: var(--orange);
+  margin-bottom: 14px;
+}
+
+.infoCard h3,
+.aboutPanel h3 {
+  margin: 0 0 10px;
+}
+
+.infoCard p,
+.aboutPanel p {
+  color: #cbd3e2;
+  line-height: 1.6;
+}
+
+.aboutPanel {
+  padding: 30px;
+  max-width: 920px;
+}
+
+@media (max-width: 900px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}
