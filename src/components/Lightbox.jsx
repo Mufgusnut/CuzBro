@@ -1,11 +1,5 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-  Search,
-  ZoomIn,
-  ZoomOut,
-  X
-} from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 
 export default function Lightbox({
   selectedPhoto,
@@ -13,25 +7,54 @@ export default function Lightbox({
   selectedIndex,
   setSelectedIndex,
   viewerMode,
-setViewerMode,
+  setViewerMode,
   closeLightbox,
   showPreviousPhoto,
   showNextPhoto
 }) {
-  if (!selectedPhoto) return null;
-  const isCinema = viewerMode === "cinema" || viewerMode === "inspect";
-const isInspect = viewerMode === "inspect";
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const dragStart = useRef(null);
 
-const handleImageClick = () => {
-  if (viewerMode === "report") setViewerMode("cinema");
-  else if (viewerMode === "cinema") setViewerMode("inspect");
-  else setViewerMode("cinema");
-};
+  if (!selectedPhoto) return null;
+
+  const isCinema = viewerMode === "cinema" || viewerMode === "inspect";
+  const isInspect = viewerMode === "inspect";
+
+  const handleImageClick = () => {
+    if (viewerMode === "report") {
+      setViewerMode("cinema");
+      setPan({ x: 0, y: 0 });
+    } else if (viewerMode === "cinema") {
+      setViewerMode("inspect");
+      setPan({ x: 0, y: 0 });
+    }
+  };
+
+  const startDrag = (e) => {
+    if (!isInspect) return;
+    const point = e.touches ? e.touches[0] : e;
+    dragStart.current = {
+      x: point.clientX - pan.x,
+      y: point.clientY - pan.y
+    };
+  };
+
+  const drag = (e) => {
+    if (!isInspect || !dragStart.current) return;
+    const point = e.touches ? e.touches[0] : e;
+    setPan({
+      x: point.clientX - dragStart.current.x,
+      y: point.clientY - dragStart.current.y
+    });
+  };
+
+  const endDrag = () => {
+    dragStart.current = null;
+  };
 
   return (
     <div className="lightbox" role="dialog" aria-modal="true">
       <div className="missionViewer">
-
         <div className="missionTopbar">
           <div className="missionBrand">
             <span className="crosshair">⊕</span>
@@ -54,84 +77,59 @@ const handleImageClick = () => {
 
         <div className="missionGrid">
           <section className={isCinema ? "missionImagePanel cinemaMode" : "missionImagePanel"}>
-            <button
-  className="zoomHint"
-  onClick={handleImageClick}
->{viewerMode !== "report" && (
-  <button
-    className="mobileZoomExit"
-    onClick={() => setViewerMode("report")}
-  >
-    Exit Zoom
-  </button>
-)}
-  {viewerMode === "report" && (
-    <>
-      <Search size={16} />
-      Enter Cinema Mode
-    </>
-  )}
+            <button className="zoomHint" onClick={handleImageClick}>
+              <Search size={16} />
+              {viewerMode === "report" && "Enter Cinema Mode"}
+              {viewerMode === "cinema" && "Zoom In"}
+              {viewerMode === "inspect" && "Drag to Pan"}
+            </button>
 
-  {viewerMode === "cinema" && (
-    <>
-      <ZoomIn size={16} />
-      Zoom to 100%
-    </>
-  )}
-
-  {viewerMode === "inspect" && (
-    <>
-      <ZoomOut size={16} />
-      Return to Cinema View
-    </>
-  )}
-</button>
+            {viewerMode !== "report" && (
+              <button
+                className="mobileZoomExit"
+                onClick={() => {
+                  setViewerMode("report");
+                  setPan({ x: 0, y: 0 });
+                }}
+              >
+                Exit Zoom
+              </button>
+            )}
 
             <img
-              className={isInspect ? 'inspectZoom' : ''}
+              className={isInspect ? "inspectZoom" : ""}
               src={import.meta.env.BASE_URL + selectedPhoto.image}
               alt={selectedPhoto.title}
               onClick={handleImageClick}
+              onMouseDown={startDrag}
+              onMouseMove={drag}
+              onMouseUp={endDrag}
+              onMouseLeave={endDrag}
+              onTouchStart={startDrag}
+              onTouchMove={drag}
+              onTouchEnd={endDrag}
+              style={
+                isInspect
+                  ? { transform: `translate(${pan.x}px, ${pan.y}px) scale(1.35)` }
+                  : undefined
+              }
             />
 
             <p className="imageCaption">{selectedPhoto.title} — {selectedPhoto.subtitle}</p>
           </section>
-<aside className={isCinema ? "missionPanel hiddenPanel" : "missionPanel"}>
-          
+
+          <aside className={isCinema ? "missionPanel hiddenPanel" : "missionPanel"}>
             <small>MISSION REPORT</small>
             <h2>{selectedPhoto.title}</h2>
             <h3>{selectedPhoto.subtitle}</h3>
 
             <div className="missionFacts">
-              <div>
-                <b>Object Type</b>
-                <span>{selectedPhoto.objectType || selectedPhoto.category || 'Astrophotography'}</span>
-              </div>
-
-              <div>
-                <b>Captured</b>
-                <span>{selectedPhoto.captureDate || selectedPhoto.date || 'Unknown'}</span>
-              </div>
-
-              <div>
-                <b>Constellation</b>
-                <span>{selectedPhoto.constellation || 'Unknown'}</span>
-              </div>
-
-              <div>
-                <b>Exposure</b>
-                <span>{selectedPhoto.exposure || 'Not listed'}</span>
-              </div>
-
-              <div>
-                <b>Distance</b>
-                <span>{selectedPhoto.distance || 'Unknown'}</span>
-              </div>
-
-              <div>
-                <b>Processing</b>
-                <span>{selectedPhoto.processing || 'Not listed'}</span>
-              </div>
+              <div><b>Object Type</b><span>{selectedPhoto.objectType || selectedPhoto.category || 'Astrophotography'}</span></div>
+              <div><b>Captured</b><span>{selectedPhoto.captureDate || selectedPhoto.date || 'Unknown'}</span></div>
+              <div><b>Constellation</b><span>{selectedPhoto.constellation || 'Unknown'}</span></div>
+              <div><b>Exposure</b><span>{selectedPhoto.exposure || 'Not listed'}</span></div>
+              <div><b>Distance</b><span>{selectedPhoto.distance || 'Unknown'}</span></div>
+              <div><b>Processing</b><span>{selectedPhoto.processing || 'Not listed'}</span></div>
             </div>
 
             <h4>Equipment</h4>
@@ -158,6 +156,7 @@ const handleImageClick = () => {
                 className={index === selectedIndex ? 'filmCard active' : 'filmCard'}
                 onClick={() => {
                   setViewerMode("report");
+                  setPan({ x: 0, y: 0 });
                   setSelectedIndex(index);
                 }}
               >
