@@ -513,3 +513,125 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   max-width: 420px !important;
   justify-self: end !important;
 }
+/* ============================
+   Mobile Hero Polish
+============================ */
+@media (max-width: 700px) {
+  html {
+    scroll-padding-top: 20px;
+  }
+
+  section[id] {
+    scroll-margin-top: 20px;
+  }
+
+  .nav {
+    position: relative;
+    min-height: auto;
+    padding: 28px 24px 18px;
+    display: block;
+    background: rgba(2, 7, 16, .92);
+  }
+
+  .nav .logo {
+    width: 190px;
+    display: block;
+    margin: 0 auto 22px;
+  }
+
+  .nav nav {
+    display: flex;
+    gap: 28px;
+    overflow-x: auto;
+    padding: 0 0 6px;
+    font-size: 18px;
+    scrollbar-width: none;
+  }
+
+  .nav nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero {
+    display: block !important;
+    min-height: auto;
+    padding: 90px 24px 70px;
+    overflow: hidden;
+  }
+
+  .heroText {
+    max-width: none !important;
+  }
+
+  .eyebrow {
+    font-size: 14px;
+    letter-spacing: .38em;
+    line-height: 1.8;
+  }
+
+  .hero h1 {
+    font-size: clamp(46px, 15vw, 72px) !important;
+    line-height: .96;
+    letter-spacing: .09em !important;
+  }
+
+  .tagline {
+    max-width: 330px;
+    font-size: 20px;
+    line-height: 1.55;
+  }
+
+  .buttons {
+    display: grid;
+    gap: 14px;
+    max-width: 300px;
+  }
+
+  .buttons a {
+    justify-content: center;
+    padding: 15px 18px;
+  }
+
+  .heroCard {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 46px 0 0;
+    padding: 26px 22px;
+    border-radius: 22px;
+  }
+
+  .heroCard h2 {
+    font-size: 32px;
+  }
+
+  .missionStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .missionStats strong {
+    font-size: 34px;
+  }
+
+  .missionStats span {
+    font-size: 13px;
+  }
+
+  .quick {
+    margin-top: 0;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick div {
+    min-height: 130px;
+    align-content: center;
+    text-align: center;
+    grid-template-columns: 1fr;
+  }
+
+  .quick svg,
+  .quick span {
+    grid-column: 1;
+    justify-self: center;
+  }
+}
