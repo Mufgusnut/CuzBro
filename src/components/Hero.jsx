@@ -40,7 +40,7 @@ export default function Hero({ imageCount, scrolled, featuredPhoto, setSelectedI
 
         <nav>
           <a href="#home">Home</a>
-          <a href="#gallery">Gallery</a>
+          <a href="#gallery">Archive</a>
           <a href="#observatory">Observatory</a>
           <a href="#gear">Gear</a>
           <a href="#crew">Crew</a>
