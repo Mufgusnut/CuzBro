@@ -1236,3 +1236,73 @@ footer p {
     grid-template-columns: 1fr;
   }
 }
+.crewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.crewCard,
+.crewSupport {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(255,157,28,.12), transparent 34%),
+    linear-gradient(180deg, rgba(12,25,48,.86), rgba(3,10,22,.92));
+  box-shadow: 0 12px 38px #0009;
+  padding: 26px;
+}
+
+.crewCard small,
+.crewSupport small {
+  color: var(--orange);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.crewCard h3 {
+  margin: 10px 0 8px;
+  font-size: 32px;
+}
+
+.crewCard p,
+.crewSupport p {
+  color: #cbd3e2;
+  line-height: 1.6;
+}
+
+.crewCard ul {
+  list-style: none;
+  padding: 16px 0 0;
+  margin: 18px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.crewCard li {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.crewCard b {
+  color: var(--cyan);
+}
+
+.crewCard span {
+  color: white;
+  text-align: right;
+}
+
+.crewSupport {
+  margin-top: 18px;
+}
+
+@media (max-width: 900px) {
+  .crewGrid {
+    grid-template-columns: 1fr;
+  }
+}
