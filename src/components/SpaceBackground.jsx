@@ -35,7 +35,7 @@ export default function SpaceBackground() {
 
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-      const starCount = Math.min(850, Math.floor((width * height) / 1300));
+      const starCount = Math.min(900, Math.floor((width * height) / 1200));
 
       stars = Array.from({ length: starCount }, () => {
         const bright = Math.random() > 0.88;
@@ -43,9 +43,8 @@ export default function SpaceBackground() {
         return {
           x: Math.random() * width,
           y: Math.random() * height,
-          r: bright ? Math.random() * 1.8 + 1.1 : Math.random() * 1.1 + 0.25,
+          r: bright ? Math.random() * 1.9 + 1.0 : Math.random() * 1.05 + 0.25,
           alpha: bright ? Math.random() * 0.45 + 0.55 : Math.random() * 0.55 + 0.18,
-          baseAlpha: Math.random() * 0.4 + 0.25,
           twinkle: Math.random() * 0.018 + 0.004,
           drift: Math.random() * 0.035 + 0.006,
           color: colors[Math.floor(Math.random() * colors.length)]
@@ -89,7 +88,6 @@ export default function SpaceBackground() {
         height * 0.2,
         width * 0.55
       );
-
       blueGlow.addColorStop(0, 'rgba(74,140,255,0.14)');
       blueGlow.addColorStop(1, 'rgba(74,140,255,0)');
 
@@ -101,7 +99,6 @@ export default function SpaceBackground() {
         height * 0.38,
         width * 0.5
       );
-
       purpleGlow.addColorStop(0, 'rgba(124,77,255,0.10)');
       purpleGlow.addColorStop(1, 'rgba(124,77,255,0)');
 
@@ -113,7 +110,6 @@ export default function SpaceBackground() {
         height * 0.2 + drift * 0.4,
         width * 0.38
       );
-
       orangeGlow.addColorStop(0, 'rgba(255,157,28,0.08)');
       orangeGlow.addColorStop(1, 'rgba(255,157,28,0)');
 
@@ -209,7 +205,6 @@ export default function SpaceBackground() {
 
     resize();
     animationFrame = requestAnimationFrame(animate);
-
     window.addEventListener('resize', resize);
 
     return () => {
