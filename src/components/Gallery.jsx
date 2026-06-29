@@ -13,8 +13,7 @@ export default function Gallery({
   return (
     <>
       <section id="gallery" className="sectionHeader">
-        <h2>✣ Featured Gallery</h2>
-        <a>View all galleries →</a>
+        <h2>✣ Mission Archive</h2>
       </section>
 
       <div className="galleryFilters">
