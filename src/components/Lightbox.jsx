@@ -57,7 +57,14 @@ const handleImageClick = () => {
             <button
   className="zoomHint"
   onClick={handleImageClick}
->
+>{viewerMode !== "report" && (
+  <button
+    className="mobileZoomExit"
+    onClick={() => setViewerMode("report")}
+  >
+    Exit Zoom
+  </button>
+)}
   {viewerMode === "report" && (
     <>
       <Search size={16} />

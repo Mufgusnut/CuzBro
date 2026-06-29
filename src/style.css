@@ -652,3 +652,17 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
     background-position: right bottom;
 }
 }
+.missionImagePanel.cinemaMode {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.missionImagePanel.cinemaMode img.inspectZoom {
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  min-width: 160%;
+  min-height: 160%;
+  object-fit: contain;
+}
