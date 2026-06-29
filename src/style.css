@@ -1062,3 +1062,30 @@ footer p {
   transform: none !important;
   cursor: zoom-in;
 }
+/* Force Mission Report preview to show the whole image */
+.reportImageFrame {
+  width: 100%;
+  height: clamp(260px, 48vh, 520px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+}
+
+.reportImage {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+@media (max-width: 700px) {
+  .reportImageFrame {
+    height: 320px;
+  }
+}
