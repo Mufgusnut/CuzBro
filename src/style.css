@@ -656,20 +656,6 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
     background-position: right bottom;
 }
 }
-.missionImagePanel.cinemaMode {
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.missionImagePanel.cinemaMode img.inspectZoom {
-  width: auto;
-  height: auto;
-  max-width: none;
-  max-height: none;
-  min-width: 125%;
-  min-height: 125%;
-  object-fit: contain;
-}
 .mobileZoomExit {
   display: none;
 }
@@ -787,5 +773,71 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
 @media (max-width: 700px) {
   .missionImagePanel.cinemaMode img.inspectZoom {
     transform: scale(1.6) !important;
+  }
+}
+/* Clean pan/zoom viewer */
+.imageFrame {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.zoomWrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.zoomContent {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.zoomableImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: grab;
+}
+
+.zoomableImage:active {
+  cursor: grabbing;
+}
+
+.zoomTools {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 6;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.zoomTools button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(2,7,16,.86);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .zoomTools {
+    left: 12px;
+    right: 12px;
+    justify-content: center;
+  }
+
+  .zoomTools button {
+    padding: 9px 10px;
+    font-size: 13px;
   }
 }
