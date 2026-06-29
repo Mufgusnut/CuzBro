@@ -52,13 +52,14 @@ export default function Lightbox({
                   Enter Cinema Mode
                 </button>
 
-                <div className="imageFrame">
-                  <img
-                    src={import.meta.env.BASE_URL + selectedPhoto.image}
-                    alt={selectedPhoto.title}
-                    onClick={handleImageClick}
-                  />
-                </div>
+                <div className="reportImageFrame">
+  <img
+    className="reportImage"
+    src={import.meta.env.BASE_URL + selectedPhoto.image}
+    alt={selectedPhoto.title}
+    onClick={handleImageClick}
+  />
+</div>
               </>
             ) : (
               <TransformWrapper
