@@ -349,61 +349,367 @@ main { padding: 0 4vw 70px; }
 .featuredCapture p { color: #cbd3e2; line-height: 1.6; }
 .featuredCapture button { margin-top: 14px; padding: 14px 18px; border-radius: 10px; border: 1px solid rgba(255,157,28,.45); background: rgba(255,157,28,.12); color: white; cursor: pointer; }
 .featuredCapture img { width: 100%; max-height: 420px; object-fit: cover; border-radius: 18px; }
+/* Cinematic Mission Viewer - Clean Version */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  padding: 28px;
+  background: rgba(2,7,16,.96);
+  backdrop-filter: blur(18px);
+  display: grid;
+  place-items: center;
+}
 
-/* Cinematic Mission Viewer */
-.lightbox { position: fixed; inset: 0; z-index: 99; padding: 28px; background: radial-gradient(circle at 20% 10%, rgba(74,140,255,.18), transparent 28%), radial-gradient(circle at 80% 20%, rgba(255,157,28,.12), transparent 24%), rgba(2,7,16,.96); backdrop-filter: blur(18px); display: grid; place-items: center; }
-.missionViewer { position: relative; width: min(1380px, 96vw); max-height: 94vh; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 16px; padding: 22px; border: 1px solid rgba(114,217,255,.22); border-radius: 24px; background: linear-gradient(180deg, rgba(5,13,26,.94), rgba(2,7,16,.96)); box-shadow: 0 0 70px rgba(0,0,0,.8); }
-.missionTopbar { display: flex; align-items: center; justify-content: space-between; }
-.missionBrand { display: flex; align-items: center; gap: 16px; color: #aebbd4; }
-.missionBrand strong { color: var(--orange); letter-spacing: .14em; }
-.crosshair { color: var(--orange); font-size: 28px; }
-.lightboxClose { position: static; width: 44px; height: 44px; border-radius: 10px; border: 1px solid rgba(255,255,255,.16); background: rgba(7,16,34,.78); color: white; display: grid; place-items: center; cursor: pointer; }
-.missionGrid { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 430px; gap: 20px; }
-.missionImagePanel { position: relative; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; border: 1px solid rgba(255,255,255,.13); border-radius: 16px; background: #000; overflow: hidden; transition: opacity .2s ease, transform .25s ease; }
-.missionImagePanel img { width: 100%; height: 100%; max-height: 58vh; object-fit: contain; display: block; cursor: zoom-in; transition: transform .25s ease; }
-.missionImagePanel.cinemaMode { position: fixed; inset: 72px; z-index: 120; border-radius: 24px; box-shadow: 0 0 80px rgba(0,0,0,.85); }
-.missionImagePanel.cinemaMode img { max-height: none; height: 100%; width: 100%; object-fit: contain; transform: none !important; cursor: zoom-in; }
-.missionImagePanel.cinemaMode img.inspectZoom {
-  transform: scale(1.25);
-  transform-origin: center center;
+.missionViewer {
+  position: relative;
+  width: min(1380px, 96vw);
+  max-height: 94vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid rgba(114,217,255,.22);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(5,13,26,.96), rgba(2,7,16,.98));
+  box-shadow: 0 0 70px rgba(0,0,0,.8);
+}
+
+.missionTopbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.missionBrand {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: #aebbd4;
+}
+
+.missionBrand strong,
+.crosshair {
+  color: var(--orange);
+}
+
+.missionBrand strong {
+  letter-spacing: .14em;
+}
+
+.crosshair {
+  font-size: 28px;
+}
+
+.lightboxClose {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(7,16,34,.78);
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.missionGrid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 430px;
+  gap: 20px;
+}
+
+.missionImagePanel {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.13);
+  background: #000;
+  overflow: hidden;
+}
+
+.imageFrame {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: #000;
+  overflow: hidden;
+}
+
+.imageFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  cursor: zoom-in;
+}
+
+.missionImagePanel.cinemaMode {
+  position: fixed;
+  inset: 72px;
+  z-index: 120;
+  border-radius: 24px;
+  box-shadow: 0 0 80px rgba(0,0,0,.85);
+}
+
+.zoomWrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.zoomContent {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.zoomableImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   cursor: grab;
 }
-.zoomHint { position: absolute; top: 16px; right: 16px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 9px; border: 1px solid rgba(255,255,255,.14); background: rgba(2,7,16,.78); color: #d9e4f7; cursor: pointer; }
-.missionImagePanel.cinemaMode .zoomHint { background: rgba(2,7,16,.9); }
-.imageCaption { margin: 0; padding: 12px; text-align: center; color: #cbd3e2; background: rgba(2,7,16,.8); }
-.missionImagePanel.cinemaMode .imageCaption { position: absolute; left: 0; right: 0; bottom: 0; }
-.missionPanel { overflow: auto; padding: 26px; border-radius: 16px; border: 1px solid rgba(114,217,255,.22); background: linear-gradient(180deg, rgba(7,19,38,.86), rgba(2,7,16,.9)); transition: opacity .2s ease, transform .25s ease; }
-.missionPanel small, .missionPanel h4 { color: var(--orange); text-transform: uppercase; letter-spacing: .12em; }
-.missionPanel h2 { margin: 12px 0 4px; font-size: 32px; }
-.missionPanel h3 { margin: 0 0 20px; color: var(--cyan); font-weight: 400; }
-.missionFacts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 18px 0; border-top: 1px solid rgba(255,255,255,.12); border-bottom: 1px solid rgba(255,255,255,.12); }
-.missionFacts b { display: block; color: var(--cyan); text-transform: uppercase; font-size: 12px; letter-spacing: .08em; }
-.missionFacts span { display: block; margin-top: 6px; color: white; }
-.missionPanel h4 { margin: 22px 0 8px; font-size: 12px; }
-.missionPanel p { color: #c8d2e4; line-height: 1.55; }
-.missionFilmstrip { display: grid; grid-template-columns: 58px minmax(0, 1fr) 58px; gap: 12px; align-items: center; padding: 10px; border-radius: 16px; border: 1px solid rgba(255,255,255,.12); background: rgba(2,7,16,.72); transition: opacity .2s ease, transform .25s ease; }
-.filmItems { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; }
-.filmItems::-webkit-scrollbar { display: none; }
-.filmCard { flex: 0 0 150px; height: 120px; padding: 6px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: rgba(7,16,34,.7); color: white; text-align: left; cursor: pointer; }
-.filmCard.active { border-color: rgba(255,157,28,.9); box-shadow: 0 0 18px rgba(255,157,28,.34); }
-.filmCard img { width: 100%; height: 70px; object-fit: cover; border-radius: 7px; display: block; margin-bottom: 7px; }
-.filmCard strong { display: block; font-size: 13px; }
-.filmCard span { display: block; color: #aebbd4; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.filmNav { height: 58px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(7,16,34,.84); color: white; display: grid; place-items: center; cursor: pointer; }
-.lightboxArrow { position: absolute; top: 50%; transform: translateY(-50%); width: 58px; height: 88px; border-radius: 14px; border: 1px solid rgba(255,255,255,.16); background: rgba(7,16,34,.72); color: white; display: grid; place-items: center; cursor: pointer; }
-.lightboxArrow.left { left: -58px; }
-.lightboxArrow.right { right: -58px; }
-.missionFooter { display: flex; justify-content: space-between; gap: 16px; color: #9caac4; font-size: 13px; transition: opacity .2s ease, transform .25s ease; }
-.hiddenPanel, .hiddenFilmstrip { opacity: 0; pointer-events: none; }
 
-/* Footer */
-footer { border-top: 1px solid var(--line); padding: 32px 6vw 46px; text-align: center; background: #020710; }
-footer img { width: 160px; filter: drop-shadow(0 0 18px rgba(74,140,255,.25)); }
-footer p { letter-spacing: .28em; color: #c5cee3; }
+.zoomableImage:active {
+  cursor: grabbing;
+}
+
+.zoomTools,
+.zoomHint {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 6;
+}
+
+.zoomHint,
+.zoomTools button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(2,7,16,.86);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.zoomTools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.imageCaption {
+  margin: 0;
+  padding: 12px;
+  text-align: center;
+  color: #cbd3e2;
+  background: rgba(2,7,16,.86);
+}
+
+.missionImagePanel.cinemaMode .imageCaption {
+  display: none;
+}
+
+.missionPanel {
+  overflow: auto;
+  padding: 26px;
+  border-radius: 16px;
+  border: 1px solid rgba(114,217,255,.22);
+  background: linear-gradient(180deg, rgba(7,19,38,.86), rgba(2,7,16,.9));
+}
+
+.missionPanel small,
+.missionPanel h4 {
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.missionPanel h2 {
+  margin: 12px 0 4px;
+  font-size: 32px;
+}
+
+.missionPanel h3 {
+  margin: 0 0 20px;
+  color: var(--cyan);
+  font-weight: 400;
+}
+
+.missionFacts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.missionFacts b {
+  display: block;
+  color: var(--cyan);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+
+.missionFacts span {
+  display: block;
+  margin-top: 6px;
+  color: white;
+}
+
+.missionPanel p {
+  color: #c8d2e4;
+  line-height: 1.55;
+}
+
+.hiddenPanel,
+.hiddenFilmstrip {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.missionFilmstrip {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 58px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(2,7,16,.72);
+}
+
+.filmItems {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filmItems::-webkit-scrollbar {
+  display: none;
+}
+
+.filmCard {
+  flex: 0 0 150px;
+  height: 120px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(7,16,34,.7);
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.filmCard.active {
+  border-color: rgba(255,157,28,.9);
+  box-shadow: 0 0 18px rgba(255,157,28,.34);
+}
+
+.filmCard img {
+  width: 100%;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 7px;
+  display: block;
+  margin-bottom: 7px;
+}
+
+.filmCard strong {
+  display: block;
+  font-size: 13px;
+}
+
+.filmCard span {
+  display: block;
+  color: #aebbd4;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filmNav,
+.lightboxArrow {
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(7,16,34,.84);
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.filmNav {
+  height: 58px;
+  border-radius: 12px;
+}
+
+.lightboxArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 58px;
+  height: 88px;
+  border-radius: 14px;
+}
+
+.lightboxArrow.left {
+  left: -58px;
+}
+
+.lightboxArrow.right {
+  right: -58px;
+}
+
+.missionFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #9caac4;
+  font-size: 13px;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 32px 6vw 46px;
+  text-align: center;
+  background: #020710;
+}
+
+footer img {
+  width: 160px;
+  filter: drop-shadow(0 0 18px rgba(74,140,255,.25));
+}
+
+footer p {
+  letter-spacing: .28em;
+  color: #c5cee3;
+}
 
 /* Animation */
-@keyframes skyDrift { from { transform: scale(1); } to { transform: scale(1.06) translateY(-12px); } }
-@keyframes twinkle { from { opacity: .22; } to { opacity: .48; } }
+@keyframes skyDrift {
+  from { transform: scale(1); }
+  to { transform: scale(1.06) translateY(-12px); }
+}
+
+@keyframes twinkle {
+  from { opacity: .22; }
+  to { opacity: .48; }
+}
+
 @keyframes meteor {
   0%, 70% { transform: translateX(0) translateY(0) rotate(-23deg); opacity: 0; }
   74% { opacity: 1; }
@@ -414,30 +720,84 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
 @media(max-width: 1000px) {
   html { scroll-padding-top: 20px; }
   section[id] { scroll-margin-top: 20px; }
-  .nav { position: relative; display: block; }
-  .nav nav { overflow: auto; padding-top: 12px; }
-  .logo { width: 150px; }
-  .heroText {
-  min-width: 0;
-  max-width: 760px;
+
+  .nav {
+    position: relative;
+    display: block;
+  }
+
+  .nav nav {
+    overflow: auto;
+    padding-top: 12px;
+  }
+
+  .logo {
+    width: 150px;
+  }
+
+  .heroCard {
+    width: auto;
+    margin-top: 34px;
+  }
+
+  .quick,
+  .weatherGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .carousel {
+    grid-auto-columns: 86%;
+  }
+
+  .carouselWrap {
+    grid-template-columns: 40px 1fr 40px;
+  }
+
+  .carouselWrap button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .featuredCapture {
+    grid-template-columns: 1fr;
+  }
+
+  .lightbox {
+    padding: 14px;
+  }
+
+  .missionViewer {
+    max-height: 96vh;
+    overflow: auto;
+  }
+
+  .missionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .missionImagePanel.cinemaMode {
+    inset: 14px;
+  }
+
+  .missionFilmstrip {
+    grid-template-columns: 1fr;
+  }
+
+  .filmNav,
+  .lightboxArrow {
+    display: none;
+  }
+
+  .filmCard {
+    flex-basis: 120px;
+  }
+
+  .missionFooter {
+    flex-wrap: wrap;
+  }
 }
-  .heroCard { width: auto; margin-top: 34px; }
-  .quick, .weatherGrid { grid-template-columns: 1fr; }
-  .carousel { grid-auto-columns: 86%; }
-  .carouselWrap { grid-template-columns: 40px 1fr 40px; }
-  .carouselWrap button { width: 40px; height: 40px; }
-  .hero h1 { font-size: 48px; }
-  .featuredCapture { grid-template-columns: 1fr; }
-  .lightbox { padding: 14px; }
-  .missionViewer { max-height: 96vh; overflow: auto; }
-  .missionGrid { grid-template-columns: 1fr; }
-  .missionImagePanel img { max-height: 44vh; }
-  .missionImagePanel.cinemaMode { inset: 18px; }
-  .missionFilmstrip { grid-template-columns: 1fr; }
-  .filmNav, .lightboxArrow { display: none; }
-  .filmCard { flex-basis: 120px; }
-  .missionFooter { flex-wrap: wrap; }
-}
+
+/* Shrinking nav */
 .nav {
   min-height: 94px;
   transition: min-height .28s ease, padding .28s ease, background .28s ease, backdrop-filter .28s ease;
@@ -460,6 +820,8 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   width: 125px;
   filter: drop-shadow(0 0 10px rgba(74,140,255,.25));
 }
+
+/* Gallery filters */
 .galleryFilters {
   display: flex;
   flex-wrap: wrap;
@@ -481,6 +843,8 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   background: rgba(255,157,28,.14);
   color: white;
 }
+
+/* Weather polish */
 .skyStars {
   display: flex;
   gap: 3px;
@@ -498,7 +862,8 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   border: 1px solid rgba(114,217,255,.18);
   color: #bfeeff;
 }
-/* Hero layout final override */
+
+/* Hero final desktop override */
 .hero {
   grid-template-columns: minmax(0, 52%) minmax(360px, 420px) !important;
   gap: 72px !important;
@@ -517,18 +882,9 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   max-width: 420px !important;
   justify-self: end !important;
 }
-/* ============================
-   Mobile Hero Polish
-============================ */
+
+/* Mobile hero */
 @media (max-width: 700px) {
-  html {
-    scroll-padding-top: 20px;
-  }
-
-  section[id] {
-    scroll-margin-top: 20px;
-  }
-
   .nav {
     position: relative;
     min-height: auto;
@@ -566,7 +922,7 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   .heroText {
     max-width: 100% !important;
     padding-right: 0;
-}
+  }
 
   .eyebrow {
     font-size: 14px;
@@ -575,17 +931,19 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   }
 
   .hero h1 {
-  font-size: clamp(38px, 12vw, 64px) !important;
-  line-height: .92;
-  letter-spacing: .05em !important;
-  max-width: 100%;
-}
-.hero h1 span {
-  display: block;
-  font-size: .93em;
-  letter-spacing: .03em;
-  word-break: break-word;
-}
+    font-size: clamp(38px, 12vw, 64px) !important;
+    line-height: .92;
+    letter-spacing: .05em !important;
+    max-width: 100%;
+  }
+
+  .hero h1 span {
+    display: block;
+    font-size: .93em;
+    letter-spacing: .03em;
+    word-break: break-word;
+  }
+
   .tagline {
     max-width: 330px;
     font-size: 20px;
@@ -616,7 +974,6 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   }
 
   .missionStats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
 
@@ -645,191 +1002,7 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
     grid-column: 1;
     justify-self: center;
   }
-  .hero::after {
-    background:
-        linear-gradient(to top,
-            rgba(2,7,16,.98),
-            rgba(2,7,16,.15)),
-        url("/CuzBro/assets/observatory.png");
-    background-repeat: no-repeat;
-    background-size: 52%;
-    background-position: right bottom;
-}
-}
-.mobileZoomExit {
-  display: none;
-}
 
-@media (max-width: 700px) {
-  .mobileZoomExit {
-    position: absolute;
-    top: 64px;
-    right: 16px;
-    z-index: 4;
-    display: inline-flex;
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,.18);
-    background: rgba(2,7,16,.86);
-    color: white;
-    font-weight: 700;
-  }
-}
-.missionImagePanel.cinemaMode {
-  overflow: hidden;
-}
-
-.missionImagePanel.cinemaMode img.inspectZoom {
-  max-width: 100%;
-  max-height: 100%;
-  min-width: auto;
-  min-height: auto;
-  cursor: grab;
-  user-select: none;
-  touch-action: none;
-}
-
-.missionImagePanel.cinemaMode img.inspectZoom:active {
-  cursor: grabbing;
-}
-.missionImagePanel.cinemaMode {
-  overflow: hidden;
-}
-
-.inspectScroller {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  display: grid;
-  place-items: center;
-  -webkit-overflow-scrolling: touch;
-}
-
-.inspectScroller img.inspectZoom {
-  width: 150%;
-  height: auto;
-  max-width: none;
-  max-height: none;
-  object-fit: contain;
-  cursor: zoom-out;
-}
-
-@media (max-width: 700px) {
-  .inspectScroller img.inspectZoom {
-    width: 180%;
-  }
-}
-.imageFrame {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-
-.imageFrame img {
-  transform-origin: center center;
-}
-
-.imageFrame img.inspectZoom {
-  transform: scale(1.45) !important;
-  cursor: zoom-out;
-}
-
-@media (max-width: 700px) {
-  .imageFrame img.inspectZoom {
-    transform: scale(1.65) !important;
-  }
-}
-/* Final lightbox zoom reset */
-.missionImagePanel.cinemaMode {
-  overflow: hidden !important;
-}
-
-.missionImagePanel.cinemaMode .imageFrame {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-
-.missionImagePanel.cinemaMode img {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
-  transform: none !important;
-  cursor: zoom-in;
-}
-
-.missionImagePanel.cinemaMode img.inspectZoom {
-  transform: scale(1.45) !important;
-  transform-origin: center center;
-  cursor: zoom-out;
-}
-
-@media (max-width: 700px) {
-  .missionImagePanel.cinemaMode img.inspectZoom {
-    transform: scale(1.6) !important;
-  }
-}
-/* Clean pan/zoom viewer */
-.imageFrame {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-}
-
-.zoomWrapper {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.zoomContent {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-}
-
-.zoomableImage {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  cursor: grab;
-}
-
-.zoomableImage:active {
-  cursor: grabbing;
-}
-
-.zoomTools {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 6;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.zoomTools button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.18);
-  background: rgba(2,7,16,.86);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-@media (max-width: 700px) {
   .zoomTools {
     left: 12px;
     right: 12px;
@@ -840,21 +1013,4 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
     padding: 9px 10px;
     font-size: 13px;
   }
-}
-/* Center the Mission Report preview image */
-.missionImagePanel:not(.cinemaMode) .imageFrame {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  place-items: center;
-  background: #000;
-  overflow: hidden;
-}
-
-.missionImagePanel:not(.cinemaMode) .imageFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center center !important;
-  transform: none !important;
 }
