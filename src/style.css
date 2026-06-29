@@ -75,8 +75,7 @@ section[id] { scroll-margin-top: 50px; }
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to bottom, rgba(2,7,16,.1), rgba(2,7,16,.25), #020710),
-    url("https://images.unsplash.com/photo-1538370965046-79c0d6907d47?q=80&w=2400&auto=format&fit=crop") center/cover;
+  linear-gradient(to bottom, rgba(2,7,16,.05), rgba(2,7,16,.22), #020710);
   opacity: .85;
   animation: skyDrift 40s ease-in-out infinite alternate;
 }
@@ -99,6 +98,7 @@ section[id] { scroll-margin-top: 50px; }
   background-size: 90px 90px, 140px 140px;
   opacity: .32;
   animation: twinkle 5s ease-in-out infinite alternate;
+  display: none;
 }
 
 .stars:after {
