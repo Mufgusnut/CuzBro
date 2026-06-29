@@ -37,7 +37,7 @@ export default function InfoSections() {
   <article className="crewCard">
     <small>OBSERVATORY DIRECTOR</small>
     <h3>Dave</h3>
-    <p>Founder, telescope operator, photographer, and deep-sky hunter.</p>
+    <p>Telescope operator and deep-sky hunter.</p>
     <ul>
       <li><b>Base</b><span>Eliot, Maine</span></li>
       <li><b>Primary Gear</b><span>CPC 800</span></li>
@@ -48,8 +48,9 @@ export default function InfoSections() {
   <article className="crewCard">
     <small>TECHNOLOGY LEAD</small>
     <h3>Justin</h3>
-    <p>Software brain, website collaborator, and systems support.</p>
+    <p>Software brain, website collaborator, telescope collimator, and systems support.</p>
     <ul>
+      <li><b>Base</b><span>New York, New York</span></li>
       <li><b>Specialty</b><span>Technology</span></li>
       <li><b>Primary Role</b><span>Site upgrades</span></li>
       <li><b>Current Mission</b><span>Make CuzBro smarter</span></li>
@@ -59,8 +60,9 @@ export default function InfoSections() {
   <article className="crewCard">
     <small>CREATIVE CONSULTANT</small>
     <h3>Chappy</h3>
-    <p>AV wizard, movie expert, idea generator, and morale officer.</p>
+    <p>AV wizard, photography guru, idea generator, and morale officer.</p>
     <ul>
+      <li><b>Base</b><span>Congers, New York</span></li>
       <li><b>Specialty</b><span>Audio / video</span></li>
       <li><b>Primary Role</b><span>Creative direction</span></li>
       <li><b>Current Mission</b><span>Keep the vibe strong</span></li>
@@ -81,8 +83,7 @@ export default function InfoSections() {
       <section className="aboutPanel">
         <h3>Built for looking up.</h3>
         <p>
-          CuzBro is a shared astronomy, photography, and technology project built around curiosity,
-          questionable sleep schedules, and stubborn optimism.
+          CuzBro is a shared astronomy, photography, and technology project made possible by the crew.
         </p>
         <p>
           It started as a place to collect telescope photos and quickly turned into a small mission-control
