@@ -363,7 +363,10 @@ main { padding: 0 4vw 70px; }
 .missionImagePanel img { width: 100%; height: 100%; max-height: 58vh; object-fit: contain; display: block; cursor: zoom-in; transition: transform .25s ease; }
 .missionImagePanel.cinemaMode { position: fixed; inset: 72px; z-index: 120; border-radius: 24px; box-shadow: 0 0 80px rgba(0,0,0,.85); }
 .missionImagePanel.cinemaMode img { max-height: none; height: 100%; width: 100%; object-fit: contain; transform: none !important; cursor: zoom-in; }
-.missionImagePanel.cinemaMode img.inspectZoom { transform: scale(2.4) !important; cursor: zoom-out; }
+.missionImagePanel.cinemaMode img.inspectZoom {
+  transform: none !important;
+  cursor: zoom-out;
+}
 .zoomHint { position: absolute; top: 16px; right: 16px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 9px; border: 1px solid rgba(255,255,255,.14); background: rgba(2,7,16,.78); color: #d9e4f7; cursor: pointer; }
 .missionImagePanel.cinemaMode .zoomHint { background: rgba(2,7,16,.9); }
 .imageCaption { margin: 0; padding: 12px; text-align: center; color: #cbd3e2; background: rgba(2,7,16,.8); }
@@ -662,7 +665,26 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   height: auto;
   max-width: none;
   max-height: none;
-  min-width: 160%;
-  min-height: 160%;
+  min-width: 125%;
+  min-height: 125%;
   object-fit: contain;
+}
+.mobileZoomExit {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .mobileZoomExit {
+    position: absolute;
+    top: 64px;
+    right: 16px;
+    z-index: 4;
+    display: inline-flex;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(2,7,16,.86);
+    color: white;
+    font-weight: 700;
+  }
 }
