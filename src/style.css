@@ -287,7 +287,7 @@ main { padding: 0 4vw 70px; }
 
 /* Quick Links */
 .quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: -70px; position: relative; z-index: 3; }
-.quick div {
+.quick a {
   padding: 22px;
   display: grid;
   grid-template-columns: auto 1fr;
@@ -992,7 +992,7 @@ footer p {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .quick div {
+  .quick a {
     min-height: 130px;
     align-content: center;
     text-align: center;

@@ -3,29 +3,29 @@ import { Telescope, Camera, Rocket, PawPrint } from 'lucide-react';
 export default function QuickLinks() {
   return (
     <section className="quick">
-      <div>
-        <Telescope />
-        Deep Sky
-        <span>Explore the cosmos</span>
-      </div>
+  <a href="#gallery">
+    <Telescope />
+    Deep Sky
+    <span>Gallery and mission reports</span>
+  </a>
 
-      <div>
-        <Camera />
-        Gear & Setup
-        <span>Tools of the trade</span>
-      </div>
+  <a href="#gear">
+    <Camera />
+    Gear & Setup
+    <span>Tools of the trade</span>
+  </a>
 
-      <div>
-        <Rocket />
-        Observing Logs
-        <span>Notes & sessions</span>
-      </div>
+  <a href="#observatory">
+    <Rocket />
+    Observing Conditions
+    <span>Weather and sky targets</span>
+  </a>
 
-      <div>
-        <PawPrint />
-        The Crew
-        <span>Meet the team</span>
-      </div>
-    </section>
+  <a href="#crew">
+    <PawPrint />
+    The Crew
+    <span>Meet the team</span>
+  </a>
+</section>
   );
 }
