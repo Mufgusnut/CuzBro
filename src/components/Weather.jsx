@@ -46,28 +46,13 @@ function formatTime(date) {
 function getPlanetStatus(body, observer) {
   const now = new Date();
 
-  const rise = SearchRiseSet(body, observer, +1, now, 1);
-  const set = SearchRiseSet(body, observer, -1, now, 1);
+  const rise = SearchRiseSet(body, observer, +1, now, 2);
 
-  if (rise?.date && set?.date) {
-    if (rise.date > now && set.date > rise.date) {
-      return `Rises ${formatTime(rise.date)} · Sets ${formatTime(set.date)}`;
-    }
-
-    if (set.date > now) {
-      return `Visible now · Sets ${formatTime(set.date)}`;
-    }
+  if (rise?.date) {
+    return `▲ ${formatTime(rise.date)}`;
   }
 
-  if (rise?.date && rise.date > now) {
-    return `Rises ${formatTime(rise.date)}`;
-  }
-
-  if (set?.date && set.date > now) {
-    return `Visible now · Sets ${formatTime(set.date)}`;
-  }
-
-  return 'Below horizon';
+  return "Not tonight";
 }
 
 function getSkyTargets(loc) {
