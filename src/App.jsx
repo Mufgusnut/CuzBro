@@ -1,3 +1,4 @@
+import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
 import React, { useEffect, useRef, useState } from 'react';
@@ -111,11 +112,13 @@ export default function App() {
 
   return (
     <>
-      <Hero
-        imageCount={gallery.length}
-        scrolled={scrolled}
-      />
+    <SpaceBackground />
 
+    <Hero
+      imageCount={gallery.length}
+      scrolled={scrolled}
+    />
+      
       <main>
         <QuickLinks />
 

@@ -1306,3 +1306,145 @@ footer p {
     grid-template-columns: 1fr;
   }
 }
+/* Dynamic space background */
+.spaceBackground {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(74,140,255,.12), transparent 28%),
+    radial-gradient(circle at 82% 16%, rgba(255,157,28,.08), transparent 26%),
+    radial-gradient(circle at 55% 75%, rgba(124,77,255,.10), transparent 34%);
+}
+
+.starLayer {
+  position: absolute;
+  inset: -20%;
+  background-repeat: repeat;
+  opacity: .45;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.starLayerOne {
+  background-image:
+    radial-gradient(white 1px, transparent 1.4px),
+    radial-gradient(rgba(114,217,255,.8) 1px, transparent 1.4px);
+  background-size: 90px 90px, 160px 160px;
+  animation-name: starDriftOne;
+  animation-duration: 95s;
+}
+
+.starLayerTwo {
+  background-image:
+    radial-gradient(rgba(255,255,255,.75) 1px, transparent 1.3px),
+    radial-gradient(rgba(255,157,28,.6) 1px, transparent 1.3px);
+  background-size: 130px 130px, 210px 210px;
+  opacity: .28;
+  animation-name: starDriftTwo;
+  animation-duration: 140s;
+}
+
+.starLayerThree {
+  background-image:
+    radial-gradient(rgba(255,255,255,.45) 1px, transparent 1.2px);
+  background-size: 55px 55px;
+  opacity: .18;
+  animation-name: starDriftThree;
+  animation-duration: 70s;
+}
+
+.meteor {
+  position: absolute;
+  width: 190px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, white, var(--orange));
+  filter: drop-shadow(0 0 10px rgba(255,157,28,.8));
+  opacity: 0;
+  transform: rotate(-24deg);
+  animation-name: meteorFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.meteorOne {
+  top: 18%;
+  left: -25%;
+  animation-duration: 9s;
+  animation-delay: 1s;
+}
+
+.meteorTwo {
+  top: 42%;
+  left: -35%;
+  width: 150px;
+  animation-duration: 14s;
+  animation-delay: 6s;
+}
+
+.meteorThree {
+  top: 68%;
+  left: -30%;
+  width: 230px;
+  animation-duration: 18s;
+  animation-delay: 11s;
+}
+
+.meteorFour {
+  top: 28%;
+  left: -45%;
+  width: 120px;
+  animation-duration: 23s;
+  animation-delay: 17s;
+}
+
+@keyframes starDriftOne {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(160px, 90px, 0); }
+}
+
+@keyframes starDriftTwo {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-210px, 130px, 0); }
+}
+
+@keyframes starDriftThree {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(55px, -55px, 0); }
+}
+
+@keyframes meteorFall {
+  0%, 72% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(-24deg);
+  }
+
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(150vw, 55vh, 0) rotate(-24deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starLayer,
+  .meteor {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .spaceBackground {
+    opacity: .75;
+  }
+
+  .meteor {
+    width: 120px;
+  }
+}
