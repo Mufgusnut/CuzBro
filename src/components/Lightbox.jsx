@@ -1,4 +1,3 @@
-import { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 
 export default function Lightbox({
@@ -12,9 +11,6 @@ export default function Lightbox({
   showPreviousPhoto,
   showNextPhoto
 }) {
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const dragStart = useRef(null);
-
   if (!selectedPhoto) return null;
 
   const isCinema = viewerMode === "cinema" || viewerMode === "inspect";
@@ -23,33 +19,11 @@ export default function Lightbox({
   const handleImageClick = () => {
     if (viewerMode === "report") {
       setViewerMode("cinema");
-      setPan({ x: 0, y: 0 });
     } else if (viewerMode === "cinema") {
       setViewerMode("inspect");
-      setPan({ x: 0, y: 0 });
+    } else {
+      setViewerMode("cinema");
     }
-  };
-
-  const startDrag = (e) => {
-    if (!isInspect) return;
-    const point = e.touches ? e.touches[0] : e;
-    dragStart.current = {
-      x: point.clientX - pan.x,
-      y: point.clientY - pan.y
-    };
-  };
-
-  const drag = (e) => {
-    if (!isInspect || !dragStart.current) return;
-    const point = e.touches ? e.touches[0] : e;
-    setPan({
-      x: point.clientX - dragStart.current.x,
-      y: point.clientY - dragStart.current.y
-    });
-  };
-
-  const endDrag = () => {
-    dragStart.current = null;
   };
 
   return (
@@ -59,7 +33,9 @@ export default function Lightbox({
           <div className="missionBrand">
             <span className="crosshair">⊕</span>
             <strong>MISSION REPORT</strong>
-            <span>{String(selectedIndex + 1).padStart(2, '0')} / {String(gallery.length).padStart(2, '0')}</span>
+            <span>
+              {String(selectedIndex + 1).padStart(2, '0')} / {String(gallery.length).padStart(2, '0')}
+            </span>
           </div>
 
           <button className="lightboxClose" onClick={closeLightbox}>
@@ -81,41 +57,30 @@ export default function Lightbox({
               <Search size={16} />
               {viewerMode === "report" && "Enter Cinema Mode"}
               {viewerMode === "cinema" && "Zoom In"}
-              {viewerMode === "inspect" && "Drag to Pan"}
+              {viewerMode === "inspect" && "Return to Cinema View"}
             </button>
 
             {viewerMode !== "report" && (
               <button
                 className="mobileZoomExit"
-                onClick={() => {
-                  setViewerMode("report");
-                  setPan({ x: 0, y: 0 });
-                }}
+                onClick={() => setViewerMode("report")}
               >
                 Exit Zoom
               </button>
             )}
 
-            <img
-              className={isInspect ? "inspectZoom" : ""}
-              src={import.meta.env.BASE_URL + selectedPhoto.image}
-              alt={selectedPhoto.title}
-              onClick={handleImageClick}
-              onMouseDown={startDrag}
-              onMouseMove={drag}
-              onMouseUp={endDrag}
-              onMouseLeave={endDrag}
-              onTouchStart={startDrag}
-              onTouchMove={drag}
-              onTouchEnd={endDrag}
-              style={
-                isInspect
-                  ? { transform: `translate(${pan.x}px, ${pan.y}px) scale(1.35)` }
-                  : undefined
-              }
-            />
+            <div className={isInspect ? "inspectScroller" : "imageFrame"}>
+              <img
+                className={isInspect ? "inspectZoom" : ""}
+                src={import.meta.env.BASE_URL + selectedPhoto.image}
+                alt={selectedPhoto.title}
+                onClick={handleImageClick}
+              />
+            </div>
 
-            <p className="imageCaption">{selectedPhoto.title} — {selectedPhoto.subtitle}</p>
+            <p className="imageCaption">
+              {selectedPhoto.title} — {selectedPhoto.subtitle}
+            </p>
           </section>
 
           <aside className={isCinema ? "missionPanel hiddenPanel" : "missionPanel"}>
@@ -156,7 +121,6 @@ export default function Lightbox({
                 className={index === selectedIndex ? 'filmCard active' : 'filmCard'}
                 onClick={() => {
                   setViewerMode("report");
-                  setPan({ x: 0, y: 0 });
                   setSelectedIndex(index);
                 }}
               >
@@ -173,10 +137,10 @@ export default function Lightbox({
         </div>
 
         <div className={isCinema ? "missionFooter hiddenFilmstrip" : "missionFooter"}>
-          <span>Click image to zoom</span>
+          <span>Click image for cinema view</span>
+          <span>Click again to inspect</span>
           <span>ESC to close</span>
           <span>← → to navigate</span>
-          <span>Captured from Eliot, ME</span>
         </div>
       </div>
     </div>
