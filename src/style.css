@@ -1100,3 +1100,37 @@ footer p {
     max-height: 260px !important;
   }
 }
+.skyTargets {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.skyTargets strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--orange);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.skyTargets span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #cbd3e2;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.skyTargets b {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.skyTargets em {
+  font-style: normal;
+  color: #cbd3e2;
+  text-align: right;
+}

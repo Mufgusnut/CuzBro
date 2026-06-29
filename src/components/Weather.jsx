@@ -1,14 +1,17 @@
 import { Moon, Star } from 'lucide-react';
+import {
+  Body,
+  Observer,
+  SearchRiseSet,
+  Illumination
+} from 'astronomy-engine';
 
 function scoreWeather(w) {
   if (!w) {
     return {
       rating: 'Loading',
       badge: '--',
-      stars: 0,
-      deepSky: 'Checking',
-      moon: 'Checking',
-      planets: 'Checking'
+      stars: 0
     };
   }
 
@@ -16,32 +19,78 @@ function scoreWeather(w) {
   const wind = w.wind_speed_10m ?? 0;
   const humidity = w.relative_humidity_2m ?? 0;
 
-  let stars = 1;
-  let rating = 'Poor';
-  let badge = 'Cloudy';
-
   if (clouds < 20 && wind < 12 && humidity < 85) {
-    stars = 5;
-    rating = 'Excellent';
-    badge = 'Best tonight';
-  } else if (clouds < 45 && wind < 16) {
-    stars = 4;
-    rating = 'Good';
-    badge = 'Good';
-  } else if (clouds < 70) {
-    stars = 3;
-    rating = 'Fair';
-    badge = 'Fair';
+    return { rating: 'Excellent', badge: 'Best tonight', stars: 5 };
   }
 
-  return {
-    rating,
-    badge,
-    stars,
-    deepSky: clouds < 35 ? 'Good' : 'Limited',
-    moon: clouds < 60 ? 'Good' : 'Poor',
-    planets: wind < 16 ? 'Good' : 'Shaky'
-  };
+  if (clouds < 45 && wind < 16) {
+    return { rating: 'Good', badge: 'Good', stars: 4 };
+  }
+
+  if (clouds < 70) {
+    return { rating: 'Fair', badge: 'Fair', stars: 3 };
+  }
+
+  return { rating: 'Poor', badge: 'Cloudy', stars: 1 };
+}
+
+function formatTime(date) {
+  if (!date) return '—';
+
+  return date.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
+function getPlanetStatus(body, observer) {
+  const now = new Date();
+  const rise = SearchRiseSet(body, observer, +1, now, 1);
+  const set = SearchRiseSet(body, observer, -1, now, 1);
+
+  if (rise && rise.date > now) {
+    return `Rises ${formatTime(rise.date)}`;
+  }
+
+  if (set && set.date > now) {
+    return `Visible until ${formatTime(set.date)}`;
+  }
+
+  return 'Below horizon';
+}
+
+function getSkyTargets(loc) {
+  const observer = new Observer(loc.lat, loc.lon, 0);
+  const moonIllumination = Illumination(Body.Moon, new Date());
+  const moonPercent = Math.round(moonIllumination.phase_fraction * 100);
+
+  return [
+    {
+      symbol: '☽',
+      name: 'Moon',
+      status: `${moonPercent}% lit`
+    },
+    {
+      symbol: '♄',
+      name: 'Saturn',
+      status: getPlanetStatus(Body.Saturn, observer)
+    },
+    {
+      symbol: '♃',
+      name: 'Jupiter',
+      status: getPlanetStatus(Body.Jupiter, observer)
+    },
+    {
+      symbol: '♂',
+      name: 'Mars',
+      status: getPlanetStatus(Body.Mars, observer)
+    },
+    {
+      symbol: '♀',
+      name: 'Venus',
+      status: getPlanetStatus(Body.Venus, observer)
+    }
+  ];
 }
 
 function StarRating({ count }) {
@@ -63,13 +112,14 @@ export default function Weather({ locations, weather }) {
     <>
       <section id="observatory" className="sectionHeader">
         <h2>☼ Observing Conditions</h2>
-        <span>Live conditions for key CuzBro locations</span>
+        <span>Live conditions and sky targets</span>
       </section>
 
       <div className="weatherGrid">
         {locations.map((loc) => {
           const w = weather[loc.name];
           const score = scoreWeather(w);
+          const targets = getSkyTargets(loc);
 
           return (
             <article className="weather" key={loc.name}>
@@ -91,10 +141,15 @@ export default function Weather({ locations, weather }) {
               <p>Humidity <em>{w ? Math.round(w.relative_humidity_2m) : '--'}%</em></p>
               <p>Wind <em>{w ? Math.round(w.wind_speed_10m) : '--'} mph</em></p>
 
-              <div className="chips">
-                <span>Deep Sky: {score.deepSky}</span>
-                <span>Moon: {score.moon}</span>
-                <span>Planets: {score.planets}</span>
+              <div className="skyTargets">
+                <strong>Visible Tonight</strong>
+
+                {targets.map((target) => (
+                  <span key={target.name}>
+                    <b>{target.symbol} {target.name}</b>
+                    <em>{target.status}</em>
+                  </span>
+                ))}
               </div>
             </article>
           );
