@@ -1016,3 +1016,28 @@ footer p {
     font-size: 13px;
   }
 }
+/* Fix report preview sizing only */
+.missionImagePanel:not(.cinemaMode) {
+  grid-template-rows: 420px auto;
+}
+
+.missionImagePanel:not(.cinemaMode) .imageFrame {
+  height: 420px;
+}
+
+.missionImagePanel:not(.cinemaMode) .imageFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain !important;
+  object-position: center center !important;
+}
+
+@media (max-width: 900px) {
+  .missionImagePanel:not(.cinemaMode) {
+    grid-template-rows: 280px auto;
+  }
+
+  .missionImagePanel:not(.cinemaMode) .imageFrame {
+    height: 280px;
+  }
+}
