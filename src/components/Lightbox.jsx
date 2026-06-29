@@ -69,14 +69,14 @@ export default function Lightbox({
               </button>
             )}
 
-            <div className={isInspect ? "inspectScroller" : "imageFrame"}>
-              <img
-                className={isInspect ? "inspectZoom" : ""}
-                src={import.meta.env.BASE_URL + selectedPhoto.image}
-                alt={selectedPhoto.title}
-                onClick={handleImageClick}
-              />
-            </div>
+            <div className="imageFrame">
+  <img
+    className={isInspect ? "inspectZoom" : ""}
+    src={import.meta.env.BASE_URL + selectedPhoto.image}
+    alt={selectedPhoto.title}
+    onClick={handleImageClick}
+  />
+</div>
 
             <p className="imageCaption">
               {selectedPhoto.title} — {selectedPhoto.subtitle}
