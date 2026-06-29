@@ -1312,3 +1312,61 @@ footer p {
   z-index: -2;
   pointer-events: none;
 }
+.heroDashboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 34px;
+  max-width: 720px;
+}
+
+.heroDashCard {
+  text-align: left;
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(114,217,255,.20);
+  background: linear-gradient(180deg, rgba(7,16,34,.78), rgba(3,10,22,.88));
+  color: white;
+  box-shadow: 0 12px 34px rgba(0,0,0,.35);
+  cursor: pointer;
+}
+
+.heroDashCard svg {
+  color: var(--orange);
+  margin-bottom: 12px;
+}
+
+.heroDashCard small {
+  color: var(--cyan);
+  letter-spacing: .14em;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.heroDashCard h3 {
+  margin: 9px 0 6px;
+  font-size: 22px;
+}
+
+.heroDashCard p {
+  margin: 0 0 14px;
+  color: #cbd3e2;
+  line-height: 1.45;
+}
+
+.heroDashCard span {
+  color: var(--orange);
+  font-weight: 800;
+}
+
+.heroDashCard:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255,157,28,.48);
+}
+
+@media (max-width: 700px) {
+  .heroDashboard {
+    grid-template-columns: 1fr;
+    max-width: 330px;
+  }
+}

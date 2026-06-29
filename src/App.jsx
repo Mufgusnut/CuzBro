@@ -115,9 +115,11 @@ export default function App() {
     <SpaceBackground />
 
     <Hero
-      imageCount={gallery.length}
-      scrolled={scrolled}
-    />
+  imageCount={gallery.length}
+  scrolled={scrolled}
+  featuredPhoto={gallery[0]}
+  setSelectedIndex={setSelectedIndex}
+/>
       
       <main>
         <QuickLinks />

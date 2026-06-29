@@ -1,3 +1,4 @@
+import HeroDashboard from './HeroDashboard.jsx';
 import { useEffect, useState } from 'react';
 import { Camera, Star } from 'lucide-react';
 
@@ -28,7 +29,7 @@ function CountUp({ end }) {
   return <>{value}</>;
 }
 
-export default function Hero({ imageCount, scrolled }) {
+export default function Hero({ imageCount, scrolled, featuredPhoto, setSelectedIndex }) {
   return (
     <>
       <header className={scrolled ? "nav navSmall" : "nav"}>
@@ -63,17 +64,10 @@ export default function Hero({ imageCount, scrolled }) {
             Fueled by curiosity, questionable sleep schedules, and stubborn optimism.
           </p>
 
-          <div className="buttons">
-            <a href="#gallery" className="primary">
-              <Star size={18} />
-              Explore the Sky
-            </a>
-
-            <a href="#gallery" className="secondary">
-              <Camera size={18} />
-              Photography
-            </a>
-          </div>
+<HeroDashboard
+  featuredPhoto={featuredPhoto}
+  setSelectedIndex={setSelectedIndex}
+/>
         </div>
 
         <div className="heroCard">
