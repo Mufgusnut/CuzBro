@@ -560,8 +560,9 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   }
 
   .heroText {
-    max-width: none !important;
-  }
+    max-width: 100% !important;
+    padding-right: 0;
+}
 
   .eyebrow {
     font-size: 14px;
@@ -570,11 +571,17 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
   }
 
   .hero h1 {
-    font-size: clamp(46px, 15vw, 72px) !important;
-    line-height: .96;
-    letter-spacing: .09em !important;
-  }
-
+  font-size: clamp(38px, 12vw, 64px) !important;
+  line-height: .92;
+  letter-spacing: .05em !important;
+  max-width: 100%;
+}
+.hero h1 span {
+  display: block;
+  font-size: .93em;
+  letter-spacing: .03em;
+  word-break: break-word;
+}
   .tagline {
     max-width: 330px;
     font-size: 20px;
@@ -634,4 +641,14 @@ footer p { letter-spacing: .28em; color: #c5cee3; }
     grid-column: 1;
     justify-self: center;
   }
+  .hero::after {
+    background:
+        linear-gradient(to top,
+            rgba(2,7,16,.98),
+            rgba(2,7,16,.15)),
+        url("/CuzBro/assets/observatory.png");
+    background-repeat: no-repeat;
+    background-size: 52%;
+    background-position: right bottom;
+}
 }
