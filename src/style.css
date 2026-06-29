@@ -1089,3 +1089,14 @@ footer p {
     height: 320px;
   }
 }
+@media (max-width: 700px) {
+  .reportImageFrame {
+    height: 300px;
+    align-items: flex-start;
+    padding-top: 18px;
+  }
+
+  .reportImage {
+    max-height: 260px !important;
+  }
+}
