@@ -60,7 +60,7 @@ function getPlanetStatus(body, observer) {
 
   return `↑ ${riseText}  ↓ ${setText}`;
 }
-
+ 
 function getSkyTargets(loc) {
   const observer = new Observer(loc.lat, loc.lon, 0);
   const moonIllumination = Illumination(Body.Moon, new Date());
