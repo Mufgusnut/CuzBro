@@ -74,18 +74,18 @@ section[id] { scroll-margin-top: 50px; }
   content: "";
   position: absolute;
   inset: 0;
-  background:
-  linear-gradient(to bottom, rgba(2,7,16,.05), rgba(2,7,16,.22), #020710);
+  background: linear-gradient(to bottom, rgba(2,7,16,.04), rgba(2,7,16,.18), rgba(2,7,16,.34));
   opacity: .85;
-  animation: skyDrift 40s ease-in-out infinite alternate;
+  pointer-events: none;
 }
 
 .hero:after {
   content: "";
   position: absolute;
   inset: auto 0 0;
-  height: 260px;
-  background: linear-gradient(transparent, #020710);
+  height: 180px;
+  background: linear-gradient(transparent, rgba(2,7,16,.55));
+  pointer-events: none;
 }
 
 .stars {
@@ -281,7 +281,7 @@ section[id] { scroll-margin-top: 50px; }
 }
 
 /* Layout */
-main { padding: 0 4vw 70px; }
+main { padding: 0 4vw 70px; background: transparent; }
 .sectionHeader { display: flex; align-items: center; justify-content: space-between; margin: 48px 0 20px; }
 .sectionHeader h2 { letter-spacing: .14em; color: #75a7ff; text-transform: uppercase; font-size: 18px; }
 .sectionHeader a, .sectionHeader span { color: #9fb3da; }
@@ -689,7 +689,7 @@ footer {
   border-top: 1px solid var(--line);
   padding: 32px 6vw 46px;
   text-align: center;
-  background: #020710;
+  background: transparent;
 }
 
 footer img {
@@ -703,21 +703,6 @@ footer p {
 }
 
 /* Animation */
-@keyframes skyDrift {
-  from { transform: scale(1); }
-  to { transform: scale(1.06) translateY(-12px); }
-}
-
-@keyframes twinkle {
-  from { opacity: .22; }
-  to { opacity: .48; }
-}
-
-@keyframes meteor {
-  0%, 70% { transform: translateX(0) translateY(0) rotate(-23deg); opacity: 0; }
-  74% { opacity: 1; }
-  100% { transform: translateX(140vw) translateY(60vh) rotate(-23deg); opacity: 0; }
-}
 
 /* Responsive */
 @media(max-width: 1000px) {
@@ -1492,4 +1477,33 @@ transform:none;
   color: #eef4ff;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Final mobile background/canvas fix */
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+}
+
+.spaceCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  pointer-events: none;
+}
+
+main, footer {
+  background: transparent;
+}
+
+@media (max-width: 700px) {
+  .hero:after {
+    height: 130px;
+    background: linear-gradient(transparent, rgba(2,7,16,.42));
+  }
 }
