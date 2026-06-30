@@ -49,7 +49,7 @@ export default function HeroDashboard({
       {/* Observatory Card */}
       <a
         href="#observatory"
-        className={`heroDashCard condition-${score.rating.toLowerCase()}`}
+        className="heroDashCard"
       >
         <Telescope size={26} />
 
