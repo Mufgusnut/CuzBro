@@ -45,7 +45,7 @@ export default function HeroDashboard({
   return (
     <div className="heroDashboard">
 
-      <a href="#observatory" className="heroDashCard">
+      <a href="#observatory" className={`heroDashCard condition-${score.rating.toLowerCase().replace("...", "")}`}>
 
         <Telescope size={26} />
 

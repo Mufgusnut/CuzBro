@@ -1414,3 +1414,22 @@ transform:none;
     color:var(--orange);
     margin:10px 0;
 }
+.condition-excellent {
+  border-color: rgba(143,240,177,.45);
+  box-shadow: 0 0 28px rgba(143,240,177,.16);
+}
+
+.condition-good {
+  border-color: rgba(114,217,255,.45);
+  box-shadow: 0 0 28px rgba(114,217,255,.16);
+}
+
+.condition-fair {
+  border-color: rgba(255,157,28,.45);
+  box-shadow: 0 0 28px rgba(255,157,28,.16);
+}
+
+.condition-poor {
+  border-color: rgba(255,95,95,.45);
+  box-shadow: 0 0 28px rgba(255,95,95,.14);
+}
