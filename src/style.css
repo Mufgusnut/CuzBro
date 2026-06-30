@@ -1447,3 +1447,47 @@ transform:none;
     font-size:1rem;
     font-weight:700;
 }
+/* Visible Tonight polish */
+.skyTargets {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(114,217,255,.16);
+  border-radius: 14px;
+  background: rgba(2,7,16,.35);
+}
+
+.skyTargets strong {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--orange);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.skyTargets span {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 7px 0;
+  border-top: 1px solid rgba(255,255,255,.07);
+  color: #cbd3e2;
+  font-size: 13px;
+}
+
+.skyTargets span:first-of-type {
+  border-top: none;
+}
+
+.skyTargets b {
+  color: var(--cyan);
+  font-weight: 800;
+}
+
+.skyTargets em {
+  font-style: normal;
+  color: #eef4ff;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
