@@ -20,7 +20,10 @@ export default function SpaceBackground() {
 
     function resize() {
       width = window.innerWidth;
-      height = window.innerHeight;
+      height = Math.max(
+        window.innerHeight,
+        document.documentElement.scrollHeight
+      )
       ratio = window.devicePixelRatio || 1;
 
       canvas.width = width * ratio;
