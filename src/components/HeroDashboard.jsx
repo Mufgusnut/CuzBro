@@ -10,6 +10,32 @@ function scoreWeather(weather) {
     };
   }
 
+  const clouds = Math.round(weather.cloud_cover ?? 0);
+  const wind = Math.round(weather.wind_speed_10m ?? 0);
+  const humidity = Math.round(weather.relative_humidity_2m ?? 0);
+
+  let stars = 1;
+  let rating = "Poor";
+
+  if (clouds < 20 && wind < 12 && humidity < 85) {
+    stars = 5;
+    rating = "Excellent";
+  } else if (clouds < 45 && wind < 16) {
+    stars = 4;
+    rating = "Good";
+  } else if (clouds < 70) {
+    stars = 3;
+    rating = "Fair";
+  }
+
+  return {
+    rating,
+    stars,
+    clouds,
+    wind
+  };
+}
+
   const clouds = Math.round(weather.cloud_cover);
   const wind = Math.round(weather.wind_speed_10m);
 
@@ -32,8 +58,6 @@ function scoreWeather(weather) {
     clouds,
     wind
   };
-}
-
 export default function HeroDashboard({
   featuredPhoto,
   setSelectedIndex,
