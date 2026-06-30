@@ -1433,3 +1433,23 @@ transform:none;
   border-color: rgba(255,95,95,.45);
   box-shadow: 0 0 28px rgba(255,95,95,.14);
 }
+.heroLocation{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px solid rgba(255,255,255,.08);
+}
+
+.heroLocation small{
+    display:block;
+    color:var(--cyan);
+    font-size:.72rem;
+    letter-spacing:.16em;
+    margin-bottom:6px;
+}
+
+.heroLocation strong{
+    display:block;
+    color:#fff;
+    font-size:1rem;
+    font-weight:700;
+}

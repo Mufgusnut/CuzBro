@@ -69,7 +69,10 @@ export default function HeroDashboard({
           🌬 {score.wind} mph Wind
         </p>
 
-        <span>Open Observatory →</span>
+        <div className="heroLocation">
+  <small>CURRENT SITE</small>
+  <strong>📍 Eliot, ME</strong>
+</div>
 
       </a>
 
