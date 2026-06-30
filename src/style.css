@@ -1506,3 +1506,58 @@ main, footer {
     background: linear-gradient(transparent, rgba(2,7,16,.42));
   }
 }
+.quickCard{
+    transition:
+        transform .22s ease,
+        border-color .22s ease,
+        background .22s ease,
+        color .22s ease;
+}
+.quickCard:hover{
+    transform: translateY(-4px);
+    border-color: var(--orange);
+    background: linear-gradient(
+        180deg,
+        rgba(16,25,48,.98),
+        rgba(7,14,28,.98)
+    );
+    cursor:pointer;
+}
+.quickCard svg{
+    transition:color .22s ease,
+               transform .22s ease;
+}
+.quickCard:hover svg{
+    color:var(--orange);
+    transform:scale(1.08);
+}
+.quickCard h3{
+    transition:color .22s ease;
+}
+
+.quickCard:hover h3{
+    color:white;
+}
+.quickCard{
+    position:relative;
+    overflow:hidden;
+}
+
+.quickCard::after{
+    content:"";
+    position:absolute;
+    left:28px;
+    right:28px;
+    bottom:0;
+    height:2px;
+    background:var(--orange);
+
+    transform:scaleX(0);
+    transform-origin:left;
+
+    transition:transform .25s ease;
+}
+
+.quickCard:hover::after{
+    transform:scaleX(1);
+}
