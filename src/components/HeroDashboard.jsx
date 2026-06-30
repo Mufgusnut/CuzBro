@@ -36,41 +36,21 @@ function scoreWeather(weather) {
   };
 }
 
-  const clouds = Math.round(weather.cloud_cover);
-  const wind = Math.round(weather.wind_speed_10m);
-
-  let stars = 2;
-  let rating = "Fair";
-
-  if (clouds < 20 && wind < 12) {
-    stars = 5;
-    rating = "Excellent";
-  } else if (clouds < 40) {
-    stars = 4;
-    rating = "Good";
-  } else if (clouds < 70) {
-    stars = 3;
-  }
-
-  return {
-    rating,
-    stars,
-    clouds,
-    wind
-  };
 export default function HeroDashboard({
   featuredPhoto,
   setSelectedIndex,
   weather
 }) {
-
   const score = scoreWeather(weather);
 
   return (
     <div className="heroDashboard">
 
-      <a href="#observatory" className={`heroDashCard condition-${score.rating.toLowerCase().replace("...", "")}`}>
-
+      {/* Observatory Card */}
+      <a
+        href="#observatory"
+        className={`heroDashCard condition-${score.rating.toLowerCase()}`}
+      >
         <Telescope size={26} />
 
         <small>OBSERVATORY</small>
@@ -94,17 +74,17 @@ export default function HeroDashboard({
         </p>
 
         <div className="heroLocation">
-  <small>CURRENT SITE</small>
-  <strong>📍 Eliot, ME</strong>
-</div>
-
+          <small>CURRENT SITE</small>
+          <strong>📍 Eliot, ME</strong>
+        </div>
       </a>
 
+      {/* Featured Mission Card */}
       <button
         className="heroDashCard"
         onClick={() => setSelectedIndex(0)}
+        type="button"
       >
-
         <Camera size={26} />
 
         <small>LATEST MISSION</small>
@@ -114,10 +94,8 @@ export default function HeroDashboard({
         <p>{featuredPhoto?.subtitle}</p>
 
         <span>Open Mission Report →</span>
-
       </button>
 
     </div>
   );
-
 }
