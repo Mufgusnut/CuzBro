@@ -119,6 +119,7 @@ export default function App() {
   scrolled={scrolled}
   featuredPhoto={gallery[0]}
   setSelectedIndex={setSelectedIndex}
+  weather={weather["Eliot, ME"]}
 />
       
       <main>
@@ -131,7 +132,6 @@ export default function App() {
           scroller={scroller}
           scroll={scroll}
           setSelectedIndex={setSelectedIndex}
-          weather={weather["Eliot, ME"]}
         />
 
         <Weather locations={locations} weather={weather} />
