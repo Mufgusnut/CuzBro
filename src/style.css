@@ -1408,3 +1408,9 @@ transform:none;
 }
 
 }
+.heroStars{
+    display:flex;
+    gap:3px;
+    color:var(--orange);
+    margin:10px 0;
+}

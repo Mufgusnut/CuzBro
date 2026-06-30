@@ -28,7 +28,13 @@ function CountUp({ end }) {
   return <>{value}</>;
 }
 
-export default function Hero({ imageCount, scrolled, featuredPhoto, setSelectedIndex }) {
+export default function Hero({
+  imageCount,
+  scrolled,
+  featuredPhoto,
+  setSelectedIndex,
+  weather
+}) {
   return (
     <>
       <header className={scrolled ? 'nav navSmall' : 'nav'}>
@@ -65,9 +71,10 @@ export default function Hero({ imageCount, scrolled, featuredPhoto, setSelectedI
           </p>
 
           <HeroDashboard
-            featuredPhoto={featuredPhoto}
-            setSelectedIndex={setSelectedIndex}
-          />
+  featuredPhoto={featuredPhoto}
+  setSelectedIndex={setSelectedIndex}
+  weather={weather}
+/>
         </div>
 
         <div className="heroCard">
