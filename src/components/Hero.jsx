@@ -52,17 +52,21 @@ export default function Hero({ imageCount, scrolled, featuredPhoto, setSelectedI
         <div className="stars"></div>
 
         <div className="heroText">
-          <p className="eyebrow">WELCOME TO</p>
+          <p className="eyebrow">
+  MISSION CONTROL
+</p>
 
-          <h1>
-            CuzBro
-            <br />
-            <span>Observatory</span>
-          </h1>
+<h1>
+  CUZBRO
+  <br />
+  <span>OBSERVATORY</span>
+</h1>
 
-          <p className="tagline">
-            Fueled by curiosity, questionable sleep schedules, and stubborn optimism.
-          </p>
+<p className="tagline">
+  Exploring the night sky through astrophotography,
+  technology, and a relentless curiosity for what's
+  waiting above us.
+</p>
 
 <HeroDashboard
   featuredPhoto={featuredPhoto}
@@ -103,8 +107,9 @@ export default function Hero({ imageCount, scrolled, featuredPhoto, setSelectedI
             <h3>Explore the Cosmos</h3>
 
             <p>
-              Building a shared observatory for photography,
-              astronomy, technology, and curiosity.
+              Document the night sky through astrophotography,
+build better observing tools, and inspire curiosity
+one clear night at a time.
             </p>
           </div>
         </div>

@@ -118,6 +118,7 @@ section[id] { scroll-margin-top: 50px; }
 .heroCard {
   position: relative;
   z-index: 2;
+  max-width: 720px;
 }
 
 .heroText {
@@ -155,7 +156,7 @@ section[id] { scroll-margin-top: 50px; }
   max-width: 620px;
   color: #dce5f8;
   font-size: 21px;
-  line-height: 1.6;
+  line-height: 1.8;
   text-shadow: 0 0 18px #000;
 }
 
@@ -1316,7 +1317,7 @@ footer p {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 34px;
+  margin-top: 42px;
   max-width: 720px;
 }
 
@@ -1369,4 +1370,41 @@ footer p {
     grid-template-columns: 1fr;
     max-width: 330px;
   }
+}
+.heroText > * {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: heroFade .8s forwards;
+}
+
+.heroText > *:nth-child(1){
+    animation-delay:.1s;
+}
+
+.heroText > *:nth-child(2){
+    animation-delay:.25s;
+}
+
+.heroText > *:nth-child(3){
+    animation-delay:.45s;
+}
+
+.heroDashboard{
+    opacity:0;
+    animation:heroFade .8s forwards;
+    animation-delay:.7s;
+}
+
+@keyframes heroFade{
+
+from{
+opacity:0;
+transform:translateY(18px);
+}
+
+to{
+opacity:1;
+transform:none;
+}
+
 }
