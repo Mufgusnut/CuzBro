@@ -2278,3 +2278,25 @@ footer p {
 .legendSilver {
   background: #e6eeff;
 }
+.atlasFilters {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.atlasFilters button {
+  padding: 9px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(7,16,34,.62);
+  color: #cbd3e2;
+  cursor: pointer;
+}
+
+.atlasFilters button:hover,
+.atlasFilters button.active {
+  border-color: rgba(255,157,28,.8);
+  background: rgba(255,157,28,.14);
+  color: white;
+}

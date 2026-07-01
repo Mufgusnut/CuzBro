@@ -15,18 +15,36 @@ function getConstellationKey(photo) {
   return photo.constellation;
 }
 
+function getTypeClass(objectType) {
+  return `type-${objectType?.replaceAll(' ', '-').toLowerCase()}`;
+}
+
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const mapped = gallery.filter(
     (photo) => photo.mapX !== undefined && photo.mapY !== undefined
   );
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const activePhoto = mapped[activeIndex];
+  const [atlasFilter, setAtlasFilter] = useState('All');
+
+  const atlasTypes = ['All', ...new Set(mapped.map((photo) => photo.objectType))];
+
+  const visibleMapped =
+    atlasFilter === 'All'
+      ? mapped
+      : mapped.filter((photo) => photo.objectType === atlasFilter);
+
+  const activePhoto = mapped[activeIndex] || mapped[0];
   const activeConstellation = activePhoto ? getConstellationKey(activePhoto) : null;
 
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((p) => p.title === photo.title);
     setSelectedIndex(realIndex);
+  };
+
+  const activatePhoto = (photo) => {
+    const index = mapped.findIndex((p) => p.title === photo.title);
+    setActiveIndex(index);
   };
 
   return (
@@ -36,8 +54,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         <h1>Celestial Atlas</h1>
 
         <p className="tagline">
-          An interactive atlas of every celestial object photographed by CuzBro Observatory.
-          Select a numbered marker to identify the mission.
+          An interactive atlas of every celestial object photographed by CuzBro
+          Observatory. Select a numbered marker to identify the mission.
         </p>
 
         <a className="atlasBackButton" href="/#observatory">
@@ -46,11 +64,36 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       </section>
 
       <section className="atlasLayout">
+        <div className="atlasFilters">
+          {atlasTypes.map((type) => (
+            <button
+              key={type}
+              className={atlasFilter === type ? 'active' : ''}
+              onClick={() => {
+                setAtlasFilter(type);
+                const firstVisible =
+                  type === 'All'
+                    ? mapped[0]
+                    : mapped.find((photo) => photo.objectType === type);
+
+                if (firstVisible) activatePhoto(firstVisible);
+              }}
+              type="button"
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
         <div className="atlasMap">
           <div className="atlasStars"></div>
           <div className="atlasMilkyWay"></div>
 
-          <svg className="constellationLines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <svg
+            className="constellationLines"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
             {Object.entries(constellationPaths).map(([name, points]) => (
               <polyline
                 key={name}
@@ -63,70 +106,76 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           {Object.keys(constellationPaths).map((name) => (
             <span
               key={name}
-              className={name === activeConstellation ? 'constellationLabel active' : 'constellationLabel'}
+              className={
+                name === activeConstellation
+                  ? 'constellationLabel active'
+                  : 'constellationLabel'
+              }
               style={labelPosition(name)}
             >
               {name}
             </span>
           ))}
 
-          {mapped.map((photo, index) => (
-            <button
-              key={photo.title}
-              className={[
-  'atlasMarker',
-  `type-${photo.objectType?.replaceAll(' ', '-').toLowerCase()}`,
-  index === activeIndex ? 'active' : ''
-].join(' ')}
-              style={{
-                left: `${photo.mapX}%`,
-                top: `${photo.mapY}%`
-              }}
-              onMouseEnter={() => setActiveIndex(index)}
-              onFocus={() => setActiveIndex(index)}
-              onClick={() => {
-                setActiveIndex(index);
-                openMission(photo);
-              }}
-              type="button"
-              aria-label={`Open ${photo.title} mission report`}
-            >
-              {index + 1}
-            </button>
-          ))}
+          {visibleMapped.map((photo) => {
+            const index = mapped.findIndex((p) => p.title === photo.title);
+
+            return (
+              <button
+                key={photo.title}
+                className={[
+                  'atlasMarker',
+                  getTypeClass(photo.objectType),
+                  index === activeIndex ? 'active' : ''
+                ].join(' ')}
+                style={{
+                  left: `${photo.mapX}%`,
+                  top: `${photo.mapY}%`
+                }}
+                onMouseEnter={() => activatePhoto(photo)}
+                onFocus={() => activatePhoto(photo)}
+                onClick={() => openMission(photo)}
+                type="button"
+                aria-label={`Open ${photo.title} mission report`}
+              >
+                {index + 1}
+              </button>
+            );
+          })}
 
           <div className="atlasLegend">
-  <span><i className="legendCyan"></i> Planetary Nebula</span>
-  <span><i className="legendPurple"></i> Emission Nebula</span>
-  <span><i className="legendOrange"></i> Globular Cluster</span>
-  <span><i className="legendGold"></i> Double Star</span>
-  <span><i className="legendSilver"></i> Lunar</span>
-</div>
+            <span><i className="legendCyan"></i> Planetary Nebula</span>
+            <span><i className="legendPurple"></i> Emission Nebula</span>
+            <span><i className="legendOrange"></i> Globular Cluster</span>
+            <span><i className="legendGold"></i> Double Star</span>
+            <span><i className="legendSilver"></i> Lunar</span>
+          </div>
         </div>
 
         <aside className="atlasCatalog">
           <small>Object Catalog</small>
 
-          {mapped.map((photo, index) => (
-            <button
-              key={photo.title}
-              className={index === activeIndex ? 'catalogItem active' : 'catalogItem'}
-              onMouseEnter={() => setActiveIndex(index)}
-              onFocus={() => setActiveIndex(index)}
-              onClick={() => {
-                setActiveIndex(index);
-                openMission(photo);
-              }}
-              type="button"
-            >
-              <b>{index + 1}</b>
-              <span>
-                <strong>{photo.title}</strong>
-                <em>{photo.constellation}</em>
-                <small>{photo.objectType}</small>
-              </span>
-            </button>
-          ))}
+          {visibleMapped.map((photo) => {
+            const index = mapped.findIndex((p) => p.title === photo.title);
+
+            return (
+              <button
+                key={photo.title}
+                className={index === activeIndex ? 'catalogItem active' : 'catalogItem'}
+                onMouseEnter={() => activatePhoto(photo)}
+                onFocus={() => activatePhoto(photo)}
+                onClick={() => openMission(photo)}
+                type="button"
+              >
+                <b>{index + 1}</b>
+                <span>
+                  <strong>{photo.title}</strong>
+                  <em>{photo.constellation}</em>
+                  <small>{photo.objectType}</small>
+                </span>
+              </button>
+            );
+          })}
         </aside>
       </section>
 
