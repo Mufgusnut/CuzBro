@@ -2822,3 +2822,182 @@ footer p {
   border-color: rgba(255,157,28,.7) !important;
   background: rgba(255,157,28,.14) !important;
 }
+/* =========================================================
+   SKY MAP POLISH: NAV, TIME CONTROLS, MOBILE INTERACTION
+   Paste at the VERY BOTTOM of style.css
+========================================================= */
+
+/* Keeps Mission Control / Celestial Atlas from hiding under the fixed nav */
+.skyMapPage {
+  padding-top: 132px !important;
+}
+
+.atlasPage {
+  padding-top: 28px !important;
+}
+
+.atlasHero {
+  padding-top: 18px !important;
+}
+
+/* Shrinking nav support */
+.nav {
+  transition:
+    padding .22s ease,
+    background .22s ease,
+    border-color .22s ease,
+    transform .22s ease !important;
+}
+
+.nav.navSmall {
+  padding: 10px 26px !important;
+  background: rgba(5, 10, 24, .84) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.nav.navSmall .logo {
+  height: 54px !important;
+}
+
+.nav.navSmall nav a {
+  padding: 9px 13px !important;
+  font-size: .92rem !important;
+}
+
+/* Time controls live inside the map card */
+.atlasTimeControls {
+  position: absolute !important;
+  left: 22px !important;
+  top: 22px !important;
+  right: auto !important;
+  bottom: auto !important;
+
+  z-index: 35 !important;
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  gap: 10px !important;
+  padding: 13px 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(4,10,22,.88) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.35) !important;
+
+  pointer-events: auto !important;
+}
+
+.atlasTimeControls strong {
+  display: block !important;
+  color: #dce6fa !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+.atlasTimeControls div {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+}
+
+.atlasTimeControls button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-width: 48px !important;
+  height: 34px !important;
+  padding: 0 9px !important;
+
+  border-radius: 11px !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background: rgba(10,18,36,.92) !important;
+  color: white !important;
+
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+}
+
+.atlasTimeControls button:hover {
+  border-color: rgba(255,157,28,.7) !important;
+  background: rgba(255,157,28,.14) !important;
+}
+
+/* Rotation behavior */
+.skyPanLayer {
+  transform-origin: center center !important;
+  will-change: transform !important;
+}
+
+.realSkyMap {
+  touch-action: pan-y !important;
+  cursor: grab !important;
+}
+
+.realSkyMap:active {
+  cursor: grabbing !important;
+}
+
+/* Zoom / rotate controls */
+.atlasZoomControls {
+  z-index: 40 !important;
+}
+
+.atlasZoomControls button {
+  font-size: 18px !important;
+}
+
+/* Mobile polish */
+@media (max-width: 800px) {
+  .skyMapPage {
+    padding-top: 96px !important;
+  }
+
+  .atlasHero {
+    padding-top: 10px !important;
+  }
+
+  .atlasTimeControls {
+    left: 14px !important;
+    top: 14px !important;
+    right: 14px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .realSkyMap {
+    touch-action: pan-y !important;
+  }
+
+  .atlasTimeControls div {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+
+  .atlasTimeControls button {
+    min-width: 0 !important;
+    padding: 0 4px !important;
+  }
+
+  .atlasZoomControls {
+    right: 12px !important;
+    bottom: 12px !important;
+    padding: 9px !important;
+    gap: 7px !important;
+  }
+
+  .atlasZoomControls button {
+    min-width: 42px !important;
+    height: 34px !important;
+    font-size: 15px !important;
+    border-radius: 11px !important;
+  }
+
+  .atlasZoomControls span {
+    font-size: 11px !important;
+  }
+}

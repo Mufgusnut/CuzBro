@@ -13,10 +13,8 @@ const RADIUS = 430;
 const DEFAULT_ZOOM = 0.68;
 
 const STAR_CATALOG = [
-  // Orientation / north
   { name: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 },
 
-  // Big Dipper / Ursa Major
   { name: 'Dubhe', ra: 11.0621, dec: 61.7510, mag: 1.8 },
   { name: 'Merak', ra: 11.0307, dec: 56.3824, mag: 2.4 },
   { name: 'Phecda', ra: 11.8972, dec: 53.6948, mag: 2.4 },
@@ -25,31 +23,26 @@ const STAR_CATALOG = [
   { name: 'Mizar', ra: 13.3987, dec: 54.9254, mag: 2.2 },
   { name: 'Alkaid', ra: 13.7923, dec: 49.3133, mag: 1.9 },
 
-  // Cassiopeia
   { name: 'Caph', ra: 0.1529, dec: 59.1498, mag: 2.3 },
   { name: 'Schedar', ra: 0.6751, dec: 56.5373, mag: 2.2 },
   { name: 'Gamma Cas', ra: 0.9451, dec: 60.7167, mag: 2.2 },
   { name: 'Ruchbah', ra: 1.4303, dec: 60.2353, mag: 2.7 },
   { name: 'Segin', ra: 2.2939, dec: 63.6701, mag: 3.4 },
 
-  // Summer Triangle anchors
   { name: 'Vega', ra: 18.6156, dec: 38.7837, mag: 0.0 },
   { name: 'Deneb', ra: 20.6905, dec: 45.2803, mag: 1.3 },
   { name: 'Altair', ra: 19.8464, dec: 8.8683, mag: 0.8 },
 
-  // Lyra
   { name: 'Zeta Lyr', ra: 18.7462, dec: 37.6051, mag: 4.3 },
   { name: 'Delta2 Lyr', ra: 18.9080, dec: 36.8986, mag: 4.3 },
   { name: 'Sheliak', ra: 18.8347, dec: 33.3627, mag: 3.5 },
   { name: 'Sulafat', ra: 18.9824, dec: 32.6896, mag: 3.3 },
 
-  // Cygnus
   { name: 'Sadr', ra: 20.3705, dec: 40.2567, mag: 2.2 },
   { name: 'Gienah', ra: 20.7702, dec: 33.9703, mag: 2.5 },
   { name: 'Delta Cyg', ra: 19.7496, dec: 45.1308, mag: 2.9 },
   { name: 'Albireo', ra: 19.5126, dec: 27.9597, mag: 3.1 },
 
-  // Hercules
   { name: 'Eta Her', ra: 16.7149, dec: 38.9223, mag: 3.5 },
   { name: 'Zeta Her', ra: 16.6881, dec: 31.6032, mag: 2.8 },
   { name: 'Epsilon Her', ra: 17.0048, dec: 30.9263, mag: 3.9 },
@@ -57,10 +50,8 @@ const STAR_CATALOG = [
   { name: 'Kornephoros', ra: 16.5037, dec: 21.4896, mag: 2.8 },
   { name: 'Rasalgethi', ra: 17.2441, dec: 14.3903, mag: 3.1 },
 
-  // Vulpecula / nearby
   { name: 'Anser', ra: 19.4784, dec: 24.6649, mag: 4.4 },
 
-  // Sagittarius
   { name: 'Nunki', ra: 18.9211, dec: -26.2967, mag: 2.0 },
   { name: 'Kaus Australis', ra: 18.4029, dec: -34.3846, mag: 1.8 },
   { name: 'Ascella', ra: 19.0435, dec: -29.8801, mag: 2.6 },
@@ -69,7 +60,6 @@ const STAR_CATALOG = [
 ];
 
 const CONSTELLATION_SEGMENTS = [
-  // Ursa Major / Big Dipper
   { group: 'Ursa Major', stars: ['Dubhe', 'Merak'] },
   { group: 'Ursa Major', stars: ['Merak', 'Phecda'] },
   { group: 'Ursa Major', stars: ['Phecda', 'Megrez'] },
@@ -78,13 +68,11 @@ const CONSTELLATION_SEGMENTS = [
   { group: 'Ursa Major', stars: ['Alioth', 'Mizar'] },
   { group: 'Ursa Major', stars: ['Mizar', 'Alkaid'] },
 
-  // Cassiopeia
   { group: 'Cassiopeia', stars: ['Caph', 'Schedar'] },
   { group: 'Cassiopeia', stars: ['Schedar', 'Gamma Cas'] },
   { group: 'Cassiopeia', stars: ['Gamma Cas', 'Ruchbah'] },
   { group: 'Cassiopeia', stars: ['Ruchbah', 'Segin'] },
 
-  // Hercules
   { group: 'Hercules', stars: ['Eta Her', 'Zeta Her'] },
   { group: 'Hercules', stars: ['Zeta Her', 'Epsilon Her'] },
   { group: 'Hercules', stars: ['Epsilon Her', 'Pi Her'] },
@@ -92,23 +80,19 @@ const CONSTELLATION_SEGMENTS = [
   { group: 'Hercules', stars: ['Zeta Her', 'Kornephoros'] },
   { group: 'Hercules', stars: ['Epsilon Her', 'Rasalgethi'] },
 
-  // Lyra
   { group: 'Lyra', stars: ['Vega', 'Zeta Lyr'] },
   { group: 'Lyra', stars: ['Zeta Lyr', 'Delta2 Lyr'] },
   { group: 'Lyra', stars: ['Delta2 Lyr', 'Sheliak'] },
   { group: 'Lyra', stars: ['Sheliak', 'Sulafat'] },
   { group: 'Lyra', stars: ['Sulafat', 'Zeta Lyr'] },
 
-  // Cygnus
   { group: 'Cygnus', stars: ['Deneb', 'Sadr'] },
   { group: 'Cygnus', stars: ['Sadr', 'Albireo'] },
   { group: 'Cygnus', stars: ['Sadr', 'Gienah'] },
   { group: 'Cygnus', stars: ['Sadr', 'Delta Cyg'] },
 
-  // Vulpecula
   { group: 'Vulpecula', stars: ['Albireo', 'Anser'] },
 
-  // Sagittarius
   { group: 'Sagittarius', stars: ['Kaus Australis', 'Kaus Media'] },
   { group: 'Sagittarius', stars: ['Kaus Media', 'Kaus Borealis'] },
   { group: 'Sagittarius', stars: ['Kaus Borealis', 'Nunki'] },
@@ -378,11 +362,12 @@ function markerOffset(index) {
   return offsets[index % offsets.length];
 }
 
-
 function getPointerAngle(event, element) {
   const rect = element.getBoundingClientRect();
+
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
+
   const dx = event.clientX - centerX;
   const dy = event.clientY - centerY;
 
@@ -406,7 +391,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const [date, setDate] = useState(() => new Date());
 
   const dragRef = useRef(null);
-
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
 
   const mappedObjects = useMemo(() => {
@@ -605,6 +589,14 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     setZoom((current) => Math.max(0.55, Number((current - 0.08).toFixed(2))));
   };
 
+  const rotateLeft = () => {
+    setRotation((current) => current - 15);
+  };
+
+  const rotateRight = () => {
+    setRotation((current) => current + 15);
+  };
+
   const resetView = () => {
     setZoom(DEFAULT_ZOOM);
     setRotation(0);
@@ -632,10 +624,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const handlePointerDown = (event) => {
     if (shouldIgnoreDrag(event.target)) return;
 
-    const startAngle = getPointerAngle(event, event.currentTarget);
+    // Touch dragging fights mobile scroll, so mobile uses rotate buttons instead.
+    if (event.pointerType === 'touch') return;
+
+    const angle = getPointerAngle(event, event.currentTarget);
 
     dragRef.current = {
-      startAngle,
+      startAngle: angle,
       startRotation: rotation
     };
 
@@ -645,8 +640,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const handlePointerMove = (event) => {
     if (!dragRef.current) return;
 
-    const currentAngle = getPointerAngle(event, event.currentTarget);
-    const delta = currentAngle - dragRef.current.startAngle;
+    const angle = getPointerAngle(event, event.currentTarget);
+    const delta = angle - dragRef.current.startAngle;
 
     setRotation(dragRef.current.startRotation + delta);
   };
@@ -877,61 +872,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             })}
           </div>
 
-          <div className="atlasLegend enhancedLegend">
-            <span><i className="legendCyan"></i> Planetary Nebula</span>
-            <span><i className="legendPurple"></i> Emission Nebula</span>
-            <span><i className="legendOrange"></i> Globular Cluster</span>
-            <span><i className="legendGold"></i> Double Star</span>
-            <span><i className="legendSilver"></i> Lunar</span>
-          </div>
-
-          <div
-            className="atlasZoomControls"
-            aria-label="Sky map zoom controls"
-            onPointerDown={stopMapPointerEvents}
-            onPointerMove={stopMapPointerEvents}
-            onPointerUp={stopMapPointerEvents}
-            onClick={stopMapPointerEvents}
-          >
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                zoomIn();
-              }}
-              aria-label="Zoom in"
-            >
-              +
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                zoomOut();
-              }}
-              aria-label="Zoom out"
-            >
-              −
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                resetView();
-              }}
-              aria-label="Reset sky map view"
-            >
-              Reset
-            </button>
-
-            <span>{Math.round(zoom * 100)}%</span>
-          </div>
-
           <div
             className="atlasTimeControls"
             aria-label="Sky map time controls"
@@ -993,6 +933,85 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 +3h
               </button>
             </div>
+          </div>
+
+          <div className="atlasLegend enhancedLegend">
+            <span><i className="legendCyan"></i> Planetary Nebula</span>
+            <span><i className="legendPurple"></i> Emission Nebula</span>
+            <span><i className="legendOrange"></i> Globular Cluster</span>
+            <span><i className="legendGold"></i> Double Star</span>
+            <span><i className="legendSilver"></i> Lunar</span>
+          </div>
+
+          <div
+            className="atlasZoomControls"
+            aria-label="Sky map zoom and rotation controls"
+            onPointerDown={stopMapPointerEvents}
+            onPointerMove={stopMapPointerEvents}
+            onPointerUp={stopMapPointerEvents}
+            onClick={stopMapPointerEvents}
+          >
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                zoomIn();
+              }}
+              aria-label="Zoom in"
+            >
+              +
+            </button>
+
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                zoomOut();
+              }}
+              aria-label="Zoom out"
+            >
+              −
+            </button>
+
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                rotateLeft();
+              }}
+              aria-label="Rotate sky map left"
+            >
+              ↺
+            </button>
+
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                rotateRight();
+              }}
+              aria-label="Rotate sky map right"
+            >
+              ↻
+            </button>
+
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                resetView();
+              }}
+              aria-label="Reset sky map view"
+            >
+              Reset
+            </button>
+
+            <span>{Math.round(zoom * 100)}%</span>
           </div>
         </div>
 

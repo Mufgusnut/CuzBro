@@ -15,9 +15,9 @@ const locations = [
   { name: 'New York City, NY', lat: 40.7128, lon: -74.0060 }
 ];
 
-function PageNav() {
+function PageNav({ scrolled }) {
   return (
-    <header className="nav">
+    <header className={scrolled ? 'nav navSmall' : 'nav'}>
       <img
         src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'}
         className="logo"
@@ -133,7 +133,7 @@ export default function App() {
       <SpaceBackground />
 
       {isSkyMapPage ? (
-        <PageNav />
+        <PageNav scrolled={scrolled} />
       ) : (
         <Hero
           imageCount={gallery.length}
