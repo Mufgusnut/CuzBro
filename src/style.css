@@ -2576,3 +2576,80 @@ footer p {
     font-size: 9px;
   }
 }
+/* Celestial Atlas background cleanup */
+.atlasStars {
+  opacity: .38;
+  background-image:
+    radial-gradient(circle at 7% 11%, rgba(255,255,255,.9) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 18% 38%, rgba(180,215,255,.75) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 31% 19%, rgba(255,220,170,.7) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 46% 62%, rgba(255,255,255,.75) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 61% 27%, rgba(180,215,255,.7) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 76% 51%, rgba(255,255,255,.8) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 91% 74%, rgba(255,220,170,.65) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 14% 83%, rgba(255,255,255,.75) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 38% 72%, rgba(180,215,255,.6) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 83% 16%, rgba(255,255,255,.75) 0 1px, transparent 1.7px);
+  background-size:
+    320px 260px,
+    420px 310px,
+    510px 360px,
+    390px 440px,
+    620px 480px,
+    470px 370px,
+    580px 520px,
+    360px 300px,
+    450px 410px,
+    530px 390px;
+  background-position:
+    0 0,
+    30px 80px,
+    120px 40px,
+    60px 160px,
+    200px 90px,
+    170px 210px,
+    80px 30px,
+    230px 150px,
+    300px 20px,
+    20px 250px;
+}
+
+.atlasMilkyWay {
+  opacity: .42;
+  filter: blur(28px);
+  background: linear-gradient(
+    112deg,
+    transparent 28%,
+    rgba(74,140,255,.06) 40%,
+    rgba(255,255,255,.09) 48%,
+    rgba(255,157,28,.05) 56%,
+    transparent 70%
+  );
+}
+
+.skyCoordinateGrid {
+  opacity: .16;
+}
+
+.skyCoordinateGrid path {
+  stroke: rgba(180,215,255,.18);
+  stroke-width: .12;
+}
+
+.constellationLines polyline {
+  opacity: .38;
+  stroke: rgba(114,217,255,.26);
+}
+
+.constellationLines polyline.active {
+  opacity: 1;
+  stroke: rgba(255,157,28,.9);
+}
+
+.realSkyMap {
+  background:
+    radial-gradient(circle at 50% 46%, rgba(255,255,255,.05), transparent 24%),
+    radial-gradient(circle at 24% 35%, rgba(74,140,255,.08), transparent 28%),
+    radial-gradient(circle at 84% 70%, rgba(255,157,28,.05), transparent 30%),
+    rgba(2,7,16,.88);
+}
