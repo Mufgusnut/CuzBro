@@ -253,7 +253,7 @@ function buildVisiblePath(points) {
   return path.trim();
 }
 
-function getVisibleSegments(points, buffer = 18) {
+function buildSmoothVisiblePath(points, buffer = 18) {
   const segments = [];
   let currentSegment = [];
 
@@ -273,62 +273,31 @@ function getVisibleSegments(points, buffer = 18) {
     segments.push(currentSegment);
   }
 
-  return segments;
-}
+  const longestSegment = segments.sort((a, b) => b.length - a.length)[0] || [];
 
-function getSegmentLength(segment) {
-  if (segment.length < 2) return 0;
-
-  let length = 0;
-
-  for (let index = 1; index < segment.length; index += 1) {
-    length += pointDistance(segment[index - 1], segment[index]);
+  if (!longestSegment.length) return '';
+  if (longestSegment.length === 1) {
+    return `M ${longestSegment[0].x.toFixed(1)} ${longestSegment[0].y.toFixed(1)}`;
+  }
+  if (longestSegment.length === 2) {
+    return `M ${longestSegment[0].x.toFixed(1)} ${longestSegment[0].y.toFixed(1)} L ${longestSegment[1].x.toFixed(1)} ${longestSegment[1].y.toFixed(1)}`;
   }
 
-  return length;
-}
+  let path = `M ${longestSegment[0].x.toFixed(1)} ${longestSegment[0].y.toFixed(1)}`;
 
-function pickBestVisibleSegment(points, buffer = 18) {
-  const segments = getVisibleSegments(points, buffer);
-
-  if (!segments.length) return [];
-
-  return segments.sort((a, b) => getSegmentLength(b) - getSegmentLength(a))[0];
-}
-
-function buildSmoothPathFromSegment(segment) {
-  if (!segment.length) return '';
-
-  if (segment.length === 1) {
-    return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
-  }
-
-  if (segment.length === 2) {
-    return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)} L ${segment[1].x.toFixed(1)} ${segment[1].y.toFixed(1)}`;
-  }
-
-  let path = `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
-
-  for (let i = 1; i < segment.length - 1; i += 1) {
-    const current = segment[i];
-    const next = segment[i + 1];
+  for (let i = 1; i < longestSegment.length - 1; i += 1) {
+    const current = longestSegment[i];
+    const next = longestSegment[i + 1];
     const midX = (current.x + next.x) / 2;
     const midY = (current.y + next.y) / 2;
 
     path += ` Q ${current.x.toFixed(1)} ${current.y.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
   }
 
-  const last = segment[segment.length - 1];
+  const last = longestSegment[longestSegment.length - 1];
   path += ` T ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
 
   return path;
-}
-
-function buildSmoothVisiblePath(points, buffer = 18) {
-  // Only draw the longest visible Moon-track segment.
-  // This prevents the Moon path from appearing as two or more parallel dashed arcs
-  // when a wide time sample includes the Moon rising/setting on separate days.
-  return buildSmoothPathFromSegment(pickBestVisibleSegment(points, buffer));
 }
 
 function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
@@ -559,18 +528,16 @@ function buildMissionCallouts(objects, zoom) {
   const isMobile = isMobileViewport();
   const defaultZoom = isMobile ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM;
   const zoomPull = Math.max(0, zoom - defaultZoom);
-  const baseOffset = isMobile ? 26 : 72;
-  const pullStrength = isMobile ? 140 : 160;
 
-  const baseRadius = clamp(
-    RADIUS + baseOffset - zoomPull * pullStrength,
-    isMobile ? RADIUS - 58 : RADIUS - 38,
-    RADIUS + baseOffset
-  );
+  // Mobile markers now live inside the sky circle so they don't run off-screen.
+  // Desktop can still sit just outside the horizon for the larger layout.
+  const baseRadius = isMobile
+    ? clamp(RADIUS - 58 - zoomPull * 72, RADIUS - 112, RADIUS - 52)
+    : clamp(RADIUS + 72 - zoomPull * 160, RADIUS - 38, RADIUS + 72);
 
-  const overlapDistance = isMobile ? 40 : 58;
-  const shiftAmount = isMobile ? 18 : 26;
-  const edgePadding = isMobile ? 34 : 54;
+  const overlapDistance = isMobile ? 50 : 58;
+  const shiftAmount = isMobile ? 22 : 26;
+  const edgePadding = isMobile ? 108 : 54;
   const zoomBounds = getZoomSafeBounds(zoom, isMobile);
 
   const sorted = [...objects]
@@ -584,12 +551,17 @@ function buildMissionCallouts(objects, zoom) {
     const baseX = CENTER + Math.cos(angle) * baseRadius;
     const baseY = CENTER + Math.sin(angle) * baseRadius;
 
-    const clampX = (value) => clamp(value, Math.max(edgePadding, zoomBounds.min), Math.min(MAP_SIZE - edgePadding, zoomBounds.max));
-    const clampY = (value) => clamp(value, Math.max(edgePadding, zoomBounds.min), Math.min(MAP_SIZE - edgePadding, zoomBounds.max));
+    const minX = Math.max(edgePadding, zoomBounds.min);
+    const maxX = Math.min(MAP_SIZE - edgePadding, zoomBounds.max);
+    const minY = Math.max(edgePadding, zoomBounds.min);
+    const maxY = Math.min(MAP_SIZE - edgePadding, zoomBounds.max);
+
+    const clampX = (value) => clamp(value, minX, maxX);
+    const clampY = (value) => clamp(value, minY, maxY);
 
     let chosen = { x: clampX(baseX), y: clampY(baseY) };
 
-    for (let i = 0; i < 20; i += 1) {
+    for (let i = 0; i < 24; i += 1) {
       const band = Math.ceil(i / 2);
       const direction = i === 0 ? 0 : i % 2 === 1 ? 1 : -1;
       const shift = band * shiftAmount * direction;
@@ -626,6 +598,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const dragRef = useRef(null);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
   const isDetailMode = viewMode === 'detail';
+  const mobileLayout = isMobileViewport();
 
   const mappedObjects = useMemo(() => {
     return gallery
@@ -731,10 +704,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const eclipticPath = useMemo(() => buildVisiblePath(eclipticPoints), [eclipticPoints]);
   const lunarPath = useMemo(() => buildSmoothVisiblePath(lunarPoints, 18), [lunarPoints]);
   const eclipticLabel = useMemo(() => pickPathLabel(eclipticPoints, 0.72, { x: 24, y: -20 }), [eclipticPoints]);
-  const lunarLabel = useMemo(() => {
-    const bestLunarSegment = pickBestVisibleSegment(lunarPoints, 18);
-    return pickPathLabel(bestLunarSegment, 0.55, { x: -12, y: -18 });
-  }, [lunarPoints]);
+  const lunarLabel = useMemo(() => pickPathLabel(lunarPoints, 0.18, { x: -12, y: -18 }), [lunarPoints]);
 
   const planets = useMemo(() => {
     const bodies = [
@@ -816,7 +786,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return Boolean(
       target.closest('.atlasZoomControls') ||
       target.closest('.atlasTimeControls') ||
-      target.closest('.missionMarkerWrap') ||
       target.closest('.atlasLegend')
     );
   };
@@ -971,13 +940,94 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               {missionCallouts.map((photo) => {
                 const index = mappedObjects.findIndex((item) => item.title === photo.title);
                 const markerColor = getObjectColor(photo.objectType);
+                const isActive = activeIndex === index;
+                const labelOffset = photo.labelSide === 'left' ? -24 : 24;
+                const labelAnchor = photo.labelSide === 'left' ? 'end' : 'start';
 
                 return (
-                  <g key={`${photo.title}-callout`}>
-                    <line x1={photo.x} y1={photo.y} x2={photo.markerX} y2={photo.markerY} className="missionGuideLine" />
-                    <line x1={photo.x - 5} y1={photo.y - 5} x2={photo.x + 5} y2={photo.y + 5} className="missionAnchorX" style={{ stroke: markerColor }} />
-                    <line x1={photo.x + 5} y1={photo.y - 5} x2={photo.x - 5} y2={photo.y + 5} className="missionAnchorX" style={{ stroke: markerColor }} />
-                    {activeIndex === index && <circle cx={photo.x} cy={photo.y} r={13} className="missionAnchorGlow" style={{ stroke: markerColor }} />}
+                  <g
+                    key={`${photo.title}-callout`}
+                    className="missionSvgCallout"
+                    role="button"
+                    tabIndex={0}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onFocus={() => setActiveIndex(index)}
+                    onClick={() => {
+                      setActiveIndex(index);
+                      openMission(photo);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setActiveIndex(index);
+                        openMission(photo);
+                      }
+                    }}
+                  >
+                    <line
+                      x1={photo.x}
+                      y1={photo.y}
+                      x2={photo.markerX}
+                      y2={photo.markerY}
+                      className="missionGuideLine"
+                    />
+
+                    <line
+                      x1={photo.x - 5}
+                      y1={photo.y - 5}
+                      x2={photo.x + 5}
+                      y2={photo.y + 5}
+                      className="missionAnchorX"
+                      style={{ stroke: markerColor }}
+                    />
+                    <line
+                      x1={photo.x + 5}
+                      y1={photo.y - 5}
+                      x2={photo.x - 5}
+                      y2={photo.y + 5}
+                      className="missionAnchorX"
+                      style={{ stroke: markerColor }}
+                    />
+
+                    {isActive && (
+                      <circle
+                        cx={photo.x}
+                        cy={photo.y}
+                        r={13}
+                        className="missionAnchorGlow"
+                        style={{ stroke: markerColor }}
+                      />
+                    )}
+
+                    <g transform={keepUpright(photo.markerX, photo.markerY)}>
+                      <circle
+                        cx={photo.markerX}
+                        cy={photo.markerY}
+                        r={mobileLayout ? 17 : 19}
+                        className={isActive ? 'missionSvgBadge active' : 'missionSvgBadge'}
+                        style={{ stroke: markerColor }}
+                      />
+
+                      <text
+                        x={photo.markerX}
+                        y={photo.markerY + 6}
+                        className="missionSvgBadgeText"
+                        textAnchor="middle"
+                      >
+                        {index + 1}
+                      </text>
+
+                      {(!mobileLayout || isActive) && (
+                        <text
+                          x={photo.markerX + labelOffset}
+                          y={photo.markerY + 6}
+                          className="missionSvgBadgeName"
+                          textAnchor={labelAnchor}
+                        >
+                          {photo.title}
+                        </text>
+                      )}
+                    </g>
                   </g>
                 );
               })}
@@ -1005,43 +1055,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </>
               )}
             </svg>
-
-            {missionCallouts.map((photo) => {
-              const index = mappedObjects.findIndex((item) => item.title === photo.title);
-              const markerColor = getObjectColor(photo.objectType);
-              const isActive = activeIndex === index;
-
-              return (
-                <div
-                  key={photo.title}
-                  className={['missionMarkerWrap', isActive ? 'active' : '', `label-${photo.labelSide}`].join(' ')}
-                  style={{
-                    left: `${(photo.markerX / MAP_SIZE) * 100}%`,
-                    top: `${(photo.markerY / MAP_SIZE) * 100}%`,
-                    '--marker-color': markerColor,
-                    '--atlas-rotation': `${rotation}deg`
-                  }}
-                  onPointerDown={stopMapPointerEvents}
-                  onPointerMove={stopMapPointerEvents}
-                  onPointerUp={stopMapPointerEvents}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  onFocus={() => setActiveIndex(index)}
-                >
-                  <button
-                    type="button"
-                    className={isActive ? 'svgMarker active' : 'svgMarker'}
-                    onClick={() => {
-                      setActiveIndex(index);
-                      openMission(photo);
-                    }}
-                    aria-label={`Open ${photo.title} Mission Report`}
-                  >
-                    {index + 1}
-                  </button>
-                  <span className="missionMarkerName">{photo.title}</span>
-                </div>
-              );
-            })}
           </div>
 
           <div className="atlasLegend enhancedLegend">

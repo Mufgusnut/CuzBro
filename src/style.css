@@ -4466,3 +4466,64 @@ footer p {
     min-width: 42px !important;
   }
 }
+/* =========================================================
+   SKY MAP: SVG MISSION CALLOUT BADGES
+   Keeps numbers, lines, and X marks locked together
+========================================================= */
+
+.missionSvgCallout {
+  cursor: pointer;
+  outline: none;
+}
+
+.missionSvgCallout .missionGuideLine {
+  stroke-width: 1.15 !important;
+  stroke-dasharray: 4 7 !important;
+  opacity: 0.48 !important;
+}
+
+.missionSvgBadge {
+  fill: rgba(5, 10, 22, 0.92) !important;
+  stroke-width: 2.2 !important;
+  filter:
+    drop-shadow(0 0 8px rgba(255, 157, 28, 0.26))
+    drop-shadow(0 0 18px rgba(255, 157, 28, 0.16)) !important;
+}
+
+.missionSvgBadge.active {
+  fill: rgba(255, 157, 28, 0.16) !important;
+  stroke-width: 2.6 !important;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 157, 28, 0.45))
+    drop-shadow(0 0 24px rgba(255, 157, 28, 0.22)) !important;
+}
+
+.missionSvgBadgeText {
+  fill: #ffffff !important;
+  font-size: 20px !important;
+  font-weight: 950 !important;
+  pointer-events: none !important;
+  paint-order: stroke !important;
+  stroke: rgba(4, 8, 18, 0.85) !important;
+  stroke-width: 3px !important;
+}
+
+.missionSvgBadgeName {
+  fill: rgba(238, 244, 255, 0.96) !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  pointer-events: none !important;
+  paint-order: stroke !important;
+  stroke: rgba(4, 8, 18, 0.92) !important;
+  stroke-width: 5px !important;
+}
+
+@media (max-width: 700px) {
+  .missionSvgBadgeText {
+    font-size: 18px !important;
+  }
+
+  .missionSvgBadgeName {
+    font-size: 15px !important;
+  }
+}
