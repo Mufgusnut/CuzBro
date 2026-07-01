@@ -12,53 +12,81 @@ const CENTER = MAP_SIZE / 2;
 const RADIUS = 430;
 
 const STAR_CATALOG = [
+  // North / orientation
   { name: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 },
+
+  // Lyra
   { name: 'Vega', ra: 18.6156, dec: 38.7837, mag: 0.0 },
-  { name: 'Deneb', ra: 20.6905, dec: 45.2803, mag: 1.3 },
-  { name: 'Albireo', ra: 19.5126, dec: 27.9597, mag: 3.1 },
+  { name: 'Zeta Lyr', ra: 18.7462, dec: 37.6051, mag: 4.3 },
+  { name: 'Delta2 Lyr', ra: 18.9080, dec: 36.8986, mag: 4.3 },
   { name: 'Sheliak', ra: 18.8347, dec: 33.3627, mag: 3.5 },
   { name: 'Sulafat', ra: 18.9824, dec: 32.6896, mag: 3.3 },
-  { name: 'Delta2 Lyr', ra: 18.9080, dec: 36.8986, mag: 4.3 },
-  { name: 'Zeta Lyr', ra: 18.7462, dec: 37.6051, mag: 4.3 },
-  { name: 'Kornephoros', ra: 16.5037, dec: 21.4896, mag: 2.8 },
-  { name: 'Zeta Her', ra: 16.6881, dec: 31.6032, mag: 2.8 },
+
+  // Cygnus
+  { name: 'Deneb', ra: 20.6905, dec: 45.2803, mag: 1.3 },
+  { name: 'Sadr', ra: 20.3705, dec: 40.2567, mag: 2.2 },
+  { name: 'Gienah', ra: 20.7702, dec: 33.9703, mag: 2.5 },
+  { name: 'Delta Cyg', ra: 19.7496, dec: 45.1308, mag: 2.9 },
+  { name: 'Albireo', ra: 19.5126, dec: 27.9597, mag: 3.1 },
+
+  // Hercules
   { name: 'Eta Her', ra: 16.7149, dec: 38.9223, mag: 3.5 },
+  { name: 'Zeta Her', ra: 16.6881, dec: 31.6032, mag: 2.8 },
+  { name: 'Epsilon Her', ra: 17.0048, dec: 30.9263, mag: 3.9 },
   { name: 'Pi Her', ra: 17.2505, dec: 36.8092, mag: 3.1 },
+  { name: 'Kornephoros', ra: 16.5037, dec: 21.4896, mag: 2.8 },
   { name: 'Rasalgethi', ra: 17.2441, dec: 14.3903, mag: 3.1 },
+
+  // Vulpecula / nearby guide
+  { name: 'Anser', ra: 19.4784, dec: 24.6649, mag: 4.4 },
+
+  // Sagittarius
   { name: 'Nunki', ra: 18.9211, dec: -26.2967, mag: 2.0 },
   { name: 'Kaus Australis', ra: 18.4029, dec: -34.3846, mag: 1.8 },
   { name: 'Ascella', ra: 19.0435, dec: -29.8801, mag: 2.6 },
   { name: 'Kaus Media', ra: 18.3499, dec: -29.8281, mag: 2.7 },
-  { name: 'Anser', ra: 19.4784, dec: 24.6649, mag: 4.4 }
+  { name: 'Kaus Borealis', ra: 18.4662, dec: -25.4217, mag: 2.8 }
 ];
 
 const CONSTELLATION_SEGMENTS = [
-  ['Kornephoros', 'Zeta Her'],
-  ['Zeta Her', 'Eta Her'],
-  ['Eta Her', 'Pi Her'],
-  ['Pi Her', 'Rasalgethi'],
-  ['Rasalgethi', 'Kornephoros'],
+  // Hercules Keystone and body
+  ['Eta Her', 'Zeta Her'],
+  ['Zeta Her', 'Epsilon Her'],
+  ['Epsilon Her', 'Pi Her'],
+  ['Pi Her', 'Eta Her'],
+  ['Zeta Her', 'Kornephoros'],
+  ['Epsilon Her', 'Rasalgethi'],
 
+  // Lyra: Vega and parallelogram
   ['Vega', 'Zeta Lyr'],
   ['Zeta Lyr', 'Delta2 Lyr'],
   ['Delta2 Lyr', 'Sheliak'],
   ['Sheliak', 'Sulafat'],
-  ['Sulafat', 'Vega'],
+  ['Sulafat', 'Zeta Lyr'],
 
-  ['Deneb', 'Albireo'],
-  ['Anser', 'Albireo'],
+  // Cygnus Northern Cross
+  ['Deneb', 'Sadr'],
+  ['Sadr', 'Albireo'],
+  ['Sadr', 'Gienah'],
+  ['Sadr', 'Delta Cyg'],
 
+  // Vulpecula guide near M27 region
+  ['Albireo', 'Anser'],
+
+  // Sagittarius teapot-ish guide
   ['Kaus Australis', 'Kaus Media'],
-  ['Kaus Media', 'Ascella'],
-  ['Ascella', 'Nunki']
+  ['Kaus Media', 'Kaus Borealis'],
+  ['Kaus Borealis', 'Nunki'],
+  ['Nunki', 'Ascella'],
+  ['Ascella', 'Kaus Australis']
 ];
 
 const CONSTELLATION_LABELS = [
-  { name: 'Hercules', ra: 16.8, dec: 28.5 },
-  { name: 'Lyra', ra: 18.8, dec: 39.2 },
-  { name: 'Cygnus', ra: 20.2, dec: 38.0 },
-  { name: 'Vulpecula', ra: 20.0, dec: 24.5 },
-  { name: 'Sagittarius', ra: 18.7, dec: -28.5 }
+  { name: 'Hercules', ra: 16.95, dec: 34.5 },
+  { name: 'Lyra', ra: 18.82, dec: 37.5 },
+  { name: 'Cygnus', ra: 20.15, dec: 39.5 },
+  { name: 'Vulpecula', ra: 19.75, dec: 23.5 },
+  { name: 'Sagittarius', ra: 18.72, dec: -28.5 }
 ];
 
 function toRadians(degrees) {

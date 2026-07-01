@@ -2352,3 +2352,135 @@ footer p {
     height: 500px;
   }
 }
+/* Celestial Atlas wide layout */
+.realAtlasLayout {
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+.realSkyMap {
+  min-height: 860px;
+}
+
+.skyPanLayer {
+  min-height: 860px;
+}
+
+.skySvg {
+  height: 860px;
+}
+
+.atlasCatalog {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.atlasCatalog > small {
+  grid-column: 1 / -1;
+}
+
+.catalogItem + .catalogItem {
+  border-top: none;
+}
+
+.catalogItem {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(2,7,16,.28);
+}
+
+@media (max-width: 1000px) {
+  .atlasCatalog {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .realSkyMap,
+  .skyPanLayer {
+    min-height: 680px;
+  }
+
+  .skySvg {
+    height: 680px;
+  }
+}
+
+@media (max-width: 700px) {
+  .atlasCatalog {
+    grid-template-columns: 1fr;
+  }
+
+  .realSkyMap,
+  .skyPanLayer {
+    min-height: 520px;
+  }
+
+  .skySvg {
+    height: 520px;
+  }
+}
+/* Celestial Atlas wide layout */
+.realAtlasLayout {
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+.realSkyMap {
+  min-height: 860px;
+}
+
+.skyPanLayer {
+  min-height: 860px;
+}
+
+.skySvg {
+  height: 860px;
+}
+
+.atlasCatalog {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.atlasCatalog > small {
+  grid-column: 1 / -1;
+}
+
+.catalogItem + .catalogItem {
+  border-top: none;
+}
+
+.catalogItem {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(2,7,16,.28);
+}
+
+@media (max-width: 1000px) {
+  .atlasCatalog {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .realSkyMap,
+  .skyPanLayer {
+    min-height: 680px;
+  }
+
+  .skySvg {
+    height: 680px;
+  }
+}
+
+@media (max-width: 700px) {
+  .atlasCatalog {
+    grid-template-columns: 1fr;
+  }
+
+  .realSkyMap,
+  .skyPanLayer {
+    min-height: 520px;
+  }
+
+  .skySvg {
+    height: 520px;
+  }
+}
