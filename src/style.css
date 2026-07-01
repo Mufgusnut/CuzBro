@@ -3585,3 +3585,53 @@ footer p {
     font-size: 12px;
   }
 }
+/* =========================================================
+   SKY MAP MOON PHASE ICON
+========================================================= */
+
+.moonMarkerGlow {
+  fill: rgba(210, 225, 255, 0.18) !important;
+  filter: drop-shadow(0 0 14px rgba(210, 225, 255, 0.45)) !important;
+}
+
+.moonPhaseIcon {
+  font-size: 22px !important;
+  dominant-baseline: middle !important;
+  filter:
+    drop-shadow(0 0 5px rgba(255,255,255,0.45))
+    drop-shadow(0 0 16px rgba(185,210,255,0.35)) !important;
+}
+
+.moonLabel {
+  fill: rgba(238, 244, 255, 0.96) !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+  paint-order: stroke !important;
+  stroke: rgba(4, 8, 18, 0.88) !important;
+  stroke-width: 4px !important;
+}
+
+.moonPhaseLabel {
+  fill: rgba(205, 218, 245, 0.76) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  paint-order: stroke !important;
+  stroke: rgba(4, 8, 18, 0.88) !important;
+  stroke-width: 3px !important;
+}
+
+@media (max-width: 700px) {
+  .moonPhaseIcon {
+    font-size: 18px !important;
+  }
+
+  .moonLabel {
+    font-size: 11px !important;
+  }
+
+  .moonPhaseLabel {
+    font-size: 9px !important;
+  }
+}

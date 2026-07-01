@@ -417,7 +417,35 @@ function formatCompactTime(mapDate) {
     minute: '2-digit'
   });
 }
+function getMoonPhaseInfo(date, phasePercent) {
+  const synodicMonth = 29.530588853;
+  const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14, 0);
 
+  let age = ((date.getTime() - knownNewMoon) / 86400000) % synodicMonth;
+
+  if (age < 0) {
+    age += synodicMonth;
+  }
+
+  const phaseIndex = Math.floor((age / synodicMonth) * 8 + 0.5) % 8;
+
+  const phases = [
+    { symbol: '🌑', name: 'New Moon' },
+    { symbol: '🌒', name: 'Waxing Crescent' },
+    { symbol: '🌓', name: 'First Quarter' },
+    { symbol: '🌔', name: 'Waxing Gibbous' },
+    { symbol: '🌕', name: 'Full Moon' },
+    { symbol: '🌖', name: 'Waning Gibbous' },
+    { symbol: '🌗', name: 'Last Quarter' },
+    { symbol: '🌘', name: 'Waning Crescent' }
+  ];
+
+  return {
+    ...phases[phaseIndex],
+    age,
+    phasePercent
+  };
+}
 function getDayOfYear(date) {
   const start = new Date(Date.UTC(date.getFullYear(), 0, 0));
   const current = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -845,18 +873,22 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     const altAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
     const point = projectAltAz(altAz.alt, altAz.az);
     const illum = Illumination(Body.Moon, date);
-    const phasePercent = Math.round((illum.phase_fraction ?? 0) * 100);
+const phasePercent = Math.round((illum.phase_fraction ?? 0) * 100);
+const phaseInfo = getMoonPhaseInfo(date, phasePercent);
 
-    return {
-      ra: moonEq.ra,
-      dec: moonEq.dec,
-      alt: altAz.alt,
-      az: altAz.az,
-      x: point.x,
-      y: point.y,
-      visible: point.visible,
-      phasePercent
-    };
+return {
+  ra: moonEq.ra,
+  dec: moonEq.dec,
+  alt: altAz.alt,
+  az: altAz.az,
+  x: point.x,
+  y: point.y,
+  visible: point.visible,
+  phasePercent,
+  phaseSymbol: phaseInfo.symbol,
+  phaseName: phaseInfo.name,
+  phaseAge: phaseInfo.age
+};
   }, [date, observer]);
 
   const summerTrianglePoints = useMemo(() => {
@@ -1113,19 +1145,40 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               ))}
 
               {isInsideSky(moonData, 14) && (
-                <g>
-                  <circle cx={moonData.x} cy={moonData.y} r={9} className="moonMarkerGlow" />
-                  <circle cx={moonData.x} cy={moonData.y} r={7} className="moonMarker" />
-                  <text
-                    x={moonData.x + 14}
-                    y={moonData.y - 10}
-                    className="moonLabel"
-                    transform={keepUpright(moonData.x + 14, moonData.y - 10)}
-                  >
-                    Moon {moonData.phasePercent}%
-                  </text>
-                </g>
-              )}
+  <g>
+    <circle cx={moonData.x} cy={moonData.y} r={14} className="moonMarkerGlow" />
+
+    <text
+      x={moonData.x}
+      y={moonData.y + 6}
+      className="moonPhaseIcon"
+      textAnchor="middle"
+      transform={keepUpright(moonData.x, moonData.y)}
+    >
+      {moonData.phaseSymbol}
+    </text>
+
+    <text
+      x={moonData.x + 18}
+      y={moonData.y - 12}
+      className="moonLabel"
+      transform={keepUpright(moonData.x + 18, moonData.y - 12)}
+    >
+      Moon {moonData.phasePercent}%
+    </text>
+
+    {isDetailMode && (
+      <text
+        x={moonData.x + 18}
+        y={moonData.y + 5}
+        className="moonPhaseLabel"
+        transform={keepUpright(moonData.x + 18, moonData.y + 5)}
+      >
+        {moonData.phaseName}
+      </text>
+    )}
+  </g>
+)}
 
               {missionCallouts.map((photo) => {
                 const index = mappedObjects.findIndex((item) => item.title === photo.title);
@@ -1409,7 +1462,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <span><b>Altitude</b>{activeObject.alt.toFixed(1)}°</span>
               <span><b>Azimuth</b>{activeObject.az.toFixed(1)}°</span>
               <span><b>Map Time</b>{formatCompactTime(date)}</span>
-              <span><b>Moon Phase</b>{moonData.phasePercent}% lit</span>
+              <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
             </div>
 
             <button type="button" onClick={() => openMission(activeObject)}>
