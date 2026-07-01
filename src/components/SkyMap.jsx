@@ -253,7 +253,7 @@ function buildVisiblePath(points) {
   return path.trim();
 }
 
-function buildSmoothVisiblePath(points, buffer = 18) {
+function getVisibleSegments(points, buffer = 18) {
   const segments = [];
   let currentSegment = [];
 
@@ -273,34 +273,62 @@ function buildSmoothVisiblePath(points, buffer = 18) {
     segments.push(currentSegment);
   }
 
-  return segments
-    .map((segment) => {
-      if (!segment.length) return '';
-      if (segment.length === 1) {
-        return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
-      }
-      if (segment.length === 2) {
-        return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)} L ${segment[1].x.toFixed(1)} ${segment[1].y.toFixed(1)}`;
-      }
+  return segments;
+}
 
-      let path = `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
+function getSegmentLength(segment) {
+  if (segment.length < 2) return 0;
 
-      for (let i = 1; i < segment.length - 1; i += 1) {
-        const current = segment[i];
-        const next = segment[i + 1];
-        const midX = (current.x + next.x) / 2;
-        const midY = (current.y + next.y) / 2;
+  let length = 0;
 
-        path += ` Q ${current.x.toFixed(1)} ${current.y.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
-      }
+  for (let index = 1; index < segment.length; index += 1) {
+    length += pointDistance(segment[index - 1], segment[index]);
+  }
 
-      const last = segment[segment.length - 1];
-      path += ` T ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
+  return length;
+}
 
-      return path;
-    })
-    .filter(Boolean)
-    .join(' ');
+function pickBestVisibleSegment(points, buffer = 18) {
+  const segments = getVisibleSegments(points, buffer);
+
+  if (!segments.length) return [];
+
+  return segments.sort((a, b) => getSegmentLength(b) - getSegmentLength(a))[0];
+}
+
+function buildSmoothPathFromSegment(segment) {
+  if (!segment.length) return '';
+
+  if (segment.length === 1) {
+    return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
+  }
+
+  if (segment.length === 2) {
+    return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)} L ${segment[1].x.toFixed(1)} ${segment[1].y.toFixed(1)}`;
+  }
+
+  let path = `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
+
+  for (let i = 1; i < segment.length - 1; i += 1) {
+    const current = segment[i];
+    const next = segment[i + 1];
+    const midX = (current.x + next.x) / 2;
+    const midY = (current.y + next.y) / 2;
+
+    path += ` Q ${current.x.toFixed(1)} ${current.y.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
+  }
+
+  const last = segment[segment.length - 1];
+  path += ` T ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
+
+  return path;
+}
+
+function buildSmoothVisiblePath(points, buffer = 18) {
+  // Only draw the longest visible Moon-track segment.
+  // This prevents the Moon path from appearing as two or more parallel dashed arcs
+  // when a wide time sample includes the Moon rising/setting on separate days.
+  return buildSmoothPathFromSegment(pickBestVisibleSegment(points, buffer));
 }
 
 function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
@@ -703,7 +731,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const eclipticPath = useMemo(() => buildVisiblePath(eclipticPoints), [eclipticPoints]);
   const lunarPath = useMemo(() => buildSmoothVisiblePath(lunarPoints, 18), [lunarPoints]);
   const eclipticLabel = useMemo(() => pickPathLabel(eclipticPoints, 0.72, { x: 24, y: -20 }), [eclipticPoints]);
-  const lunarLabel = useMemo(() => pickPathLabel(lunarPoints, 0.18, { x: -12, y: -18 }), [lunarPoints]);
+  const lunarLabel = useMemo(() => {
+    const bestLunarSegment = pickBestVisibleSegment(lunarPoints, 18);
+    return pickPathLabel(bestLunarSegment, 0.55, { x: -12, y: -18 });
+  }, [lunarPoints]);
 
   const planets = useMemo(() => {
     const bodies = [
