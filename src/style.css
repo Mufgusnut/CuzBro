@@ -2313,3 +2313,16 @@ footer p {
 .atlasDetail:hover {
   border-color: rgba(255,157,28,.45);
 }
+.catalogItem.active b,
+.atlasDetail h2 span {
+  background: rgba(255,157,28,.18);
+  box-shadow: inset 0 0 0 1px rgba(255,157,28,.35);
+}
+
+.atlasDetail {
+  transition: border-color .25s ease, background .25s ease;
+}
+
+.atlasDetail:hover {
+  border-color: rgba(255,157,28,.45);
+}
