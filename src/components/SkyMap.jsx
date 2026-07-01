@@ -12,6 +12,30 @@ const CENTER = MAP_SIZE / 2;
 const RADIUS = 430;
 const DEFAULT_ZOOM = 0.68;
 
+function createBackgroundStars(count = 360) {
+  let seed = 314159;
+
+  const random = () => {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+
+  return Array.from({ length: count }).map((_, index) => {
+    const angle = random() * Math.PI * 2;
+    const radius = Math.sqrt(random()) * (RADIUS - 10);
+
+    return {
+      id: index,
+      x: CENTER + Math.cos(angle) * radius,
+      y: CENTER + Math.sin(angle) * radius,
+      r: 0.55 + random() * 1.25,
+      opacity: 0.16 + random() * 0.44
+    };
+  });
+}
+
+const BACKGROUND_STARS = createBackgroundStars();
+
 const STAR_CATALOG = [
   { name: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 },
 
@@ -475,9 +499,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [rotation, setRotation] = useState(0);
   const [date, setDate] = useState(() => new Date());
+  const [viewMode, setViewMode] = useState('clean');
 
   const dragRef = useRef(null);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
+  const isDetailMode = viewMode === 'detail';
 
   const mappedObjects = useMemo(() => {
     return gallery
@@ -706,6 +732,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return Boolean(
       target.closest('.atlasZoomControls') ||
       target.closest('.atlasTimeControls') ||
+      target.closest('.atlasModeControls') ||
       target.closest('.missionMarkerWrap') ||
       target.closest('.atlasLegend')
     );
@@ -768,7 +795,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
       <section className="atlasLayout realAtlasLayout">
         <div
-          className="atlasMap realSkyMap"
+          className={isDetailMode ? 'atlasMap realSkyMap detailMode' : 'atlasMap realSkyMap cleanMode'}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -788,8 +815,22 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               aria-label="Live sky map for Eliot, Maine"
             >
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
+
+              {BACKGROUND_STARS.map((star) => (
+                <circle
+                  key={star.id}
+                  cx={star.x}
+                  cy={star.y}
+                  r={star.r}
+                  className="backgroundStar"
+                  style={{ opacity: isDetailMode ? star.opacity : star.opacity * 0.55 }}
+                />
+              ))}
+
               <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.66} className="skyAltitudeRing" />
-              <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.33} className="skyAltitudeRing" />
+              {isDetailMode && (
+                <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.33} className="skyAltitudeRing detailOnly" />
+              )}
               <circle cx={CENTER} cy={CENTER} r={8} className="skyZenithDot" />
 
               <line
@@ -843,19 +884,21 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 W
               </text>
 
-              <text
-                x={CENTER + 14}
-                y={CENTER - 12}
-                className="zenithLabel"
-                transform={keepUpright(CENTER + 14, CENTER - 12)}
-              >
-                Zenith
-              </text>
+              {isDetailMode && (
+                <text
+                  x={CENTER + 14}
+                  y={CENTER - 12}
+                  className="zenithLabel"
+                  transform={keepUpright(CENTER + 14, CENTER - 12)}
+                >
+                  Zenith
+                </text>
+              )}
 
               {eclipticPath && <path d={eclipticPath} className="eclipticPath" />}
               {lunarPath && <path d={lunarPath} className="lunarPath" />}
 
-              {summerTrianglePath && (
+              {isDetailMode && summerTrianglePath && (
                 <path d={summerTrianglePath} className="summerTriangleOutline" />
               )}
 
@@ -880,16 +923,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     className={star.name === 'Polaris' ? 'skyStar polarisStar' : 'skyStar'}
                   />
 
-                  {['Polaris', 'Vega', 'Deneb', 'Altair'].includes(star.name) && (
-                    <text
-                      x={star.x + 10}
-                      y={star.y - 10}
-                      className="brightStarLabel"
-                      transform={keepUpright(star.x + 10, star.y - 10)}
-                    >
-                      {star.name}
-                    </text>
-                  )}
+                  {(isDetailMode || star.name === 'Polaris') &&
+                    ['Polaris', 'Vega', 'Deneb', 'Altair'].includes(star.name) && (
+                      <text
+                        x={star.x + 10}
+                        y={star.y - 10}
+                        className="brightStarLabel"
+                        transform={keepUpright(star.x + 10, star.y - 10)}
+                      >
+                        {star.name}
+                      </text>
+                    )}
                 </g>
               ))}
 
@@ -952,23 +996,25 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 );
               })}
 
-              {constellationLabels.map((label) => (
-                <text
-                  key={label.name}
-                  x={label.x}
-                  y={label.y}
-                  transform={keepUpright(label.x, label.y)}
-                  className={
-                    label.name === activeConstellation
-                      ? 'constellationText active'
-                      : 'constellationText'
-                  }
-                >
-                  {label.name}
-                </text>
-              ))}
+              {constellationLabels
+                .filter((label) => isDetailMode || label.name === activeConstellation)
+                .map((label) => (
+                  <text
+                    key={label.name}
+                    x={label.x}
+                    y={label.y}
+                    transform={keepUpright(label.x, label.y)}
+                    className={
+                      label.name === activeConstellation
+                        ? 'constellationText active'
+                        : 'constellationText'
+                    }
+                  >
+                    {label.name}
+                  </text>
+                ))}
 
-              {summerTriangleLabel && (
+              {isDetailMode && summerTriangleLabel && (
                 <text
                   x={summerTriangleLabel.x}
                   y={summerTriangleLabel.y}
@@ -979,23 +1025,27 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </text>
               )}
 
-              <text
-                x={eclipticLabel.x}
-                y={eclipticLabel.y}
-                className="pathLabel"
-                transform={keepUpright(eclipticLabel.x, eclipticLabel.y)}
-              >
-                Ecliptic
-              </text>
+              {isDetailMode && (
+                <>
+                  <text
+                    x={eclipticLabel.x}
+                    y={eclipticLabel.y}
+                    className="pathLabel"
+                    transform={keepUpright(eclipticLabel.x, eclipticLabel.y)}
+                  >
+                    Ecliptic
+                  </text>
 
-              <text
-                x={lunarLabel.x}
-                y={lunarLabel.y}
-                className="pathLabel"
-                transform={keepUpright(lunarLabel.x, lunarLabel.y)}
-              >
-                Lunar Path
-              </text>
+                  <text
+                    x={lunarLabel.x}
+                    y={lunarLabel.y}
+                    className="pathLabel"
+                    transform={keepUpright(lunarLabel.x, lunarLabel.y)}
+                  >
+                    Lunar Path
+                  </text>
+                </>
+              )}
             </svg>
 
             {missionCallouts.map((photo) => {
@@ -1058,6 +1108,37 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(1); }}>+1h</button>
               <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(3); }}>+3h</button>
             </div>
+          </div>
+
+          <div
+            className="atlasModeControls"
+            aria-label="Sky map display mode controls"
+            onPointerDown={stopMapPointerEvents}
+            onPointerMove={stopMapPointerEvents}
+            onPointerUp={stopMapPointerEvents}
+            onClick={stopMapPointerEvents}
+          >
+            <button
+              type="button"
+              className={viewMode === 'clean' ? 'active' : ''}
+              onClick={(event) => {
+                event.stopPropagation();
+                setViewMode('clean');
+              }}
+            >
+              Clean
+            </button>
+
+            <button
+              type="button"
+              className={viewMode === 'detail' ? 'active' : ''}
+              onClick={(event) => {
+                event.stopPropagation();
+                setViewMode('detail');
+              }}
+            >
+              Detail
+            </button>
           </div>
 
           <div className="atlasLegend enhancedLegend">
