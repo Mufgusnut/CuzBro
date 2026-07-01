@@ -1681,3 +1681,15 @@ footer p {
     transform: none;
   }
 }
+.carousel {
+  padding-top: 14px;
+  padding-bottom: 18px;
+}
+
+.carouselWrap {
+  overflow: visible;
+}
+
+.photoCard {
+  transform-origin: center bottom;
+}
