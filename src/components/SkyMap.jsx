@@ -378,14 +378,35 @@ function markerOffset(index) {
   return offsets[index % offsets.length];
 }
 
+
+function getPointerAngle(event, element) {
+  const rect = element.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const dx = event.clientX - centerX;
+  const dy = event.clientY - centerY;
+
+  return Math.atan2(dy, dx) * (180 / Math.PI);
+}
+
+function formatMapTime(mapDate) {
+  return mapDate.toLocaleString([], {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [rotation, setRotation] = useState(0);
+  const [date, setDate] = useState(() => new Date());
 
   const dragRef = useRef(null);
 
-  const date = useMemo(() => new Date(), []);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
 
   const mappedObjects = useMemo(() => {
@@ -586,7 +607,15 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const resetView = () => {
     setZoom(DEFAULT_ZOOM);
-    setPan({ x: 0, y: 0 });
+    setRotation(0);
+  };
+
+  const changeTime = (hours) => {
+    setDate((currentDate) => new Date(currentDate.getTime() + hours * 60 * 60 * 1000));
+  };
+
+  const resetToNow = () => {
+    setDate(new Date());
   };
 
   const shouldIgnoreDrag = (target) => {
@@ -594,6 +623,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
     return Boolean(
       target.closest('.atlasZoomControls') ||
+      target.closest('.atlasTimeControls') ||
       target.closest('.missionMarkerWrap') ||
       target.closest('.atlasLegend')
     );
@@ -602,11 +632,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const handlePointerDown = (event) => {
     if (shouldIgnoreDrag(event.target)) return;
 
+    const startAngle = getPointerAngle(event, event.currentTarget);
+
     dragRef.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      panX: pan.x,
-      panY: pan.y
+      startAngle,
+      startRotation: rotation
     };
 
     event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -615,13 +645,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const handlePointerMove = (event) => {
     if (!dragRef.current) return;
 
-    const dx = event.clientX - dragRef.current.startX;
-    const dy = event.clientY - dragRef.current.startY;
+    const currentAngle = getPointerAngle(event, event.currentTarget);
+    const delta = currentAngle - dragRef.current.startAngle;
 
-    setPan({
-      x: dragRef.current.panX + dx,
-      y: dragRef.current.panY + dy
-    });
+    setRotation(dragRef.current.startRotation + delta);
   };
 
   const handlePointerUp = (event) => {
@@ -663,7 +690,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           <div
             className="skyPanLayer"
             style={{
-              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+              transform: `rotate(${rotation}deg) scale(${zoom})`
             }}
           >
             <svg
@@ -903,6 +930,69 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             </button>
 
             <span>{Math.round(zoom * 100)}%</span>
+          </div>
+
+          <div
+            className="atlasTimeControls"
+            aria-label="Sky map time controls"
+            onPointerDown={stopMapPointerEvents}
+            onPointerMove={stopMapPointerEvents}
+            onPointerUp={stopMapPointerEvents}
+            onClick={stopMapPointerEvents}
+          >
+            <strong>{formatMapTime(date)}</strong>
+
+            <div>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeTime(-3);
+                }}
+              >
+                −3h
+              </button>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeTime(-1);
+                }}
+              >
+                −1h
+              </button>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  resetToNow();
+                }}
+              >
+                Now
+              </button>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeTime(1);
+                }}
+              >
+                +1h
+              </button>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeTime(3);
+                }}
+              >
+                +3h
+              </button>
+            </div>
           </div>
         </div>
 
