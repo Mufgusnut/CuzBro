@@ -139,9 +139,22 @@ export default function Weather({ locations, weather }) {
                 </div>
               </div>
 
-              <p>Cloud Cover <em>{w ? Math.round(w.cloud_cover) : '--'}%</em></p>
-              <p>Humidity <em>{w ? Math.round(w.relative_humidity_2m) : '--'}%</em></p>
-              <p>Wind <em>{w ? Math.round(w.wind_speed_10m) : '--'} mph</em></p>
+              <div className="weatherMetrics">
+  <div>
+    <span>☁</span>
+    <strong>{w ? Math.round(w.cloud_cover) : "--"}%</strong>
+  </div>
+
+  <div>
+    <span>🌬</span>
+    <strong>{w ? Math.round(w.wind_speed_10m) : "--"} mph</strong>
+  </div>
+
+  <div>
+    <span>💧</span>
+    <strong>{w ? Math.round(w.relative_humidity_2m) : "--"}%</strong>
+  </div>
+</div>
 
               <div className="skyTargets">
                 <strong>Visible Tonight</strong>

@@ -1527,3 +1527,27 @@ footer p {
     font-size: 13px;
   }
 }
+.weatherMetrics{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin:18px 0;
+    padding:14px 0;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+}
+
+.weatherMetrics div{
+    text-align:center;
+}
+
+.weatherMetrics span{
+    display:block;
+    font-size:18px;
+    margin-bottom:6px;
+}
+
+.weatherMetrics strong{
+    font-size:15px;
+    color:white;
+}
