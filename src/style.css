@@ -1,3 +1,5 @@
+/* CuzBro Observatory - cleaned stylesheet */
+
 :root {
   color-scheme: dark;
   --blue: #4a8cff;
@@ -41,7 +43,6 @@ section[id] {
   scroll-margin-top: 50px;
 }
 
-/* Dynamic canvas background */
 .spaceCanvas {
   position: fixed;
   inset: 0;
@@ -51,7 +52,6 @@ section[id] {
   pointer-events: none;
 }
 
-/* Navigation */
 .nav {
   position: fixed;
   z-index: 10;
@@ -71,8 +71,7 @@ section[id] {
 
 .logo {
   width: 190px;
-  filter:
-    drop-shadow(0 0 18px rgba(74,140,255,.35))
+  filter: drop-shadow(0 0 18px rgba(74,140,255,.35))
     drop-shadow(0 0 18px rgba(255,157,28,.25));
   transition: width .28s ease, filter .28s ease;
 }
@@ -119,7 +118,6 @@ section[id] {
   filter: drop-shadow(0 0 10px rgba(74,140,255,.25));
 }
 
-/* Hero */
 .hero {
   position: relative;
   min-height: 860px;
@@ -151,8 +149,7 @@ section[id] {
   display: none;
 }
 
-.heroText,
-.heroCard {
+.heroText, .heroCard {
   position: relative;
   z-index: 2;
 }
@@ -196,7 +193,6 @@ section[id] {
   text-shadow: 0 0 18px #000;
 }
 
-/* Hero mission card */
 .heroCard {
   width: 100%;
   max-width: 420px;
@@ -280,7 +276,6 @@ section[id] {
   line-height: 1.6;
 }
 
-/* Hero dashboard cards */
 .heroDashboard {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -301,8 +296,7 @@ section[id] {
   color: white;
   box-shadow: 0 12px 34px rgba(0,0,0,.35);
   cursor: pointer;
-  transition:
-    transform .25s ease,
+  transition: transform .25s ease,
     border-color .25s ease,
     background .25s ease;
 }
@@ -369,30 +363,24 @@ section[id] {
   font-weight: 700;
 }
 
-/* Hero entrance animation */
 .heroText > * {
   opacity: 0;
   transform: translateY(18px);
   animation: heroFade .8s forwards;
 }
 
-.heroText > *:nth-child(1) { animation-delay: .1s; }
-.heroText > *:nth-child(2) { animation-delay: .25s; }
-.heroText > *:nth-child(3) { animation-delay: .45s; }
-
-@keyframes heroFade {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.heroText > *:nth-child(1) {
+  animation-delay: .1s;
 }
 
-/* Layout */
+.heroText > *:nth-child(2) {
+  animation-delay: .25s;
+}
+
+.heroText > *:nth-child(3) {
+  animation-delay: .45s;
+}
+
 main {
   padding: 0 4vw 70px;
   background: transparent;
@@ -412,12 +400,10 @@ main {
   font-size: 18px;
 }
 
-.sectionHeader a,
-.sectionHeader span {
+.sectionHeader a, .sectionHeader span {
   color: #9fb3da;
 }
 
-/* Quick Links */
 .quick {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -440,8 +426,7 @@ main {
   border-radius: 18px;
   box-shadow: 0 12px 38px #0009;
   backdrop-filter: blur(14px);
-  transition:
-    transform .22s ease,
+  transition: transform .22s ease,
     border-color .22s ease,
     background .22s ease;
 }
@@ -494,14 +479,6 @@ main {
   font-size: 14px;
 }
 
-/* Gallery */
-.carouselWrap {
-  display: grid;
-  grid-template-columns: 54px 1fr 54px;
-  gap: 16px;
-  align-items: center;
-}
-
 .carouselWrap button {
   height: 54px;
   width: 54px;
@@ -519,18 +496,6 @@ main {
   transform: scale(1.08);
   border-color: rgba(255,157,28,.55);
   box-shadow: 0 0 24px rgba(255,157,28,.2);
-}
-
-.carousel {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: calc((100% - 40px) / 3);
-  gap: 20px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  padding: 4px 2px 12px;
 }
 
 .carousel::-webkit-scrollbar {
@@ -559,21 +524,6 @@ main {
   color: white;
 }
 
-.photoCard {
-  position: relative;
-  min-height: 300px;
-  scroll-snap-align: start;
-  overflow: hidden;
-  border-radius: 22px;
-  cursor: pointer;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(2,7,16,.65);
-  transition:
-    transform .25s ease,
-    border-color .25s ease,
-    box-shadow .25s ease;
-}
-
 .photoCard:hover {
   transform: translateY(-6px);
   border-color: rgba(255,157,28,.85);
@@ -585,8 +535,7 @@ main {
   width: 100%;
   object-fit: cover;
   display: block;
-  transition:
-    transform .55s ease,
+  transition: transform .55s ease,
     filter .55s ease;
 }
 
@@ -599,8 +548,7 @@ main {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(transparent 25%, rgba(2,7,16,.58), rgba(2,7,16,.96));
+  background: linear-gradient(transparent 25%, rgba(2,7,16,.58), rgba(2,7,16,.96));
   pointer-events: none;
 }
 
@@ -658,40 +606,10 @@ main {
   color: #9fb3da;
 }
 
-.photoCard h3 {
-  margin: 0;
-  font-size: 26px;
-}
-
-.photoCard p {
-  color: #d7dfef;
-  margin: .35rem 0;
-}
-
-.photoCard small {
-  color: #9fb3da;
-}
-
-/* Weather */
 .weatherGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
-}
-
-.weather {
-  padding: 24px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(12,25,48,.84), rgba(3,10,22,.9));
-  border-radius: 18px;
-  box-shadow: 0 12px 38px #0009;
-  backdrop-filter: blur(14px);
-}
-
-.weatherTop {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
 }
 
 .weatherTop b {
@@ -703,18 +621,6 @@ main {
   height: fit-content;
   text-transform: uppercase;
   letter-spacing: .08em;
-}
-
-.rating {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin: 18px 0;
-  margin-top: -6px;
-}
-
-.rating svg {
-  color: #b7cdfd;
 }
 
 .rating strong {
@@ -746,7 +652,6 @@ main {
   color: var(--orange);
 }
 
-/* Visible Tonight */
 .skyTargets {
   margin-top: 16px;
   padding: 14px;
@@ -791,7 +696,6 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-/* Featured Capture */
 .featuredCapture {
   margin: 58px 0 20px;
   display: grid;
@@ -837,15 +741,13 @@ main {
   border-radius: 18px;
 }
 
-/* Info Sections */
 .infoGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
 
-.infoCard,
-.aboutPanel {
+.infoCard, .aboutPanel {
   border: 1px solid var(--line);
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(12,25,48,.84), rgba(3,10,22,.9));
@@ -862,13 +764,11 @@ main {
   margin-bottom: 14px;
 }
 
-.infoCard h3,
-.aboutPanel h3 {
+.infoCard h3, .aboutPanel h3 {
   margin: 0 0 10px;
 }
 
-.infoCard p,
-.aboutPanel p {
+.infoCard p, .aboutPanel p {
   color: #cbd3e2;
   line-height: 1.6;
 }
@@ -878,26 +778,22 @@ main {
   max-width: 920px;
 }
 
-/* Crew */
 .crewGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
 
-.crewCard,
-.crewSupport {
+.crewCard, .crewSupport {
   border: 1px solid var(--line);
   border-radius: 22px;
-  background:
-    radial-gradient(circle at top right, rgba(255,157,28,.12), transparent 34%),
+  background: radial-gradient(circle at top right, rgba(255,157,28,.12), transparent 34%),
     linear-gradient(180deg, rgba(12,25,48,.86), rgba(3,10,22,.92));
   box-shadow: 0 12px 38px #0009;
   padding: 26px;
 }
 
-.crewCard small,
-.crewSupport small {
+.crewCard small, .crewSupport small {
   color: var(--orange);
   letter-spacing: .16em;
   text-transform: uppercase;
@@ -910,8 +806,7 @@ main {
   font-size: 32px;
 }
 
-.crewCard p,
-.crewSupport p {
+.crewCard p, .crewSupport p {
   color: #cbd3e2;
   line-height: 1.6;
 }
@@ -944,7 +839,6 @@ main {
   margin-top: 18px;
 }
 
-/* Lightbox */
 .lightbox {
   position: fixed;
   inset: 0;
@@ -983,8 +877,7 @@ main {
   color: #aebbd4;
 }
 
-.missionBrand strong,
-.crosshair {
+.missionBrand strong, .crosshair {
   color: var(--orange);
 }
 
@@ -1077,16 +970,14 @@ main {
   cursor: grabbing;
 }
 
-.zoomTools,
-.zoomHint {
+.zoomTools, .zoomHint {
   position: absolute;
   top: 16px;
   right: 16px;
   z-index: 6;
 }
 
-.zoomHint,
-.zoomTools button {
+.zoomHint, .zoomTools button {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -1125,8 +1016,7 @@ main {
   background: linear-gradient(180deg, rgba(7,19,38,.86), rgba(2,7,16,.9));
 }
 
-.missionPanel small,
-.missionPanel h4 {
+.missionPanel small, .missionPanel h4 {
   color: var(--orange);
   text-transform: uppercase;
   letter-spacing: .12em;
@@ -1171,8 +1061,7 @@ main {
   line-height: 1.55;
 }
 
-.hiddenPanel,
-.hiddenFilmstrip {
+.hiddenPanel, .hiddenFilmstrip {
   opacity: 0;
   pointer-events: none;
 }
@@ -1239,8 +1128,7 @@ main {
   text-overflow: ellipsis;
 }
 
-.filmNav,
-.lightboxArrow {
+.filmNav, .lightboxArrow {
   border: 1px solid rgba(255,255,255,.12);
   background: rgba(7,16,34,.84);
   color: white;
@@ -1279,7 +1167,6 @@ main {
   font-size: 13px;
 }
 
-/* Report preview sizing */
 .missionImagePanel:not(.cinemaMode) {
   grid-template-rows: 420px auto;
 }
@@ -1318,7 +1205,6 @@ main {
   cursor: zoom-in;
 }
 
-/* Footer */
 footer {
   border-top: 1px solid var(--line);
   padding: 32px 6vw 46px;
@@ -1336,8 +1222,201 @@ footer p {
   color: #c5cee3;
 }
 
-/* Responsive */
+.weatherMetrics span {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.rating svg {
+  color: #b7cdfd;
+  width: 42px;
+  height: 42px;
+}
+
+.weatherMetrics div {
+  text-align: center;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+}
+
+.weatherMetrics svg {
+  width: 28px;
+  height: 28px;
+  color: #d8e5ff;
+}
+
+.weatherMetrics strong {
+  font-size: 16px;
+  color: white;
+}
+
+.skyStars svg {
+  width: 16px;
+  height: 16px;
+}
+
+.weather {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(12,25,48,.84), rgba(3,10,22,.9));
+  border-radius: 18px;
+  box-shadow: 0 12px 38px #0009;
+  backdrop-filter: blur(14px);
+}
+
+.weatherTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.weatherTop h3 {
+  margin: 0;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0 10px;
+  margin-top: -6px;
+}
+
+.weatherMetrics {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 12px;
+  margin: 8px 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.carousel {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 40px) / 3);
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 4px 2px 12px;
+  padding-top: 14px;
+  padding-bottom: 18px;
+}
+
+.carouselWrap {
+  display: grid;
+  grid-template-columns: 54px 1fr 54px;
+  gap: 16px;
+  align-items: center;
+  overflow: visible;
+}
+
+.photoCard {
+  position: relative;
+  min-height: 300px;
+  scroll-snap-align: start;
+  overflow: hidden;
+  border-radius: 22px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(2,7,16,.65);
+  transition: transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease;
+  transform-origin: center bottom;
+}
+
+.catalogItem {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.catalogItem + .catalogItem {
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.catalogItem b {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--orange);
+  color: var(--orange);
+}
+
+.catalogItem strong, .catalogItem em, .catalogItem small {
+  display: block;
+}
+
+.catalogItem strong {
+  font-size: 15px;
+}
+
+.catalogItem em {
+  margin-top: 4px;
+  color: #9fb3da;
+  font-style: normal;
+}
+
+.catalogItem small {
+  margin-top: 4px;
+  color: #bfcbe2;
+}
+
+.catalogItem:hover, .catalogItem.active {
+  border-color: rgba(255,157,28,.65);
+  background: rgba(255,157,28,.08);
+}
+
+.catalogItem.active b, .atlasDetail h2 span {
+  background: rgba(255,157,28,.18);
+  box-shadow: inset 0 0 0 1px rgba(255,157,28,.35);
+}
+
+@keyframes heroFade {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes atlasPulse {
+  from {
+    transform: scale(.8);
+    opacity: .75;
+  }
+
+  to {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
 @media (max-width: 1000px) {
+
   html {
     scroll-padding-top: 20px;
   }
@@ -1372,8 +1451,7 @@ footer p {
     justify-self: stretch;
   }
 
-  .quick,
-  .weatherGrid {
+  .quick, .weatherGrid {
     grid-template-columns: 1fr;
   }
 
@@ -1394,8 +1472,7 @@ footer p {
     grid-template-columns: 1fr;
   }
 
-  .infoGrid,
-  .crewGrid {
+  .infoGrid, .crewGrid {
     grid-template-columns: 1fr;
   }
 
@@ -1428,8 +1505,7 @@ footer p {
     grid-template-columns: 1fr;
   }
 
-  .filmNav,
-  .lightboxArrow {
+  .filmNav, .lightboxArrow {
     display: none;
   }
 
@@ -1443,6 +1519,7 @@ footer p {
 }
 
 @media (max-width: 700px) {
+
   .nav {
     position: relative;
     min-height: auto;
@@ -1555,8 +1632,7 @@ footer p {
     grid-template-columns: 1fr;
   }
 
-  .quick svg,
-  .quick span {
+  .quick svg, .quick span {
     grid-column: 1;
     justify-self: center;
   }
@@ -1581,96 +1657,7 @@ footer p {
     padding: 9px 10px;
     font-size: 13px;
   }
-}
-.weatherMetrics{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:12px;
-    margin:18px 0;
-    padding:14px 0;
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-}
 
-.weatherMetrics div{
-    text-align:center;
-}
-
-.weatherMetrics span{
-    display:block;
-    font-size:18px;
-    margin-bottom:6px;
-}
-
-.weatherMetrics strong{
-    font-size:15px;
-    color:white;
-}
-.weather {
-  padding: 22px 24px;
-}
-
-.weatherTop {
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.rating {
-  margin: 14px 0 14px;
-  gap: 14px;
-}
-
-.rating svg {
-  width: 42px;
-  height: 42px;
-}
-
-.weatherMetrics {
-  margin: 14px 0;
-  padding: 12px 0;
-}
-
-.weatherMetrics div {
-  display: grid;
-  place-items: center;
-  gap: 8px;
-}
-
-.weatherMetrics svg {
-  width: 28px;
-  height: 28px;
-  color: #d8e5ff;
-}
-
-.weatherMetrics strong {
-  font-size: 16px;
-}
-.skyStars svg {
-  width: 16px;
-  height: 16px;
-}
-.weather {
-  padding: 18px 20px;
-}
-
-.weatherTop {
-  margin-bottom: 6px;
-}
-
-.weatherTop h3 {
-  margin: 0;
-}
-
-.rating {
-  margin: 8px 0 10px;
-  gap: 14px;
-}
-
-.weatherMetrics {
-  margin: 8px 0;
-  padding: 10px 0;
-}
-@media (max-width: 700px) {
   .photoCard::before {
     opacity: 1;
     transform: none;
@@ -1680,194 +1667,20 @@ footer p {
   .photoCard:hover {
     transform: none;
   }
-}
-.carousel {
-  padding-top: 14px;
-  padding-bottom: 18px;
-}
 
-.carouselWrap {
-  overflow: visible;
-}
-
-.photoCard {
-  transform-origin: center bottom;
-}
-.skyMap {
-  position: relative;
-  min-height: 420px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 60% 30%, rgba(114,217,255,.12), transparent 28%),
-    radial-gradient(circle at 25% 70%, rgba(255,157,28,.10), transparent 24%),
-    rgba(2,7,16,.72);
-  box-shadow: 0 12px 38px #0009;
-}
-
-.skyMapGrid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-  background-size: 64px 64px;
-  opacity: .35;
-}
-
-.skyPoint {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 11px;
-  border-radius: 999px;
-  border: 1px solid rgba(114,217,255,.35);
-  background: rgba(2,7,16,.82);
-  color: white;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.skyPoint svg {
-  color: var(--orange);
-}
-
-.skyPoint span {
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.skyPoint:hover {
-  border-color: var(--orange);
-  transform: translate(-50%, -50%) scale(1.06);
-}
-
-@media (max-width: 700px) {
-  .skyMap {
-    min-height: 360px;
-  }
-
-  .skyPoint {
-    padding: 7px 9px;
-  }
-
-  .skyPoint span {
-    font-size: 11px;
+  .catalogItem {
+    padding: 10px;
   }
 }
+
+/* =========================
+   Real Celestial Atlas
+========================= */
 .skyMapPage {
-    padding-top: 90px;
-    min-height: calc(100vh - 90px);
+  padding-top: 90px;
+  min-height: calc(100vh - 90px);
 }
 
-@media (max-width:700px){
-
-    .skyMapPage{
-        padding-top:70px;
-    }
-
-}
-.skyMapContainer{
-    max-width:1400px;
-    margin:auto;
-    padding:0 32px 40px;
-}
-.skyMapContainer{
-    max-width:1400px;
-    margin:auto;
-    padding:0 32px 60px;
-}
-
-.skyMapHero{
-    margin-bottom:36px;
-}
-
-.skyMapHero h1{
-    margin:.2rem 0;
-    font-size:clamp(2.8rem,6vw,4.5rem);
-}
-
-.skyMapHero .tagline{
-    max-width:650px;
-    color:#cbd6eb;
-    font-size:1.05rem;
-    line-height:1.7;
-}
-
-.skyMap{
-    position:relative;
-    min-height:650px;
-    border-radius:28px;
-    overflow:hidden;
-    border:1px solid var(--line);
-    background:
-        radial-gradient(circle at 20% 20%, rgba(90,160,255,.12), transparent 30%),
-        radial-gradient(circle at 80% 70%, rgba(255,157,28,.08), transparent 30%),
-        rgba(2,7,16,.75);
-}
-
-.skyMapGrid{
-    position:absolute;
-    inset:0;
-    background-image:
-        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-    background-size:64px 64px;
-    opacity:.35;
-}
-
-.skyPoint{
-    position:absolute;
-    transform:translate(-50%,-50%);
-    display:flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 12px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.15);
-    background:rgba(2,7,16,.82);
-    color:white;
-    cursor:pointer;
-    transition:.2s;
-}
-
-.skyPoint:hover{
-    border-color:var(--orange);
-    transform:translate(-50%,-50%) scale(1.08);
-}
-
-.skyPoint svg{
-    color:var(--orange);
-}
-
-.skyPoint span{
-    font-size:.8rem;
-    font-weight:700;
-    white-space:nowrap;
-}
-
-@media (max-width:700px){
-
-    .skyMapContainer{
-        padding:0 18px 40px;
-    }
-
-    .skyMap{
-        min-height:500px;
-    }
-
-    .skyPoint{
-        padding:6px 9px;
-    }
-
-    .skyPoint span{
-        font-size:.7rem;
-    }
-
-}
 .atlasPage {
   max-width: 1500px;
   margin: auto;
@@ -1883,6 +1696,22 @@ footer p {
   font-size: clamp(3rem, 7vw, 5.5rem);
 }
 
+.atlasBackButton {
+  display: inline-flex;
+  margin-top: 18px;
+  padding: 11px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,157,28,.45);
+  background: rgba(255,157,28,.10);
+  color: white;
+  font-weight: 800;
+}
+
+.atlasBackButton:hover {
+  border-color: var(--orange);
+  background: rgba(255,157,28,.18);
+}
+
 .atlasLayout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -1890,117 +1719,218 @@ footer p {
   align-items: stretch;
 }
 
-.atlasMap {
+.realAtlasLayout {
+  align-items: start;
+}
+
+.atlasMap,
+.realSkyMap {
   position: relative;
-  min-height: 680px;
-  border: 1px solid rgba(255,255,255,.16);
-  border-radius: 24px;
+  min-height: 780px;
   overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,.12);
   background:
-    radial-gradient(circle at 58% 46%, rgba(114,217,255,.12), transparent 24%),
-    radial-gradient(circle at 35% 68%, rgba(255,157,28,.08), transparent 22%),
-    rgba(2,7,16,.78);
+    radial-gradient(circle at 50% 50%, rgba(74,140,255,.08), transparent 35%),
+    radial-gradient(circle at 82% 18%, rgba(255,157,28,.06), transparent 24%),
+    radial-gradient(circle at 20% 82%, rgba(114,217,255,.06), transparent 24%),
+    rgba(2,7,16,.92);
+  cursor: grab;
 }
 
-.atlasStars {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(white 1px, transparent 1px),
-    radial-gradient(rgba(180,215,255,.75) 1px, transparent 1px),
-    radial-gradient(rgba(255,220,170,.75) 1px, transparent 1px);
-  background-size: 42px 42px, 83px 83px, 137px 137px;
-  opacity: .72;
+.realSkyMap:active {
+  cursor: grabbing;
 }
 
-.atlasMilkyWay {
-  position: absolute;
-  inset: -20%;
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(114,217,255,.08) 42%,
-    rgba(255,255,255,.16) 48%,
-    rgba(255,157,28,.08) 55%,
-    transparent 68%
-  );
-  filter: blur(18px);
-  opacity: .8;
-}
-
-.constellationLines {
-  position: absolute;
-  inset: 0;
+.skyPanLayer {
+  position: relative;
   width: 100%;
   height: 100%;
-  pointer-events: none;
+  transition: transform .08s linear;
 }
 
-.constellationLines polyline {
+.skySvg {
+  width: 100%;
+  height: 100%;
+  min-height: 780px;
+  display: block;
+}
+
+.skyHorizonCircle {
+  fill: rgba(3, 10, 24, .72);
+  stroke: rgba(255,255,255,.18);
+  stroke-width: 2;
+}
+
+.skyAltitudeRing {
   fill: none;
-  stroke: rgba(114,217,255,.42);
-  stroke-width: .28;
+  stroke: rgba(180,215,255,.10);
+  stroke-width: 1;
+  stroke-dasharray: 4 8;
 }
 
-.constellationLabel {
-  position: absolute;
-  z-index: 2;
-  transform: translate(-50%, -50%);
-  color: #9fc8ff;
+.skyAxis {
+  stroke: rgba(180,215,255,.16);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 8;
+}
+
+.skyZenithDot {
+  fill: rgba(255,255,255,.8);
+}
+
+.compassLabel {
+  fill: #dfe7f8;
+  font-size: 22px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.zenithLabel {
+  fill: #8ec8ff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.eclipticPath {
+  fill: none;
+  stroke: rgba(255,157,28,.9);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lunarPath {
+  fill: none;
+  stroke: rgba(180,215,255,.9);
+  stroke-width: 2;
+  stroke-dasharray: 8 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pathLabel {
+  fill: rgba(255,157,28,.9);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  letter-spacing: .12em;
-  font-size: 11px;
-  opacity: .85;
-  pointer-events: none;
 }
 
-.atlasMarker {
+.moonPathLabel {
+  fill: rgba(180,215,255,.9);
+}
+
+.constellationSegment {
+  fill: none;
+  stroke: rgba(114,217,255,.18);
+  stroke-width: 1.5;
+}
+
+.constellationText {
+  fill: rgba(180,198,233,.7);
+  font-size: 18px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-anchor: middle;
+}
+
+.skyStar {
+  fill: rgba(255,255,255,.88);
+}
+
+.polarisStar {
+  fill: rgba(255,220,170,.95);
+}
+
+.polarisLabel {
+  fill: rgba(255,220,170,.95);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.planetMarker {
+  fill: rgba(114,217,255,.95);
+  stroke: rgba(255,255,255,.4);
+  stroke-width: 1;
+}
+
+.planetLabel {
+  fill: rgba(200,230,255,.92);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.missionMarkerHalo {
+  fill: color-mix(in srgb, var(--marker-color, #fff) 18%, transparent);
+  stroke: none;
+  opacity: .5;
+}
+
+.svgMarker {
   position: absolute;
-  z-index: 4;
   width: 38px;
   height: 38px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  border: 1px solid rgba(255,157,28,.8);
-  background: rgba(2,7,16,.78);
+  border: 2px solid var(--marker-color, var(--orange));
+  background: rgba(5, 12, 28, .95);
   color: white;
-  font-weight: 900;
+  font-size: 18px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+  z-index: 5;
 }
 
-.atlasMarker:hover,
-.atlasMarker.active {
-  transform: translate(-50%, -50%) scale(1.18);
-  background: rgba(255,157,28,.22);
-  box-shadow: 0 0 26px rgba(255,157,28,.42);
+.svgMarker:hover,
+.svgMarker.active {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--marker-color, #fff) 35%, transparent);
+  background: rgba(10, 20, 42, .98);
 }
 
+.enhancedLegend,
 .atlasLegend {
   position: absolute;
-  right: 18px;
-  bottom: 18px;
-  z-index: 5;
-  display: grid;
-  gap: 9px;
-  padding: 14px;
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 14px;
-  background: rgba(2,7,16,.72);
-  color: #dce5f8;
+  left: 20px;
+  bottom: 20px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  background: rgba(4, 11, 25, .86);
+  backdrop-filter: blur(10px);
+}
+
+.enhancedLegend span,
+.atlasLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #d8e3f5;
   font-size: 13px;
 }
 
+.enhancedLegend i,
 .atlasLegend i {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-right: 8px;
+  width: 12px;
+  height: 12px;
+  margin-right: 0;
   border-radius: 50%;
+  display: inline-block;
 }
 
+.legendCyan { background: var(--cyan); }
+.legendPurple { background: #b184ff; }
 .legendOrange { background: var(--orange); }
-.legendBlue { background: var(--cyan); }
+.legendGold { background: #f6d36b; }
+.legendSilver { background: #d9e1ff; }
 
 .atlasCatalog {
   padding: 18px;
@@ -2048,6 +1978,12 @@ footer p {
   color: var(--orange);
 }
 
+.catalogItem.active b,
+.atlasDetail h2 span {
+  background: rgba(255,157,28,.18);
+  box-shadow: inset 0 0 0 1px rgba(255,157,28,.35);
+}
+
 .catalogItem strong,
 .catalogItem em,
 .catalogItem small {
@@ -2084,6 +2020,11 @@ footer p {
   border: 1px solid rgba(255,255,255,.16);
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(12,25,48,.76), rgba(3,10,22,.9));
+  transition: border-color .25s ease, background .25s ease;
+}
+
+.atlasDetail:hover {
+  border-color: rgba(255,157,28,.45);
 }
 
 .atlasDetail img {
@@ -2123,7 +2064,7 @@ footer p {
 
 .atlasFacts {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin: 18px 0;
 }
@@ -2163,187 +2104,59 @@ footer p {
     order: 2;
   }
 
-  .atlasMap {
+  .atlasMap,
+  .realSkyMap,
+  .skySvg {
     min-height: 560px;
   }
 
   .atlasFacts {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .enhancedLegend,
+  .atlasLegend {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    gap: 8px 10px;
+  }
+
+  .enhancedLegend span,
+  .atlasLegend span {
+    font-size: 12px;
+  }
+
+  .compassLabel {
+    font-size: 18px;
+  }
+
+  .constellationText {
+    font-size: 14px;
+  }
+
+  .planetLabel,
+  .polarisLabel,
+  .pathLabel {
+    font-size: 12px;
+  }
+
+  .svgMarker {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 700px) {
+  .skyMapPage {
+    padding-top: 70px;
+  }
+
   .atlasPage {
     padding: 0 18px 46px;
   }
 
-  .atlasMap {
-    min-height: 440px;
-  }
-
-  .atlasMarker {
-    width: 32px;
-    height: 32px;
-    font-size: 13px;
-  }
-
-  .constellationLabel {
-    font-size: 9px;
-  }
-
-  .atlasLegend {
-    display: none;
-  }
-
-  .atlasDetail img {
-    height: 210px;
-  }
-}
-.atlasBackButton {
-  display: inline-flex;
-  margin-top: 18px;
-  padding: 11px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,157,28,.45);
-  background: rgba(255,157,28,.10);
-  color: white;
-  font-weight: 800;
-}
-
-.atlasBackButton:hover {
-  border-color: var(--orange);
-  background: rgba(255,157,28,.18);
-}
-.constellationLines polyline {
-  fill: none;
-  stroke: rgba(114,217,255,.22);
-  stroke-width: .22;
-  transition: stroke .2s ease, stroke-width .2s ease, opacity .2s ease;
-  opacity: .55;
-}
-
-.constellationLines polyline.active {
-  stroke: rgba(255,157,28,.9);
-  stroke-width: .42;
-  opacity: 1;
-}
-
-.constellationLabel {
-  opacity: .45;
-  transition: opacity .2s ease, color .2s ease, text-shadow .2s ease;
-}
-
-.constellationLabel.active {
-  opacity: 1;
-  color: var(--orange);
-  text-shadow: 0 0 18px rgba(255,157,28,.45);
-}
-
-.atlasMarker.active::after {
-  content: "";
-  position: absolute;
-  inset: -9px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,157,28,.45);
-  animation: atlasPulse 1.8s ease-out infinite;
-}
-
-@keyframes atlasPulse {
-  from {
-    transform: scale(.8);
-    opacity: .75;
-  }
-
-  to {
-    transform: scale(1.55);
-    opacity: 0;
-  }
-}
-.legendCyan {
-  background: var(--cyan);
-}
-
-.legendPurple {
-  background: var(--purple);
-}
-
-.legendOrange {
-  background: var(--orange);
-}
-
-.legendGold {
-  background: #ffdc82;
-}
-
-.legendSilver {
-  background: #e6eeff;
-}
-.atlasFilters {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.atlasFilters button {
-  padding: 9px 13px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(7,16,34,.62);
-  color: #cbd3e2;
-  cursor: pointer;
-}
-
-.atlasFilters button:hover,
-.atlasFilters button.active {
-  border-color: rgba(255,157,28,.8);
-  background: rgba(255,157,28,.14);
-  color: white;
-}
-.catalogItem.active b,
-.atlasDetail h2 span {
-  background: rgba(255,157,28,.18);
-  box-shadow: inset 0 0 0 1px rgba(255,157,28,.35);
-}
-
-.atlasDetail {
-  transition: border-color .25s ease, background .25s ease;
-}
-
-.atlasDetail:hover {
-  border-color: rgba(255,157,28,.45);
-}
-.catalogItem.active b,
-.atlasDetail h2 span {
-  background: rgba(255,157,28,.18);
-  box-shadow: inset 0 0 0 1px rgba(255,157,28,.35);
-}
-
-.atlasDetail {
-  transition: border-color .25s ease, background .25s ease;
-}
-
-.atlasDetail:hover {
-  border-color: rgba(255,157,28,.45);
-}
-.atlasFilters button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.atlasFilters button b {
-  display: inline-grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.08);
-  color: white;
-  font-size: 12px;
-}
-@media (max-width: 700px) {
   .atlasHero {
     margin-bottom: 22px;
   }
@@ -2356,16 +2169,9 @@ footer p {
     gap: 16px;
   }
 
-  .atlasFilters {
-    gap: 8px;
-  }
-
-  .atlasFilters button {
-    padding: 8px 10px;
-    font-size: 12px;
-  }
-
-  .atlasMap {
+  .atlasMap,
+  .realSkyMap,
+  .skySvg {
     min-height: 420px;
     border-radius: 20px;
   }
@@ -2379,308 +2185,20 @@ footer p {
   }
 
   .atlasDetail {
+    grid-template-columns: 1fr;
     padding: 16px;
     gap: 16px;
+  }
+
+  .atlasDetail img {
+    height: 210px;
   }
 
   .atlasFacts {
     grid-template-columns: 1fr;
   }
-}
-.realSkyMap {
-  background:
-    radial-gradient(circle at 54% 48%, rgba(255,255,255,.10), transparent 18%),
-    radial-gradient(circle at 25% 35%, rgba(74,140,255,.12), transparent 24%),
-    radial-gradient(circle at 80% 72%, rgba(255,157,28,.09), transparent 24%),
-    rgba(2,7,16,.78);
-}
 
-.skyCoordinateGrid {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: .32;
-  pointer-events: none;
-}
-
-.skyCoordinateGrid path {
-  fill: none;
-  stroke: rgba(180,215,255,.25);
-  stroke-width: .15;
-  stroke-dasharray: 1.5 1.5;
-}
-
-.skyPaths {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.skyPaths polyline {
-  fill: none;
-  stroke-width: .38;
-  opacity: .85;
-}
-
-.eclipticPath {
-  stroke: rgba(255,157,28,.75);
-  stroke-dasharray: 2 1.5;
-}
-
-.planetPath {
-  stroke: rgba(255,220,130,.75);
-}
-
-.moonPath {
-  stroke: rgba(230,238,255,.62);
-  stroke-dasharray: 1.5 2;
-}
-
-.skyPathLabel {
-  position: absolute;
-  z-index: 3;
-  font-size: 10px;
-  letter-spacing: .16em;
-  font-weight: 800;
-  pointer-events: none;
-}
-
-.eclipticLabel {
-  left: 77%;
-  top: 53%;
-  color: var(--orange);
-  transform: rotate(-11deg);
-}
-
-.planetLabel {
-  left: 72%;
-  top: 16%;
-  color: #ffdc82;
-  transform: rotate(28deg);
-}
-
-.moonLabel {
-  left: 14%;
-  top: 42%;
-  color: #e6eeff;
-  transform: rotate(12deg);
-}
-
-.compassRose {
-  position: absolute;
-  left: 22px;
-  bottom: 92px;
-  z-index: 5;
-  width: 92px;
-  height: 92px;
-  border-radius: 50%;
-  border: 1px solid rgba(230,238,255,.28);
-  color: #e6eeff;
-  opacity: .88;
-}
-
-.compassRose::before,
-.compassRose::after {
-  content: "";
-  position: absolute;
-  inset: 50% auto auto 50%;
-  width: 2px;
-  height: 72px;
-  background: linear-gradient(#e6eeff, transparent);
-  transform-origin: top center;
-}
-
-.compassRose::before {
-  transform: rotate(0deg) translate(-50%, -50%);
-}
-
-.compassRose::after {
-  transform: rotate(90deg) translate(-50%, -50%);
-}
-
-.compassRose i {
-  position: absolute;
-  inset: 18px;
-  border-radius: 50%;
-  border: 1px solid rgba(230,238,255,.18);
-}
-
-.compassRose span {
-  position: absolute;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.compassRose span:nth-child(1) { top: -18px; left: 50%; transform: translateX(-50%); }
-.compassRose span:nth-child(2) { right: -18px; top: 50%; transform: translateY(-50%); }
-.compassRose span:nth-child(3) { bottom: -18px; left: 50%; transform: translateX(-50%); }
-.compassRose span:nth-child(4) { left: -18px; top: 50%; transform: translateY(-50%); }
-
-.starLabel,
-.planetDot {
-  position: absolute;
-  z-index: 3;
-  color: #eaf4ff;
-  font-size: 12px;
-  text-shadow: 0 0 10px #000;
-  pointer-events: none;
-}
-
-.starLabel::before {
-  content: "✦";
-  color: #b9d8ff;
-  margin-right: 5px;
-}
-
-.planetDot::before {
-  content: "";
-  display: inline-block;
-  width: 11px;
-  height: 11px;
-  margin-right: 6px;
-  border-radius: 50%;
-  background: #ffdc82;
-  box-shadow: 0 0 12px rgba(255,220,130,.55);
-}
-
-.planetDot.neptune::before {
-  background: var(--blue);
-}
-
-.planetDot.saturn::before {
-  width: 18px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ffdc82;
-}
-
-@media (max-width: 700px) {
-  .compassRose {
-    width: 62px;
-    height: 62px;
-    left: 18px;
-    bottom: 72px;
+  .atlasLegend {
+    display: none;
   }
-
-  .compassRose::before,
-  .compassRose::after {
-    height: 48px;
-  }
-
-  .skyPathLabel,
-  .starLabel,
-  .planetDot {
-    font-size: 9px;
-  }
-}
-/* Celestial Atlas background cleanup */
-.atlasStars {
-  opacity: .38;
-  background-image:
-    radial-gradient(circle at 7% 11%, rgba(255,255,255,.9) 0 1px, transparent 1.6px),
-    radial-gradient(circle at 18% 38%, rgba(180,215,255,.75) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 31% 19%, rgba(255,220,170,.7) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 46% 62%, rgba(255,255,255,.75) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 61% 27%, rgba(180,215,255,.7) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 76% 51%, rgba(255,255,255,.8) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 91% 74%, rgba(255,220,170,.65) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 14% 83%, rgba(255,255,255,.75) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 38% 72%, rgba(180,215,255,.6) 0 1px, transparent 1.7px),
-    radial-gradient(circle at 83% 16%, rgba(255,255,255,.75) 0 1px, transparent 1.7px);
-  background-size:
-    320px 260px,
-    420px 310px,
-    510px 360px,
-    390px 440px,
-    620px 480px,
-    470px 370px,
-    580px 520px,
-    360px 300px,
-    450px 410px,
-    530px 390px;
-  background-position:
-    0 0,
-    30px 80px,
-    120px 40px,
-    60px 160px,
-    200px 90px,
-    170px 210px,
-    80px 30px,
-    230px 150px,
-    300px 20px,
-    20px 250px;
-}
-
-.atlasMilkyWay {
-  opacity: .42;
-  filter: blur(28px);
-  background: linear-gradient(
-    112deg,
-    transparent 28%,
-    rgba(74,140,255,.06) 40%,
-    rgba(255,255,255,.09) 48%,
-    rgba(255,157,28,.05) 56%,
-    transparent 70%
-  );
-}
-
-.skyCoordinateGrid {
-  opacity: .16;
-}
-
-.skyCoordinateGrid path {
-  stroke: rgba(180,215,255,.18);
-  stroke-width: .12;
-}
-
-.constellationLines polyline {
-  opacity: .38;
-  stroke: rgba(114,217,255,.26);
-}
-
-.constellationLines polyline.active {
-  opacity: 1;
-  stroke: rgba(255,157,28,.9);
-}
-
-.realSkyMap {
-  background:
-    radial-gradient(circle at 50% 46%, rgba(255,255,255,.05), transparent 24%),
-    radial-gradient(circle at 24% 35%, rgba(74,140,255,.08), transparent 28%),
-    radial-gradient(circle at 84% 70%, rgba(255,157,28,.05), transparent 30%),
-    rgba(2,7,16,.88);
-}
-.skyPanLayer {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform .08s linear;
-}
-
-.svgMarker {
-  position: absolute;
-  width: 38px;
-  height: 38px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid var(--marker-color, var(--orange));
-  background: rgba(5, 12, 28, .95);
-  color: white;
-  font-size: 18px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-  z-index: 5;
-}
-
-.svgMarker:hover,
-.svgMarker.active {
-  transform: translate(-50%, -50%) scale(1.08);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--marker-color, #fff) 35%, transparent);
-  background: rgba(10, 20, 42, .98);
 }
