@@ -2818,3 +2818,77 @@ footer p {
     font-size: 11px;
   }
 }
+/* Celestial Atlas zoom controls */
+.skyPanLayer {
+  transform-origin: center center;
+}
+
+.atlasZoomControls {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  z-index: 12;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 16px;
+  background: rgba(2,7,16,.74);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 34px rgba(0,0,0,.35);
+}
+
+.atlasZoomControls button {
+  width: 42px;
+  min-height: 38px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 11px;
+  background: rgba(7,16,34,.88);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.atlasZoomControls button:hover {
+  border-color: rgba(255,157,28,.75);
+  background: rgba(255,157,28,.16);
+  transform: translateY(-1px);
+}
+
+.atlasZoomControls button:nth-child(3) {
+  width: auto;
+  padding: 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.atlasZoomControls span {
+  display: block;
+  text-align: center;
+  color: #cbd3e2;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .atlasZoomControls {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    transform: none;
+    grid-template-columns: repeat(4, auto);
+    align-items: center;
+  }
+
+  .atlasZoomControls button {
+    width: 36px;
+    min-height: 34px;
+  }
+
+  .atlasZoomControls button:nth-child(3) {
+    width: auto;
+  }
+}

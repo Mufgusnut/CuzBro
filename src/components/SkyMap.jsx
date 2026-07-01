@@ -289,9 +289,10 @@ function markerOffset(index) {
 }
 
 export default function SkyMap({ gallery, setSelectedIndex }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const dragRef = useRef(null);
+const [activeIndex, setActiveIndex] = useState(0);
+const [pan, setPan] = useState({ x: 0, y: 0 });
+const [zoom, setZoom] = useState(0.82);
+const dragRef = useRef(null);
 
   const date = useMemo(() => new Date(), []);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
@@ -457,7 +458,18 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       setSelectedIndex(realIndex);
     }
   };
+const zoomIn = () => {
+  setZoom((currentZoom) => Math.min(1.35, Number((currentZoom + 0.08).toFixed(2))));
+};
 
+const zoomOut = () => {
+  setZoom((currentZoom) => Math.max(0.62, Number((currentZoom - 0.08).toFixed(2))));
+};
+
+const resetView = () => {
+  setZoom(0.82);
+  setPan({ x: 0, y: 0 });
+};
   const handlePointerDown = (event) => {
     dragRef.current = {
       startX: event.clientX,
@@ -513,9 +525,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           onPointerLeave={handlePointerUp}
         >
           <div
-            className="skyPanLayer"
-            style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
-          >
+  className="skyPanLayer"
+  style={{
+    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+  }}
+>
             <svg
               className="skySvg"
               viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
@@ -698,6 +712,21 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <span><i className="legendGold"></i> Double Star</span>
             <span><i className="legendSilver"></i> Lunar</span>
           </div>
+          <div className="atlasZoomControls" aria-label="Sky map zoom controls">
+  <button type="button" onClick={zoomIn} aria-label="Zoom in">
+    +
+  </button>
+
+  <button type="button" onClick={zoomOut} aria-label="Zoom out">
+    −
+  </button>
+
+  <button type="button" onClick={resetView} aria-label="Reset sky map view">
+    Reset
+  </button>
+
+  <span>{Math.round(zoom * 100)}%</span>
+</div>
         </div>
 
         <aside className="atlasCatalog">
