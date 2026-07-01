@@ -221,6 +221,33 @@ function projectAltAz(altDegrees, azDegrees) {
   };
 }
 
+function isInsideSky(point, buffer = 8) {
+  if (!point?.visible) return false;
+
+  const dx = point.x - CENTER;
+  const dy = point.y - CENTER;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  return distance <= RADIUS + buffer;
+}
+
+function buildVisiblePath(points) {
+  let path = '';
+  let drawing = false;
+
+  points.forEach((point) => {
+    if (!isInsideSky(point, 14)) {
+      drawing = false;
+      return;
+    }
+
+    path += `${drawing ? ' L' : ' M'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+    drawing = true;
+  });
+
+  return path.trim();
+}
+
 function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
   const obliquity = toRadians(23.439291);
   const lambda = toRadians(lambdaDegrees);
@@ -287,7 +314,7 @@ function offsetPoint(point, offset = { x: 0, y: 0 }, pad = 40) {
 }
 
 function pickPathLabel(points, preferredFraction, offset = { x: 0, y: 0 }) {
-  const visiblePoints = points.filter((point) => point.visible);
+  const visiblePoints = points.filter((point) => isInsideSky(point, 14));
 
   if (!visiblePoints.length) {
     return { x: CENTER, y: CENTER };
@@ -296,7 +323,7 @@ function pickPathLabel(points, preferredFraction, offset = { x: 0, y: 0 }) {
   const index = Math.round((visiblePoints.length - 1) * preferredFraction);
   const point = visiblePoints[clamp(index, 0, visiblePoints.length - 1)];
 
-  return offsetPoint(point, offset, 55);
+  return offsetPoint(point, offset, 70);
 }
 
 function getPlanetRaDec(body, date, observer) {
@@ -395,6 +422,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
   const activeConstellation = getMissionConstellation(activeObject);
 
+  const visibleObjects = useMemo(() => {
+    return mappedObjects.filter((photo) => isInsideSky(photo, 12));
+  }, [mappedObjects]);
+
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
       const altAz = raDecToAltAz(star.ra, star.dec, date, SITE.lat, SITE.lon);
@@ -411,6 +442,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     });
   }, [date]);
 
+  const visibleStars = useMemo(() => {
+    return starPoints.filter((star) => isInsideSky(star, 12));
+  }, [starPoints]);
+
   const starLookup = useMemo(() => {
     return Object.fromEntries(starPoints.map((star) => [star.name, star]));
   }, [starPoints]);
@@ -422,6 +457,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       const b = starLookup[nameB];
 
       if (!a || !b) return null;
+      if (!isInsideSky(a, 10) || !isInsideSky(b, 10)) return null;
 
       return {
         group: segment.group,
@@ -431,16 +467,23 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [starLookup]);
 
   const constellationLabels = useMemo(() => {
-    return Object.entries(CONSTELLATION_LABEL_GROUPS).map(([name, stars]) => {
-      const points = stars.map((starName) => starLookup[starName]).filter(Boolean);
-      const centerPoint = avgPoint(points);
-      const offset = CONSTELLATION_LABEL_OFFSETS[name] || { x: 0, y: 0 };
+    return Object.entries(CONSTELLATION_LABEL_GROUPS)
+      .map(([name, stars]) => {
+        const points = stars
+          .map((starName) => starLookup[starName])
+          .filter((point) => point && isInsideSky(point, 20));
 
-      return {
-        name,
-        ...offsetPoint(centerPoint, offset, 60)
-      };
-    });
+        if (points.length < 2) return null;
+
+        const centerPoint = avgPoint(points);
+        const offset = CONSTELLATION_LABEL_OFFSETS[name] || { x: 0, y: 0 };
+
+        return {
+          name,
+          ...offsetPoint(centerPoint, offset, 80)
+        };
+      })
+      .filter(Boolean);
   }, [starLookup]);
 
   const eclipticPoints = useMemo(() => {
@@ -468,8 +511,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return points;
   }, [date, observer]);
 
-  const eclipticPath = useMemo(() => buildPath(eclipticPoints), [eclipticPoints]);
-  const lunarPath = useMemo(() => buildPath(lunarPoints), [lunarPoints]);
+  const eclipticPath = useMemo(() => buildVisiblePath(eclipticPoints), [eclipticPoints]);
+  const lunarPath = useMemo(() => buildVisiblePath(lunarPoints), [lunarPoints]);
 
   const eclipticLabel = useMemo(() => {
     return pickPathLabel(eclipticPoints, 0.72, { x: 24, y: -20 });
@@ -504,8 +547,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     });
   }, [date, observer]);
 
+  const visiblePlanets = useMemo(() => {
+    return planets.filter((planet) => isInsideSky(planet, 12));
+  }, [planets]);
+
   const summerTrianglePoints = useMemo(() => {
-    return [starLookup.Vega, starLookup.Deneb, starLookup.Altair].filter(Boolean);
+    return [starLookup.Vega, starLookup.Deneb, starLookup.Altair]
+      .filter((point) => point && isInsideSky(point, 20));
   }, [starLookup]);
 
   const summerTrianglePath = useMemo(() => {
@@ -514,9 +562,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [summerTrianglePoints]);
 
   const summerTriangleLabel = useMemo(() => {
-    if (summerTrianglePoints.length < 3) return { x: CENTER, y: CENTER };
+    if (summerTrianglePoints.length < 3) return null;
+
     const centerPoint = avgPoint(summerTrianglePoints);
-    return offsetPoint(centerPoint, { x: 58, y: -10 }, 70);
+    return offsetPoint(centerPoint, { x: 58, y: -10 }, 80);
   }, [summerTrianglePoints]);
 
   const openMission = (photo) => {
@@ -668,7 +717,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 />
               ))}
 
-              {starPoints.map((star) => (
+              {visibleStars.map((star) => (
                 <g key={star.name}>
                   <circle
                     cx={star.x}
@@ -685,7 +734,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </g>
               ))}
 
-              {planets.map((planet) => (
+              {visiblePlanets.map((planet) => (
                 <g key={planet.name}>
                   <circle cx={planet.x} cy={planet.y} r={5} className="planetMarker" />
                   <text x={planet.x + 10} y={planet.y - 8} className="planetLabel">
@@ -694,7 +743,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </g>
               ))}
 
-              {mappedObjects.map((photo, index) => {
+              {visibleObjects.map((photo) => {
+                const index = mappedObjects.findIndex((item) => item.title === photo.title);
                 const offset = markerOffset(index);
                 const markerX = photo.x + offset.x;
                 const markerY = photo.y + offset.y;
@@ -746,9 +796,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </text>
               ))}
 
-              <text x={summerTriangleLabel.x} y={summerTriangleLabel.y} className="guideLabel">
-                Summer Triangle
-              </text>
+              {summerTriangleLabel && (
+                <text x={summerTriangleLabel.x} y={summerTriangleLabel.y} className="guideLabel">
+                  Summer Triangle
+                </text>
+              )}
 
               <text x={eclipticLabel.x} y={eclipticLabel.y} className="pathLabel">
                 Ecliptic
@@ -759,7 +811,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               </text>
             </svg>
 
-            {mappedObjects.map((photo, index) => {
+            {visibleObjects.map((photo) => {
+              const index = mappedObjects.findIndex((item) => item.title === photo.title);
               const offset = markerOffset(index);
               const markerColor = getObjectColor(photo.objectType);
               const isActive = activeIndex === index;
