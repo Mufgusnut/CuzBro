@@ -2665,3 +2665,15 @@ footer p {
     font-size: 16px !important;
   }
 }
+/* Keep atlas drawings clipped to the visible card */
+.realSkyMap {
+  overflow: hidden !important;
+}
+
+.skyPanLayer {
+  overflow: visible !important;
+}
+
+.skySvg {
+  overflow: visible !important;
+}
