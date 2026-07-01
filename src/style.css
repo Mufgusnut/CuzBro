@@ -3635,3 +3635,175 @@ footer p {
     font-size: 9px !important;
   }
 }
+/* =========================================================
+   SKY MAP COMPACT MOBILE CONTROL PANEL
+========================================================= */
+
+.compactTonightControls {
+  gap: 10px !important;
+}
+
+.compactTonightControls .tonightHeaderRow {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.compactTonightControls .tonightHeaderRow > div:first-child {
+  min-width: 0 !important;
+}
+
+.compactTonightControls strong {
+  display: block !important;
+  margin-bottom: 5px !important;
+}
+
+.compactTonightControls small {
+  display: block !important;
+  color: rgba(226, 236, 255, 0.72) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+.inlineModeToggle {
+  display: inline-grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 5px !important;
+  padding: 5px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background: rgba(255,255,255,.045) !important;
+  pointer-events: auto !important;
+}
+
+.inlineModeToggle button {
+  min-width: 66px !important;
+  height: 30px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: rgba(226,236,255,.76) !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+.inlineModeToggle button.active {
+  color: #ffffff !important;
+  border-color: rgba(255,157,28,.72) !important;
+  background: rgba(255,157,28,.18) !important;
+}
+
+.compactTonightControls .timeNudgeRow {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px !important;
+}
+
+.compactTonightControls .compactPresetRow {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+}
+
+.compactTonightControls button.active {
+  color: #ffffff !important;
+  border-color: rgba(255,157,28,.72) !important;
+  background: rgba(255,157,28,.18) !important;
+}
+
+/* Turn off the old floating Clean / Detail control if old CSS still exists */
+.atlasModeControls:not(.inlineModeControls) {
+  display: none !important;
+}
+
+/* Moon phase icon polish */
+.moonMarkerGlow {
+  fill: rgba(210, 225, 255, 0.18) !important;
+  filter: drop-shadow(0 0 14px rgba(210, 225, 255, 0.45)) !important;
+}
+
+.moonPhaseIcon {
+  font-size: 22px !important;
+  dominant-baseline: middle !important;
+  filter:
+    drop-shadow(0 0 5px rgba(255,255,255,0.45))
+    drop-shadow(0 0 16px rgba(185,210,255,0.35)) !important;
+}
+
+.moonLabel {
+  fill: rgba(238, 244, 255, 0.96) !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em !important;
+  paint-order: stroke !important;
+  stroke: rgba(4, 8, 18, 0.88) !important;
+  stroke-width: 4px !important;
+}
+
+.moonPhaseLabel {
+  fill: rgba(205, 218, 245, 0.76) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  paint-order: stroke !important;
+  stroke: rgba(4, 8, 18, 0.88) !important;
+  stroke-width: 3px !important;
+}
+
+@media (max-width: 700px) {
+  .compactTonightControls {
+    left: 10px !important;
+    right: 10px !important;
+    top: 10px !important;
+    padding: 12px !important;
+    gap: 9px !important;
+  }
+
+  .compactTonightControls .tonightHeaderRow {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .inlineModeToggle {
+    width: 100% !important;
+  }
+
+  .inlineModeToggle button {
+    min-width: 0 !important;
+    height: 31px !important;
+    font-size: 10px !important;
+  }
+
+  .compactTonightControls .compactPresetRow {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .compactTonightControls button {
+    min-width: 0 !important;
+    height: 33px !important;
+    font-size: 10px !important;
+    padding: 0 6px !important;
+  }
+
+  .compactTonightControls small {
+    font-size: 9px !important;
+  }
+
+  .moonPhaseIcon {
+    font-size: 18px !important;
+  }
+
+  .moonLabel {
+    font-size: 11px !important;
+  }
+
+  .moonPhaseLabel {
+    font-size: 9px !important;
+  }
+}

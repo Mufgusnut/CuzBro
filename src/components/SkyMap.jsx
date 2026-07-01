@@ -56,7 +56,6 @@ const BACKGROUND_STARS = createBackgroundStars();
 
 const STAR_CATALOG = [
   { name: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 },
-
   { name: 'Dubhe', ra: 11.0621, dec: 61.7510, mag: 1.8 },
   { name: 'Merak', ra: 11.0307, dec: 56.3824, mag: 2.4 },
   { name: 'Phecda', ra: 11.8972, dec: 53.6948, mag: 2.4 },
@@ -64,36 +63,29 @@ const STAR_CATALOG = [
   { name: 'Alioth', ra: 12.9004, dec: 55.9598, mag: 1.8 },
   { name: 'Mizar', ra: 13.3987, dec: 54.9254, mag: 2.2 },
   { name: 'Alkaid', ra: 13.7923, dec: 49.3133, mag: 1.9 },
-
   { name: 'Caph', ra: 0.1529, dec: 59.1498, mag: 2.3 },
   { name: 'Schedar', ra: 0.6751, dec: 56.5373, mag: 2.2 },
   { name: 'Gamma Cas', ra: 0.9451, dec: 60.7167, mag: 2.2 },
   { name: 'Ruchbah', ra: 1.4303, dec: 60.2353, mag: 2.7 },
   { name: 'Segin', ra: 2.2939, dec: 63.6701, mag: 3.4 },
-
   { name: 'Vega', ra: 18.6156, dec: 38.7837, mag: 0.0 },
   { name: 'Deneb', ra: 20.6905, dec: 45.2803, mag: 1.3 },
   { name: 'Altair', ra: 19.8464, dec: 8.8683, mag: 0.8 },
-
   { name: 'Zeta Lyr', ra: 18.7462, dec: 37.6051, mag: 4.3 },
   { name: 'Delta2 Lyr', ra: 18.9080, dec: 36.8986, mag: 4.3 },
   { name: 'Sheliak', ra: 18.8347, dec: 33.3627, mag: 3.5 },
   { name: 'Sulafat', ra: 18.9824, dec: 32.6896, mag: 3.3 },
-
   { name: 'Sadr', ra: 20.3705, dec: 40.2567, mag: 2.2 },
   { name: 'Gienah', ra: 20.7702, dec: 33.9703, mag: 2.5 },
   { name: 'Delta Cyg', ra: 19.7496, dec: 45.1308, mag: 2.9 },
   { name: 'Albireo', ra: 19.5126, dec: 27.9597, mag: 3.1 },
-
   { name: 'Eta Her', ra: 16.7149, dec: 38.9223, mag: 3.5 },
   { name: 'Zeta Her', ra: 16.6881, dec: 31.6032, mag: 2.8 },
   { name: 'Epsilon Her', ra: 17.0048, dec: 30.9263, mag: 3.9 },
   { name: 'Pi Her', ra: 17.2505, dec: 36.8092, mag: 3.1 },
   { name: 'Kornephoros', ra: 16.5037, dec: 21.4896, mag: 2.8 },
   { name: 'Rasalgethi', ra: 17.2441, dec: 14.3903, mag: 3.1 },
-
   { name: 'Anser', ra: 19.4784, dec: 24.6649, mag: 4.4 },
-
   { name: 'Nunki', ra: 18.9211, dec: -26.2967, mag: 2.0 },
   { name: 'Kaus Australis', ra: 18.4029, dec: -34.3846, mag: 1.8 },
   { name: 'Ascella', ra: 19.0435, dec: -29.8801, mag: 2.6 },
@@ -109,32 +101,26 @@ const CONSTELLATION_SEGMENTS = [
   { group: 'Ursa Major', stars: ['Megrez', 'Alioth'] },
   { group: 'Ursa Major', stars: ['Alioth', 'Mizar'] },
   { group: 'Ursa Major', stars: ['Mizar', 'Alkaid'] },
-
   { group: 'Cassiopeia', stars: ['Caph', 'Schedar'] },
   { group: 'Cassiopeia', stars: ['Schedar', 'Gamma Cas'] },
   { group: 'Cassiopeia', stars: ['Gamma Cas', 'Ruchbah'] },
   { group: 'Cassiopeia', stars: ['Ruchbah', 'Segin'] },
-
   { group: 'Hercules', stars: ['Eta Her', 'Zeta Her'] },
   { group: 'Hercules', stars: ['Zeta Her', 'Epsilon Her'] },
   { group: 'Hercules', stars: ['Epsilon Her', 'Pi Her'] },
   { group: 'Hercules', stars: ['Pi Her', 'Eta Her'] },
   { group: 'Hercules', stars: ['Zeta Her', 'Kornephoros'] },
   { group: 'Hercules', stars: ['Epsilon Her', 'Rasalgethi'] },
-
   { group: 'Lyra', stars: ['Vega', 'Zeta Lyr'] },
   { group: 'Lyra', stars: ['Zeta Lyr', 'Delta2 Lyr'] },
   { group: 'Lyra', stars: ['Delta2 Lyr', 'Sheliak'] },
   { group: 'Lyra', stars: ['Sheliak', 'Sulafat'] },
   { group: 'Lyra', stars: ['Sulafat', 'Zeta Lyr'] },
-
   { group: 'Cygnus', stars: ['Deneb', 'Sadr'] },
   { group: 'Cygnus', stars: ['Sadr', 'Albireo'] },
   { group: 'Cygnus', stars: ['Sadr', 'Gienah'] },
   { group: 'Cygnus', stars: ['Sadr', 'Delta Cyg'] },
-
   { group: 'Vulpecula', stars: ['Albireo', 'Anser'] },
-
   { group: 'Sagittarius', stars: ['Kaus Australis', 'Kaus Media'] },
   { group: 'Sagittarius', stars: ['Kaus Media', 'Kaus Borealis'] },
   { group: 'Sagittarius', stars: ['Kaus Borealis', 'Nunki'] },
@@ -223,17 +209,13 @@ function raDecToAltAz(raHours, decDegrees, date, latitudeDegrees, longitudeDegre
     (Math.sin(decRadians) - Math.sin(altRadians) * Math.sin(latRadians)) /
     (Math.cos(altRadians) * Math.cos(latRadians));
 
-  let azRadians = Math.acos(Math.max(-1, Math.min(1, cosAz)));
-  let azDegrees = toDegrees(azRadians);
+  let azDegrees = toDegrees(Math.acos(Math.max(-1, Math.min(1, cosAz))));
 
   if (Math.sin(hourAngleRadians) > 0) {
     azDegrees = 360 - azDegrees;
   }
 
-  return {
-    alt: altDegrees,
-    az: azDegrees
-  };
+  return { alt: altDegrees, az: azDegrees };
 }
 
 function projectAltAz(altDegrees, azDegrees) {
@@ -249,12 +231,9 @@ function projectAltAz(altDegrees, azDegrees) {
 
 function isInsideSky(point, buffer = 8) {
   if (!point?.visible) return false;
-
   const dx = point.x - CENTER;
   const dy = point.y - CENTER;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-
-  return distance <= RADIUS + buffer;
+  return Math.sqrt(dx * dx + dy * dy) <= RADIUS + buffer;
 }
 
 function buildVisiblePath(points) {
@@ -306,57 +285,28 @@ function buildPath(points, closed = false) {
 
 function avgPoint(points) {
   if (!points.length) return { x: CENTER, y: CENTER };
-
-  const total = points.reduce(
-    (acc, point) => ({
-      x: acc.x + point.x,
-      y: acc.y + point.y
-    }),
-    { x: 0, y: 0 }
-  );
-
-  return {
-    x: total.x / points.length,
-    y: total.y / points.length
-  };
+  const total = points.reduce((acc, point) => ({ x: acc.x + point.x, y: acc.y + point.y }), { x: 0, y: 0 });
+  return { x: total.x / points.length, y: total.y / points.length };
 }
 
 function clampPoint(point, pad = 40) {
-  return {
-    x: clamp(point.x, pad, MAP_SIZE - pad),
-    y: clamp(point.y, pad, MAP_SIZE - pad)
-  };
+  return { x: clamp(point.x, pad, MAP_SIZE - pad), y: clamp(point.y, pad, MAP_SIZE - pad) };
 }
 
 function offsetPoint(point, offset = { x: 0, y: 0 }, pad = 40) {
-  return clampPoint(
-    {
-      x: point.x + offset.x,
-      y: point.y + offset.y
-    },
-    pad
-  );
+  return clampPoint({ x: point.x + offset.x, y: point.y + offset.y }, pad);
 }
 
 function pickPathLabel(points, preferredFraction, offset = { x: 0, y: 0 }) {
   const visiblePoints = points.filter((point) => isInsideSky(point, 14));
-
-  if (!visiblePoints.length) {
-    return { x: CENTER, y: CENTER };
-  }
-
+  if (!visiblePoints.length) return { x: CENTER, y: CENTER };
   const index = Math.round((visiblePoints.length - 1) * preferredFraction);
-  const point = visiblePoints[clamp(index, 0, visiblePoints.length - 1)];
-
-  return offsetPoint(point, offset, 70);
+  return offsetPoint(visiblePoints[clamp(index, 0, visiblePoints.length - 1)], offset, 70);
 }
 
 function getPlanetRaDec(body, date, observer) {
   const equator = Equator(body, date, observer, true, true);
-  return {
-    ra: equator.ra,
-    dec: equator.dec
-  };
+  return { ra: equator.ra, dec: equator.dec };
 }
 
 function getObjectColor(objectType) {
@@ -391,14 +341,9 @@ function formatDec(decDegrees) {
 
 function getPointerAngle(event, element) {
   const rect = element.getBoundingClientRect();
-
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
-
-  const dx = event.clientX - centerX;
-  const dy = event.clientY - centerY;
-
-  return Math.atan2(dy, dx) * (180 / Math.PI);
+  return Math.atan2(event.clientY - centerY, event.clientX - centerX) * (180 / Math.PI);
 }
 
 function formatMapTime(mapDate) {
@@ -412,23 +357,17 @@ function formatMapTime(mapDate) {
 }
 
 function formatCompactTime(mapDate) {
-  return mapDate.toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit'
-  });
+  return mapDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
+
 function getMoonPhaseInfo(date, phasePercent) {
   const synodicMonth = 29.530588853;
   const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14, 0);
-
   let age = ((date.getTime() - knownNewMoon) / 86400000) % synodicMonth;
 
-  if (age < 0) {
-    age += synodicMonth;
-  }
+  if (age < 0) age += synodicMonth;
 
   const phaseIndex = Math.floor((age / synodicMonth) * 8 + 0.5) % 8;
-
   const phases = [
     { symbol: '🌑', name: 'New Moon' },
     { symbol: '🌒', name: 'Waxing Crescent' },
@@ -440,12 +379,9 @@ function getMoonPhaseInfo(date, phasePercent) {
     { symbol: '🌘', name: 'Waning Crescent' }
   ];
 
-  return {
-    ...phases[phaseIndex],
-    age,
-    phasePercent
-  };
+  return { ...phases[phaseIndex], age, phasePercent };
 }
+
 function getDayOfYear(date) {
   const start = new Date(Date.UTC(date.getFullYear(), 0, 0));
   const current = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -457,7 +393,6 @@ function getSunEventDate(baseDate, isSunrise) {
   const day = getDayOfYear(baseDate);
   const lngHour = SITE.lon / 15;
   const approximateTime = day + ((isSunrise ? 6 : 18) - lngHour) / 24;
-
   const meanAnomaly = 0.9856 * approximateTime - 3.289;
 
   let trueLongitude =
@@ -468,41 +403,26 @@ function getSunEventDate(baseDate, isSunrise) {
 
   trueLongitude = normalizeDegrees(trueLongitude);
 
-  let rightAscension = toDegrees(
-    Math.atan(0.91764 * Math.tan(toRadians(trueLongitude)))
-  );
-
+  let rightAscension = toDegrees(Math.atan(0.91764 * Math.tan(toRadians(trueLongitude))));
   rightAscension = normalizeDegrees(rightAscension);
 
   const longitudeQuadrant = Math.floor(trueLongitude / 90) * 90;
   const raQuadrant = Math.floor(rightAscension / 90) * 90;
-
   rightAscension = (rightAscension + longitudeQuadrant - raQuadrant) / 15;
 
   const sinDec = 0.39782 * Math.sin(toRadians(trueLongitude));
   const cosDec = Math.cos(Math.asin(sinDec));
 
   const cosHour =
-    (Math.cos(toRadians(zenith)) -
-      sinDec * Math.sin(toRadians(SITE.lat))) /
+    (Math.cos(toRadians(zenith)) - sinDec * Math.sin(toRadians(SITE.lat))) /
     (cosDec * Math.cos(toRadians(SITE.lat)));
 
-  if (cosHour > 1 || cosHour < -1) {
-    return new Date(baseDate);
-  }
+  if (cosHour > 1 || cosHour < -1) return new Date(baseDate);
 
-  let hourAngle = isSunrise
-    ? 360 - toDegrees(Math.acos(cosHour))
-    : toDegrees(Math.acos(cosHour));
-
+  let hourAngle = isSunrise ? 360 - toDegrees(Math.acos(cosHour)) : toDegrees(Math.acos(cosHour));
   hourAngle /= 15;
 
-  const localMeanTime =
-    hourAngle +
-    rightAscension -
-    0.06571 * approximateTime -
-    6.622;
-
+  const localMeanTime = hourAngle + rightAscension - 0.06571 * approximateTime - 6.622;
   const utcHours = normalizeHours(localMeanTime - lngHour);
 
   return new Date(Date.UTC(
@@ -525,7 +445,6 @@ function getLocalDateAt(baseDate, hour, minute = 0, addDays = 0) {
 
 function getPresetDate(preset, currentDate) {
   const now = new Date();
-
   if (preset === 'now') return now;
   if (preset === 'sunset') return getSunEventDate(currentDate, false);
   if (preset === '10pm') return getLocalDateAt(currentDate, 22, 0, 0);
@@ -545,53 +464,22 @@ function pointDistance(a, b) {
 }
 
 function getObservingStatus(photo) {
-  if (!photo || photo.alt < 0) {
-    return {
-      label: 'Below Horizon',
-      className: 'below',
-      score: 0
-    };
-  }
-
-  if (photo.alt < 20) {
-    return {
-      label: 'Low',
-      className: 'low',
-      score: 1
-    };
-  }
-
-  if (photo.alt < 45) {
-    return {
-      label: 'Good',
-      className: 'good',
-      score: 2
-    };
-  }
-
-  return {
-    label: 'Best Now',
-    className: 'best',
-    score: 3
-  };
+  if (!photo || photo.alt < 0) return { label: 'Below Horizon', className: 'below', score: 0 };
+  if (photo.alt < 20) return { label: 'Low', className: 'low', score: 1 };
+  if (photo.alt < 45) return { label: 'Good', className: 'good', score: 2 };
+  return { label: 'Best Now', className: 'best', score: 3 };
 }
 
 function getZoomSafeBounds(zoom, isMobile) {
   const safeInset = isMobile ? 74 : 92;
   const halfVisible = (CENTER - safeInset) / Math.max(zoom, getMinZoom());
-
-  return {
-    min: CENTER - halfVisible,
-    max: CENTER + halfVisible
-  };
+  return { min: CENTER - halfVisible, max: CENTER + halfVisible };
 }
 
 function buildMissionCallouts(objects, zoom) {
   const placed = [];
-
   const isMobile = isMobileViewport();
   const defaultZoom = isMobile ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM;
-
   const zoomPull = Math.max(0, zoom - defaultZoom);
   const baseOffset = isMobile ? 26 : 72;
   const pullStrength = isMobile ? 140 : 160;
@@ -608,56 +496,26 @@ function buildMissionCallouts(objects, zoom) {
   const zoomBounds = getZoomSafeBounds(zoom, isMobile);
 
   const sorted = [...objects]
-    .map((photo, index) => ({
-      ...photo,
-      originalIndex: index
-    }))
-    .sort((a, b) => {
-      const aAngle = Math.atan2(a.y - CENTER, a.x - CENTER);
-      const bAngle = Math.atan2(b.y - CENTER, b.x - CENTER);
-      return aAngle - bAngle;
-    });
+    .map((photo, index) => ({ ...photo, originalIndex: index }))
+    .sort((a, b) => Math.atan2(a.y - CENTER, a.x - CENTER) - Math.atan2(b.y - CENTER, b.x - CENTER));
 
   const laidOut = sorted.map((photo) => {
-    const dx = photo.x - CENTER;
-    const dy = photo.y - CENTER;
-    const angle = Math.atan2(dy, dx);
-
+    const angle = Math.atan2(photo.y - CENTER, photo.x - CENTER);
     const tangentX = -Math.sin(angle);
     const tangentY = Math.cos(angle);
-
     const baseX = CENTER + Math.cos(angle) * baseRadius;
     const baseY = CENTER + Math.sin(angle) * baseRadius;
 
-    const clampX = (value) =>
-      clamp(
-        value,
-        Math.max(edgePadding, zoomBounds.min),
-        Math.min(MAP_SIZE - edgePadding, zoomBounds.max)
-      );
+    const clampX = (value) => clamp(value, Math.max(edgePadding, zoomBounds.min), Math.min(MAP_SIZE - edgePadding, zoomBounds.max));
+    const clampY = (value) => clamp(value, Math.max(edgePadding, zoomBounds.min), Math.min(MAP_SIZE - edgePadding, zoomBounds.max));
 
-    const clampY = (value) =>
-      clamp(
-        value,
-        Math.max(edgePadding, zoomBounds.min),
-        Math.min(MAP_SIZE - edgePadding, zoomBounds.max)
-      );
-
-    let chosen = {
-      x: clampX(baseX),
-      y: clampY(baseY)
-    };
+    let chosen = { x: clampX(baseX), y: clampY(baseY) };
 
     for (let i = 0; i < 20; i += 1) {
       const band = Math.ceil(i / 2);
       const direction = i === 0 ? 0 : i % 2 === 1 ? 1 : -1;
       const shift = band * shiftAmount * direction;
-
-      const test = {
-        x: clampX(baseX + tangentX * shift),
-        y: clampY(baseY + tangentY * shift)
-      };
-
+      const test = { x: clampX(baseX + tangentX * shift), y: clampY(baseY + tangentY * shift) };
       const overlaps = placed.some((item) => pointDistance(item, test) < overlapDistance);
 
       if (!overlaps) {
@@ -727,117 +585,70 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
   const activeConstellation = getMissionConstellation(activeObject);
 
-  const visibleObjects = useMemo(() => {
-    return mappedObjects.filter((photo) => isInsideSky(photo, 12));
-  }, [mappedObjects]);
-
-  const bestObjectCount = useMemo(() => {
-    return mappedObjects.filter((photo) => photo.observingStatus.score >= 3).length;
-  }, [mappedObjects]);
-
-  const goodObjectCount = useMemo(() => {
-    return mappedObjects.filter((photo) => photo.observingStatus.score >= 2).length;
-  }, [mappedObjects]);
-
-  const missionCallouts = useMemo(() => {
-    return buildMissionCallouts(visibleObjects, zoom);
-  }, [visibleObjects, zoom]);
+  const visibleObjects = useMemo(() => mappedObjects.filter((photo) => isInsideSky(photo, 12)), [mappedObjects]);
+  const bestObjectCount = useMemo(() => mappedObjects.filter((photo) => photo.observingStatus.score >= 3).length, [mappedObjects]);
+  const goodObjectCount = useMemo(() => mappedObjects.filter((photo) => photo.observingStatus.score >= 2).length, [mappedObjects]);
+  const missionCallouts = useMemo(() => buildMissionCallouts(visibleObjects, zoom), [visibleObjects, zoom]);
 
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
       const altAz = raDecToAltAz(star.ra, star.dec, date, SITE.lat, SITE.lon);
       const point = projectAltAz(altAz.alt, altAz.az);
-
-      return {
-        ...star,
-        x: point.x,
-        y: point.y,
-        alt: altAz.alt,
-        az: altAz.az,
-        visible: point.visible
-      };
+      return { ...star, x: point.x, y: point.y, alt: altAz.alt, az: altAz.az, visible: point.visible };
     });
   }, [date]);
 
-  const visibleStars = useMemo(() => {
-    return starPoints.filter((star) => isInsideSky(star, 12));
-  }, [starPoints]);
-
-  const starLookup = useMemo(() => {
-    return Object.fromEntries(starPoints.map((star) => [star.name, star]));
-  }, [starPoints]);
+  const visibleStars = useMemo(() => starPoints.filter((star) => isInsideSky(star, 12)), [starPoints]);
+  const starLookup = useMemo(() => Object.fromEntries(starPoints.map((star) => [star.name, star])), [starPoints]);
 
   const constellationLines = useMemo(() => {
     return CONSTELLATION_SEGMENTS.map((segment) => {
       const [nameA, nameB] = segment.stars;
       const a = starLookup[nameA];
       const b = starLookup[nameB];
-
       if (!a || !b) return null;
       if (!isInsideSky(a, 10) || !isInsideSky(b, 10)) return null;
-
-      return {
-        group: segment.group,
-        path: `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} L ${b.x.toFixed(1)} ${b.y.toFixed(1)}`
-      };
+      return { group: segment.group, path: `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} L ${b.x.toFixed(1)} ${b.y.toFixed(1)}` };
     }).filter(Boolean);
   }, [starLookup]);
 
   const constellationLabels = useMemo(() => {
     return Object.entries(CONSTELLATION_LABEL_GROUPS)
       .map(([name, stars]) => {
-        const points = stars
-          .map((starName) => starLookup[starName])
-          .filter((point) => point && isInsideSky(point, 20));
-
+        const points = stars.map((starName) => starLookup[starName]).filter((point) => point && isInsideSky(point, 20));
         if (points.length < 2) return null;
-
         const centerPoint = avgPoint(points);
         const offset = CONSTELLATION_LABEL_OFFSETS[name] || { x: 0, y: 0 };
-
-        return {
-          name,
-          ...offsetPoint(centerPoint, offset, 80)
-        };
+        return { name, ...offsetPoint(centerPoint, offset, 80) };
       })
       .filter(Boolean);
   }, [starLookup]);
 
   const eclipticPoints = useMemo(() => {
     const points = [];
-
     for (let lambda = 0; lambda <= 360; lambda += 3) {
       const eq = eclipticToRaDec(lambda, 0);
       const altAz = raDecToAltAz(eq.ra, eq.dec, date, SITE.lat, SITE.lon);
       points.push(projectAltAz(altAz.alt, altAz.az));
     }
-
     return points;
   }, [date]);
 
   const lunarPoints = useMemo(() => {
     const points = [];
-
     for (let hour = 0; hour <= 24; hour += 2) {
       const future = new Date(date.getTime() + hour * 60 * 60 * 1000);
       const moon = getPlanetRaDec(Body.Moon, future, observer);
       const altAz = raDecToAltAz(moon.ra, moon.dec, future, SITE.lat, SITE.lon);
       points.push(projectAltAz(altAz.alt, altAz.az));
     }
-
     return points;
   }, [date, observer]);
 
   const eclipticPath = useMemo(() => buildVisiblePath(eclipticPoints), [eclipticPoints]);
   const lunarPath = useMemo(() => buildVisiblePath(lunarPoints), [lunarPoints]);
-
-  const eclipticLabel = useMemo(() => {
-    return pickPathLabel(eclipticPoints, 0.72, { x: 24, y: -20 });
-  }, [eclipticPoints]);
-
-  const lunarLabel = useMemo(() => {
-    return pickPathLabel(lunarPoints, 0.18, { x: -12, y: -18 });
-  }, [lunarPoints]);
+  const eclipticLabel = useMemo(() => pickPathLabel(eclipticPoints, 0.72, { x: 24, y: -20 }), [eclipticPoints]);
+  const lunarLabel = useMemo(() => pickPathLabel(lunarPoints, 0.18, { x: -12, y: -18 }), [lunarPoints]);
 
   const planets = useMemo(() => {
     const bodies = [
@@ -852,89 +663,52 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       const eq = getPlanetRaDec(planet.body, date, observer);
       const altAz = raDecToAltAz(eq.ra, eq.dec, date, SITE.lat, SITE.lon);
       const point = projectAltAz(altAz.alt, altAz.az);
-
-      return {
-        ...planet,
-        x: point.x,
-        y: point.y,
-        alt: altAz.alt,
-        az: altAz.az,
-        visible: point.visible
-      };
+      return { ...planet, x: point.x, y: point.y, alt: altAz.alt, az: altAz.az, visible: point.visible };
     });
   }, [date, observer]);
 
-  const visiblePlanets = useMemo(() => {
-    return planets.filter((planet) => isInsideSky(planet, 12));
-  }, [planets]);
+  const visiblePlanets = useMemo(() => planets.filter((planet) => isInsideSky(planet, 12)), [planets]);
 
   const moonData = useMemo(() => {
     const moonEq = getPlanetRaDec(Body.Moon, date, observer);
     const altAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
     const point = projectAltAz(altAz.alt, altAz.az);
     const illum = Illumination(Body.Moon, date);
-const phasePercent = Math.round((illum.phase_fraction ?? 0) * 100);
-const phaseInfo = getMoonPhaseInfo(date, phasePercent);
+    const phasePercent = Math.round((illum.phase_fraction ?? 0) * 100);
+    const phaseInfo = getMoonPhaseInfo(date, phasePercent);
 
-return {
-  ra: moonEq.ra,
-  dec: moonEq.dec,
-  alt: altAz.alt,
-  az: altAz.az,
-  x: point.x,
-  y: point.y,
-  visible: point.visible,
-  phasePercent,
-  phaseSymbol: phaseInfo.symbol,
-  phaseName: phaseInfo.name,
-  phaseAge: phaseInfo.age
-};
+    return {
+      ra: moonEq.ra,
+      dec: moonEq.dec,
+      alt: altAz.alt,
+      az: altAz.az,
+      x: point.x,
+      y: point.y,
+      visible: point.visible,
+      phasePercent,
+      phaseSymbol: phaseInfo.symbol,
+      phaseName: phaseInfo.name,
+      phaseAge: phaseInfo.age
+    };
   }, [date, observer]);
 
-  const summerTrianglePoints = useMemo(() => {
-    return [starLookup.Vega, starLookup.Deneb, starLookup.Altair]
-      .filter((point) => point && isInsideSky(point, 20));
-  }, [starLookup]);
-
-  const summerTrianglePath = useMemo(() => {
-    if (summerTrianglePoints.length < 3) return '';
-    return buildPath(summerTrianglePoints, true);
-  }, [summerTrianglePoints]);
-
+  const summerTrianglePoints = useMemo(() => [starLookup.Vega, starLookup.Deneb, starLookup.Altair].filter((point) => point && isInsideSky(point, 20)), [starLookup]);
+  const summerTrianglePath = useMemo(() => (summerTrianglePoints.length < 3 ? '' : buildPath(summerTrianglePoints, true)), [summerTrianglePoints]);
   const summerTriangleLabel = useMemo(() => {
     if (summerTrianglePoints.length < 3) return null;
-
-    const centerPoint = avgPoint(summerTrianglePoints);
-    return offsetPoint(centerPoint, { x: 58, y: -10 }, 80);
+    return offsetPoint(avgPoint(summerTrianglePoints), { x: 58, y: -10 }, 80);
   }, [summerTrianglePoints]);
 
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
-    if (realIndex !== -1) {
-      setSelectedIndex(realIndex);
-    }
+    if (realIndex !== -1) setSelectedIndex(realIndex);
   };
 
-  const zoomIn = () => {
-    setZoom((current) => Math.min(getMaxZoom(), Number((current + 0.08).toFixed(2))));
-  };
-
-  const zoomOut = () => {
-    setZoom((current) => Math.max(getMinZoom(), Number((current - 0.08).toFixed(2))));
-  };
-
-  const rotateLeft = () => {
-    setRotation((current) => current - 15);
-  };
-
-  const rotateRight = () => {
-    setRotation((current) => current + 15);
-  };
-
-  const resetView = () => {
-    setZoom(getDefaultZoom());
-    setRotation(0);
-  };
+  const zoomIn = () => setZoom((current) => Math.min(getMaxZoom(), Number((current + 0.08).toFixed(2))));
+  const zoomOut = () => setZoom((current) => Math.max(getMinZoom(), Number((current - 0.08).toFixed(2))));
+  const rotateLeft = () => setRotation((current) => current - 15);
+  const rotateRight = () => setRotation((current) => current + 15);
+  const resetView = () => { setZoom(getDefaultZoom()); setRotation(0); };
 
   const changeTime = (hours) => {
     setActivePreset('custom');
@@ -953,7 +727,6 @@ return {
 
   const shouldIgnoreDrag = (target) => {
     if (!(target instanceof Element)) return false;
-
     return Boolean(
       target.closest('.atlasZoomControls') ||
       target.closest('.atlasTimeControls') ||
@@ -967,21 +740,14 @@ return {
     if (event.pointerType === 'touch') return;
 
     const angle = getPointerAngle(event, event.currentTarget);
-
-    dragRef.current = {
-      startAngle: angle,
-      startRotation: rotation
-    };
-
+    dragRef.current = { startAngle: angle, startRotation: rotation };
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const handlePointerMove = (event) => {
     if (!dragRef.current) return;
-
     const angle = getPointerAngle(event, event.currentTarget);
     const delta = angle - dragRef.current.startAngle;
-
     setRotation(dragRef.current.startRotation + delta);
   };
 
@@ -990,29 +756,19 @@ return {
     event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
 
-  const stopMapPointerEvents = (event) => {
-    event.stopPropagation();
-  };
-
-  const keepUpright = (x, y) => {
-    return `rotate(${-rotation} ${x} ${y})`;
-  };
+  const stopMapPointerEvents = (event) => event.stopPropagation();
+  const keepUpright = (x, y) => `rotate(${-rotation} ${x} ${y})`;
 
   return (
     <div className="atlasPage">
       <section className="atlasHero">
         <p className="eyebrow">MISSION CONTROL</p>
-
         <h1>Celestial Atlas</h1>
-
         <p className="tagline">
           Live sky planning from Eliot, Maine. Jump to sunset, 10 PM, midnight,
           or pre-dawn and see which CuzBro missions are best placed.
         </p>
-
-        <a className="atlasBackButton" href="/#observatory">
-          ← Back to Observatory
-        </a>
+        <a className="atlasBackButton" href="/#observatory">← Back to Observatory</a>
       </section>
 
       <section className="atlasLayout realAtlasLayout">
@@ -1024,18 +780,8 @@ return {
           onPointerCancel={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          <div
-            className="skyPanLayer"
-            style={{
-              transform: `rotate(${rotation}deg) scale(${zoom})`
-            }}
-          >
-            <svg
-              className="skySvg"
-              viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
-              role="img"
-              aria-label="Live sky map for Eliot, Maine"
-            >
+          <div className="skyPanLayer" style={{ transform: `rotate(${rotation}deg) scale(${zoom})` }}>
+            <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label="Live sky map for Eliot, Maine">
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
 
               {BACKGROUND_STARS.map((star) => (
@@ -1050,135 +796,55 @@ return {
               ))}
 
               <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.66} className="skyAltitudeRing" />
-
-              {isDetailMode && (
-                <circle
-                  cx={CENTER}
-                  cy={CENTER}
-                  r={RADIUS * 0.33}
-                  className="skyAltitudeRing detailOnly"
-                />
-              )}
-
+              {isDetailMode && <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.33} className="skyAltitudeRing detailOnly" />}
               <circle cx={CENTER} cy={CENTER} r={8} className="skyZenithDot" />
 
-              <line
-                x1={CENTER}
-                y1={CENTER - RADIUS}
-                x2={CENTER}
-                y2={CENTER + RADIUS}
-                className="skyAxis"
-              />
-              <line
-                x1={CENTER - RADIUS}
-                y1={CENTER}
-                x2={CENTER + RADIUS}
-                y2={CENTER}
-                className="skyAxis"
-              />
+              <line x1={CENTER} y1={CENTER - RADIUS} x2={CENTER} y2={CENTER + RADIUS} className="skyAxis" />
+              <line x1={CENTER - RADIUS} y1={CENTER} x2={CENTER + RADIUS} y2={CENTER} className="skyAxis" />
 
               <text x={CENTER} y={CENTER - RADIUS - 18} className="compassLabel" transform={keepUpright(CENTER, CENTER - RADIUS - 18)}>N</text>
               <text x={CENTER + RADIUS + 16} y={CENTER + 6} className="compassLabel" transform={keepUpright(CENTER + RADIUS + 16, CENTER + 6)}>E</text>
               <text x={CENTER} y={CENTER + RADIUS + 28} className="compassLabel" transform={keepUpright(CENTER, CENTER + RADIUS + 28)}>S</text>
               <text x={CENTER - RADIUS - 18} y={CENTER + 6} className="compassLabel" transform={keepUpright(CENTER - RADIUS - 18, CENTER + 6)}>W</text>
 
-              {isDetailMode && (
-                <text x={CENTER + 14} y={CENTER - 12} className="zenithLabel" transform={keepUpright(CENTER + 14, CENTER - 12)}>
-                  Zenith
-                </text>
-              )}
+              {isDetailMode && <text x={CENTER + 14} y={CENTER - 12} className="zenithLabel" transform={keepUpright(CENTER + 14, CENTER - 12)}>Zenith</text>}
 
               {eclipticPath && <path d={eclipticPath} className="eclipticPath" />}
               {lunarPath && <path d={lunarPath} className="lunarPath" />}
-
-              {isDetailMode && summerTrianglePath && (
-                <path d={summerTrianglePath} className="summerTriangleOutline" />
-              )}
+              {isDetailMode && summerTrianglePath && <path d={summerTrianglePath} className="summerTriangleOutline" />}
 
               {constellationLines.map((segment, index) => (
                 <path
                   key={index}
                   d={segment.path}
-                  className={
-                    segment.group === activeConstellation
-                      ? 'constellationSegment active'
-                      : 'constellationSegment'
-                  }
+                  className={segment.group === activeConstellation ? 'constellationSegment active' : 'constellationSegment'}
                 />
               ))}
 
               {visibleStars.map((star) => (
                 <g key={star.name}>
-                  <circle
-                    cx={star.x}
-                    cy={star.y}
-                    r={Math.max(1.5, 5 - star.mag)}
-                    className={star.name === 'Polaris' ? 'skyStar polarisStar' : 'skyStar'}
-                  />
-
-                  {(isDetailMode || star.name === 'Polaris') &&
-                    ['Polaris', 'Vega', 'Deneb', 'Altair'].includes(star.name) && (
-                      <text
-                        x={star.x + 10}
-                        y={star.y - 10}
-                        className="brightStarLabel"
-                        transform={keepUpright(star.x + 10, star.y - 10)}
-                      >
-                        {star.name}
-                      </text>
-                    )}
+                  <circle cx={star.x} cy={star.y} r={Math.max(1.5, 5 - star.mag)} className={star.name === 'Polaris' ? 'skyStar polarisStar' : 'skyStar'} />
+                  {(isDetailMode || star.name === 'Polaris') && ['Polaris', 'Vega', 'Deneb', 'Altair'].includes(star.name) && (
+                    <text x={star.x + 10} y={star.y - 10} className="brightStarLabel" transform={keepUpright(star.x + 10, star.y - 10)}>{star.name}</text>
+                  )}
                 </g>
               ))}
 
               {visiblePlanets.map((planet) => (
                 <g key={planet.name}>
                   <circle cx={planet.x} cy={planet.y} r={5} className="planetMarker" />
-                  <text
-                    x={planet.x + 10}
-                    y={planet.y - 8}
-                    className="planetLabel"
-                    transform={keepUpright(planet.x + 10, planet.y - 8)}
-                  >
-                    {planet.name}
-                  </text>
+                  <text x={planet.x + 10} y={planet.y - 8} className="planetLabel" transform={keepUpright(planet.x + 10, planet.y - 8)}>{planet.name}</text>
                 </g>
               ))}
 
               {isInsideSky(moonData, 14) && (
-  <g>
-    <circle cx={moonData.x} cy={moonData.y} r={14} className="moonMarkerGlow" />
-
-    <text
-      x={moonData.x}
-      y={moonData.y + 6}
-      className="moonPhaseIcon"
-      textAnchor="middle"
-      transform={keepUpright(moonData.x, moonData.y)}
-    >
-      {moonData.phaseSymbol}
-    </text>
-
-    <text
-      x={moonData.x + 18}
-      y={moonData.y - 12}
-      className="moonLabel"
-      transform={keepUpright(moonData.x + 18, moonData.y - 12)}
-    >
-      Moon {moonData.phasePercent}%
-    </text>
-
-    {isDetailMode && (
-      <text
-        x={moonData.x + 18}
-        y={moonData.y + 5}
-        className="moonPhaseLabel"
-        transform={keepUpright(moonData.x + 18, moonData.y + 5)}
-      >
-        {moonData.phaseName}
-      </text>
-    )}
-  </g>
-)}
+                <g>
+                  <circle cx={moonData.x} cy={moonData.y} r={14} className="moonMarkerGlow" />
+                  <text x={moonData.x} y={moonData.y + 6} className="moonPhaseIcon" textAnchor="middle" transform={keepUpright(moonData.x, moonData.y)}>{moonData.phaseSymbol}</text>
+                  <text x={moonData.x + 18} y={moonData.y - 12} className="moonLabel" transform={keepUpright(moonData.x + 18, moonData.y - 12)}>Moon {moonData.phasePercent}%</text>
+                  {isDetailMode && <text x={moonData.x + 18} y={moonData.y + 5} className="moonPhaseLabel" transform={keepUpright(moonData.x + 18, moonData.y + 5)}>{moonData.phaseName}</text>}
+                </g>
+              )}
 
               {missionCallouts.map((photo) => {
                 const index = mappedObjects.findIndex((item) => item.title === photo.title);
@@ -1186,40 +852,10 @@ return {
 
                 return (
                   <g key={`${photo.title}-callout`}>
-                    <line
-                      x1={photo.x}
-                      y1={photo.y}
-                      x2={photo.markerX}
-                      y2={photo.markerY}
-                      className="missionGuideLine"
-                    />
-
-                    <line
-                      x1={photo.x - 5}
-                      y1={photo.y - 5}
-                      x2={photo.x + 5}
-                      y2={photo.y + 5}
-                      className="missionAnchorX"
-                      style={{ stroke: markerColor }}
-                    />
-                    <line
-                      x1={photo.x + 5}
-                      y1={photo.y - 5}
-                      x2={photo.x - 5}
-                      y2={photo.y + 5}
-                      className="missionAnchorX"
-                      style={{ stroke: markerColor }}
-                    />
-
-                    {activeIndex === index && (
-                      <circle
-                        cx={photo.x}
-                        cy={photo.y}
-                        r={13}
-                        className="missionAnchorGlow"
-                        style={{ stroke: markerColor }}
-                      />
-                    )}
+                    <line x1={photo.x} y1={photo.y} x2={photo.markerX} y2={photo.markerY} className="missionGuideLine" />
+                    <line x1={photo.x - 5} y1={photo.y - 5} x2={photo.x + 5} y2={photo.y + 5} className="missionAnchorX" style={{ stroke: markerColor }} />
+                    <line x1={photo.x + 5} y1={photo.y - 5} x2={photo.x - 5} y2={photo.y + 5} className="missionAnchorX" style={{ stroke: markerColor }} />
+                    {activeIndex === index && <circle cx={photo.x} cy={photo.y} r={13} className="missionAnchorGlow" style={{ stroke: markerColor }} />}
                   </g>
                 );
               })}
@@ -1232,46 +868,18 @@ return {
                     x={label.x}
                     y={label.y}
                     transform={keepUpright(label.x, label.y)}
-                    className={
-                      label.name === activeConstellation
-                        ? 'constellationText active'
-                        : 'constellationText'
-                    }
+                    className={label.name === activeConstellation ? 'constellationText active' : 'constellationText'}
                   >
                     {label.name}
                   </text>
                 ))}
 
-              {isDetailMode && summerTriangleLabel && (
-                <text
-                  x={summerTriangleLabel.x}
-                  y={summerTriangleLabel.y}
-                  className="guideLabel"
-                  transform={keepUpright(summerTriangleLabel.x, summerTriangleLabel.y)}
-                >
-                  Summer Triangle
-                </text>
-              )}
+              {isDetailMode && summerTriangleLabel && <text x={summerTriangleLabel.x} y={summerTriangleLabel.y} className="guideLabel" transform={keepUpright(summerTriangleLabel.x, summerTriangleLabel.y)}>Summer Triangle</text>}
 
               {isDetailMode && (
                 <>
-                  <text
-                    x={eclipticLabel.x}
-                    y={eclipticLabel.y}
-                    className="pathLabel"
-                    transform={keepUpright(eclipticLabel.x, eclipticLabel.y)}
-                  >
-                    Ecliptic
-                  </text>
-
-                  <text
-                    x={lunarLabel.x}
-                    y={lunarLabel.y}
-                    className="pathLabel"
-                    transform={keepUpright(lunarLabel.x, lunarLabel.y)}
-                  >
-                    Lunar Path
-                  </text>
+                  <text x={eclipticLabel.x} y={eclipticLabel.y} className="pathLabel" transform={keepUpright(eclipticLabel.x, eclipticLabel.y)}>Ecliptic</text>
+                  <text x={lunarLabel.x} y={lunarLabel.y} className="pathLabel" transform={keepUpright(lunarLabel.x, lunarLabel.y)}>Lunar Path</text>
                 </>
               )}
             </svg>
@@ -1284,11 +892,7 @@ return {
               return (
                 <div
                   key={photo.title}
-                  className={[
-                    'missionMarkerWrap',
-                    isActive ? 'active' : '',
-                    `label-${photo.labelSide}`
-                  ].join(' ')}
+                  className={['missionMarkerWrap', isActive ? 'active' : '', `label-${photo.labelSide}`].join(' ')}
                   style={{
                     left: `${(photo.markerX / MAP_SIZE) * 100}%`,
                     top: `${(photo.markerY / MAP_SIZE) * 100}%`,
@@ -1312,7 +916,6 @@ return {
                   >
                     {index + 1}
                   </button>
-
                   <span className="missionMarkerName">{photo.title}</span>
                 </div>
               );
@@ -1320,18 +923,24 @@ return {
           </div>
 
           <div
-            className="atlasTimeControls tonightControls"
+            className="atlasTimeControls tonightControls compactTonightControls"
             aria-label="Sky map time controls"
             onPointerDown={stopMapPointerEvents}
             onPointerMove={stopMapPointerEvents}
             onPointerUp={stopMapPointerEvents}
             onClick={stopMapPointerEvents}
           >
-            <strong>{formatMapTime(date)}</strong>
+            <div className="tonightHeaderRow">
+              <div>
+                <strong>{formatMapTime(date)}</strong>
+                <small>{goodObjectCount} good targets · {bestObjectCount} best now</small>
+              </div>
 
-            <small>
-              {goodObjectCount} good targets · {bestObjectCount} best now
-            </small>
+              <div className="inlineModeToggle" aria-label="Sky map display mode controls">
+                <button type="button" className={viewMode === 'clean' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('clean'); }}>Clean</button>
+                <button type="button" className={viewMode === 'detail' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('detail'); }}>Detail</button>
+              </div>
+            </div>
 
             <div className="timeNudgeRow">
               <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(-1); }}>−1h</button>
@@ -1339,42 +948,11 @@ return {
               <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(1); }}>+1h</button>
             </div>
 
-            <div className="skyControlSplit">
-              <div className="atlasModeControls inlineModeControls">
-                <button
-                  type="button"
-                  className={viewMode === 'clean' ? 'active' : ''}
-                  onClick={(event) => { event.stopPropagation(); setViewMode('clean'); }}
-                >
-                  Clean
-                </button>
-
-                <button
-                  type="button"
-                  className={viewMode === 'detail' ? 'active' : ''}
-                  onClick={(event) => { event.stopPropagation(); setViewMode('detail'); }}
-                >
-                  Detail
-                </button>
-              </div>
-
-              <div className="tonightPresetRow">
-                <button type="button" className={activePreset === 'sunset' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('sunset'); }}>
-                  Sunset
-                </button>
-
-                <button type="button" className={activePreset === '10pm' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('10pm'); }}>
-                  10 PM
-                </button>
-
-                <button type="button" className={activePreset === 'midnight' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('midnight'); }}>
-                  Midnight
-                </button>
-
-                <button type="button" className={activePreset === 'predawn' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('predawn'); }}>
-                  Pre-dawn
-                </button>
-              </div>
+            <div className="tonightPresetRow compactPresetRow">
+              <button type="button" className={activePreset === 'sunset' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('sunset'); }}>Sunset</button>
+              <button type="button" className={activePreset === '10pm' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('10pm'); }}>10 PM</button>
+              <button type="button" className={activePreset === 'midnight' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('midnight'); }}>Midnight</button>
+              <button type="button" className={activePreset === 'predawn' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('predawn'); }}>Pre-dawn</button>
             </div>
           </div>
 
@@ -1405,7 +983,6 @@ return {
 
         <aside className="atlasCatalog">
           <small>Mission Catalog</small>
-
           {mappedObjects.map((photo, index) => (
             <button
               key={photo.title}
@@ -1419,15 +996,11 @@ return {
               type="button"
             >
               <b>{index + 1}</b>
-
               <span>
                 <strong>{photo.title}</strong>
                 <em>{photo.constellation}</em>
                 <small>{photo.objectType}</small>
-
-                <i className={`targetStatusBadge ${photo.observingStatus.className}`}>
-                  {photo.observingStatus.label}
-                </i>
+                <i className={`targetStatusBadge ${photo.observingStatus.className}`}>{photo.observingStatus.label}</i>
               </span>
             </button>
           ))}
@@ -1436,23 +1009,12 @@ return {
 
       {activeObject && (
         <section className="atlasDetail">
-          <img
-            src={import.meta.env.BASE_URL + activeObject.image}
-            alt={activeObject.title}
-          />
-
+          <img src={import.meta.env.BASE_URL + activeObject.image} alt={activeObject.title} />
           <div>
             <small>Selected Mission</small>
-
-            <h2>
-              <span>{activeIndex + 1}</span>
-              {activeObject.title}
-            </h2>
-
+            <h2><span>{activeIndex + 1}</span>{activeObject.title}</h2>
             <h3>{activeObject.subtitle}</h3>
-
             <p>{activeObject.notes}</p>
-
             <div className="atlasFacts">
               <span><b>Status</b>{activeObject.observingStatus.label}</span>
               <span><b>Constellation</b>{activeObject.constellation}</span>
@@ -1464,10 +1026,7 @@ return {
               <span><b>Map Time</b>{formatCompactTime(date)}</span>
               <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
             </div>
-
-            <button type="button" onClick={() => openMission(activeObject)}>
-              Open Mission Report →
-            </button>
+            <button type="button" onClick={() => openMission(activeObject)}>Open Mission Report →</button>
           </div>
         </section>
       )}
