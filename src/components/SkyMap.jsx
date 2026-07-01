@@ -10,6 +10,7 @@ const SITE = {
 const MAP_SIZE = 1000;
 const CENTER = MAP_SIZE / 2;
 const RADIUS = 430;
+const DEFAULT_ZOOM = 0.74;
 
 const STAR_CATALOG = [
   // North / orientation
@@ -162,7 +163,6 @@ function localSiderealTime(date, longitudeDegrees) {
 
 function raDecToAltAz(raHours, decDegrees, date, latitudeDegrees, longitudeDegrees) {
   const lstHours = localSiderealTime(date, longitudeDegrees);
-
   let hourAngleHours = lstHours - raHours;
 
   if (hourAngleHours > 12) hourAngleHours -= 24;
@@ -228,10 +228,14 @@ function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
 
 function buildPath(points) {
   const validPoints = points.filter(Boolean);
+
   if (!validPoints.length) return '';
 
   return validPoints
-    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+    .map((point, index) => {
+      const command = index === 0 ? 'M' : 'L';
+      return `${command} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+    })
     .join(' ');
 }
 
@@ -262,8 +266,7 @@ function getObjectColor(objectType) {
 }
 
 function getMissionConstellation(photo) {
-  if (!photo) return null;
-  if (photo.objectType === 'Lunar') return null;
+  if (!photo || photo.objectType === 'Lunar') return null;
   return photo.constellation;
 }
 
@@ -289,10 +292,11 @@ function markerOffset(index) {
 }
 
 export default function SkyMap({ gallery, setSelectedIndex }) {
-const [activeIndex, setActiveIndex] = useState(0);
-const [pan, setPan] = useState({ x: 0, y: 0 });
-const [zoom, setZoom] = useState(0.82);
-const dragRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+
+  const dragRef = useRef(null);
 
   const date = useMemo(() => new Date(), []);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
@@ -454,22 +458,29 @@ const dragRef = useRef(null);
 
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
+
     if (realIndex !== -1) {
       setSelectedIndex(realIndex);
     }
   };
-const zoomIn = () => {
-  setZoom((currentZoom) => Math.min(1.35, Number((currentZoom + 0.08).toFixed(2))));
-};
 
-const zoomOut = () => {
-  setZoom((currentZoom) => Math.max(0.62, Number((currentZoom - 0.08).toFixed(2))));
-};
+  const zoomIn = () => {
+    setZoom((currentZoom) =>
+      Math.min(1.35, Number((currentZoom + 0.08).toFixed(2)))
+    );
+  };
 
-const resetView = () => {
-  setZoom(0.82);
-  setPan({ x: 0, y: 0 });
-};
+  const zoomOut = () => {
+    setZoom((currentZoom) =>
+      Math.max(0.55, Number((currentZoom - 0.08).toFixed(2)))
+    );
+  };
+
+  const resetView = () => {
+    setZoom(DEFAULT_ZOOM);
+    setPan({ x: 0, y: 0 });
+  };
+
   const handlePointerDown = (event) => {
     dragRef.current = {
       startX: event.clientX,
@@ -498,16 +509,21 @@ const resetView = () => {
     event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
 
+  const stopMapPointerEvents = (event) => {
+    event.stopPropagation();
+  };
+
   return (
     <div className="atlasPage">
       <section className="atlasHero">
         <p className="eyebrow">MISSION CONTROL</p>
+
         <h1>Celestial Atlas</h1>
 
         <p className="tagline">
-          A live sky map for Eliot, Maine using real right ascension and declination.
-          Mission targets, constellation guides, the ecliptic, lunar path, Polaris,
-          and compass directions are plotted live.
+          A live sky map for Eliot, Maine using real right ascension and
+          declination. Mission targets, constellation guides, the ecliptic,
+          lunar path, Polaris, and compass directions are plotted live.
         </p>
 
         <a className="atlasBackButton" href="/#observatory">
@@ -525,11 +541,11 @@ const resetView = () => {
           onPointerLeave={handlePointerUp}
         >
           <div
-  className="skyPanLayer"
-  style={{
-    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
-  }}
->
+            className="skyPanLayer"
+            style={{
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+            }}
+          >
             <svg
               className="skySvg"
               viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
@@ -548,6 +564,7 @@ const resetView = () => {
                 y2={CENTER + RADIUS}
                 className="skyAxis"
               />
+
               <line
                 x1={CENTER - RADIUS}
                 y1={CENTER}
@@ -564,10 +581,7 @@ const resetView = () => {
 
               {eclipticPath && <path d={eclipticPath} className="eclipticPath" />}
               {lunarPath && <path d={lunarPath} className="lunarPath" />}
-
-              {summerTriangle && (
-                <path d={summerTriangle} className="summerTriangle" />
-              )}
+              {summerTriangle && <path d={summerTriangle} className="summerTriangle" />}
 
               {bigDipperPointers.map((pathData, index) => (
                 <path key={index} d={pathData} className="dipperPointer" />
@@ -620,6 +634,7 @@ const resetView = () => {
               {planets.map((planet) => (
                 <g key={planet.name}>
                   <circle cx={planet.x} cy={planet.y} r={5} className="planetMarker" />
+
                   <text x={planet.x + 10} y={planet.y - 8} className="planetLabel">
                     {planet.name}
                   </text>
@@ -630,6 +645,7 @@ const resetView = () => {
                 const offset = markerOffset(index);
                 const markerX = photo.x + offset.x;
                 const markerY = photo.y + offset.y;
+                const markerColor = getObjectColor(photo.objectType);
 
                 return (
                   <g key={`${photo.title}-leader`}>
@@ -640,20 +656,25 @@ const resetView = () => {
                       y2={markerY}
                       className="missionLeaderLine"
                     />
+
                     <circle
                       cx={photo.x}
                       cy={photo.y}
                       r={4}
                       className="missionAnchorDot"
-                      style={{ fill: getObjectColor(photo.objectType) }}
+                      style={{
+                        fill: markerColor,
+                        '--marker-color': markerColor
+                      }}
                     />
+
                     {activeIndex === index && (
                       <circle
                         cx={photo.x}
                         cy={photo.y}
                         r={11}
                         className="missionAnchorGlow"
-                        style={{ stroke: getObjectColor(photo.objectType) }}
+                        style={{ stroke: markerColor }}
                       />
                     )}
                   </g>
@@ -679,28 +700,42 @@ const resetView = () => {
 
             {mappedObjects.map((photo, index) => {
               const offset = markerOffset(index);
+              const markerColor = getObjectColor(photo.objectType);
+              const isActive = activeIndex === index;
 
               return (
-                <button
+                <div
                   key={photo.title}
-                  type="button"
-                  className={activeIndex === index ? 'svgMarker active' : 'svgMarker'}
+                  className={isActive ? 'missionMarkerWrap active' : 'missionMarkerWrap'}
                   style={{
                     left: `${((photo.x + offset.x) / MAP_SIZE) * 100}%`,
                     top: `${((photo.y + offset.y) / MAP_SIZE) * 100}%`,
-                    '--marker-color': getObjectColor(photo.objectType)
+                    '--marker-color': markerColor
                   }}
-                  onPointerDown={(event) => event.stopPropagation()}
+                  onPointerDown={stopMapPointerEvents}
+                  onPointerMove={stopMapPointerEvents}
+                  onPointerUp={stopMapPointerEvents}
                   onMouseEnter={() => setActiveIndex(index)}
                   onFocus={() => setActiveIndex(index)}
-                  onClick={() => {
-                    setActiveIndex(index);
-                    openMission(photo);
-                  }}
-                  aria-label={`Open ${photo.title} Mission Report`}
                 >
-                  {index + 1}
-                </button>
+                  <button
+                    type="button"
+                    className={isActive ? 'svgMarker active' : 'svgMarker'}
+                    onClick={() => {
+                      setActiveIndex(index);
+                      openMission(photo);
+                    }}
+                    aria-label={`Open ${photo.title} Mission Report`}
+                  >
+                    {index + 1}
+                  </button>
+
+                  <div className="missionMarkerTooltip">
+                    <strong>{photo.title}</strong>
+                    <span>{photo.constellation}</span>
+                    <em>{photo.objectType}</em>
+                  </div>
+                </div>
               );
             })}
           </div>
@@ -712,21 +747,29 @@ const resetView = () => {
             <span><i className="legendGold"></i> Double Star</span>
             <span><i className="legendSilver"></i> Lunar</span>
           </div>
-          <div className="atlasZoomControls" aria-label="Sky map zoom controls">
-  <button type="button" onClick={zoomIn} aria-label="Zoom in">
-    +
-  </button>
 
-  <button type="button" onClick={zoomOut} aria-label="Zoom out">
-    −
-  </button>
+          <div
+            className="atlasZoomControls"
+            aria-label="Sky map zoom controls"
+            onPointerDown={stopMapPointerEvents}
+            onPointerMove={stopMapPointerEvents}
+            onPointerUp={stopMapPointerEvents}
+            onClick={stopMapPointerEvents}
+          >
+            <button type="button" onClick={zoomIn} aria-label="Zoom in">
+              +
+            </button>
 
-  <button type="button" onClick={resetView} aria-label="Reset sky map view">
-    Reset
-  </button>
+            <button type="button" onClick={zoomOut} aria-label="Zoom out">
+              −
+            </button>
 
-  <span>{Math.round(zoom * 100)}%</span>
-</div>
+            <button type="button" onClick={resetView} aria-label="Reset sky map view">
+              Reset
+            </button>
+
+            <span>{Math.round(zoom * 100)}%</span>
+          </div>
         </div>
 
         <aside className="atlasCatalog">
@@ -745,6 +788,7 @@ const resetView = () => {
               type="button"
             >
               <b>{index + 1}</b>
+
               <span>
                 <strong>{photo.title}</strong>
                 <em>{photo.constellation}</em>

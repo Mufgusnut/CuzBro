@@ -2892,3 +2892,345 @@ footer p {
     width: auto;
   }
 }
+/* Celestial Atlas polish pass */
+.realSkyMap {
+  background:
+    radial-gradient(circle at 48% 45%, rgba(74,140,255,.13), transparent 38%),
+    radial-gradient(circle at 22% 34%, rgba(114,217,255,.08), transparent 26%),
+    radial-gradient(circle at 82% 70%, rgba(255,157,28,.07), transparent 30%),
+    linear-gradient(90deg, rgba(2,7,16,.96), rgba(6,11,23,.88), rgba(2,7,16,.96));
+}
+
+.realSkyMap::before {
+  opacity: .34;
+}
+
+.realSkyMap::after {
+  opacity: .38;
+}
+
+.skyPanLayer {
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.skyHorizonCircle {
+  fill: rgba(3,10,24,.36);
+  stroke: rgba(230,238,255,.28);
+  stroke-width: 1.8;
+}
+
+.skyAltitudeRing {
+  fill: none;
+  stroke: rgba(180,215,255,.12);
+  stroke-width: 1;
+  stroke-dasharray: 5 9;
+}
+
+.skyAxis {
+  stroke: rgba(180,215,255,.16);
+  stroke-width: 1;
+  stroke-dasharray: 5 10;
+}
+
+.compassLabel {
+  fill: rgba(230,238,255,.95);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.zenithLabel {
+  fill: rgba(170,205,255,.9);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.constellationSegment {
+  stroke: rgba(130,205,255,.34);
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  opacity: .52;
+  filter: drop-shadow(0 0 4px rgba(114,217,255,.18));
+}
+
+.constellationSegment.active {
+  stroke: rgba(255,157,28,.96);
+  stroke-width: 2.7;
+  opacity: 1;
+  filter: drop-shadow(0 0 10px rgba(255,157,28,.45));
+}
+
+.constellationText {
+  fill: rgba(180,205,235,.56);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  text-anchor: middle;
+  opacity: .75;
+  filter: drop-shadow(0 0 9px rgba(0,0,0,.95));
+}
+
+.constellationText.active {
+  fill: var(--orange);
+  opacity: 1;
+}
+
+.skyStar {
+  fill: rgba(255,255,255,.78);
+  filter: drop-shadow(0 0 5px rgba(180,215,255,.45));
+}
+
+.polarisStar {
+  fill: rgba(255,220,170,.98);
+  filter: drop-shadow(0 0 10px rgba(255,220,170,.8));
+}
+
+.brightStarLabel,
+.planetLabel,
+.pathLabel,
+.pointerLabel,
+.summerTriangleLabel {
+  paint-order: stroke;
+  stroke: rgba(2,7,16,.9);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.brightStarLabel {
+  fill: rgba(235,242,255,.92);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.planetLabel {
+  fill: rgba(235,242,255,.78);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pathLabel,
+.pointerLabel,
+.summerTriangleLabel {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.pathLabel,
+.summerTriangleLabel {
+  fill: rgba(255,184,82,.82);
+}
+
+.pointerLabel {
+  fill: rgba(220,230,250,.72);
+}
+
+.eclipticPath {
+  fill: none;
+  stroke: rgba(255,157,28,.72);
+  stroke-width: 2;
+  stroke-dasharray: 8 8;
+}
+
+.lunarPath {
+  fill: none;
+  stroke: rgba(230,238,255,.48);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 7;
+}
+
+.summerTriangle {
+  fill: rgba(255,157,28,.025);
+  stroke: rgba(255,157,28,.42);
+  stroke-width: 1.15;
+  stroke-dasharray: 8 9;
+}
+
+.dipperPointer {
+  fill: none;
+  stroke: rgba(230,238,255,.36);
+  stroke-width: 1.2;
+  stroke-dasharray: 7 8;
+  stroke-linecap: round;
+}
+
+/* Mission anchors and leader lines */
+.missionLeaderLine {
+  stroke: rgba(255,255,255,.24);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray: 2 4;
+}
+
+.missionAnchorDot {
+  stroke: rgba(2,7,16,.88);
+  stroke-width: 1.8;
+  filter: drop-shadow(0 0 6px var(--marker-color, rgba(255,255,255,.4)));
+}
+
+.missionAnchorGlow {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: .7;
+}
+
+/* Marker wrapper and popup */
+.missionMarkerWrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+}
+
+.svgMarker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  transform: none;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(2,7,16,.9);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.3);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.missionMarkerWrap:hover .svgMarker,
+.missionMarkerWrap.active .svgMarker {
+  transform: scale(1.1);
+  border-color: var(--marker-color);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--marker-color) 55%, transparent);
+  background: rgba(7,16,34,.98);
+}
+
+.missionMarkerTooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 9px);
+  transform: translateX(-50%) translateY(4px);
+  min-width: 150px;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, var(--marker-color) 45%, rgba(255,255,255,.16));
+  border-radius: 12px;
+  background: rgba(2,7,16,.92);
+  backdrop-filter: blur(12px);
+  color: white;
+  box-shadow: 0 14px 34px rgba(0,0,0,.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+  text-align: left;
+}
+
+.missionMarkerWrap:hover .missionMarkerTooltip,
+.missionMarkerWrap.active .missionMarkerTooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.missionMarkerTooltip strong {
+  display: block;
+  color: white;
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.missionMarkerTooltip span {
+  display: block;
+  margin-top: 4px;
+  color: var(--marker-color);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.missionMarkerTooltip em {
+  display: block;
+  margin-top: 2px;
+  color: #aebbd4;
+  font-size: 10px;
+  font-style: normal;
+}
+
+/* Zoom controls: make clicks work and make them clearer */
+.atlasZoomControls {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  z-index: 20;
+  transform: translateY(-50%);
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 18px;
+  background: rgba(2,7,16,.82);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 34px rgba(0,0,0,.45);
+}
+
+.atlasZoomControls button {
+  width: 44px;
+  min-height: 40px;
+  border: 1px solid rgba(255,255,255,.20);
+  border-radius: 13px;
+  background: rgba(7,16,34,.92);
+  color: white;
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.atlasZoomControls button:hover {
+  border-color: rgba(255,157,28,.78);
+  background: rgba(255,157,28,.16);
+}
+
+.atlasZoomControls button:nth-child(3) {
+  width: auto;
+  padding: 0 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+}
+
+.atlasZoomControls span {
+  text-align: center;
+  color: #cbd3e2;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+@media (max-width: 700px) {
+  .missionMarkerTooltip {
+    min-width: 130px;
+  }
+
+  .atlasZoomControls {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    transform: none;
+    grid-template-columns: repeat(4, auto);
+    align-items: center;
+  }
+
+  .atlasZoomControls button {
+    width: 36px;
+    min-height: 34px;
+    font-size: 16px;
+  }
+
+  .atlasZoomControls button:nth-child(3) {
+    width: auto;
+  }
+}
