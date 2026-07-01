@@ -49,7 +49,7 @@ export default function Hero({
           <a href="#gallery">Archive</a>
           <a href="#gear">Gear</a>
           <a href="#crew">Crew</a>
-          <a href="/skymap">Star Map</a>
+          <a href="/skymap">SkyMap</a>
           <a href="#about">About</a>
         </nav>
       </header>
