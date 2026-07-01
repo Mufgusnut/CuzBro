@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Body, Observer, Equator } from 'astronomy-engine';
+import { Body, Observer, Equator, Illumination } from 'astronomy-engine';
 
 const SITE = {
   name: 'Eliot, ME',
@@ -295,7 +295,6 @@ function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
 
 function buildPath(points, closed = false) {
   const valid = points.filter(Boolean);
-
   if (!valid.length) return '';
 
   const path = valid
@@ -354,7 +353,6 @@ function pickPathLabel(points, preferredFraction, offset = { x: 0, y: 0 }) {
 
 function getPlanetRaDec(body, date, observer) {
   const equator = Equator(body, date, observer, true, true);
-
   return {
     ra: equator.ra,
     dec: equator.dec
@@ -423,7 +421,6 @@ function formatCompactTime(mapDate) {
 function getDayOfYear(date) {
   const start = new Date(Date.UTC(date.getFullYear(), 0, 0));
   const current = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-
   return Math.floor((current - start) / 86400000);
 }
 
@@ -493,10 +490,8 @@ function getSunEventDate(baseDate, isSunrise) {
 
 function getLocalDateAt(baseDate, hour, minute = 0, addDays = 0) {
   const date = new Date(baseDate);
-
   date.setDate(date.getDate() + addDays);
   date.setHours(hour, minute, 0, 0);
-
   return date;
 }
 
@@ -845,6 +840,25 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return planets.filter((planet) => isInsideSky(planet, 12));
   }, [planets]);
 
+  const moonData = useMemo(() => {
+    const moonEq = getPlanetRaDec(Body.Moon, date, observer);
+    const altAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
+    const point = projectAltAz(altAz.alt, altAz.az);
+    const illum = Illumination(Body.Moon, date);
+    const phasePercent = Math.round((illum.phase_fraction ?? 0) * 100);
+
+    return {
+      ra: moonEq.ra,
+      dec: moonEq.dec,
+      alt: altAz.alt,
+      az: altAz.az,
+      x: point.x,
+      y: point.y,
+      visible: point.visible,
+      phasePercent
+    };
+  }, [date, observer]);
+
   const summerTrianglePoints = useMemo(() => {
     return [starLookup.Vega, starLookup.Deneb, starLookup.Altair]
       .filter((point) => point && isInsideSky(point, 20));
@@ -864,7 +878,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
-
     if (realIndex !== -1) {
       setSelectedIndex(realIndex);
     }
@@ -912,7 +925,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return Boolean(
       target.closest('.atlasZoomControls') ||
       target.closest('.atlasTimeControls') ||
-      target.closest('.atlasModeControls') ||
       target.closest('.missionMarkerWrap') ||
       target.closest('.atlasLegend')
     );
@@ -920,7 +932,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const handlePointerDown = (event) => {
     if (shouldIgnoreDrag(event.target)) return;
-
     if (event.pointerType === 'touch') return;
 
     const angle = getPointerAngle(event, event.currentTarget);
@@ -1034,49 +1045,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 className="skyAxis"
               />
 
-              <text
-                x={CENTER}
-                y={CENTER - RADIUS - 18}
-                className="compassLabel"
-                transform={keepUpright(CENTER, CENTER - RADIUS - 18)}
-              >
-                N
-              </text>
-
-              <text
-                x={CENTER + RADIUS + 16}
-                y={CENTER + 6}
-                className="compassLabel"
-                transform={keepUpright(CENTER + RADIUS + 16, CENTER + 6)}
-              >
-                E
-              </text>
-
-              <text
-                x={CENTER}
-                y={CENTER + RADIUS + 28}
-                className="compassLabel"
-                transform={keepUpright(CENTER, CENTER + RADIUS + 28)}
-              >
-                S
-              </text>
-
-              <text
-                x={CENTER - RADIUS - 18}
-                y={CENTER + 6}
-                className="compassLabel"
-                transform={keepUpright(CENTER - RADIUS - 18, CENTER + 6)}
-              >
-                W
-              </text>
+              <text x={CENTER} y={CENTER - RADIUS - 18} className="compassLabel" transform={keepUpright(CENTER, CENTER - RADIUS - 18)}>N</text>
+              <text x={CENTER + RADIUS + 16} y={CENTER + 6} className="compassLabel" transform={keepUpright(CENTER + RADIUS + 16, CENTER + 6)}>E</text>
+              <text x={CENTER} y={CENTER + RADIUS + 28} className="compassLabel" transform={keepUpright(CENTER, CENTER + RADIUS + 28)}>S</text>
+              <text x={CENTER - RADIUS - 18} y={CENTER + 6} className="compassLabel" transform={keepUpright(CENTER - RADIUS - 18, CENTER + 6)}>W</text>
 
               {isDetailMode && (
-                <text
-                  x={CENTER + 14}
-                  y={CENTER - 12}
-                  className="zenithLabel"
-                  transform={keepUpright(CENTER + 14, CENTER - 12)}
-                >
+                <text x={CENTER + 14} y={CENTER - 12} className="zenithLabel" transform={keepUpright(CENTER + 14, CENTER - 12)}>
                   Zenith
                 </text>
               )}
@@ -1126,7 +1101,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               {visiblePlanets.map((planet) => (
                 <g key={planet.name}>
                   <circle cx={planet.x} cy={planet.y} r={5} className="planetMarker" />
-
                   <text
                     x={planet.x + 10}
                     y={planet.y - 8}
@@ -1137,6 +1111,21 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   </text>
                 </g>
               ))}
+
+              {isInsideSky(moonData, 14) && (
+                <g>
+                  <circle cx={moonData.x} cy={moonData.y} r={9} className="moonMarkerGlow" />
+                  <circle cx={moonData.x} cy={moonData.y} r={7} className="moonMarker" />
+                  <text
+                    x={moonData.x + 14}
+                    y={moonData.y - 10}
+                    className="moonLabel"
+                    transform={keepUpright(moonData.x + 14, moonData.y - 10)}
+                  >
+                    Moon {moonData.phasePercent}%
+                  </text>
+                </g>
+              )}
 
               {missionCallouts.map((photo) => {
                 const index = mappedObjects.findIndex((item) => item.title === photo.title);
@@ -1297,40 +1286,43 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(1); }}>+1h</button>
             </div>
 
-            <div className="tonightPresetRow">
-              <button type="button" className={activePreset === 'sunset' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('sunset'); }}>
-                Sunset
-              </button>
+            <div className="skyControlSplit">
+              <div className="atlasModeControls inlineModeControls">
+                <button
+                  type="button"
+                  className={viewMode === 'clean' ? 'active' : ''}
+                  onClick={(event) => { event.stopPropagation(); setViewMode('clean'); }}
+                >
+                  Clean
+                </button>
 
-              <button type="button" className={activePreset === '10pm' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('10pm'); }}>
-                10 PM
-              </button>
+                <button
+                  type="button"
+                  className={viewMode === 'detail' ? 'active' : ''}
+                  onClick={(event) => { event.stopPropagation(); setViewMode('detail'); }}
+                >
+                  Detail
+                </button>
+              </div>
 
-              <button type="button" className={activePreset === 'midnight' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('midnight'); }}>
-                Midnight
-              </button>
+              <div className="tonightPresetRow">
+                <button type="button" className={activePreset === 'sunset' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('sunset'); }}>
+                  Sunset
+                </button>
 
-              <button type="button" className={activePreset === 'predawn' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('predawn'); }}>
-                Pre-dawn
-              </button>
+                <button type="button" className={activePreset === '10pm' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('10pm'); }}>
+                  10 PM
+                </button>
+
+                <button type="button" className={activePreset === 'midnight' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('midnight'); }}>
+                  Midnight
+                </button>
+
+                <button type="button" className={activePreset === 'predawn' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('predawn'); }}>
+                  Pre-dawn
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div
-            className="atlasModeControls"
-            aria-label="Sky map display mode controls"
-            onPointerDown={stopMapPointerEvents}
-            onPointerMove={stopMapPointerEvents}
-            onPointerUp={stopMapPointerEvents}
-            onClick={stopMapPointerEvents}
-          >
-            <button type="button" className={viewMode === 'clean' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('clean'); }}>
-              Clean
-            </button>
-
-            <button type="button" className={viewMode === 'detail' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('detail'); }}>
-              Detail
-            </button>
           </div>
 
           <div className="atlasLegend enhancedLegend">
@@ -1417,6 +1409,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <span><b>Altitude</b>{activeObject.alt.toFixed(1)}°</span>
               <span><b>Azimuth</b>{activeObject.az.toFixed(1)}°</span>
               <span><b>Map Time</b>{formatCompactTime(date)}</span>
+              <span><b>Moon Phase</b>{moonData.phasePercent}% lit</span>
             </div>
 
             <button type="button" onClick={() => openMission(activeObject)}>
