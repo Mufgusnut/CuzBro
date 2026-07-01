@@ -10,7 +10,25 @@ const SITE = {
 const MAP_SIZE = 1000;
 const CENTER = MAP_SIZE / 2;
 const RADIUS = 430;
-const DEFAULT_ZOOM = 0.68;
+
+const DESKTOP_DEFAULT_ZOOM = 0.68;
+const MOBILE_DEFAULT_ZOOM = 1.0;
+
+function isMobileViewport() {
+  return typeof window !== 'undefined' && window.innerWidth <= 700;
+}
+
+function getDefaultZoom() {
+  return isMobileViewport() ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM;
+}
+
+function getMinZoom() {
+  return isMobileViewport() ? 0.75 : 0.55;
+}
+
+function getMaxZoom() {
+  return isMobileViewport() ? 1.5 : 1.25;
+}
 
 function createBackgroundStars(count = 360) {
   let seed = 314159;
@@ -401,7 +419,7 @@ function pointDistance(a, b) {
 
 function getZoomSafeBounds(zoom, isMobile) {
   const safeInset = isMobile ? 74 : 92;
-  const halfVisible = (CENTER - safeInset) / Math.max(zoom, 0.55);
+  const halfVisible = (CENTER - safeInset) / Math.max(zoom, getMinZoom());
 
   return {
     min: CENTER - halfVisible,
@@ -412,10 +430,10 @@ function getZoomSafeBounds(zoom, isMobile) {
 function buildMissionCallouts(objects, zoom) {
   const placed = [];
 
-  const isMobile =
-    typeof window !== 'undefined' && window.innerWidth <= 700;
+  const isMobile = isMobileViewport();
+  const defaultZoom = isMobile ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM;
 
-  const zoomPull = Math.max(0, zoom - DEFAULT_ZOOM);
+  const zoomPull = Math.max(0, zoom - defaultZoom);
   const baseOffset = isMobile ? 26 : 72;
   const pullStrength = isMobile ? 140 : 160;
 
@@ -453,10 +471,18 @@ function buildMissionCallouts(objects, zoom) {
     const baseY = CENTER + Math.sin(angle) * baseRadius;
 
     const clampX = (value) =>
-      clamp(value, Math.max(edgePadding, zoomBounds.min), Math.min(MAP_SIZE - edgePadding, zoomBounds.max));
+      clamp(
+        value,
+        Math.max(edgePadding, zoomBounds.min),
+        Math.min(MAP_SIZE - edgePadding, zoomBounds.max)
+      );
 
     const clampY = (value) =>
-      clamp(value, Math.max(edgePadding, zoomBounds.min), Math.min(MAP_SIZE - edgePadding, zoomBounds.max));
+      clamp(
+        value,
+        Math.max(edgePadding, zoomBounds.min),
+        Math.min(MAP_SIZE - edgePadding, zoomBounds.max)
+      );
 
     let chosen = {
       x: clampX(baseX),
@@ -496,7 +522,7 @@ function buildMissionCallouts(objects, zoom) {
 
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [zoom, setZoom] = useState(() => getDefaultZoom());
   const [rotation, setRotation] = useState(0);
   const [date, setDate] = useState(() => new Date());
   const [viewMode, setViewMode] = useState('clean');
@@ -698,11 +724,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   };
 
   const zoomIn = () => {
-    setZoom((current) => Math.min(1.25, Number((current + 0.08).toFixed(2))));
+    setZoom((current) => Math.min(getMaxZoom(), Number((current + 0.08).toFixed(2))));
   };
 
   const zoomOut = () => {
-    setZoom((current) => Math.max(0.55, Number((current - 0.08).toFixed(2))));
+    setZoom((current) => Math.max(getMinZoom(), Number((current - 0.08).toFixed(2))));
   };
 
   const rotateLeft = () => {
@@ -714,7 +740,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   };
 
   const resetView = () => {
-    setZoom(DEFAULT_ZOOM);
+    setZoom(getDefaultZoom());
     setRotation(0);
   };
 
@@ -828,9 +854,16 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               ))}
 
               <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.66} className="skyAltitudeRing" />
+
               {isDetailMode && (
-                <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.33} className="skyAltitudeRing detailOnly" />
+                <circle
+                  cx={CENTER}
+                  cy={CENTER}
+                  r={RADIUS * 0.33}
+                  className="skyAltitudeRing detailOnly"
+                />
               )}
+
               <circle cx={CENTER} cy={CENTER} r={8} className="skyZenithDot" />
 
               <line
@@ -1102,11 +1135,55 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <strong>{formatMapTime(date)}</strong>
 
             <div>
-              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(-3); }}>−3h</button>
-              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(-1); }}>−1h</button>
-              <button type="button" onClick={(event) => { event.stopPropagation(); resetToNow(); }}>Now</button>
-              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(1); }}>+1h</button>
-              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(3); }}>+3h</button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeTime(-3);
+                }}
+              >
+                −3h
+              </button>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeTime(-1);
+                }}
+              >
+                −1h
+              </button>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  resetToNow();
+                }}
+              >
+                Now
+              </button>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeTime(1);
+                }}
+              >
+                +1h
+              </button>
+
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeTime(3);
+                }}
+              >
+                +3h
+              </button>
             </div>
           </div>
 
@@ -1157,11 +1234,66 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             onPointerUp={stopMapPointerEvents}
             onClick={stopMapPointerEvents}
           >
-            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); zoomIn(); }} aria-label="Zoom in">+</button>
-            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); zoomOut(); }} aria-label="Zoom out">−</button>
-            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); rotateLeft(); }} aria-label="Rotate sky map left">↺</button>
-            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); rotateRight(); }} aria-label="Rotate sky map right">↻</button>
-            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); resetView(); }} aria-label="Reset sky map view">Reset</button>
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                zoomIn();
+              }}
+              aria-label="Zoom in"
+            >
+              +
+            </button>
+
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                zoomOut();
+              }}
+              aria-label="Zoom out"
+            >
+              −
+            </button>
+
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                rotateLeft();
+              }}
+              aria-label="Rotate sky map left"
+            >
+              ↺
+            </button>
+
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                rotateRight();
+              }}
+              aria-label="Rotate sky map right"
+            >
+              ↻
+            </button>
+
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                resetView();
+              }}
+              aria-label="Reset sky map view"
+            >
+              Reset
+            </button>
+
             <span>{Math.round(zoom * 100)}%</span>
           </div>
         </div>
@@ -1182,6 +1314,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               type="button"
             >
               <b>{index + 1}</b>
+
               <span>
                 <strong>{photo.title}</strong>
                 <em>{photo.constellation}</em>
