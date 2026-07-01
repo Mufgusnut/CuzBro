@@ -15,6 +15,28 @@ const locations = [
   { name: 'New York City, NY', lat: 40.7128, lon: -74.0060 }
 ];
 
+function PageNav() {
+  return (
+    <header className="nav">
+      <img
+        src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'}
+        className="logo"
+        alt="CuzBro logo"
+      />
+
+      <nav>
+        <a href="/">Home</a>
+        <a href="/#observatory">Observatory</a>
+        <a href="/#gallery">Archive</a>
+        <a href="/#gear">Gear</a>
+        <a href="/#crew">Crew</a>
+        <a href="/skymap">Sky Map</a>
+        <a href="/#about">About</a>
+      </nav>
+    </header>
+  );
+}
+
 export default function App() {
   const [gallery, setGallery] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
@@ -31,8 +53,10 @@ export default function App() {
       ? gallery
       : gallery.filter((photo) => photo.objectType === activeFilter);
 
+  const lightboxGallery = isSkyMapPage ? gallery : filteredGallery;
+
   const selectedPhoto =
-    selectedIndex !== null ? filteredGallery[selectedIndex] : null;
+    selectedIndex !== null ? lightboxGallery[selectedIndex] : null;
 
   const closeLightbox = () => {
     setViewerMode('report');
@@ -40,16 +64,16 @@ export default function App() {
   };
 
   const showNextPhoto = () => {
-    if (filteredGallery.length === 0) return;
+    if (lightboxGallery.length === 0) return;
     setViewerMode('report');
-    setSelectedIndex((current) => (current + 1) % filteredGallery.length);
+    setSelectedIndex((current) => (current + 1) % lightboxGallery.length);
   };
 
   const showPreviousPhoto = () => {
-    if (filteredGallery.length === 0) return;
+    if (lightboxGallery.length === 0) return;
     setViewerMode('report');
     setSelectedIndex(
-      (current) => (current - 1 + filteredGallery.length) % filteredGallery.length
+      (current) => (current - 1 + lightboxGallery.length) % lightboxGallery.length
     );
   };
 
@@ -88,13 +112,12 @@ export default function App() {
     };
 
     window.addEventListener('scroll', onScroll);
-
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (selectedIndex === null || filteredGallery.length === 0) return;
+      if (selectedIndex === null || lightboxGallery.length === 0) return;
 
       if (event.key === 'Escape') closeLightbox();
       if (event.key === 'ArrowRight') showNextPhoto();
@@ -102,23 +125,26 @@ export default function App() {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, filteredGallery.length]);
+  }, [selectedIndex, lightboxGallery.length]);
 
   return (
     <>
       <SpaceBackground />
 
-      <Hero
-        imageCount={gallery.length}
-        scrolled={scrolled}
-        featuredPhoto={gallery[0]}
-        setSelectedIndex={setSelectedIndex}
-        weather={weather['Eliot, ME']}
-      />
+      {isSkyMapPage ? (
+        <PageNav />
+      ) : (
+        <Hero
+          imageCount={gallery.length}
+          scrolled={scrolled}
+          featuredPhoto={gallery[0]}
+          setSelectedIndex={setSelectedIndex}
+          weather={weather['Eliot, ME']}
+        />
+      )}
 
-      <main>
+      <main className={isSkyMapPage ? 'skyMapPage' : ''}>
         {isSkyMapPage ? (
           <SkyMap
             gallery={gallery}
@@ -151,7 +177,7 @@ export default function App() {
 
       <Lightbox
         selectedPhoto={selectedPhoto}
-        gallery={isSkyMapPage ? gallery : filteredGallery}
+        gallery={lightboxGallery}
         selectedIndex={selectedIndex}
         setSelectedIndex={setSelectedIndex}
         viewerMode={viewerMode}
