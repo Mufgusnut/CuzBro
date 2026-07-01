@@ -3234,3 +3234,180 @@ footer p {
     width: auto;
   }
 }
+/* Atlas interaction fixes */
+.atlasZoomControls {
+  pointer-events: auto;
+  user-select: none;
+}
+
+.atlasZoomControls button {
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+/* The draggable sky layer */
+.skyPanLayer {
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Cleaner mission marker wrapper */
+.missionMarkerWrap {
+  position: absolute;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.svgMarker {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  transform: none !important;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(2,7,16,.92);
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.35);
+}
+
+.missionMarkerWrap:hover .svgMarker,
+.missionMarkerWrap.active .svgMarker {
+  border-color: var(--marker-color);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--marker-color) 52%, transparent);
+}
+
+/* Small readable object name beside active number */
+.missionMarkerName {
+  max-width: 140px;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--marker-color) 42%, rgba(255,255,255,.14));
+  border-radius: 999px;
+  background: rgba(2,7,16,.86);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 8px 22px rgba(0,0,0,.35);
+  opacity: 0;
+  transform: translateX(-4px);
+  pointer-events: none;
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+.missionMarkerWrap:hover .missionMarkerName,
+.missionMarkerWrap.active .missionMarkerName {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Cleaner labels */
+.constellationText {
+  fill: rgba(180,205,235,.48);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  text-anchor: middle;
+  opacity: .65;
+  paint-order: stroke;
+  stroke: rgba(2,7,16,.95);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+.constellationText.active {
+  fill: var(--orange);
+  opacity: .95;
+  font-size: 15px;
+}
+
+.brightStarLabel,
+.planetLabel,
+.pathLabel,
+.compassLabel,
+.zenithLabel {
+  paint-order: stroke;
+  stroke: rgba(2,7,16,.94);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+.brightStarLabel {
+  fill: rgba(235,242,255,.86);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.planetLabel {
+  fill: rgba(235,242,255,.72);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pathLabel {
+  fill: rgba(255,184,82,.78);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.pointerLabel,
+.summerTriangleLabel {
+  display: none;
+}
+
+/* Make active constellation obvious without overpowering everything */
+.constellationSegment {
+  stroke: rgba(130,205,255,.30);
+  stroke-width: 1.45;
+  opacity: .46;
+}
+
+.constellationSegment.active {
+  stroke: rgba(255,157,28,.92);
+  stroke-width: 2.45;
+  opacity: 1;
+}
+
+/* Mission exact location */
+.missionLeaderLine {
+  stroke: rgba(255,255,255,.22);
+  stroke-width: .9;
+  stroke-linecap: round;
+  stroke-dasharray: 2 4;
+}
+
+.missionAnchorDot {
+  stroke: rgba(2,7,16,.9);
+  stroke-width: 1.8;
+}
+
+.missionAnchorGlow {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: .65;
+}
+
+@media (max-width: 700px) {
+  .missionMarkerName {
+    font-size: 10px;
+    max-width: 110px;
+  }
+
+  .svgMarker {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+}

@@ -10,7 +10,7 @@ const SITE = {
 const MAP_SIZE = 1000;
 const CENTER = MAP_SIZE / 2;
 const RADIUS = 430;
-const DEFAULT_ZOOM = 0.74;
+const DEFAULT_ZOOM = 0.68;
 
 const STAR_CATALOG = [
   // North / orientation
@@ -481,7 +481,19 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     setPan({ x: 0, y: 0 });
   };
 
+  const shouldIgnoreDrag = (target) => {
+    if (!(target instanceof Element)) return false;
+
+    return Boolean(
+      target.closest('.atlasZoomControls') ||
+      target.closest('.missionMarkerWrap') ||
+      target.closest('.atlasLegend')
+    );
+  };
+
   const handlePointerDown = (event) => {
+    if (shouldIgnoreDrag(event.target)) return;
+
     dragRef.current = {
       startX: event.clientX,
       startY: event.clientY,
@@ -681,20 +693,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 );
               })}
 
-              <text x={CENTER + 155} y={CENTER - 150} className="pathLabel">
+              <text x={CENTER + 230} y={CENTER - 95} className="pathLabel">
                 Ecliptic
               </text>
 
               <text x={CENTER - 215} y={CENTER + 175} className="pathLabel moonPathLabel">
                 Lunar Path
-              </text>
-
-              <text x={CENTER - 190} y={CENTER - 265} className="pointerLabel">
-                Big Dipper points to Polaris
-              </text>
-
-              <text x={CENTER + 140} y={CENTER - 275} className="summerTriangleLabel">
-                Summer Triangle
               </text>
             </svg>
 
@@ -730,11 +734,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     {index + 1}
                   </button>
 
-                  <div className="missionMarkerTooltip">
-                    <strong>{photo.title}</strong>
-                    <span>{photo.constellation}</span>
-                    <em>{photo.objectType}</em>
-                  </div>
+                  <span className="missionMarkerName">
+                    {photo.title}
+                  </span>
                 </div>
               );
             })}
@@ -756,15 +758,39 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             onPointerUp={stopMapPointerEvents}
             onClick={stopMapPointerEvents}
           >
-            <button type="button" onClick={zoomIn} aria-label="Zoom in">
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                zoomIn();
+              }}
+              aria-label="Zoom in"
+            >
               +
             </button>
 
-            <button type="button" onClick={zoomOut} aria-label="Zoom out">
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                zoomOut();
+              }}
+              aria-label="Zoom out"
+            >
               −
             </button>
 
-            <button type="button" onClick={resetView} aria-label="Reset sky map view">
+            <button
+              type="button"
+              onPointerDown={stopMapPointerEvents}
+              onClick={(event) => {
+                event.stopPropagation();
+                resetView();
+              }}
+              aria-label="Reset sky map view"
+            >
               Reset
             </button>
 
