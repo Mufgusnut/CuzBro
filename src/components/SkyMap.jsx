@@ -23,6 +23,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           An interactive atlas of every celestial object photographed by CuzBro Observatory.
           Select a numbered marker to identify the mission.
         </p>
+        <a className="atlasBackButton" href="/#observatory">
+  ← Back to Observatory
+</a>
       </section>
 
       <section className="atlasLayout">

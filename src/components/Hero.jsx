@@ -45,7 +45,7 @@ export default function Hero({
         />
 
         <nav>
-          <a href="#home">Home</a>
+          <a href="#home" className="active">Home</a>
           <a href="#observatory">Observatory</a>
           <a href="#gallery">Archive</a>
           <a href="#gear">Gear</a>

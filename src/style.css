@@ -2199,3 +2199,18 @@ footer p {
     height: 210px;
   }
 }
+.atlasBackButton {
+  display: inline-flex;
+  margin-top: 18px;
+  padding: 11px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,157,28,.45);
+  background: rgba(255,157,28,.10);
+  color: white;
+  font-weight: 800;
+}
+
+.atlasBackButton:hover {
+  border-color: var(--orange);
+  background: rgba(255,157,28,.18);
+}
