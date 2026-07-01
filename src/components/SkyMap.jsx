@@ -378,6 +378,14 @@ function pointDistance(a, b) {
 function buildMissionCallouts(objects) {
   const placed = [];
 
+  const isMobile =
+    typeof window !== 'undefined' && window.innerWidth <= 700;
+
+  const baseRadius = isMobile ? RADIUS + 26 : RADIUS + 72;
+  const overlapDistance = isMobile ? 40 : 58;
+  const shiftAmount = isMobile ? 18 : 26;
+  const edgePadding = isMobile ? 34 : 54;
+
   const sorted = [...objects]
     .map((photo, index) => ({
       ...photo,
@@ -394,7 +402,6 @@ function buildMissionCallouts(objects) {
     const dy = photo.y - CENTER;
     const angle = Math.atan2(dy, dx);
 
-    const baseRadius = RADIUS + 72;
     const tangentX = -Math.sin(angle);
     const tangentY = Math.cos(angle);
 
@@ -402,21 +409,21 @@ function buildMissionCallouts(objects) {
     const baseY = CENTER + Math.sin(angle) * baseRadius;
 
     let chosen = {
-      x: clamp(baseX, 54, MAP_SIZE - 54),
-      y: clamp(baseY, 54, MAP_SIZE - 54)
+      x: clamp(baseX, edgePadding, MAP_SIZE - edgePadding),
+      y: clamp(baseY, edgePadding, MAP_SIZE - edgePadding)
     };
 
     for (let i = 0; i < 18; i += 1) {
       const band = Math.ceil(i / 2);
       const direction = i === 0 ? 0 : i % 2 === 1 ? 1 : -1;
-      const shift = band * 26 * direction;
+      const shift = band * shiftAmount * direction;
 
       const test = {
-        x: clamp(baseX + tangentX * shift, 54, MAP_SIZE - 54),
-        y: clamp(baseY + tangentY * shift, 54, MAP_SIZE - 54)
+        x: clamp(baseX + tangentX * shift, edgePadding, MAP_SIZE - edgePadding),
+        y: clamp(baseY + tangentY * shift, edgePadding, MAP_SIZE - edgePadding)
       };
 
-      const overlaps = placed.some((item) => pointDistance(item, test) < 58);
+      const overlaps = placed.some((item) => pointDistance(item, test) < overlapDistance);
 
       if (!overlaps) {
         chosen = test;
@@ -948,55 +955,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <strong>{formatMapTime(date)}</strong>
 
             <div>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  changeTime(-3);
-                }}
-              >
-                −3h
-              </button>
-
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  changeTime(-1);
-                }}
-              >
-                −1h
-              </button>
-
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  resetToNow();
-                }}
-              >
-                Now
-              </button>
-
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  changeTime(1);
-                }}
-              >
-                +1h
-              </button>
-
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  changeTime(3);
-                }}
-              >
-                +3h
-              </button>
+              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(-3); }}>−3h</button>
+              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(-1); }}>−1h</button>
+              <button type="button" onClick={(event) => { event.stopPropagation(); resetToNow(); }}>Now</button>
+              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(1); }}>+1h</button>
+              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(3); }}>+3h</button>
             </div>
           </div>
 
@@ -1016,66 +979,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             onPointerUp={stopMapPointerEvents}
             onClick={stopMapPointerEvents}
           >
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                zoomIn();
-              }}
-              aria-label="Zoom in"
-            >
-              +
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                zoomOut();
-              }}
-              aria-label="Zoom out"
-            >
-              −
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                rotateLeft();
-              }}
-              aria-label="Rotate sky map left"
-            >
-              ↺
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                rotateRight();
-              }}
-              aria-label="Rotate sky map right"
-            >
-              ↻
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                resetView();
-              }}
-              aria-label="Reset sky map view"
-            >
-              Reset
-            </button>
-
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); zoomIn(); }} aria-label="Zoom in">+</button>
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); zoomOut(); }} aria-label="Zoom out">−</button>
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); rotateLeft(); }} aria-label="Rotate sky map left">↺</button>
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); rotateRight(); }} aria-label="Rotate sky map right">↻</button>
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); resetView(); }} aria-label="Reset sky map view">Reset</button>
             <span>{Math.round(zoom * 100)}%</span>
           </div>
         </div>

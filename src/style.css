@@ -3109,3 +3109,216 @@ footer p {
     padding: 6px 9px !important;
   }
 }
+/* =========================================================
+   SKY MAP MOBILE CLEANUP
+   Paste at the VERY BOTTOM of style.css
+========================================================= */
+
+@media (max-width: 700px) {
+  .skyMapPage {
+    padding-top: calc(92px + env(safe-area-inset-top)) !important;
+  }
+
+  .atlasPage {
+    padding: 0 12px 42px !important;
+  }
+
+  .atlasHero {
+    padding-top: 18px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .atlasHero .eyebrow {
+    font-size: 0.78rem !important;
+    letter-spacing: 0.2em !important;
+  }
+
+  .atlasHero h1 {
+    font-size: clamp(2.1rem, 12vw, 3.2rem) !important;
+    line-height: 0.95 !important;
+  }
+
+  .atlasHero .tagline {
+    font-size: 1rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .atlasBackButton {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 14px 18px !important;
+    font-size: 1rem !important;
+    border-radius: 20px !important;
+  }
+
+  .atlasMap.realSkyMap,
+  .realSkyMap {
+    height: 620px !important;
+    min-height: 620px !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+
+  .skyPanLayer {
+    transform-origin: center center !important;
+  }
+
+  /* Make time controls compact on mobile */
+  .atlasTimeControls {
+    left: 10px !important;
+    top: 10px !important;
+    right: 10px !important;
+    padding: 10px !important;
+    gap: 8px !important;
+    border-radius: 16px !important;
+  }
+
+  .atlasTimeControls strong {
+    font-size: 0.82rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .atlasTimeControls div {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .atlasTimeControls button {
+    min-width: 0 !important;
+    height: 36px !important;
+    padding: 0 4px !important;
+    font-size: 0.82rem !important;
+    border-radius: 12px !important;
+  }
+
+  /* Shrink zoom / rotate controls */
+  .atlasZoomControls {
+    right: 10px !important;
+    bottom: 10px !important;
+    padding: 8px !important;
+    gap: 6px !important;
+    border-radius: 16px !important;
+  }
+
+  .atlasZoomControls button {
+    min-width: 40px !important;
+    width: 40px !important;
+    height: 34px !important;
+    font-size: 0.95rem !important;
+    border-radius: 11px !important;
+    padding: 0 !important;
+  }
+
+  .atlasZoomControls button:nth-child(5) {
+    width: auto !important;
+    min-width: 58px !important;
+    font-size: 0.78rem !important;
+    padding: 0 8px !important;
+  }
+
+  .atlasZoomControls span {
+    font-size: 0.72rem !important;
+  }
+
+  /* Mission callouts: smaller and less intrusive */
+  .missionGuideLine {
+    stroke-width: 1 !important;
+    stroke-dasharray: 3 6 !important;
+    opacity: 0.5 !important;
+  }
+
+  .missionAnchorX {
+    stroke-width: 1.6 !important;
+    opacity: 0.9 !important;
+  }
+
+  .missionMarkerWrap {
+    gap: 5px !important;
+    z-index: 24 !important;
+  }
+
+  .svgMarker {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.78rem !important;
+    border-width: 1.3px !important;
+  }
+
+  .missionMarkerName {
+    font-size: 0.78rem !important;
+    padding: 5px 8px !important;
+    max-width: 130px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* On mobile, only show the active/hovered name */
+  .missionMarkerName {
+    opacity: 0 !important;
+  }
+
+  .missionMarkerWrap.active .missionMarkerName,
+  .missionMarkerWrap:hover .missionMarkerName,
+  .missionMarkerWrap:focus-within .missionMarkerName {
+    opacity: 1 !important;
+  }
+
+  /* Sky labels smaller */
+  .compassLabel {
+    font-size: 18px !important;
+  }
+
+  .zenithLabel,
+  .brightStarLabel,
+  .planetLabel {
+    font-size: 9px !important;
+  }
+
+  .constellationText {
+    font-size: 10px !important;
+    letter-spacing: 0.12em !important;
+    stroke-width: 4px !important;
+  }
+
+  .constellationText.active {
+    font-size: 11px !important;
+  }
+
+  .pathLabel,
+  .guideLabel {
+    font-size: 9px !important;
+    letter-spacing: 0.1em !important;
+    stroke-width: 4px !important;
+  }
+
+  /* Catalog spacing */
+  .atlasCatalog {
+    padding: 16px !important;
+    border-radius: 22px !important;
+    gap: 10px !important;
+  }
+
+  .catalogItem {
+    padding: 14px !important;
+  }
+
+  .catalogItem b {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    font-size: 1.2rem !important;
+  }
+
+  .catalogItem strong {
+    font-size: 1.15rem !important;
+  }
+
+  .catalogItem em {
+    font-size: 1rem !important;
+  }
+
+  .catalogItem small {
+    font-size: 0.88rem !important;
+  }
+}
