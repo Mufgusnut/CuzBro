@@ -253,6 +253,56 @@ function buildVisiblePath(points) {
   return path.trim();
 }
 
+function buildSmoothVisiblePath(points, buffer = 18) {
+  const segments = [];
+  let currentSegment = [];
+
+  points.forEach((point) => {
+    if (!isInsideSky(point, buffer)) {
+      if (currentSegment.length) {
+        segments.push(currentSegment);
+        currentSegment = [];
+      }
+      return;
+    }
+
+    currentSegment.push(point);
+  });
+
+  if (currentSegment.length) {
+    segments.push(currentSegment);
+  }
+
+  return segments
+    .map((segment) => {
+      if (!segment.length) return '';
+      if (segment.length === 1) {
+        return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
+      }
+      if (segment.length === 2) {
+        return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)} L ${segment[1].x.toFixed(1)} ${segment[1].y.toFixed(1)}`;
+      }
+
+      let path = `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
+
+      for (let i = 1; i < segment.length - 1; i += 1) {
+        const current = segment[i];
+        const next = segment[i + 1];
+        const midX = (current.x + next.x) / 2;
+        const midY = (current.y + next.y) / 2;
+
+        path += ` Q ${current.x.toFixed(1)} ${current.y.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
+      }
+
+      const last = segment[segment.length - 1];
+      path += ` T ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
+
+      return path;
+    })
+    .filter(Boolean)
+    .join(' ');
+}
+
 function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
   const obliquity = toRadians(23.439291);
   const lambda = toRadians(lambdaDegrees);
@@ -636,17 +686,22 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const lunarPoints = useMemo(() => {
     const points = [];
-    for (let hour = 0; hour <= 24; hour += 2) {
-      const future = new Date(date.getTime() + hour * 60 * 60 * 1000);
-      const moon = getPlanetRaDec(Body.Moon, future, observer);
-      const altAz = raDecToAltAz(moon.ra, moon.dec, future, SITE.lat, SITE.lon);
+
+    // Use a wider time window and smaller steps so the Moon's track feels
+    // smooth and complete from different times/angles, instead of appearing
+    // as a short segmented line.
+    for (let hour = -12; hour <= 36; hour += 0.5) {
+      const sampleTime = new Date(date.getTime() + hour * 60 * 60 * 1000);
+      const moon = getPlanetRaDec(Body.Moon, sampleTime, observer);
+      const altAz = raDecToAltAz(moon.ra, moon.dec, sampleTime, SITE.lat, SITE.lon);
       points.push(projectAltAz(altAz.alt, altAz.az));
     }
+
     return points;
   }, [date, observer]);
 
   const eclipticPath = useMemo(() => buildVisiblePath(eclipticPoints), [eclipticPoints]);
-  const lunarPath = useMemo(() => buildVisiblePath(lunarPoints), [lunarPoints]);
+  const lunarPath = useMemo(() => buildSmoothVisiblePath(lunarPoints, 18), [lunarPoints]);
   const eclipticLabel = useMemo(() => pickPathLabel(eclipticPoints, 0.72, { x: 24, y: -20 }), [eclipticPoints]);
   const lunarLabel = useMemo(() => pickPathLabel(lunarPoints, 0.18, { x: -12, y: -18 }), [lunarPoints]);
 
