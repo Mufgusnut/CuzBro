@@ -2343,3 +2343,47 @@ footer p {
   color: white;
   font-size: 12px;
 }
+@media (max-width: 700px) {
+  .atlasHero {
+    margin-bottom: 22px;
+  }
+
+  .atlasHero h1 {
+    font-size: 2.7rem;
+  }
+
+  .atlasLayout {
+    gap: 16px;
+  }
+
+  .atlasFilters {
+    gap: 8px;
+  }
+
+  .atlasFilters button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .atlasMap {
+    min-height: 420px;
+    border-radius: 20px;
+  }
+
+  .atlasCatalog {
+    padding: 14px;
+  }
+
+  .catalogItem {
+    padding: 10px;
+  }
+
+  .atlasDetail {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .atlasFacts {
+    grid-template-columns: 1fr;
+  }
+}
