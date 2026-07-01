@@ -30,7 +30,7 @@ function PageNav() {
         <a href="/#gallery">Archive</a>
         <a href="/#gear">Gear</a>
         <a href="/#crew">Crew</a>
-        <a href="/skymap">Sky Map</a>
+        <a href="/skymap" className="active">Sky Map</a>
         <a href="/#about">About</a>
       </nav>
     </header>
