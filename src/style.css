@@ -2290,3 +2290,378 @@ footer p {
     font-size: 12px !important;
   }
 }
+/* =========================================================
+   CELESTIAL ATLAS RESCUE OVERRIDE
+   Paste at the VERY BOTTOM of style.css
+========================================================= */
+
+/* Make the SkyMap page wide again */
+.skyMapPage {
+  padding-top: 90px !important;
+  min-height: calc(100vh - 90px) !important;
+}
+
+.atlasPage {
+  width: 100% !important;
+  max-width: 1800px !important;
+  margin: 0 auto !important;
+  padding: 0 32px 70px !important;
+}
+
+/* Force the catalog below the map */
+.atlasLayout,
+.realAtlasLayout {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 22px !important;
+  align-items: start !important;
+}
+
+/* Restore the big full-width map */
+.atlasMap.realSkyMap,
+.realSkyMap {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 860px !important;
+  height: 860px !important;
+  overflow: hidden !important;
+  border-radius: 28px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(120,150,255,.08), transparent 28%),
+    radial-gradient(circle at 12% 14%, rgba(255,255,255,.05), transparent 16%),
+    radial-gradient(circle at 85% 18%, rgba(255,170,70,.05), transparent 14%),
+    linear-gradient(180deg, rgba(3,10,24,.98), rgba(2,7,16,.98)) !important;
+  box-shadow: inset 0 0 40px rgba(0,0,0,.35) !important;
+}
+
+/* Keep the movable sky layer correctly sized */
+.skyPanLayer {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  z-index: 2 !important;
+  transform-origin: center center !important;
+}
+
+/* Keep the SVG filling the map */
+.skySvg {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: block !important;
+  z-index: 2 !important;
+}
+
+/* Put numbered mission markers on top of the SVG */
+.missionMarkerWrap {
+  position: absolute !important;
+  z-index: 20 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: auto !important;
+}
+
+.svgMarker {
+  position: relative !important;
+  width: 26px !important;
+  height: 26px !important;
+  transform: none !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--marker-color, rgba(255,255,255,.45)) !important;
+  background: rgba(2,7,16,.92) !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.35) !important;
+}
+
+.missionMarkerWrap:hover .svgMarker,
+.missionMarkerWrap.active .svgMarker {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--marker-color, #fff) 55%, transparent) !important;
+}
+
+/* Small readable name beside highlighted marker */
+.missionMarkerName {
+  position: absolute !important;
+  left: calc(100% + 8px) !important;
+  top: 50% !important;
+  transform: translateY(-50%) translateX(-4px) !important;
+  white-space: nowrap !important;
+  padding: 6px 9px !important;
+  border-radius: 999px !important;
+  border: 1px solid color-mix(in srgb, var(--marker-color, #fff) 42%, rgba(255,255,255,.14)) !important;
+  background: rgba(2,7,16,.9) !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.35) !important;
+  transition: opacity .16s ease, transform .16s ease !important;
+}
+
+.missionMarkerWrap:hover .missionMarkerName,
+.missionMarkerWrap.active .missionMarkerName {
+  opacity: 1 !important;
+  transform: translateY(-50%) translateX(0) !important;
+}
+
+/* Keep the exact object dots visible */
+.missionLeaderLine {
+  stroke: rgba(255,255,255,.24) !important;
+  stroke-width: 1 !important;
+  stroke-linecap: round !important;
+  stroke-dasharray: 2 4 !important;
+}
+
+.missionAnchorDot {
+  stroke: rgba(2,7,16,.9) !important;
+  stroke-width: 1.8 !important;
+}
+
+.missionAnchorGlow {
+  fill: none !important;
+  stroke-width: 1.5 !important;
+  opacity: .65 !important;
+}
+
+/* Make constellations readable but not overwhelming */
+.constellationSegment {
+  fill: none !important;
+  stroke: rgba(145,195,240,.48) !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  opacity: .75 !important;
+  filter: drop-shadow(0 0 4px rgba(114,217,255,.18)) !important;
+}
+
+.constellationSegment.active {
+  stroke: rgba(255,157,28,.95) !important;
+  stroke-width: 2.7 !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 8px rgba(255,157,28,.35)) !important;
+}
+
+.constellationText {
+  fill: rgba(190,215,245,.72) !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+  text-anchor: middle !important;
+  paint-order: stroke !important;
+  stroke: rgba(2,7,16,.95) !important;
+  stroke-width: 5px !important;
+  stroke-linejoin: round !important;
+}
+
+.constellationText.active {
+  fill: var(--orange) !important;
+  opacity: 1 !important;
+}
+
+/* Clean path labels */
+.pathLabel,
+.guideLabel {
+  paint-order: stroke !important;
+  stroke: rgba(2,7,16,.95) !important;
+  stroke-width: 5px !important;
+  stroke-linejoin: round !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: .13em !important;
+  text-transform: uppercase !important;
+}
+
+.pathLabel {
+  fill: rgba(255,184,82,.9) !important;
+}
+
+.guideLabel {
+  fill: rgba(255,215,150,.78) !important;
+}
+
+/* Subtle Summer Triangle */
+.summerTriangleOutline {
+  fill: none !important;
+  stroke: rgba(255,205,120,.28) !important;
+  stroke-width: 1.2 !important;
+  stroke-dasharray: 8 10 !important;
+}
+
+/* Restore the legend as a compact card */
+.realSkyMap > .atlasLegend,
+.realSkyMap > .enhancedLegend,
+.realSkyMap > .atlasLegend.enhancedLegend {
+  position: absolute !important;
+  left: 20px !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 20px !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-width: min(560px, calc(100% - 40px)) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px 16px !important;
+  padding: 12px 14px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 16px !important;
+  background: rgba(4,10,22,.86) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.35) !important;
+  z-index: 25 !important;
+}
+
+.realSkyMap > .atlasLegend span,
+.realSkyMap > .enhancedLegend span,
+.realSkyMap > .atlasLegend.enhancedLegend span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #dce6fa !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+
+.realSkyMap > .atlasLegend i,
+.realSkyMap > .enhancedLegend i,
+.realSkyMap > .atlasLegend.enhancedLegend i {
+  width: 11px !important;
+  height: 11px !important;
+  min-width: 11px !important;
+  min-height: 11px !important;
+  display: inline-block !important;
+  border-radius: 999px !important;
+}
+
+/* Zoom controls */
+.atlasZoomControls {
+  position: absolute !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  top: auto !important;
+  transform: none !important;
+  z-index: 30 !important;
+  display: grid !important;
+  gap: 10px !important;
+  padding: 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(4,10,22,.86) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.35) !important;
+  pointer-events: auto !important;
+}
+
+.atlasZoomControls button {
+  min-width: 58px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background: rgba(10,18,36,.92) !important;
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+}
+
+.atlasZoomControls span {
+  text-align: center !important;
+  color: #cbd7ef !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+/* Catalog below the map */
+.atlasCatalog {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  padding: 18px !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(180deg, rgba(12,25,48,.84), rgba(3,10,22,.92)) !important;
+}
+
+.atlasCatalog > small {
+  grid-column: 1 / -1 !important;
+}
+
+.catalogItem + .catalogItem {
+  border-top: none !important;
+}
+
+.catalogItem {
+  border: 1px solid rgba(255,255,255,.08) !important;
+  background: rgba(2,7,16,.28) !important;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .atlasMap.realSkyMap,
+  .realSkyMap {
+    height: 680px !important;
+    min-height: 680px !important;
+  }
+
+  .atlasCatalog {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .skyMapPage {
+    padding-top: 70px !important;
+  }
+
+  .atlasPage {
+    padding: 0 18px 46px !important;
+  }
+
+  .atlasMap.realSkyMap,
+  .realSkyMap {
+    height: 520px !important;
+    min-height: 520px !important;
+    border-radius: 20px !important;
+  }
+
+  .atlasCatalog {
+    grid-template-columns: 1fr !important;
+  }
+
+  .realSkyMap > .atlasLegend,
+  .realSkyMap > .enhancedLegend,
+  .realSkyMap > .atlasLegend.enhancedLegend {
+    display: none !important;
+  }
+
+  .atlasZoomControls {
+    right: 12px !important;
+    bottom: 12px !important;
+    padding: 10px !important;
+  }
+
+  .atlasZoomControls button {
+    min-width: 46px !important;
+    height: 36px !important;
+    font-size: 16px !important;
+  }
+}
