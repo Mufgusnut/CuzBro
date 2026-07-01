@@ -443,15 +443,14 @@ main {
   transition:
     transform .22s ease,
     border-color .22s ease,
-    background .22s ease,
-    color .22s ease;
+    background .22s ease;
 }
 
 .quick a::after {
   content: "";
   position: absolute;
-  left: 28px;
-  right: 28px;
+  left: 24px;
+  right: 24px;
   bottom: 0;
   height: 2px;
   background: var(--orange);
@@ -463,8 +462,7 @@ main {
 .quick a:hover {
   transform: translateY(-4px);
   border-color: var(--orange);
-  background: linear-gradient(180deg, rgba(16,25,48,.98), rgba(7,14,28,.98));
-  cursor: pointer;
+  background: linear-gradient(180deg, rgba(16,25,48,.96), rgba(7,14,28,.96));
 }
 
 .quick a:hover::after {
