@@ -744,6 +744,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     event.stopPropagation();
   };
 
+  const keepUpright = (x, y) => {
+    return `rotate(${-rotation} ${x} ${y})`;
+  };
+
   return (
     <div className="atlasPage">
       <section className="atlasHero">
@@ -803,11 +807,50 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 className="skyAxis"
               />
 
-              <text x={CENTER} y={CENTER - RADIUS - 18} className="compassLabel">N</text>
-              <text x={CENTER + RADIUS + 16} y={CENTER + 6} className="compassLabel">E</text>
-              <text x={CENTER} y={CENTER + RADIUS + 28} className="compassLabel">S</text>
-              <text x={CENTER - RADIUS - 18} y={CENTER + 6} className="compassLabel">W</text>
-              <text x={CENTER + 14} y={CENTER - 12} className="zenithLabel">Zenith</text>
+              <text
+                x={CENTER}
+                y={CENTER - RADIUS - 18}
+                className="compassLabel"
+                transform={keepUpright(CENTER, CENTER - RADIUS - 18)}
+              >
+                N
+              </text>
+
+              <text
+                x={CENTER + RADIUS + 16}
+                y={CENTER + 6}
+                className="compassLabel"
+                transform={keepUpright(CENTER + RADIUS + 16, CENTER + 6)}
+              >
+                E
+              </text>
+
+              <text
+                x={CENTER}
+                y={CENTER + RADIUS + 28}
+                className="compassLabel"
+                transform={keepUpright(CENTER, CENTER + RADIUS + 28)}
+              >
+                S
+              </text>
+
+              <text
+                x={CENTER - RADIUS - 18}
+                y={CENTER + 6}
+                className="compassLabel"
+                transform={keepUpright(CENTER - RADIUS - 18, CENTER + 6)}
+              >
+                W
+              </text>
+
+              <text
+                x={CENTER + 14}
+                y={CENTER - 12}
+                className="zenithLabel"
+                transform={keepUpright(CENTER + 14, CENTER - 12)}
+              >
+                Zenith
+              </text>
 
               {eclipticPath && <path d={eclipticPath} className="eclipticPath" />}
               {lunarPath && <path d={lunarPath} className="lunarPath" />}
@@ -838,7 +881,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   />
 
                   {['Polaris', 'Vega', 'Deneb', 'Altair'].includes(star.name) && (
-                    <text x={star.x + 10} y={star.y - 10} className="brightStarLabel">
+                    <text
+                      x={star.x + 10}
+                      y={star.y - 10}
+                      className="brightStarLabel"
+                      transform={keepUpright(star.x + 10, star.y - 10)}
+                    >
                       {star.name}
                     </text>
                   )}
@@ -848,7 +896,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               {visiblePlanets.map((planet) => (
                 <g key={planet.name}>
                   <circle cx={planet.x} cy={planet.y} r={5} className="planetMarker" />
-                  <text x={planet.x + 10} y={planet.y - 8} className="planetLabel">
+
+                  <text
+                    x={planet.x + 10}
+                    y={planet.y - 8}
+                    className="planetLabel"
+                    transform={keepUpright(planet.x + 10, planet.y - 8)}
+                  >
                     {planet.name}
                   </text>
                 </g>
@@ -903,6 +957,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   key={label.name}
                   x={label.x}
                   y={label.y}
+                  transform={keepUpright(label.x, label.y)}
                   className={
                     label.name === activeConstellation
                       ? 'constellationText active'
@@ -914,16 +969,31 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               ))}
 
               {summerTriangleLabel && (
-                <text x={summerTriangleLabel.x} y={summerTriangleLabel.y} className="guideLabel">
+                <text
+                  x={summerTriangleLabel.x}
+                  y={summerTriangleLabel.y}
+                  className="guideLabel"
+                  transform={keepUpright(summerTriangleLabel.x, summerTriangleLabel.y)}
+                >
                   Summer Triangle
                 </text>
               )}
 
-              <text x={eclipticLabel.x} y={eclipticLabel.y} className="pathLabel">
+              <text
+                x={eclipticLabel.x}
+                y={eclipticLabel.y}
+                className="pathLabel"
+                transform={keepUpright(eclipticLabel.x, eclipticLabel.y)}
+              >
                 Ecliptic
               </text>
 
-              <text x={lunarLabel.x} y={lunarLabel.y} className="pathLabel">
+              <text
+                x={lunarLabel.x}
+                y={lunarLabel.y}
+                className="pathLabel"
+                transform={keepUpright(lunarLabel.x, lunarLabel.y)}
+              >
                 Lunar Path
               </text>
             </svg>
@@ -944,7 +1014,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   style={{
                     left: `${(photo.markerX / MAP_SIZE) * 100}%`,
                     top: `${(photo.markerY / MAP_SIZE) * 100}%`,
-                    '--marker-color': markerColor
+                    '--marker-color': markerColor,
+                    '--atlas-rotation': `${rotation}deg`
                   }}
                   onPointerDown={stopMapPointerEvents}
                   onPointerMove={stopMapPointerEvents}

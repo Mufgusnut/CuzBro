@@ -3322,3 +3322,13 @@ footer p {
     font-size: 0.88rem !important;
   }
 }
+/* Keeps mission badges readable while the sky chart rotates */
+.missionMarkerWrap {
+  transform:
+    translate(-50%, -50%)
+    rotate(calc(-1 * var(--atlas-rotation, 0deg))) !important;
+}
+
+.missionMarkerWrap.label-left {
+  flex-direction: row-reverse !important;
+}
