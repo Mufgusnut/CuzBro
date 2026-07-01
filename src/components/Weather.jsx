@@ -141,17 +141,17 @@ export default function Weather({ locations, weather }) {
 
               <div className="weatherMetrics">
   <div>
-    <Cloud size={26} strokeWidth={2.4} />
+    <span>☁</span>
     <strong>{w ? Math.round(w.cloud_cover) : "--"}%</strong>
   </div>
 
   <div>
-    <Wind size={30} strokeWidth={2.6} />
+    <span>🌬</span>
     <strong>{w ? Math.round(w.wind_speed_10m) : "--"} mph</strong>
   </div>
 
   <div>
-    <Droplets size={28} strokeWidth={2.4} />
+    <span>💧</span>
     <strong>{w ? Math.round(w.relative_humidity_2m) : "--"}%</strong>
   </div>
 </div>

@@ -1,3 +1,4 @@
+import SkyMap from './components/SkyMap.jsx';
 import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
@@ -133,7 +134,10 @@ export default function App() {
           scroll={scroll}
           setSelectedIndex={setSelectedIndex}
         />
-
+<SkyMap
+  gallery={filteredGallery}
+  setSelectedIndex={setSelectedIndex}
+/>
         <Weather locations={locations} weather={weather} />
 <InfoSections />
         <FeaturedCapture

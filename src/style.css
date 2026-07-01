@@ -1693,3 +1693,68 @@ footer p {
 .photoCard {
   transform-origin: center bottom;
 }
+.skyMap {
+  position: relative;
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 60% 30%, rgba(114,217,255,.12), transparent 28%),
+    radial-gradient(circle at 25% 70%, rgba(255,157,28,.10), transparent 24%),
+    rgba(2,7,16,.72);
+  box-shadow: 0 12px 38px #0009;
+}
+
+.skyMapGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: .35;
+}
+
+.skyPoint {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(114,217,255,.35);
+  background: rgba(2,7,16,.82);
+  color: white;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.skyPoint svg {
+  color: var(--orange);
+}
+
+.skyPoint span {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.skyPoint:hover {
+  border-color: var(--orange);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+@media (max-width: 700px) {
+  .skyMap {
+    min-height: 360px;
+  }
+
+  .skyPoint {
+    padding: 7px 9px;
+  }
+
+  .skyPoint span {
+    font-size: 11px;
+  }
+}
