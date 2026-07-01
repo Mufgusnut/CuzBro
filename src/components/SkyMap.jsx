@@ -67,21 +67,26 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         <div className="atlasFilters">
           {atlasTypes.map((type) => (
             <button
-              key={type}
-              className={atlasFilter === type ? 'active' : ''}
-              onClick={() => {
-                setAtlasFilter(type);
-                const firstVisible =
-                  type === 'All'
-                    ? mapped[0]
-                    : mapped.find((photo) => photo.objectType === type);
+  key={type}
+  className={atlasFilter === type ? 'active' : ''}
+  onClick={() => {
+    setAtlasFilter(type);
+    const firstVisible =
+      type === 'All'
+        ? mapped[0]
+        : mapped.find((photo) => photo.objectType === type);
 
-                if (firstVisible) activatePhoto(firstVisible);
-              }}
-              type="button"
-            >
-              {type}
-            </button>
+    if (firstVisible) activatePhoto(firstVisible);
+  }}
+  type="button"
+>
+  <span>{type}</span>
+  <b>
+    {type === 'All'
+      ? mapped.length
+      : mapped.filter((photo) => photo.objectType === type).length}
+  </b>
+</button>
           ))}
         </div>
 

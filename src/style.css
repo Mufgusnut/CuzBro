@@ -2326,3 +2326,20 @@ footer p {
 .atlasDetail:hover {
   border-color: rgba(255,157,28,.45);
 }
+.atlasFilters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.atlasFilters button b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  color: white;
+  font-size: 12px;
+}
