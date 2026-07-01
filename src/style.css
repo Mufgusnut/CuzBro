@@ -656,6 +656,7 @@ main {
   align-items: center;
   gap: 18px;
   margin: 18px 0;
+  margin-top: -6px;
 }
 
 .rating svg {
