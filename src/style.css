@@ -4207,3 +4207,42 @@ footer p {
     min-width: 0 !important;
   }
 }
+/* ================================
+   MOBILE SKYMAP HERO SPACING TUNE
+   ================================ */
+@media (max-width: 700px) {
+  .atlasHero {
+    padding-top: 28px !important;
+    margin-bottom: 34px !important;
+  }
+
+  .atlasHero .eyebrow {
+    display: block !important;
+    font-size: 0.84rem !important;
+    letter-spacing: 0.30em !important;
+    line-height: 1.2 !important;
+    margin-bottom: 18px !important;
+  }
+
+  .atlasHero h1 {
+    font-size: clamp(3.2rem, 12vw, 4.5rem) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.05em !important;
+    margin: 0 0 26px !important;
+  }
+
+  .atlasHero .tagline {
+    font-size: 1.08rem !important;
+    line-height: 1.62 !important;
+    letter-spacing: 0.01em !important;
+    margin: 0 0 34px !important;
+    max-width: 100% !important;
+  }
+
+  .atlasBackButton {
+    margin-top: 0 !important;
+    margin-bottom: 30px !important;
+    min-height: 62px !important;
+    font-size: 1.04rem !important;
+  }
+}
