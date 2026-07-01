@@ -2202,3 +2202,91 @@ footer p {
     display: none;
   }
 }
+/* =========================================================
+   ATLAS LEGEND FIX
+   Paste at very bottom of style.css
+========================================================= */
+
+.realSkyMap > .atlasLegend,
+.realSkyMap > .enhancedLegend,
+.realSkyMap > .atlasLegend.enhancedLegend {
+  position: absolute !important;
+  left: 20px !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 20px !important;
+
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-width: min(560px, calc(100% - 40px)) !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  align-content: flex-start !important;
+
+  gap: 10px 16px !important;
+  padding: 12px 14px !important;
+
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 16px !important;
+  background: rgba(4,10,22,.86) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.35) !important;
+
+  z-index: 12 !important;
+  pointer-events: auto !important;
+}
+
+.realSkyMap > .atlasLegend span,
+.realSkyMap > .enhancedLegend span,
+.realSkyMap > .atlasLegend.enhancedLegend span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #dce6fa !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+
+.realSkyMap > .atlasLegend i,
+.realSkyMap > .enhancedLegend i,
+.realSkyMap > .atlasLegend.enhancedLegend i {
+  width: 11px !important;
+  height: 11px !important;
+  min-width: 11px !important;
+  min-height: 11px !important;
+
+  display: inline-block !important;
+  border-radius: 999px !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 800px) {
+  .realSkyMap > .atlasLegend,
+  .realSkyMap > .enhancedLegend,
+  .realSkyMap > .atlasLegend.enhancedLegend {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    max-width: none !important;
+    gap: 8px 12px !important;
+    padding: 10px 12px !important;
+  }
+
+  .realSkyMap > .atlasLegend span,
+  .realSkyMap > .enhancedLegend span,
+  .realSkyMap > .atlasLegend.enhancedLegend span {
+    font-size: 12px !important;
+  }
+}
