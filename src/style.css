@@ -2747,3 +2747,78 @@ footer p {
     padding: 0 4px !important;
   }
 }
+/* =========================================================
+   DESKTOP TIME CONTROLS FIX
+   Paste at very bottom of style.css
+========================================================= */
+
+.realSkyMap {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.skyPanLayer {
+  z-index: 2 !important;
+}
+
+.atlasTimeControls {
+  position: absolute !important;
+  left: 20px !important;
+  top: 20px !important;
+  right: auto !important;
+  bottom: auto !important;
+
+  z-index: 100 !important;
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  gap: 10px !important;
+  padding: 13px 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(4,10,22,.88) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.35) !important;
+
+  pointer-events: auto !important;
+}
+
+.atlasTimeControls strong {
+  display: block !important;
+  color: #dce6fa !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+.atlasTimeControls div {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+}
+
+.atlasTimeControls button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-width: 48px !important;
+  height: 34px !important;
+  padding: 0 9px !important;
+
+  border-radius: 11px !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background: rgba(10,18,36,.92) !important;
+  color: white !important;
+
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+}
+
+.atlasTimeControls button:hover {
+  border-color: rgba(255,157,28,.7) !important;
+  background: rgba(255,157,28,.14) !important;
+}
