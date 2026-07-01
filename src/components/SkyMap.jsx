@@ -375,16 +375,36 @@ function pointDistance(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
-function buildMissionCallouts(objects) {
+function getZoomSafeBounds(zoom, isMobile) {
+  const safeInset = isMobile ? 74 : 92;
+  const halfVisible = (CENTER - safeInset) / Math.max(zoom, 0.55);
+
+  return {
+    min: CENTER - halfVisible,
+    max: CENTER + halfVisible
+  };
+}
+
+function buildMissionCallouts(objects, zoom) {
   const placed = [];
 
   const isMobile =
     typeof window !== 'undefined' && window.innerWidth <= 700;
 
-  const baseRadius = isMobile ? RADIUS + 26 : RADIUS + 72;
+  const zoomPull = Math.max(0, zoom - DEFAULT_ZOOM);
+  const baseOffset = isMobile ? 26 : 72;
+  const pullStrength = isMobile ? 140 : 160;
+
+  const baseRadius = clamp(
+    RADIUS + baseOffset - zoomPull * pullStrength,
+    isMobile ? RADIUS - 58 : RADIUS - 38,
+    RADIUS + baseOffset
+  );
+
   const overlapDistance = isMobile ? 40 : 58;
   const shiftAmount = isMobile ? 18 : 26;
   const edgePadding = isMobile ? 34 : 54;
+  const zoomBounds = getZoomSafeBounds(zoom, isMobile);
 
   const sorted = [...objects]
     .map((photo, index) => ({
@@ -408,19 +428,25 @@ function buildMissionCallouts(objects) {
     const baseX = CENTER + Math.cos(angle) * baseRadius;
     const baseY = CENTER + Math.sin(angle) * baseRadius;
 
+    const clampX = (value) =>
+      clamp(value, Math.max(edgePadding, zoomBounds.min), Math.min(MAP_SIZE - edgePadding, zoomBounds.max));
+
+    const clampY = (value) =>
+      clamp(value, Math.max(edgePadding, zoomBounds.min), Math.min(MAP_SIZE - edgePadding, zoomBounds.max));
+
     let chosen = {
-      x: clamp(baseX, edgePadding, MAP_SIZE - edgePadding),
-      y: clamp(baseY, edgePadding, MAP_SIZE - edgePadding)
+      x: clampX(baseX),
+      y: clampY(baseY)
     };
 
-    for (let i = 0; i < 18; i += 1) {
+    for (let i = 0; i < 20; i += 1) {
       const band = Math.ceil(i / 2);
       const direction = i === 0 ? 0 : i % 2 === 1 ? 1 : -1;
       const shift = band * shiftAmount * direction;
 
       const test = {
-        x: clamp(baseX + tangentX * shift, edgePadding, MAP_SIZE - edgePadding),
-        y: clamp(baseY + tangentY * shift, edgePadding, MAP_SIZE - edgePadding)
+        x: clampX(baseX + tangentX * shift),
+        y: clampY(baseY + tangentY * shift)
       };
 
       const overlaps = placed.some((item) => pointDistance(item, test) < overlapDistance);
@@ -492,8 +518,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [mappedObjects]);
 
   const missionCallouts = useMemo(() => {
-    return buildMissionCallouts(visibleObjects);
-  }, [visibleObjects]);
+    return buildMissionCallouts(visibleObjects, zoom);
+  }, [visibleObjects, zoom]);
 
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
