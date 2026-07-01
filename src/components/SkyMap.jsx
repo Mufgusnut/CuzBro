@@ -529,15 +529,17 @@ function buildMissionCallouts(objects, zoom) {
   const defaultZoom = isMobile ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM;
   const zoomPull = Math.max(0, zoom - defaultZoom);
 
-  // Mobile markers now live inside the sky circle so they don't run off-screen.
-  // Desktop can still sit just outside the horizon for the larger layout.
+  // Keep mobile callouts inside the chart and a clear distance away from
+  // the real target X. This prevents the number badge from sitting directly
+  // on top of the object or its constellation label at high zoom.
   const baseRadius = isMobile
-    ? clamp(RADIUS - 58 - zoomPull * 72, RADIUS - 112, RADIUS - 52)
+    ? clamp(RADIUS - 78 - zoomPull * 90, RADIUS - 145, RADIUS - 68)
     : clamp(RADIUS + 72 - zoomPull * 160, RADIUS - 38, RADIUS + 72);
 
-  const overlapDistance = isMobile ? 50 : 58;
-  const shiftAmount = isMobile ? 22 : 26;
-  const edgePadding = isMobile ? 108 : 54;
+  const minTargetDistance = isMobile ? 84 : 76;
+  const overlapDistance = isMobile ? 58 : 62;
+  const shiftAmount = isMobile ? 30 : 28;
+  const edgePadding = isMobile ? 132 : 64;
   const zoomBounds = getZoomSafeBounds(zoom, isMobile);
 
   const sorted = [...objects]
@@ -546,10 +548,12 @@ function buildMissionCallouts(objects, zoom) {
 
   const laidOut = sorted.map((photo) => {
     const angle = Math.atan2(photo.y - CENTER, photo.x - CENTER);
+    const outwardX = Math.cos(angle);
+    const outwardY = Math.sin(angle);
     const tangentX = -Math.sin(angle);
     const tangentY = Math.cos(angle);
-    const baseX = CENTER + Math.cos(angle) * baseRadius;
-    const baseY = CENTER + Math.sin(angle) * baseRadius;
+    const baseX = CENTER + outwardX * baseRadius;
+    const baseY = CENTER + outwardY * baseRadius;
 
     const minX = Math.max(edgePadding, zoomBounds.min);
     const maxX = Math.min(MAP_SIZE - edgePadding, zoomBounds.max);
@@ -559,16 +563,43 @@ function buildMissionCallouts(objects, zoom) {
     const clampX = (value) => clamp(value, minX, maxX);
     const clampY = (value) => clamp(value, minY, maxY);
 
-    let chosen = { x: clampX(baseX), y: clampY(baseY) };
+    const makeSafe = (point) => {
+      let safe = { x: clampX(point.x), y: clampY(point.y) };
+      const dx = safe.x - photo.x;
+      const dy = safe.y - photo.y;
+      const distance = Math.max(0.001, Math.hypot(dx, dy));
 
-    for (let i = 0; i < 24; i += 1) {
+      if (distance < minTargetDistance) {
+        const pushX = dx / distance;
+        const pushY = dy / distance;
+        safe = {
+          x: clampX(photo.x + pushX * minTargetDistance),
+          y: clampY(photo.y + pushY * minTargetDistance)
+        };
+      }
+
+      return safe;
+    };
+
+    let chosen = makeSafe({ x: baseX, y: baseY });
+    let chosenScore = Number.POSITIVE_INFINITY;
+
+    for (let i = 0; i < 36; i += 1) {
       const band = Math.ceil(i / 2);
       const direction = i === 0 ? 0 : i % 2 === 1 ? 1 : -1;
       const shift = band * shiftAmount * direction;
-      const test = { x: clampX(baseX + tangentX * shift), y: clampY(baseY + tangentY * shift) };
+      const test = makeSafe({ x: baseX + tangentX * shift, y: baseY + tangentY * shift });
       const overlaps = placed.some((item) => pointDistance(item, test) < overlapDistance);
+      const targetDistance = pointDistance(photo, test);
+      const centerDistance = Math.abs(pointDistance({ x: CENTER, y: CENTER }, test) - baseRadius);
+      const score = (overlaps ? 10000 : 0) + centerDistance + Math.abs(targetDistance - minTargetDistance) * 0.35;
 
-      if (!overlaps) {
+      if (score < chosenScore) {
+        chosen = test;
+        chosenScore = score;
+      }
+
+      if (!overlaps && targetDistance >= minTargetDistance) {
         chosen = test;
         break;
       }
@@ -1017,7 +1048,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                         {index + 1}
                       </text>
 
-                      {(!mobileLayout || isActive) && (
+                      {!mobileLayout && (
                         <text
                           x={photo.markerX + labelOffset}
                           y={photo.markerY + 6}
