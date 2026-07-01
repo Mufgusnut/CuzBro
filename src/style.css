@@ -4061,3 +4061,149 @@ footer p {
     gap: 14px !important;
   }
 }
+/* =========================================================
+   FINAL SKY MAP MOBILE HERO + CLEAN/DETAIL FIX
+   Paste as the VERY LAST block in style.css
+========================================================= */
+
+@media (max-width: 700px) {
+  .skyMapPage {
+    padding-top: calc(92px + env(safe-area-inset-top)) !important;
+  }
+
+  .atlasPage {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .atlasHero {
+    padding-top: 42px !important;
+    margin-bottom: 30px !important;
+  }
+
+  .atlasHero .eyebrow {
+    font-size: 0.8rem !important;
+    letter-spacing: 0.28em !important;
+    margin-bottom: 20px !important;
+    line-height: 1.1 !important;
+  }
+
+  .atlasHero h1 {
+    font-size: clamp(3.15rem, 13vw, 4.35rem) !important;
+    line-height: 0.96 !important;
+    letter-spacing: -0.055em !important;
+    margin: 0 0 24px !important;
+    max-width: 100% !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  .atlasHero .tagline {
+    font-size: 1.06rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 34px !important;
+    max-width: 100% !important;
+  }
+
+  .atlasBackButton {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-top: 0 !important;
+    padding: 15px 18px !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* Force Clean / Detail into a clean segmented toggle */
+.compactTonightControls .inlineModeToggle,
+.atlasTimeControls .inlineModeToggle,
+.inlineModeToggle {
+  width: 100% !important;
+  box-sizing: border-box !important;
+
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+
+  padding: 7px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.028)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 14px 34px rgba(0,0,0,.24) !important;
+}
+
+.compactTonightControls .inlineModeToggle button,
+.atlasTimeControls .inlineModeToggle button,
+.inlineModeToggle button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 40px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 8px !important;
+  border-radius: 18px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+
+  color: rgba(226,236,255,.72) !important;
+  font-size: 0.72rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.compactTonightControls .inlineModeToggle button.active,
+.atlasTimeControls .inlineModeToggle button.active,
+.inlineModeToggle button.active {
+  color: #ffffff !important;
+  border-color: rgba(255,157,28,.86) !important;
+  background:
+    linear-gradient(180deg, rgba(255,157,28,.3), rgba(255,157,28,.14)) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,157,28,.1),
+    0 8px 24px rgba(255,157,28,.2) !important;
+}
+
+/* Clean up the time panel heading on mobile */
+@media (max-width: 700px) {
+  .compactTonightControls .tonightHeaderRow {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .compactTonightControls strong {
+    white-space: normal !important;
+    font-size: 1rem !important;
+    line-height: 1.18 !important;
+    letter-spacing: 0.16em !important;
+  }
+
+  .compactTonightControls small {
+    font-size: 0.68rem !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.14em !important;
+  }
+
+  .compactTonightControls .timeNudgeRow {
+    gap: 8px !important;
+  }
+
+  .compactTonightControls .compactPresetRow {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .compactTonightControls button {
+    min-width: 0 !important;
+  }
+}
