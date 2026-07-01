@@ -1,3 +1,4 @@
+import SkyMap from './components/SkyMap.jsx';
 import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
@@ -23,6 +24,7 @@ export default function App() {
   const [scrolled, setScrolled] = useState(false);
 
   const scroller = useRef(null);
+  const isSkyMapPage = window.location.pathname === '/skymap';
 
   const filteredGallery =
     activeFilter === 'All'
@@ -117,30 +119,39 @@ export default function App() {
       />
 
       <main>
-        <QuickLinks />
+        {isSkyMapPage ? (
+          <SkyMap
+            gallery={gallery}
+            setSelectedIndex={setSelectedIndex}
+          />
+        ) : (
+          <>
+            <QuickLinks />
 
-        <Weather locations={locations} weather={weather} />
+            <Weather locations={locations} weather={weather} />
 
-        <Gallery
-          gallery={filteredGallery}
-          activeFilter={activeFilter}
-          setActiveFilter={setActiveFilter}
-          scroller={scroller}
-          scroll={scroll}
-          setSelectedIndex={setSelectedIndex}
-        />
+            <Gallery
+              gallery={filteredGallery}
+              activeFilter={activeFilter}
+              setActiveFilter={setActiveFilter}
+              scroller={scroller}
+              scroll={scroll}
+              setSelectedIndex={setSelectedIndex}
+            />
 
-        <InfoSections />
+            <InfoSections />
 
-        <FeaturedCapture
-          photo={gallery[0]}
-          setSelectedIndex={setSelectedIndex}
-        />
+            <FeaturedCapture
+              photo={gallery[0]}
+              setSelectedIndex={setSelectedIndex}
+            />
+          </>
+        )}
       </main>
 
       <Lightbox
         selectedPhoto={selectedPhoto}
-        gallery={filteredGallery}
+        gallery={isSkyMapPage ? gallery : filteredGallery}
         selectedIndex={selectedIndex}
         setSelectedIndex={setSelectedIndex}
         viewerMode={viewerMode}
