@@ -1759,12 +1759,112 @@ footer p {
   }
 }
 .skyMapPage {
-  padding-top: 140px;
-  min-height: 80vh;
+    padding-top: 90px;
+    min-height: calc(100vh - 90px);
 }
 
-@media (max-width: 700px) {
-  .skyMapPage {
-    padding-top: 28px;
-  }
+@media (max-width:700px){
+
+    .skyMapPage{
+        padding-top:70px;
+    }
+
+}
+.skyMapContainer{
+    max-width:1400px;
+    margin:auto;
+    padding:0 32px 40px;
+}
+.skyMapContainer{
+    max-width:1400px;
+    margin:auto;
+    padding:0 32px 60px;
+}
+
+.skyMapHero{
+    margin-bottom:36px;
+}
+
+.skyMapHero h1{
+    margin:.2rem 0;
+    font-size:clamp(2.8rem,6vw,4.5rem);
+}
+
+.skyMapHero .tagline{
+    max-width:650px;
+    color:#cbd6eb;
+    font-size:1.05rem;
+    line-height:1.7;
+}
+
+.skyMap{
+    position:relative;
+    min-height:650px;
+    border-radius:28px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:
+        radial-gradient(circle at 20% 20%, rgba(90,160,255,.12), transparent 30%),
+        radial-gradient(circle at 80% 70%, rgba(255,157,28,.08), transparent 30%),
+        rgba(2,7,16,.75);
+}
+
+.skyMapGrid{
+    position:absolute;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:64px 64px;
+    opacity:.35;
+}
+
+.skyPoint{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(2,7,16,.82);
+    color:white;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.skyPoint:hover{
+    border-color:var(--orange);
+    transform:translate(-50%,-50%) scale(1.08);
+}
+
+.skyPoint svg{
+    color:var(--orange);
+}
+
+.skyPoint span{
+    font-size:.8rem;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+@media (max-width:700px){
+
+    .skyMapContainer{
+        padding:0 18px 40px;
+    }
+
+    .skyMap{
+        min-height:500px;
+    }
+
+    .skyPoint{
+        padding:6px 9px;
+    }
+
+    .skyPoint span{
+        font-size:.7rem;
+    }
+
 }
