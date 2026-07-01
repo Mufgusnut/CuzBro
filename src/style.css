@@ -3422,3 +3422,101 @@ footer p {
     opacity: 0.28 !important;
   }
 }
+/* =========================================================
+   SKY MAP TONIGHT MODE / BEST NOW BADGES
+========================================================= */
+
+.tonightControls small {
+  color: rgba(226, 236, 255, 0.72) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+.tonightControls .timeNudgeRow {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 7px !important;
+}
+
+.tonightControls .tonightPresetRow {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 7px !important;
+}
+
+.tonightControls button.active {
+  color: #ffffff !important;
+  border-color: rgba(255,157,28,.72) !important;
+  background: rgba(255,157,28,.18) !important;
+}
+
+.targetStatusBadge {
+  width: fit-content !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-top: 8px !important;
+  padding: 5px 9px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background: rgba(255,255,255,.06) !important;
+  color: rgba(238,244,255,.78) !important;
+  font-style: normal !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+.targetStatusBadge.best {
+  color: #fff4df !important;
+  border-color: rgba(255,157,28,.62) !important;
+  background: rgba(255,157,28,.16) !important;
+  box-shadow: 0 0 18px rgba(255,157,28,.16) !important;
+}
+
+.targetStatusBadge.good {
+  color: #dfffea !important;
+  border-color: rgba(90,255,170,.42) !important;
+  background: rgba(90,255,170,.12) !important;
+}
+
+.targetStatusBadge.low {
+  color: #fff0c9 !important;
+  border-color: rgba(255,210,90,.35) !important;
+  background: rgba(255,210,90,.1) !important;
+}
+
+.targetStatusBadge.below {
+  color: rgba(220,230,250,.55) !important;
+  border-color: rgba(255,255,255,.08) !important;
+  background: rgba(255,255,255,.035) !important;
+}
+
+@media (max-width: 700px) {
+  .tonightControls {
+    right: 10px !important;
+  }
+
+  .tonightControls small {
+    font-size: 9px !important;
+  }
+
+  .tonightControls .tonightPresetRow {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .tonightControls button {
+    min-width: 0 !important;
+    height: 31px !important;
+    font-size: 10px !important;
+  }
+
+  .targetStatusBadge {
+    font-size: .65rem !important;
+    padding: 5px 8px !important;
+  }
+}

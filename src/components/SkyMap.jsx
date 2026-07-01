@@ -413,8 +413,144 @@ function formatMapTime(mapDate) {
   });
 }
 
+function formatCompactTime(mapDate) {
+  return mapDate.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
+function getDayOfYear(date) {
+  const start = new Date(Date.UTC(date.getFullYear(), 0, 0));
+  const current = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+  return Math.floor((current - start) / 86400000);
+}
+
+function getSunEventDate(baseDate, isSunrise) {
+  const zenith = 90.833;
+  const day = getDayOfYear(baseDate);
+  const lngHour = SITE.lon / 15;
+  const approximateTime = day + ((isSunrise ? 6 : 18) - lngHour) / 24;
+
+  const meanAnomaly = 0.9856 * approximateTime - 3.289;
+
+  let trueLongitude =
+    meanAnomaly +
+    1.916 * Math.sin(toRadians(meanAnomaly)) +
+    0.020 * Math.sin(toRadians(2 * meanAnomaly)) +
+    282.634;
+
+  trueLongitude = normalizeDegrees(trueLongitude);
+
+  let rightAscension = toDegrees(
+    Math.atan(0.91764 * Math.tan(toRadians(trueLongitude)))
+  );
+
+  rightAscension = normalizeDegrees(rightAscension);
+
+  const longitudeQuadrant = Math.floor(trueLongitude / 90) * 90;
+  const raQuadrant = Math.floor(rightAscension / 90) * 90;
+
+  rightAscension = (rightAscension + longitudeQuadrant - raQuadrant) / 15;
+
+  const sinDec = 0.39782 * Math.sin(toRadians(trueLongitude));
+  const cosDec = Math.cos(Math.asin(sinDec));
+
+  const cosHour =
+    (Math.cos(toRadians(zenith)) -
+      sinDec * Math.sin(toRadians(SITE.lat))) /
+    (cosDec * Math.cos(toRadians(SITE.lat)));
+
+  if (cosHour > 1 || cosHour < -1) {
+    return new Date(baseDate);
+  }
+
+  let hourAngle = isSunrise
+    ? 360 - toDegrees(Math.acos(cosHour))
+    : toDegrees(Math.acos(cosHour));
+
+  hourAngle /= 15;
+
+  const localMeanTime =
+    hourAngle +
+    rightAscension -
+    0.06571 * approximateTime -
+    6.622;
+
+  const utcHours = normalizeHours(localMeanTime - lngHour);
+
+  return new Date(Date.UTC(
+    baseDate.getFullYear(),
+    baseDate.getMonth(),
+    baseDate.getDate(),
+    Math.floor(utcHours),
+    Math.round((utcHours % 1) * 60),
+    0,
+    0
+  ));
+}
+
+function getLocalDateAt(baseDate, hour, minute = 0, addDays = 0) {
+  const date = new Date(baseDate);
+
+  date.setDate(date.getDate() + addDays);
+  date.setHours(hour, minute, 0, 0);
+
+  return date;
+}
+
+function getPresetDate(preset, currentDate) {
+  const now = new Date();
+
+  if (preset === 'now') return now;
+  if (preset === 'sunset') return getSunEventDate(currentDate, false);
+  if (preset === '10pm') return getLocalDateAt(currentDate, 22, 0, 0);
+  if (preset === 'midnight') return getLocalDateAt(currentDate, 0, 0, 1);
+
+  if (preset === 'predawn') {
+    const tomorrow = getLocalDateAt(currentDate, 0, 0, 1);
+    const sunrise = getSunEventDate(tomorrow, true);
+    return new Date(sunrise.getTime() - 90 * 60 * 1000);
+  }
+
+  return now;
+}
+
 function pointDistance(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function getObservingStatus(photo) {
+  if (!photo || photo.alt < 0) {
+    return {
+      label: 'Below Horizon',
+      className: 'below',
+      score: 0
+    };
+  }
+
+  if (photo.alt < 20) {
+    return {
+      label: 'Low',
+      className: 'low',
+      score: 1
+    };
+  }
+
+  if (photo.alt < 45) {
+    return {
+      label: 'Good',
+      className: 'good',
+      score: 2
+    };
+  }
+
+  return {
+    label: 'Best Now',
+    className: 'best',
+    score: 3
+  };
 }
 
 function getZoomSafeBounds(zoom, isMobile) {
@@ -526,6 +662,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const [rotation, setRotation] = useState(0);
   const [date, setDate] = useState(() => new Date());
   const [viewMode, setViewMode] = useState('clean');
+  const [activePreset, setActivePreset] = useState('now');
 
   const dragRef = useRef(null);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
@@ -547,6 +684,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
         const altAz = raDecToAltAz(ra, dec, date, SITE.lat, SITE.lon);
         const point = projectAltAz(altAz.alt, altAz.az);
+        const status = getObservingStatus({ alt: altAz.alt });
 
         return {
           ...photo,
@@ -556,7 +694,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           az: altAz.az,
           x: point.x,
           y: point.y,
-          visible: point.visible
+          visible: point.visible,
+          observingStatus: status
         };
       })
       .filter(Boolean);
@@ -567,6 +706,14 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const visibleObjects = useMemo(() => {
     return mappedObjects.filter((photo) => isInsideSky(photo, 12));
+  }, [mappedObjects]);
+
+  const bestObjectCount = useMemo(() => {
+    return mappedObjects.filter((photo) => photo.observingStatus.score >= 3).length;
+  }, [mappedObjects]);
+
+  const goodObjectCount = useMemo(() => {
+    return mappedObjects.filter((photo) => photo.observingStatus.score >= 2).length;
   }, [mappedObjects]);
 
   const missionCallouts = useMemo(() => {
@@ -745,10 +892,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   };
 
   const changeTime = (hours) => {
+    setActivePreset('custom');
     setDate((currentDate) => new Date(currentDate.getTime() + hours * 60 * 60 * 1000));
   };
 
+  const setPresetTime = (preset) => {
+    setActivePreset(preset);
+    setDate((currentDate) => getPresetDate(preset, currentDate));
+  };
+
   const resetToNow = () => {
+    setActivePreset('now');
     setDate(new Date());
   };
 
@@ -809,9 +963,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         <h1>Celestial Atlas</h1>
 
         <p className="tagline">
-          A live sky map for Eliot, Maine using real right ascension and declination.
-          Mission targets, constellation guides, the ecliptic, lunar path, Polaris,
-          and compass directions are plotted live.
+          Live sky planning from Eliot, Maine. Jump to sunset, 10 PM, midnight,
+          or pre-dawn and see which CuzBro missions are best placed.
         </p>
 
         <a className="atlasBackButton" href="/#observatory">
@@ -1125,7 +1278,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           </div>
 
           <div
-            className="atlasTimeControls"
+            className="atlasTimeControls tonightControls"
             aria-label="Sky map time controls"
             onPointerDown={stopMapPointerEvents}
             onPointerMove={stopMapPointerEvents}
@@ -1134,55 +1287,31 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           >
             <strong>{formatMapTime(date)}</strong>
 
-            <div>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  changeTime(-3);
-                }}
-              >
-                −3h
+            <small>
+              {goodObjectCount} good targets · {bestObjectCount} best now
+            </small>
+
+            <div className="timeNudgeRow">
+              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(-1); }}>−1h</button>
+              <button type="button" className={activePreset === 'now' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); resetToNow(); }}>Now</button>
+              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(1); }}>+1h</button>
+            </div>
+
+            <div className="tonightPresetRow">
+              <button type="button" className={activePreset === 'sunset' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('sunset'); }}>
+                Sunset
               </button>
 
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  changeTime(-1);
-                }}
-              >
-                −1h
+              <button type="button" className={activePreset === '10pm' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('10pm'); }}>
+                10 PM
               </button>
 
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  resetToNow();
-                }}
-              >
-                Now
+              <button type="button" className={activePreset === 'midnight' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('midnight'); }}>
+                Midnight
               </button>
 
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  changeTime(1);
-                }}
-              >
-                +1h
-              </button>
-
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  changeTime(3);
-                }}
-              >
-                +3h
+              <button type="button" className={activePreset === 'predawn' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('predawn'); }}>
+                Pre-dawn
               </button>
             </div>
           </div>
@@ -1195,25 +1324,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             onPointerUp={stopMapPointerEvents}
             onClick={stopMapPointerEvents}
           >
-            <button
-              type="button"
-              className={viewMode === 'clean' ? 'active' : ''}
-              onClick={(event) => {
-                event.stopPropagation();
-                setViewMode('clean');
-              }}
-            >
+            <button type="button" className={viewMode === 'clean' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('clean'); }}>
               Clean
             </button>
 
-            <button
-              type="button"
-              className={viewMode === 'detail' ? 'active' : ''}
-              onClick={(event) => {
-                event.stopPropagation();
-                setViewMode('detail');
-              }}
-            >
+            <button type="button" className={viewMode === 'detail' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('detail'); }}>
               Detail
             </button>
           </div>
@@ -1234,66 +1349,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             onPointerUp={stopMapPointerEvents}
             onClick={stopMapPointerEvents}
           >
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                zoomIn();
-              }}
-              aria-label="Zoom in"
-            >
-              +
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                zoomOut();
-              }}
-              aria-label="Zoom out"
-            >
-              −
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                rotateLeft();
-              }}
-              aria-label="Rotate sky map left"
-            >
-              ↺
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                rotateRight();
-              }}
-              aria-label="Rotate sky map right"
-            >
-              ↻
-            </button>
-
-            <button
-              type="button"
-              onPointerDown={stopMapPointerEvents}
-              onClick={(event) => {
-                event.stopPropagation();
-                resetView();
-              }}
-              aria-label="Reset sky map view"
-            >
-              Reset
-            </button>
-
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); zoomIn(); }} aria-label="Zoom in">+</button>
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); zoomOut(); }} aria-label="Zoom out">−</button>
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); rotateLeft(); }} aria-label="Rotate sky map left">↺</button>
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); rotateRight(); }} aria-label="Rotate sky map right">↻</button>
+            <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); resetView(); }} aria-label="Reset sky map view">Reset</button>
             <span>{Math.round(zoom * 100)}%</span>
           </div>
         </div>
@@ -1319,6 +1379,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <strong>{photo.title}</strong>
                 <em>{photo.constellation}</em>
                 <small>{photo.objectType}</small>
+
+                <i className={`targetStatusBadge ${photo.observingStatus.className}`}>
+                  {photo.observingStatus.label}
+                </i>
               </span>
             </button>
           ))}
@@ -1345,12 +1409,14 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <p>{activeObject.notes}</p>
 
             <div className="atlasFacts">
+              <span><b>Status</b>{activeObject.observingStatus.label}</span>
               <span><b>Constellation</b>{activeObject.constellation}</span>
               <span><b>Type</b>{activeObject.objectType}</span>
               <span><b>RA</b>{formatRa(activeObject.ra)}</span>
               <span><b>Dec</b>{formatDec(activeObject.dec)}</span>
               <span><b>Altitude</b>{activeObject.alt.toFixed(1)}°</span>
               <span><b>Azimuth</b>{activeObject.az.toFixed(1)}°</span>
+              <span><b>Map Time</b>{formatCompactTime(date)}</span>
             </div>
 
             <button type="button" onClick={() => openMission(activeObject)}>
