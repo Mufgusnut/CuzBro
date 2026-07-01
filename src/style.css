@@ -3807,3 +3807,149 @@ footer p {
     font-size: 9px !important;
   }
 }
+/* =========================================================
+   SKY MAP: CONTROLS ABOVE MAP, NOT OVER MAP
+========================================================= */
+
+.atlasMapStack {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 16px !important;
+}
+
+.atlasMapStack .realSkyMap {
+  width: 100% !important;
+}
+
+/* Make the time/control panel part of the page flow instead of an overlay */
+.atlasMapStack .compactTonightControls {
+  position: static !important;
+  inset: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  z-index: 1 !important;
+}
+
+/* Make sure any older floating mode controls stay hidden */
+.atlasModeControls:not(.inlineModeControls) {
+  display: none !important;
+}
+
+.compactTonightControls .tonightHeaderRow {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.compactTonightControls strong {
+  white-space: nowrap !important;
+}
+
+.compactTonightControls .timeNudgeRow {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px !important;
+}
+
+.compactTonightControls .compactPresetRow {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+}
+
+.inlineModeToggle {
+  display: inline-grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 5px !important;
+  padding: 5px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background: rgba(255,255,255,.045) !important;
+  pointer-events: auto !important;
+}
+
+.inlineModeToggle button {
+  min-width: 66px !important;
+  height: 30px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: rgba(226,236,255,.76) !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+.inlineModeToggle button.active {
+  color: #ffffff !important;
+  border-color: rgba(255,157,28,.72) !important;
+  background: rgba(255,157,28,.18) !important;
+}
+
+.compactTonightControls button.active {
+  color: #ffffff !important;
+  border-color: rgba(255,157,28,.72) !important;
+  background: rgba(255,157,28,.18) !important;
+}
+
+@media (max-width: 700px) {
+  .atlasMapStack {
+    gap: 12px !important;
+  }
+
+  .atlasMapStack .compactTonightControls {
+    padding: 12px !important;
+    border-radius: 22px !important;
+  }
+
+  .compactTonightControls .tonightHeaderRow {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  .compactTonightControls strong {
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+    letter-spacing: .12em !important;
+  }
+
+  .compactTonightControls small {
+    font-size: 9px !important;
+    line-height: 1.35 !important;
+  }
+
+  .inlineModeToggle {
+    width: 100% !important;
+  }
+
+  .inlineModeToggle button {
+    min-width: 0 !important;
+    height: 31px !important;
+    font-size: 10px !important;
+  }
+
+  .compactTonightControls .timeNudgeRow {
+    gap: 7px !important;
+  }
+
+  .compactTonightControls .compactPresetRow {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 7px !important;
+  }
+
+  .compactTonightControls button {
+    min-width: 0 !important;
+    height: 33px !important;
+    font-size: 10px !important;
+    padding: 0 6px !important;
+  }
+}

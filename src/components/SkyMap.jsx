@@ -772,6 +772,42 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       </section>
 
       <section className="atlasLayout realAtlasLayout">
+        <div className="atlasMapStack">
+          <div
+            className="atlasTimeControls tonightControls compactTonightControls"
+            aria-label="Sky map time controls"
+            onPointerDown={stopMapPointerEvents}
+            onPointerMove={stopMapPointerEvents}
+            onPointerUp={stopMapPointerEvents}
+            onClick={stopMapPointerEvents}
+          >
+            <div className="tonightHeaderRow">
+              <div>
+                <strong>{formatMapTime(date)}</strong>
+                <small>{goodObjectCount} good targets · {bestObjectCount} best now</small>
+              </div>
+
+              <div className="inlineModeToggle" aria-label="Sky map display mode controls">
+                <button type="button" className={viewMode === 'clean' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('clean'); }}>Clean</button>
+                <button type="button" className={viewMode === 'detail' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('detail'); }}>Detail</button>
+              </div>
+            </div>
+
+            <div className="timeNudgeRow">
+              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(-1); }}>−1h</button>
+              <button type="button" className={activePreset === 'now' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); resetToNow(); }}>Now</button>
+              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(1); }}>+1h</button>
+            </div>
+
+            <div className="tonightPresetRow compactPresetRow">
+              <button type="button" className={activePreset === 'sunset' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('sunset'); }}>Sunset</button>
+              <button type="button" className={activePreset === '10pm' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('10pm'); }}>10 PM</button>
+              <button type="button" className={activePreset === 'midnight' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('midnight'); }}>Midnight</button>
+              <button type="button" className={activePreset === 'predawn' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('predawn'); }}>Pre-dawn</button>
+            </div>
+          </div>
+
+
         <div
           className={isDetailMode ? 'atlasMap realSkyMap detailMode' : 'atlasMap realSkyMap cleanMode'}
           onPointerDown={handlePointerDown}
@@ -922,40 +958,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             })}
           </div>
 
-          <div
-            className="atlasTimeControls tonightControls compactTonightControls"
-            aria-label="Sky map time controls"
-            onPointerDown={stopMapPointerEvents}
-            onPointerMove={stopMapPointerEvents}
-            onPointerUp={stopMapPointerEvents}
-            onClick={stopMapPointerEvents}
-          >
-            <div className="tonightHeaderRow">
-              <div>
-                <strong>{formatMapTime(date)}</strong>
-                <small>{goodObjectCount} good targets · {bestObjectCount} best now</small>
-              </div>
-
-              <div className="inlineModeToggle" aria-label="Sky map display mode controls">
-                <button type="button" className={viewMode === 'clean' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('clean'); }}>Clean</button>
-                <button type="button" className={viewMode === 'detail' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setViewMode('detail'); }}>Detail</button>
-              </div>
-            </div>
-
-            <div className="timeNudgeRow">
-              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(-1); }}>−1h</button>
-              <button type="button" className={activePreset === 'now' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); resetToNow(); }}>Now</button>
-              <button type="button" onClick={(event) => { event.stopPropagation(); changeTime(1); }}>+1h</button>
-            </div>
-
-            <div className="tonightPresetRow compactPresetRow">
-              <button type="button" className={activePreset === 'sunset' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('sunset'); }}>Sunset</button>
-              <button type="button" className={activePreset === '10pm' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('10pm'); }}>10 PM</button>
-              <button type="button" className={activePreset === 'midnight' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('midnight'); }}>Midnight</button>
-              <button type="button" className={activePreset === 'predawn' ? 'active' : ''} onClick={(event) => { event.stopPropagation(); setPresetTime('predawn'); }}>Pre-dawn</button>
-            </div>
-          </div>
-
           <div className="atlasLegend enhancedLegend">
             <span><i className="legendCyan"></i> Planetary Nebula</span>
             <span><i className="legendPurple"></i> Emission Nebula</span>
@@ -979,6 +981,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <button type="button" onPointerDown={stopMapPointerEvents} onClick={(event) => { event.stopPropagation(); resetView(); }} aria-label="Reset sky map view">Reset</button>
             <span>{Math.round(zoom * 100)}%</span>
           </div>
+        </div>
         </div>
 
         <aside className="atlasCatalog">
