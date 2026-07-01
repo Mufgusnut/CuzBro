@@ -11,12 +11,11 @@ const MAP_SIZE = 1000;
 const CENTER = MAP_SIZE / 2;
 const RADIUS = 430;
 
-// Slightly richer star catalog for recognizable constellations.
 const STAR_CATALOG = [
-  // Polaris / north
+  // North / orientation
   { name: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 },
 
-  // Ursa Major / Big Dipper
+  // Big Dipper / Ursa Major
   { name: 'Dubhe', ra: 11.0621, dec: 61.7510, mag: 1.8 },
   { name: 'Merak', ra: 11.0307, dec: 56.3824, mag: 2.4 },
   { name: 'Phecda', ra: 11.8972, dec: 53.6948, mag: 2.4 },
@@ -26,21 +25,24 @@ const STAR_CATALOG = [
   { name: 'Alkaid', ra: 13.7923, dec: 49.3133, mag: 1.9 },
 
   // Cassiopeia
-  { name: 'Schedar', ra: 0.6751, dec: 56.5373, mag: 2.2 },
   { name: 'Caph', ra: 0.1529, dec: 59.1498, mag: 2.3 },
+  { name: 'Schedar', ra: 0.6751, dec: 56.5373, mag: 2.2 },
   { name: 'Gamma Cas', ra: 0.9451, dec: 60.7167, mag: 2.2 },
   { name: 'Ruchbah', ra: 1.4303, dec: 60.2353, mag: 2.7 },
   { name: 'Segin', ra: 2.2939, dec: 63.6701, mag: 3.4 },
 
-  // Lyra
+  // Summer Triangle
   { name: 'Vega', ra: 18.6156, dec: 38.7837, mag: 0.0 },
+  { name: 'Deneb', ra: 20.6905, dec: 45.2803, mag: 1.3 },
+  { name: 'Altair', ra: 19.8464, dec: 8.8683, mag: 0.8 },
+
+  // Lyra
   { name: 'Zeta Lyr', ra: 18.7462, dec: 37.6051, mag: 4.3 },
   { name: 'Delta2 Lyr', ra: 18.9080, dec: 36.8986, mag: 4.3 },
   { name: 'Sheliak', ra: 18.8347, dec: 33.3627, mag: 3.5 },
   { name: 'Sulafat', ra: 18.9824, dec: 32.6896, mag: 3.3 },
 
   // Cygnus
-  { name: 'Deneb', ra: 20.6905, dec: 45.2803, mag: 1.3 },
   { name: 'Sadr', ra: 20.3705, dec: 40.2567, mag: 2.2 },
   { name: 'Gienah', ra: 20.7702, dec: 33.9703, mag: 2.5 },
   { name: 'Delta Cyg', ra: 19.7496, dec: 45.1308, mag: 2.9 },
@@ -67,54 +69,55 @@ const STAR_CATALOG = [
 
 const CONSTELLATION_SEGMENTS = [
   // Big Dipper
-  ['Dubhe', 'Merak'],
-  ['Merak', 'Phecda'],
-  ['Phecda', 'Megrez'],
-  ['Megrez', 'Alioth'],
-  ['Alioth', 'Mizar'],
-  ['Mizar', 'Alkaid'],
+  { group: 'Ursa Major', stars: ['Dubhe', 'Merak'] },
+  { group: 'Ursa Major', stars: ['Merak', 'Phecda'] },
+  { group: 'Ursa Major', stars: ['Phecda', 'Megrez'] },
+  { group: 'Ursa Major', stars: ['Megrez', 'Dubhe'] },
+  { group: 'Ursa Major', stars: ['Megrez', 'Alioth'] },
+  { group: 'Ursa Major', stars: ['Alioth', 'Mizar'] },
+  { group: 'Ursa Major', stars: ['Mizar', 'Alkaid'] },
 
   // Cassiopeia
-  ['Caph', 'Schedar'],
-  ['Schedar', 'Gamma Cas'],
-  ['Gamma Cas', 'Ruchbah'],
-  ['Ruchbah', 'Segin'],
+  { group: 'Cassiopeia', stars: ['Caph', 'Schedar'] },
+  { group: 'Cassiopeia', stars: ['Schedar', 'Gamma Cas'] },
+  { group: 'Cassiopeia', stars: ['Gamma Cas', 'Ruchbah'] },
+  { group: 'Cassiopeia', stars: ['Ruchbah', 'Segin'] },
 
   // Hercules
-  ['Eta Her', 'Zeta Her'],
-  ['Zeta Her', 'Epsilon Her'],
-  ['Epsilon Her', 'Pi Her'],
-  ['Pi Her', 'Eta Her'],
-  ['Zeta Her', 'Kornephoros'],
-  ['Epsilon Her', 'Rasalgethi'],
+  { group: 'Hercules', stars: ['Eta Her', 'Zeta Her'] },
+  { group: 'Hercules', stars: ['Zeta Her', 'Epsilon Her'] },
+  { group: 'Hercules', stars: ['Epsilon Her', 'Pi Her'] },
+  { group: 'Hercules', stars: ['Pi Her', 'Eta Her'] },
+  { group: 'Hercules', stars: ['Zeta Her', 'Kornephoros'] },
+  { group: 'Hercules', stars: ['Epsilon Her', 'Rasalgethi'] },
 
   // Lyra
-  ['Vega', 'Zeta Lyr'],
-  ['Zeta Lyr', 'Delta2 Lyr'],
-  ['Delta2 Lyr', 'Sheliak'],
-  ['Sheliak', 'Sulafat'],
-  ['Sulafat', 'Zeta Lyr'],
+  { group: 'Lyra', stars: ['Vega', 'Zeta Lyr'] },
+  { group: 'Lyra', stars: ['Zeta Lyr', 'Delta2 Lyr'] },
+  { group: 'Lyra', stars: ['Delta2 Lyr', 'Sheliak'] },
+  { group: 'Lyra', stars: ['Sheliak', 'Sulafat'] },
+  { group: 'Lyra', stars: ['Sulafat', 'Zeta Lyr'] },
 
   // Cygnus
-  ['Deneb', 'Sadr'],
-  ['Sadr', 'Albireo'],
-  ['Sadr', 'Gienah'],
-  ['Sadr', 'Delta Cyg'],
+  { group: 'Cygnus', stars: ['Deneb', 'Sadr'] },
+  { group: 'Cygnus', stars: ['Sadr', 'Albireo'] },
+  { group: 'Cygnus', stars: ['Sadr', 'Gienah'] },
+  { group: 'Cygnus', stars: ['Sadr', 'Delta Cyg'] },
 
   // Vulpecula
-  ['Albireo', 'Anser'],
+  { group: 'Vulpecula', stars: ['Albireo', 'Anser'] },
 
   // Sagittarius
-  ['Kaus Australis', 'Kaus Media'],
-  ['Kaus Media', 'Kaus Borealis'],
-  ['Kaus Borealis', 'Nunki'],
-  ['Nunki', 'Ascella'],
-  ['Ascella', 'Kaus Australis']
+  { group: 'Sagittarius', stars: ['Kaus Australis', 'Kaus Media'] },
+  { group: 'Sagittarius', stars: ['Kaus Media', 'Kaus Borealis'] },
+  { group: 'Sagittarius', stars: ['Kaus Borealis', 'Nunki'] },
+  { group: 'Sagittarius', stars: ['Nunki', 'Ascella'] },
+  { group: 'Sagittarius', stars: ['Ascella', 'Kaus Australis'] }
 ];
 
 const CONSTELLATION_LABELS = [
-  { name: 'Ursa Major', ra: 12.4, dec: 57.5 },
-  { name: 'Cassiopeia', ra: 1.0, dec: 59.0 },
+  { name: 'Ursa Major', ra: 12.35, dec: 57.4 },
+  { name: 'Cassiopeia', ra: 1.05, dec: 59.8 },
   { name: 'Hercules', ra: 16.95, dec: 34.5 },
   { name: 'Lyra', ra: 18.82, dec: 37.5 },
   { name: 'Cygnus', ra: 20.15, dec: 39.5 },
@@ -258,12 +261,31 @@ function getObjectColor(objectType) {
   }
 }
 
+function getMissionConstellation(photo) {
+  if (!photo) return null;
+  if (photo.objectType === 'Lunar') return null;
+  return photo.constellation;
+}
+
 function formatRa(raHours) {
   return `${raHours.toFixed(3)}h`;
 }
 
 function formatDec(decDegrees) {
   return `${decDegrees.toFixed(2)}°`;
+}
+
+function markerOffset(index) {
+  const offsets = [
+    { x: 30, y: -22 },
+    { x: -32, y: -22 },
+    { x: 34, y: 24 },
+    { x: -34, y: 24 },
+    { x: 28, y: 0 },
+    { x: -28, y: 0 }
+  ];
+
+  return offsets[index % offsets.length];
 }
 
 export default function SkyMap({ gallery, setSelectedIndex }) {
@@ -306,6 +328,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [gallery, date, observer]);
 
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
+  const activeConstellation = getMissionConstellation(activeObject);
 
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
@@ -328,12 +351,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [starPoints]);
 
   const constellationLines = useMemo(() => {
-    return CONSTELLATION_SEGMENTS.map(([first, second]) => {
+    return CONSTELLATION_SEGMENTS.map((segment) => {
+      const [first, second] = segment.stars;
       const starA = starLookup[first];
       const starB = starLookup[second];
+
       if (!starA || !starB) return null;
 
-      return `M ${starA.x.toFixed(1)} ${starA.y.toFixed(1)} L ${starB.x.toFixed(1)} ${starB.y.toFixed(1)}`;
+      return {
+        group: segment.group,
+        path: `M ${starA.x.toFixed(1)} ${starA.y.toFixed(1)} L ${starB.x.toFixed(1)} ${starB.y.toFixed(1)}`
+      };
     }).filter(Boolean);
   }, [starLookup]);
 
@@ -399,6 +427,29 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       };
     });
   }, [date, observer]);
+
+  const summerTriangle = useMemo(() => {
+    const vega = starLookup.Vega;
+    const deneb = starLookup.Deneb;
+    const altair = starLookup.Altair;
+
+    if (!vega || !deneb || !altair) return '';
+
+    return `M ${vega.x.toFixed(1)} ${vega.y.toFixed(1)} L ${deneb.x.toFixed(1)} ${deneb.y.toFixed(1)} L ${altair.x.toFixed(1)} ${altair.y.toFixed(1)} Z`;
+  }, [starLookup]);
+
+  const bigDipperPointers = useMemo(() => {
+    const merak = starLookup.Merak;
+    const dubhe = starLookup.Dubhe;
+    const polaris = starLookup.Polaris;
+
+    if (!merak || !dubhe || !polaris) return [];
+
+    return [
+      `M ${merak.x.toFixed(1)} ${merak.y.toFixed(1)} L ${dubhe.x.toFixed(1)} ${dubhe.y.toFixed(1)}`,
+      `M ${dubhe.x.toFixed(1)} ${dubhe.y.toFixed(1)} L ${polaris.x.toFixed(1)} ${polaris.y.toFixed(1)}`
+    ];
+  }, [starLookup]);
 
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
@@ -500,8 +551,24 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               {eclipticPath && <path d={eclipticPath} className="eclipticPath" />}
               {lunarPath && <path d={lunarPath} className="lunarPath" />}
 
-              {constellationLines.map((pathData, index) => (
-                <path key={index} d={pathData} className="constellationSegment" />
+              {summerTriangle && (
+                <path d={summerTriangle} className="summerTriangle" />
+              )}
+
+              {bigDipperPointers.map((pathData, index) => (
+                <path key={index} d={pathData} className="dipperPointer" />
+              ))}
+
+              {constellationLines.map((segment, index) => (
+                <path
+                  key={index}
+                  d={segment.path}
+                  className={
+                    segment.group === activeConstellation
+                      ? 'constellationSegment active'
+                      : 'constellationSegment'
+                  }
+                />
               ))}
 
               {constellationLabels.map((label) => (
@@ -509,7 +576,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   key={label.name}
                   x={label.x}
                   y={label.y}
-                  className="constellationText"
+                  className={
+                    label.name === activeConstellation
+                      ? 'constellationText active'
+                      : 'constellationText'
+                  }
                 >
                   {label.name}
                 </text>
@@ -524,9 +595,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     className={star.name === 'Polaris' ? 'skyStar polarisStar' : 'skyStar'}
                   />
 
-                  {star.name === 'Polaris' && (
-                    <text x={star.x + 10} y={star.y - 10} className="polarisLabel">
-                      Polaris
+                  {['Polaris', 'Vega', 'Deneb', 'Altair'].includes(star.name) && (
+                    <text x={star.x + 10} y={star.y - 10} className="brightStarLabel">
+                      {star.name}
                     </text>
                   )}
                 </g>
@@ -542,8 +613,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               ))}
 
               {mappedObjects.map((photo, index) => {
-                const markerX = photo.x + 26;
-                const markerY = photo.y - 18;
+                const offset = markerOffset(index);
+                const markerX = photo.x + offset.x;
+                const markerY = photo.y + offset.y;
 
                 return (
                   <g key={`${photo.title}-leader`}>
@@ -565,7 +637,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                       <circle
                         cx={photo.x}
                         cy={photo.y}
-                        r={10}
+                        r={11}
                         className="missionAnchorGlow"
                         style={{ stroke: getObjectColor(photo.objectType) }}
                       />
@@ -581,30 +653,42 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <text x={CENTER - 215} y={CENTER + 175} className="pathLabel moonPathLabel">
                 Lunar Path
               </text>
+
+              <text x={CENTER - 190} y={CENTER - 265} className="pointerLabel">
+                Big Dipper points to Polaris
+              </text>
+
+              <text x={CENTER + 140} y={CENTER - 275} className="summerTriangleLabel">
+                Summer Triangle
+              </text>
             </svg>
 
-            {mappedObjects.map((photo, index) => (
-              <button
-                key={photo.title}
-                type="button"
-                className={activeIndex === index ? 'svgMarker active' : 'svgMarker'}
-                style={{
-                  left: `${((photo.x + 26) / MAP_SIZE) * 100}%`,
-                  top: `${((photo.y - 18) / MAP_SIZE) * 100}%`,
-                  '--marker-color': getObjectColor(photo.objectType)
-                }}
-                onPointerDown={(event) => event.stopPropagation()}
-                onMouseEnter={() => setActiveIndex(index)}
-                onFocus={() => setActiveIndex(index)}
-                onClick={() => {
-                  setActiveIndex(index);
-                  openMission(photo);
-                }}
-                aria-label={`Open ${photo.title} Mission Report`}
-              >
-                {index + 1}
-              </button>
-            ))}
+            {mappedObjects.map((photo, index) => {
+              const offset = markerOffset(index);
+
+              return (
+                <button
+                  key={photo.title}
+                  type="button"
+                  className={activeIndex === index ? 'svgMarker active' : 'svgMarker'}
+                  style={{
+                    left: `${((photo.x + offset.x) / MAP_SIZE) * 100}%`,
+                    top: `${((photo.y + offset.y) / MAP_SIZE) * 100}%`,
+                    '--marker-color': getObjectColor(photo.objectType)
+                  }}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onFocus={() => setActiveIndex(index)}
+                  onClick={() => {
+                    setActiveIndex(index);
+                    openMission(photo);
+                  }}
+                  aria-label={`Open ${photo.title} Mission Report`}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
           </div>
 
           <div className="atlasLegend enhancedLegend">
