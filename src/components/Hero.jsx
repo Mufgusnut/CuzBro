@@ -45,10 +45,11 @@ export default function Hero({
 
         <nav>
           <a href="#home">Home</a>
-          <a href="#gallery">Archive</a>
           <a href="#observatory">Observatory</a>
+          <a href="#gallery">Archive</a>
           <a href="#gear">Gear</a>
           <a href="#crew">Crew</a>
+          <a href="/skymap">Star Map</a>
           <a href="#about">About</a>
         </nav>
       </header>
@@ -71,10 +72,10 @@ export default function Hero({
           </p>
 
           <HeroDashboard
-  featuredPhoto={featuredPhoto}
-  setSelectedIndex={setSelectedIndex}
-  weather={weather}
-/>
+            featuredPhoto={featuredPhoto}
+            setSelectedIndex={setSelectedIndex}
+            weather={weather}
+          />
         </div>
 
         <div className="heroCard">
