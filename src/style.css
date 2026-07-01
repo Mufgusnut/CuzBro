@@ -566,33 +566,67 @@ main {
   overflow: hidden;
   border-radius: 22px;
   cursor: pointer;
-  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(2,7,16,.65);
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease;
 }
 
 .photoCard:hover {
-  transform: translateY(-7px);
-  border-color: rgba(114,217,255,.5);
-  box-shadow: 0 18px 55px rgba(0,0,0,.65), 0 0 28px rgba(74,140,255,.16);
+  transform: translateY(-6px);
+  border-color: rgba(255,157,28,.85);
+  box-shadow: 0 18px 48px rgba(0,0,0,.58);
 }
 
 .photoCard img {
   height: 300px;
   width: 100%;
   object-fit: cover;
-  transition: transform .55s ease, filter .55s ease;
+  display: block;
+  transition:
+    transform .55s ease,
+    filter .55s ease;
 }
 
 .photoCard:hover img {
-  transform: scale(1.08);
-  filter: brightness(1.12);
+  transform: scale(1.06);
+  filter: brightness(1.12) contrast(1.05);
 }
 
 .photoCard::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(transparent 35%, rgba(2,7,16,.45), rgba(2,7,16,.94));
+  background:
+    linear-gradient(transparent 25%, rgba(2,7,16,.58), rgba(2,7,16,.96));
   pointer-events: none;
+}
+
+.photoCard::before {
+  content: "Mission Report →";
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,157,28,.45);
+  background: rgba(2,7,16,.72);
+  color: var(--orange);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.photoCard:hover::before {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .photoCard div {
@@ -602,6 +636,26 @@ main {
   bottom: 0;
   z-index: 2;
   padding: 22px;
+  transform: translateY(6px);
+  transition: transform .25s ease;
+}
+
+.photoCard:hover div {
+  transform: translateY(0);
+}
+
+.photoCard h3 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.photoCard p {
+  color: #d7dfef;
+  margin: .35rem 0;
+}
+
+.photoCard small {
+  color: #9fb3da;
 }
 
 .photoCard h3 {
@@ -1615,4 +1669,15 @@ footer p {
 .weatherMetrics {
   margin: 8px 0;
   padding: 10px 0;
+}
+@media (max-width: 700px) {
+  .photoCard::before {
+    opacity: 1;
+    transform: none;
+    font-size: 10px;
+  }
+
+  .photoCard:hover {
+    transform: none;
+  }
 }
