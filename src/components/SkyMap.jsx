@@ -11,9 +11,26 @@ const MAP_SIZE = 1000;
 const CENTER = MAP_SIZE / 2;
 const RADIUS = 430;
 
+// Slightly richer star catalog for recognizable constellations.
 const STAR_CATALOG = [
-  // North / orientation
+  // Polaris / north
   { name: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 },
+
+  // Ursa Major / Big Dipper
+  { name: 'Dubhe', ra: 11.0621, dec: 61.7510, mag: 1.8 },
+  { name: 'Merak', ra: 11.0307, dec: 56.3824, mag: 2.4 },
+  { name: 'Phecda', ra: 11.8972, dec: 53.6948, mag: 2.4 },
+  { name: 'Megrez', ra: 12.2571, dec: 57.0326, mag: 3.3 },
+  { name: 'Alioth', ra: 12.9004, dec: 55.9598, mag: 1.8 },
+  { name: 'Mizar', ra: 13.3987, dec: 54.9254, mag: 2.2 },
+  { name: 'Alkaid', ra: 13.7923, dec: 49.3133, mag: 1.9 },
+
+  // Cassiopeia
+  { name: 'Schedar', ra: 0.6751, dec: 56.5373, mag: 2.2 },
+  { name: 'Caph', ra: 0.1529, dec: 59.1498, mag: 2.3 },
+  { name: 'Gamma Cas', ra: 0.9451, dec: 60.7167, mag: 2.2 },
+  { name: 'Ruchbah', ra: 1.4303, dec: 60.2353, mag: 2.7 },
+  { name: 'Segin', ra: 2.2939, dec: 63.6701, mag: 3.4 },
 
   // Lyra
   { name: 'Vega', ra: 18.6156, dec: 38.7837, mag: 0.0 },
@@ -37,7 +54,7 @@ const STAR_CATALOG = [
   { name: 'Kornephoros', ra: 16.5037, dec: 21.4896, mag: 2.8 },
   { name: 'Rasalgethi', ra: 17.2441, dec: 14.3903, mag: 3.1 },
 
-  // Vulpecula / nearby guide
+  // Vulpecula / nearby
   { name: 'Anser', ra: 19.4784, dec: 24.6649, mag: 4.4 },
 
   // Sagittarius
@@ -49,7 +66,21 @@ const STAR_CATALOG = [
 ];
 
 const CONSTELLATION_SEGMENTS = [
-  // Hercules Keystone and body
+  // Big Dipper
+  ['Dubhe', 'Merak'],
+  ['Merak', 'Phecda'],
+  ['Phecda', 'Megrez'],
+  ['Megrez', 'Alioth'],
+  ['Alioth', 'Mizar'],
+  ['Mizar', 'Alkaid'],
+
+  // Cassiopeia
+  ['Caph', 'Schedar'],
+  ['Schedar', 'Gamma Cas'],
+  ['Gamma Cas', 'Ruchbah'],
+  ['Ruchbah', 'Segin'],
+
+  // Hercules
   ['Eta Her', 'Zeta Her'],
   ['Zeta Her', 'Epsilon Her'],
   ['Epsilon Her', 'Pi Her'],
@@ -57,23 +88,23 @@ const CONSTELLATION_SEGMENTS = [
   ['Zeta Her', 'Kornephoros'],
   ['Epsilon Her', 'Rasalgethi'],
 
-  // Lyra: Vega and parallelogram
+  // Lyra
   ['Vega', 'Zeta Lyr'],
   ['Zeta Lyr', 'Delta2 Lyr'],
   ['Delta2 Lyr', 'Sheliak'],
   ['Sheliak', 'Sulafat'],
   ['Sulafat', 'Zeta Lyr'],
 
-  // Cygnus Northern Cross
+  // Cygnus
   ['Deneb', 'Sadr'],
   ['Sadr', 'Albireo'],
   ['Sadr', 'Gienah'],
   ['Sadr', 'Delta Cyg'],
 
-  // Vulpecula guide near M27 region
+  // Vulpecula
   ['Albireo', 'Anser'],
 
-  // Sagittarius teapot-ish guide
+  // Sagittarius
   ['Kaus Australis', 'Kaus Media'],
   ['Kaus Media', 'Kaus Borealis'],
   ['Kaus Borealis', 'Nunki'],
@@ -82,6 +113,8 @@ const CONSTELLATION_SEGMENTS = [
 ];
 
 const CONSTELLATION_LABELS = [
+  { name: 'Ursa Major', ra: 12.4, dec: 57.5 },
+  { name: 'Cassiopeia', ra: 1.0, dec: 59.0 },
   { name: 'Hercules', ra: 16.95, dec: 34.5 },
   { name: 'Lyra', ra: 18.82, dec: 37.5 },
   { name: 'Cygnus', ra: 20.15, dec: 39.5 },
@@ -192,14 +225,10 @@ function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
 
 function buildPath(points) {
   const validPoints = points.filter(Boolean);
-
   if (!validPoints.length) return '';
 
   return validPoints
-    .map((point, index) => {
-      const command = index === 0 ? 'M' : 'L';
-      return `${command} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
-    })
+    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
     .join(' ');
 }
 
@@ -240,7 +269,6 @@ function formatDec(decDegrees) {
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
-
   const dragRef = useRef(null);
 
   const date = useMemo(() => new Date(), []);
@@ -303,7 +331,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return CONSTELLATION_SEGMENTS.map(([first, second]) => {
       const starA = starLookup[first];
       const starB = starLookup[second];
-
       if (!starA || !starB) return null;
 
       return `M ${starA.x.toFixed(1)} ${starA.y.toFixed(1)} L ${starB.x.toFixed(1)} ${starB.y.toFixed(1)}`;
@@ -375,7 +402,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
-
     if (realIndex !== -1) {
       setSelectedIndex(realIndex);
     }
@@ -413,13 +439,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     <div className="atlasPage">
       <section className="atlasHero">
         <p className="eyebrow">MISSION CONTROL</p>
-
         <h1>Celestial Atlas</h1>
 
         <p className="tagline">
-          A live sky map for Eliot, Maine using real right ascension and
-          declination. Mission targets, the ecliptic, lunar path, Polaris, and
-          compass directions are plotted live.
+          A live sky map for Eliot, Maine using real right ascension and declination.
+          Mission targets, constellation guides, the ecliptic, lunar path, Polaris,
+          and compass directions are plotted live.
         </p>
 
         <a className="atlasBackButton" href="/#observatory">
@@ -495,7 +520,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   <circle
                     cx={star.x}
                     cy={star.y}
-                    r={Math.max(1.5, 5 - star.mag)}
+                    r={Math.max(1.4, 5 - star.mag)}
                     className={star.name === 'Polaris' ? 'skyStar polarisStar' : 'skyStar'}
                   />
 
@@ -516,22 +541,44 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </g>
               ))}
 
-              {mappedObjects.map((photo, index) => (
-                <circle
-                  key={`${photo.title}-halo`}
-                  cx={photo.x}
-                  cy={photo.y}
-                  r={activeIndex === index ? 28 : 19}
-                  className="missionMarkerHalo"
-                  style={{ '--marker-color': getObjectColor(photo.objectType) }}
-                />
-              ))}
+              {mappedObjects.map((photo, index) => {
+                const markerX = photo.x + 26;
+                const markerY = photo.y - 18;
 
-              <text x={CENTER + 160} y={CENTER - 150} className="pathLabel">
-                Ecliptic / Planetary Path
+                return (
+                  <g key={`${photo.title}-leader`}>
+                    <line
+                      x1={photo.x}
+                      y1={photo.y}
+                      x2={markerX}
+                      y2={markerY}
+                      className="missionLeaderLine"
+                    />
+                    <circle
+                      cx={photo.x}
+                      cy={photo.y}
+                      r={4}
+                      className="missionAnchorDot"
+                      style={{ fill: getObjectColor(photo.objectType) }}
+                    />
+                    {activeIndex === index && (
+                      <circle
+                        cx={photo.x}
+                        cy={photo.y}
+                        r={10}
+                        className="missionAnchorGlow"
+                        style={{ stroke: getObjectColor(photo.objectType) }}
+                      />
+                    )}
+                  </g>
+                );
+              })}
+
+              <text x={CENTER + 155} y={CENTER - 150} className="pathLabel">
+                Ecliptic
               </text>
 
-              <text x={CENTER - 245} y={CENTER + 175} className="pathLabel moonPathLabel">
+              <text x={CENTER - 215} y={CENTER + 175} className="pathLabel moonPathLabel">
                 Lunar Path
               </text>
             </svg>
@@ -542,8 +589,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 type="button"
                 className={activeIndex === index ? 'svgMarker active' : 'svgMarker'}
                 style={{
-                  left: `${(photo.x / MAP_SIZE) * 100}%`,
-                  top: `${(photo.y / MAP_SIZE) * 100}%`,
+                  left: `${((photo.x + 26) / MAP_SIZE) * 100}%`,
+                  top: `${((photo.y - 18) / MAP_SIZE) * 100}%`,
                   '--marker-color': getObjectColor(photo.objectType)
                 }}
                 onPointerDown={(event) => event.stopPropagation()}
@@ -585,7 +632,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               type="button"
             >
               <b>{index + 1}</b>
-
               <span>
                 <strong>{photo.title}</strong>
                 <em>{photo.constellation}</em>

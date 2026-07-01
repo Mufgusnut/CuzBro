@@ -2579,3 +2579,93 @@ footer p {
     height: 520px !important;
   }
 }
+/* Smaller numbered atlas markers */
+.svgMarker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(2,7,16,.88);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 8;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.25);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.svgMarker:hover,
+.svgMarker.active {
+  transform: translate(-50%, -50%) scale(1.08);
+  border-color: var(--marker-color);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--marker-color) 48%, transparent);
+  background: rgba(7,16,34,.96);
+}
+
+/* Exact object anchor */
+.missionAnchorDot {
+  fill: white;
+  stroke: rgba(2,7,16,.85);
+  stroke-width: 1.5;
+}
+
+.missionAnchorGlow {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: .55;
+}
+
+/* Leader line from object to number */
+.missionLeaderLine {
+  stroke: rgba(255,255,255,.28);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-dasharray: 2 4;
+}
+
+/* Slightly richer constellation styling */
+.constellationSegment {
+  stroke: rgba(114,217,255,.62);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  filter: drop-shadow(0 0 5px rgba(114,217,255,.24));
+}
+
+.constellationText {
+  fill: rgba(190,225,255,.9);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-anchor: middle;
+  filter: drop-shadow(0 0 8px rgba(0,0,0,.9));
+}
+
+.skyStar {
+  fill: rgba(255,255,255,.96);
+  filter: drop-shadow(0 0 7px rgba(180,215,255,.68));
+}
+
+.polarisLabel,
+.planetLabel,
+.pathLabel,
+.compassLabel,
+.zenithLabel {
+  filter: drop-shadow(0 0 8px rgba(0,0,0,.9));
+}
+
+/* Slightly smaller on mobile */
+@media (max-width: 700px) {
+  .svgMarker {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+}
