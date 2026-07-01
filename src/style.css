@@ -2653,3 +2653,34 @@ footer p {
     radial-gradient(circle at 84% 70%, rgba(255,157,28,.05), transparent 30%),
     rgba(2,7,16,.88);
 }
+.skyPanLayer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform .08s linear;
+}
+
+.svgMarker {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid var(--marker-color, var(--orange));
+  background: rgba(5, 12, 28, .95);
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+  z-index: 5;
+}
+
+.svgMarker:hover,
+.svgMarker.active {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--marker-color, #fff) 35%, transparent);
+  background: rgba(10, 20, 42, .98);
+}

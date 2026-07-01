@@ -37,7 +37,7 @@ const CONSTELLATION_SEGMENTS = [
   ['Zeta Her', 'Eta Her'],
   ['Eta Her', 'Pi Her'],
   ['Pi Her', 'Rasalgethi'],
-  ['Kornephoros', 'Rasalgethi'],
+  ['Rasalgethi', 'Kornephoros'],
 
   ['Vega', 'Zeta Lyr'],
   ['Zeta Lyr', 'Delta2 Lyr'],
@@ -46,7 +46,6 @@ const CONSTELLATION_SEGMENTS = [
   ['Sulafat', 'Vega'],
 
   ['Deneb', 'Albireo'],
-
   ['Anser', 'Albireo'],
 
   ['Kaus Australis', 'Kaus Media'],
@@ -62,16 +61,16 @@ const CONSTELLATION_LABELS = [
   { name: 'Sagittarius', ra: 18.7, dec: -28.5 }
 ];
 
-function toRadians(deg) {
-  return (deg * Math.PI) / 180;
+function toRadians(degrees) {
+  return (degrees * Math.PI) / 180;
 }
 
-function toDegrees(rad) {
-  return (rad * 180) / Math.PI;
+function toDegrees(radians) {
+  return (radians * 180) / Math.PI;
 }
 
-function normalizeDegrees(deg) {
-  return ((deg % 360) + 360) % 360;
+function normalizeDegrees(degrees) {
+  return ((degrees % 360) + 360) % 360;
 }
 
 function normalizeHours(hours) {
@@ -82,99 +81,111 @@ function julianDate(date) {
   return date.getTime() / 86400000 + 2440587.5;
 }
 
-function localSiderealTime(date, lonDeg) {
+function localSiderealTime(date, longitudeDegrees) {
   const jd = julianDate(date);
-  const T = (jd - 2451545.0) / 36525.0;
+  const t = (jd - 2451545.0) / 36525.0;
 
   let gmst =
     280.46061837 +
     360.98564736629 * (jd - 2451545.0) +
-    0.000387933 * T * T -
-    (T * T * T) / 38710000;
+    0.000387933 * t * t -
+    (t * t * t) / 38710000;
 
   gmst = normalizeDegrees(gmst);
-  const lstDeg = normalizeDegrees(gmst + lonDeg);
 
-  return lstDeg / 15;
+  return normalizeDegrees(gmst + longitudeDegrees) / 15;
 }
 
-function raDecToAltAz(raHours, decDeg, date, latDeg, lonDeg) {
-  const lstHours = localSiderealTime(date, lonDeg);
-  let haHours = lstHours - raHours;
+function raDecToAltAz(raHours, decDegrees, date, latitudeDegrees, longitudeDegrees) {
+  const lstHours = localSiderealTime(date, longitudeDegrees);
 
-  if (haHours > 12) haHours -= 24;
-  if (haHours < -12) haHours += 24;
+  let hourAngleHours = lstHours - raHours;
 
-  const haRad = toRadians(haHours * 15);
-  const decRad = toRadians(decDeg);
-  const latRad = toRadians(latDeg);
+  if (hourAngleHours > 12) hourAngleHours -= 24;
+  if (hourAngleHours < -12) hourAngleHours += 24;
+
+  const hourAngleRadians = toRadians(hourAngleHours * 15);
+  const decRadians = toRadians(decDegrees);
+  const latRadians = toRadians(latitudeDegrees);
 
   const sinAlt =
-    Math.sin(decRad) * Math.sin(latRad) +
-    Math.cos(decRad) * Math.cos(latRad) * Math.cos(haRad);
+    Math.sin(decRadians) * Math.sin(latRadians) +
+    Math.cos(decRadians) * Math.cos(latRadians) * Math.cos(hourAngleRadians);
 
-  const altRad = Math.asin(sinAlt);
-  const altDeg = toDegrees(altRad);
+  const altRadians = Math.asin(sinAlt);
+  const altDegrees = toDegrees(altRadians);
 
   const cosAz =
-    (Math.sin(decRad) - Math.sin(altRad) * Math.sin(latRad)) /
-    (Math.cos(altRad) * Math.cos(latRad));
+    (Math.sin(decRadians) - Math.sin(altRadians) * Math.sin(latRadians)) /
+    (Math.cos(altRadians) * Math.cos(latRadians));
 
-  let azRad = Math.acos(Math.max(-1, Math.min(1, cosAz)));
-  let azDeg = toDegrees(azRad);
+  let azRadians = Math.acos(Math.max(-1, Math.min(1, cosAz)));
+  let azDegrees = toDegrees(azRadians);
 
-  if (Math.sin(haRad) > 0) {
-    azDeg = 360 - azDeg;
+  if (Math.sin(hourAngleRadians) > 0) {
+    azDegrees = 360 - azDegrees;
   }
 
-  return { alt: altDeg, az: azDeg };
+  return {
+    alt: altDegrees,
+    az: azDegrees
+  };
 }
 
-function projectAltAz(altDeg, azDeg) {
-  const r = ((90 - altDeg) / 90) * RADIUS;
-  const azRad = toRadians(azDeg);
+function projectAltAz(altDegrees, azDegrees) {
+  const radius = ((90 - altDegrees) / 90) * RADIUS;
+  const azRadians = toRadians(azDegrees);
 
-  const x = CENTER + r * Math.sin(azRad);
-  const y = CENTER - r * Math.cos(azRad);
-
-  return { x, y };
+  return {
+    x: CENTER + radius * Math.sin(azRadians),
+    y: CENTER - radius * Math.cos(azRadians),
+    visible: altDegrees >= 0
+  };
 }
 
-function eclipticToRaDec(lambdaDeg, betaDeg = 0) {
-  const epsilon = toRadians(23.439291);
-  const lambda = toRadians(lambdaDeg);
-  const beta = toRadians(betaDeg);
+function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
+  const obliquity = toRadians(23.439291);
+  const lambda = toRadians(lambdaDegrees);
+  const beta = toRadians(betaDegrees);
 
   const x = Math.cos(beta) * Math.cos(lambda);
   const y =
-    Math.cos(beta) * Math.sin(lambda) * Math.cos(epsilon) -
-    Math.sin(beta) * Math.sin(epsilon);
+    Math.cos(beta) * Math.sin(lambda) * Math.cos(obliquity) -
+    Math.sin(beta) * Math.sin(obliquity);
   const z =
-    Math.cos(beta) * Math.sin(lambda) * Math.sin(epsilon) +
-    Math.sin(beta) * Math.cos(epsilon);
+    Math.cos(beta) * Math.sin(lambda) * Math.sin(obliquity) +
+    Math.sin(beta) * Math.cos(obliquity);
 
-  const ra = normalizeHours(toDegrees(Math.atan2(y, x)) / 15);
-  const dec = toDegrees(Math.asin(z));
-
-  return { ra, dec };
+  return {
+    ra: normalizeHours(toDegrees(Math.atan2(y, x)) / 15),
+    dec: toDegrees(Math.asin(z))
+  };
 }
 
-function buildPathFromPoints(points) {
-  const valid = points.filter(Boolean);
-  if (!valid.length) return '';
+function buildPath(points) {
+  const validPoints = points.filter(Boolean);
 
-  return valid
-    .map((p, index) => `${index === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+  if (!validPoints.length) return '';
+
+  return validPoints
+    .map((point, index) => {
+      const command = index === 0 ? 'M' : 'L';
+      return `${command} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
+    })
     .join(' ');
 }
 
 function getPlanetRaDec(body, date, observer) {
-  const eq = Equator(body, date, observer, true, true);
-  return { ra: eq.ra, dec: eq.dec };
+  const equator = Equator(body, date, observer, true, true);
+
+  return {
+    ra: equator.ra,
+    dec: equator.dec
+  };
 }
 
-function getObjectColor(type) {
-  switch (type) {
+function getObjectColor(objectType) {
+  switch (objectType) {
     case 'Planetary Nebula':
       return 'var(--cyan)';
     case 'Emission Nebula':
@@ -190,13 +201,22 @@ function getObjectColor(type) {
   }
 }
 
+function formatRa(raHours) {
+  return `${raHours.toFixed(3)}h`;
+}
+
+function formatDec(decDegrees) {
+  return `${decDegrees.toFixed(2)}°`;
+}
+
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+
   const dragRef = useRef(null);
 
-  const date = new Date();
-  const observer = new Observer(SITE.lat, SITE.lon, 0);
+  const date = useMemo(() => new Date(), []);
+  const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
 
   const mappedObjects = useMemo(() => {
     return gallery
@@ -205,95 +225,100 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         let dec = photo.dec;
 
         if (photo.objectType === 'Lunar') {
-          const moonEq = getPlanetRaDec(Body.Moon, date, observer);
-          ra = moonEq.ra;
-          dec = moonEq.dec;
+          const moon = getPlanetRaDec(Body.Moon, date, observer);
+          ra = moon.ra;
+          dec = moon.dec;
         }
 
         if (ra === undefined || dec === undefined) return null;
 
-        const horiz = raDecToAltAz(ra, dec, date, SITE.lat, SITE.lon);
-        const point = projectAltAz(horiz.alt, horiz.az);
+        const altAz = raDecToAltAz(ra, dec, date, SITE.lat, SITE.lon);
+        const point = projectAltAz(altAz.alt, altAz.az);
 
         return {
           ...photo,
           ra,
           dec,
-          alt: horiz.alt,
-          az: horiz.az,
+          alt: altAz.alt,
+          az: altAz.az,
           x: point.x,
-          y: point.y
+          y: point.y,
+          visible: point.visible
         };
       })
       .filter(Boolean);
-  }, [gallery]);
+  }, [gallery, date, observer]);
 
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
 
-  const catalogObjects = mappedObjects;
-
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
-      const horiz = raDecToAltAz(star.ra, star.dec, date, SITE.lat, SITE.lon);
-      const point = projectAltAz(horiz.alt, horiz.az);
+      const altAz = raDecToAltAz(star.ra, star.dec, date, SITE.lat, SITE.lon);
+      const point = projectAltAz(altAz.alt, altAz.az);
 
       return {
         ...star,
-        alt: horiz.alt,
-        az: horiz.az,
+        alt: altAz.alt,
+        az: altAz.az,
+        x: point.x,
+        y: point.y,
+        visible: point.visible
+      };
+    });
+  }, [date]);
+
+  const starLookup = useMemo(() => {
+    return Object.fromEntries(starPoints.map((star) => [star.name, star]));
+  }, [starPoints]);
+
+  const constellationLines = useMemo(() => {
+    return CONSTELLATION_SEGMENTS.map(([first, second]) => {
+      const starA = starLookup[first];
+      const starB = starLookup[second];
+
+      if (!starA || !starB) return null;
+
+      return `M ${starA.x.toFixed(1)} ${starA.y.toFixed(1)} L ${starB.x.toFixed(1)} ${starB.y.toFixed(1)}`;
+    }).filter(Boolean);
+  }, [starLookup]);
+
+  const constellationLabels = useMemo(() => {
+    return CONSTELLATION_LABELS.map((label) => {
+      const altAz = raDecToAltAz(label.ra, label.dec, date, SITE.lat, SITE.lon);
+      const point = projectAltAz(altAz.alt, altAz.az);
+
+      return {
+        ...label,
         x: point.x,
         y: point.y
       };
     });
-  }, []);
-
-  const starLookup = Object.fromEntries(starPoints.map((star) => [star.name, star]));
-
-  const constellationLines = CONSTELLATION_SEGMENTS.map(([a, b]) => {
-    const starA = starLookup[a];
-    const starB = starLookup[b];
-    if (!starA || !starB) return null;
-
-    return `M ${starA.x.toFixed(1)} ${starA.y.toFixed(1)} L ${starB.x.toFixed(1)} ${starB.y.toFixed(1)}`;
-  }).filter(Boolean);
-
-  const constellationLabels = CONSTELLATION_LABELS.map((label) => {
-    const horiz = raDecToAltAz(label.ra, label.dec, date, SITE.lat, SITE.lon);
-    const point = projectAltAz(horiz.alt, horiz.az);
-
-    return {
-      ...label,
-      x: point.x,
-      y: point.y
-    };
-  });
-
-  const polaris = starLookup['Polaris'];
+  }, [date]);
 
   const eclipticPath = useMemo(() => {
     const points = [];
 
     for (let lambda = 0; lambda <= 360; lambda += 3) {
       const eq = eclipticToRaDec(lambda, 0);
-      const horiz = raDecToAltAz(eq.ra, eq.dec, date, SITE.lat, SITE.lon);
-      points.push(projectAltAz(horiz.alt, horiz.az));
+      const altAz = raDecToAltAz(eq.ra, eq.dec, date, SITE.lat, SITE.lon);
+      points.push(projectAltAz(altAz.alt, altAz.az));
     }
 
-    return buildPathFromPoints(points);
-  }, []);
+    return buildPath(points);
+  }, [date]);
 
   const lunarPath = useMemo(() => {
     const points = [];
 
     for (let hour = 0; hour <= 24; hour += 2) {
       const future = new Date(date.getTime() + hour * 60 * 60 * 1000);
-      const moonEq = getPlanetRaDec(Body.Moon, future, observer);
-      const horiz = raDecToAltAz(moonEq.ra, moonEq.dec, future, SITE.lat, SITE.lon);
-      points.push(projectAltAz(horiz.alt, horiz.az));
+      const moon = getPlanetRaDec(Body.Moon, future, observer);
+      const altAz = raDecToAltAz(moon.ra, moon.dec, future, SITE.lat, SITE.lon);
+      points.push(projectAltAz(altAz.alt, altAz.az));
     }
 
-    return buildPathFromPoints(points);
-  }, []);
+    return buildPath(points);
+  }, [date, observer]);
 
   const planets = useMemo(() => {
     const bodies = [
@@ -306,19 +331,23 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
     return bodies.map((item) => {
       const eq = getPlanetRaDec(item.body, date, observer);
-      const horiz = raDecToAltAz(eq.ra, eq.dec, date, SITE.lat, SITE.lon);
-      const point = projectAltAz(horiz.alt, horiz.az);
+      const altAz = raDecToAltAz(eq.ra, eq.dec, date, SITE.lat, SITE.lon);
+      const point = projectAltAz(altAz.alt, altAz.az);
 
       return {
         ...item,
+        alt: altAz.alt,
+        az: altAz.az,
         x: point.x,
-        y: point.y
+        y: point.y,
+        visible: point.visible
       };
     });
-  }, []);
+  }, [date, observer]);
 
   const openMission = (photo) => {
-    const realIndex = gallery.findIndex((p) => p.title === photo.title);
+    const realIndex = gallery.findIndex((item) => item.title === photo.title);
+
     if (realIndex !== -1) {
       setSelectedIndex(realIndex);
     }
@@ -331,6 +360,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       panX: pan.x,
       panY: pan.y
     };
+
+    event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const handlePointerMove = (event) => {
@@ -345,20 +376,25 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     });
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (event) => {
     dragRef.current = null;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
 
   return (
     <div className="atlasPage">
       <section className="atlasHero">
         <p className="eyebrow">MISSION CONTROL</p>
+
         <h1>Celestial Atlas</h1>
+
         <p className="tagline">
-          A live sky map for Eliot, Maine using real right ascension and declination.
-          Mission targets, planetary path, lunar path, Polaris, and compass directions are all plotted live.
+          A live sky map for Eliot, Maine using real right ascension and
+          declination. Mission targets, the ecliptic, lunar path, Polaris, and
+          compass directions are plotted live.
         </p>
-        <a className="atlasBackButton" href="/">
+
+        <a className="atlasBackButton" href="/#observatory">
           ← Back to Observatory
         </a>
       </section>
@@ -369,6 +405,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
           <div
@@ -378,22 +415,28 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <svg
               className="skySvg"
               viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
-              aria-label="Real sky map"
+              role="img"
+              aria-label="Live sky map for Eliot, Maine"
             >
-              <defs>
-                <radialGradient id="skyGlow" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="rgba(74,140,255,.08)" />
-                  <stop offset="100%" stopColor="rgba(0,0,0,0)" />
-                </radialGradient>
-              </defs>
-
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
               <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.66} className="skyAltitudeRing" />
               <circle cx={CENTER} cy={CENTER} r={RADIUS * 0.33} className="skyAltitudeRing" />
               <circle cx={CENTER} cy={CENTER} r={8} className="skyZenithDot" />
 
-              <line x1={CENTER} y1={CENTER - RADIUS} x2={CENTER} y2={CENTER + RADIUS} className="skyAxis" />
-              <line x1={CENTER - RADIUS} y1={CENTER} x2={CENTER + RADIUS} y2={CENTER} className="skyAxis" />
+              <line
+                x1={CENTER}
+                y1={CENTER - RADIUS}
+                x2={CENTER}
+                y2={CENTER + RADIUS}
+                className="skyAxis"
+              />
+              <line
+                x1={CENTER - RADIUS}
+                y1={CENTER}
+                x2={CENTER + RADIUS}
+                y2={CENTER}
+                className="skyAxis"
+              />
 
               <text x={CENTER} y={CENTER - RADIUS - 20} className="compassLabel">N</text>
               <text x={CENTER + RADIUS + 18} y={CENTER + 6} className="compassLabel">E</text>
@@ -424,9 +467,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   <circle
                     cx={star.x}
                     cy={star.y}
-                    r={Math.max(1.5, 4.8 - star.mag)}
+                    r={Math.max(1.5, 5 - star.mag)}
                     className={star.name === 'Polaris' ? 'skyStar polarisStar' : 'skyStar'}
                   />
+
                   {star.name === 'Polaris' && (
                     <text x={star.x + 10} y={star.y - 10} className="polarisLabel">
                       Polaris
@@ -444,43 +488,48 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </g>
               ))}
 
-              {catalogObjects.map((photo, index) => (
-                <g key={photo.title}>
-                  <circle
-                    cx={photo.x}
-                    cy={photo.y}
-                    r={activeIndex === index ? 26 : 18}
-                    className="missionMarkerHalo"
-                    style={{ color: getObjectColor(photo.objectType) }}
-                  />
-                  <button
-                    type="button"
-                    className={activeIndex === index ? 'svgMarker active' : 'svgMarker'}
-                    style={{
-                      left: `${photo.x}px`,
-                      top: `${photo.y}px`,
-                      '--marker-color': getObjectColor(photo.objectType)
-                    }}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    onFocus={() => setActiveIndex(index)}
-                    onClick={() => {
-                      setActiveIndex(index);
-                      openMission(photo);
-                    }}
-                    aria-label={`Open ${photo.title}`}
-                  >
-                    {index + 1}
-                  </button>
-                </g>
+              {mappedObjects.map((photo, index) => (
+                <circle
+                  key={`${photo.title}-halo`}
+                  cx={photo.x}
+                  cy={photo.y}
+                  r={activeIndex === index ? 28 : 19}
+                  className="missionMarkerHalo"
+                  style={{ '--marker-color': getObjectColor(photo.objectType) }}
+                />
               ))}
 
-              <text x={CENTER + 170} y={CENTER - 150} className="pathLabel">
-                Planetary Path
+              <text x={CENTER + 160} y={CENTER - 150} className="pathLabel">
+                Ecliptic / Planetary Path
               </text>
-              <text x={CENTER - 220} y={CENTER + 170} className="pathLabel moonPathLabel">
+
+              <text x={CENTER - 245} y={CENTER + 175} className="pathLabel moonPathLabel">
                 Lunar Path
               </text>
             </svg>
+
+            {mappedObjects.map((photo, index) => (
+              <button
+                key={photo.title}
+                type="button"
+                className={activeIndex === index ? 'svgMarker active' : 'svgMarker'}
+                style={{
+                  left: `${(photo.x / MAP_SIZE) * 100}%`,
+                  top: `${(photo.y / MAP_SIZE) * 100}%`,
+                  '--marker-color': getObjectColor(photo.objectType)
+                }}
+                onPointerDown={(event) => event.stopPropagation()}
+                onMouseEnter={() => setActiveIndex(index)}
+                onFocus={() => setActiveIndex(index)}
+                onClick={() => {
+                  setActiveIndex(index);
+                  openMission(photo);
+                }}
+                aria-label={`Open ${photo.title} Mission Report`}
+              >
+                {index + 1}
+              </button>
+            ))}
           </div>
 
           <div className="atlasLegend enhancedLegend">
@@ -495,7 +544,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         <aside className="atlasCatalog">
           <small>Mission Catalog</small>
 
-          {catalogObjects.map((photo, index) => (
+          {mappedObjects.map((photo, index) => (
             <button
               key={photo.title}
               className={index === activeIndex ? 'catalogItem active' : 'catalogItem'}
@@ -508,6 +557,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               type="button"
             >
               <b>{index + 1}</b>
+
               <span>
                 <strong>{photo.title}</strong>
                 <em>{photo.constellation}</em>
@@ -540,8 +590,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <div className="atlasFacts">
               <span><b>Constellation</b>{activeObject.constellation}</span>
               <span><b>Type</b>{activeObject.objectType}</span>
-              <span><b>RA</b>{activeObject.ra.toFixed(4)}h</span>
-              <span><b>Dec</b>{activeObject.dec.toFixed(2)}°</span>
+              <span><b>RA</b>{formatRa(activeObject.ra)}</span>
+              <span><b>Dec</b>{formatDec(activeObject.dec)}</span>
               <span><b>Altitude</b>{activeObject.alt.toFixed(1)}°</span>
               <span><b>Azimuth</b>{activeObject.az.toFixed(1)}°</span>
             </div>
