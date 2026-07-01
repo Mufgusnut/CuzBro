@@ -2214,3 +2214,48 @@ footer p {
   border-color: var(--orange);
   background: rgba(255,157,28,.18);
 }
+.constellationLines polyline {
+  fill: none;
+  stroke: rgba(114,217,255,.22);
+  stroke-width: .22;
+  transition: stroke .2s ease, stroke-width .2s ease, opacity .2s ease;
+  opacity: .55;
+}
+
+.constellationLines polyline.active {
+  stroke: rgba(255,157,28,.9);
+  stroke-width: .42;
+  opacity: 1;
+}
+
+.constellationLabel {
+  opacity: .45;
+  transition: opacity .2s ease, color .2s ease, text-shadow .2s ease;
+}
+
+.constellationLabel.active {
+  opacity: 1;
+  color: var(--orange);
+  text-shadow: 0 0 18px rgba(255,157,28,.45);
+}
+
+.atlasMarker.active::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,157,28,.45);
+  animation: atlasPulse 1.8s ease-out infinite;
+}
+
+@keyframes atlasPulse {
+  from {
+    transform: scale(.8);
+    opacity: .75;
+  }
+
+  to {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}

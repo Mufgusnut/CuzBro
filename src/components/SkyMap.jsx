@@ -1,6 +1,20 @@
 import { Crosshair } from 'lucide-react';
 import { useState } from 'react';
 
+const constellationPaths = {
+  Hercules: '34,26 42,34 50,28 55,38 48,48 38,44 42,34',
+  Cygnus: '63,18 63,28 63,40 56,28 70,28',
+  Lyra: '52,20 56,25 61,22 59,29 53,30 52,20',
+  Vulpecula: '61,39 68,43 75,47',
+  Sagittarius: '70,66 78,72 86,70 82,80 72,78 78,72',
+  Lunar: '18,56 22,62 27,67'
+};
+
+function getConstellationKey(photo) {
+  if (photo.objectType === 'Lunar') return 'Lunar';
+  return photo.constellation;
+}
+
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const mapped = gallery.filter(
     (photo) => photo.mapX !== undefined && photo.mapY !== undefined
@@ -8,9 +22,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const activePhoto = mapped[activeIndex];
+  const activeConstellation = activePhoto ? getConstellationKey(activePhoto) : null;
 
-  const openMission = () => {
-    const realIndex = gallery.findIndex((p) => p.title === activePhoto.title);
+  const openMission = (photo) => {
+    const realIndex = gallery.findIndex((p) => p.title === photo.title);
     setSelectedIndex(realIndex);
   };
 
@@ -19,13 +34,15 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       <section className="atlasHero">
         <p className="eyebrow">MISSION CONTROL</p>
         <h1>Celestial Atlas</h1>
+
         <p className="tagline">
           An interactive atlas of every celestial object photographed by CuzBro Observatory.
           Select a numbered marker to identify the mission.
         </p>
+
         <a className="atlasBackButton" href="/#observatory">
-  ← Back to Observatory
-</a>
+          ← Back to Observatory
+        </a>
       </section>
 
       <section className="atlasLayout">
@@ -34,17 +51,24 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           <div className="atlasMilkyWay"></div>
 
           <svg className="constellationLines" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <polyline points="50,25 56,28 63,28 68,43" />
-            <polyline points="42,34 47,30 51,36 45,42 42,34" />
-            <polyline points="72,62 78,72 83,82" />
-            <polyline points="18,56 22,62 28,66" />
+            {Object.entries(constellationPaths).map(([name, points]) => (
+              <polyline
+                key={name}
+                points={points}
+                className={name === activeConstellation ? 'active' : ''}
+              />
+            ))}
           </svg>
 
-          <span className="constellationLabel" style={{ left: '39%', top: '29%' }}>Hercules</span>
-          <span className="constellationLabel" style={{ left: '60%', top: '22%' }}>Cygnus</span>
-          <span className="constellationLabel" style={{ left: '53%', top: '18%' }}>Lyra</span>
-          <span className="constellationLabel" style={{ left: '70%', top: '39%' }}>Vulpecula</span>
-          <span className="constellationLabel" style={{ left: '76%', top: '78%' }}>Sagittarius</span>
+          {Object.keys(constellationPaths).map((name) => (
+            <span
+              key={name}
+              className={name === activeConstellation ? 'constellationLabel active' : 'constellationLabel'}
+              style={labelPosition(name)}
+            >
+              {name}
+            </span>
+          ))}
 
           {mapped.map((photo, index) => (
             <button
@@ -58,8 +82,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               onFocus={() => setActiveIndex(index)}
               onClick={() => {
                 setActiveIndex(index);
-                const realIndex = gallery.findIndex((p) => p.title === photo.title);
-                setSelectedIndex(realIndex);
+                openMission(photo);
               }}
               type="button"
               aria-label={`Open ${photo.title} mission report`}
@@ -69,8 +92,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           ))}
 
           <div className="atlasLegend">
-            <span><i className="legendOrange"></i> Nebula / Cluster</span>
-            <span><i className="legendBlue"></i> Star / Lunar</span>
+            <span><i className="legendOrange"></i> Active Mission</span>
+            <span><i className="legendBlue"></i> Constellation Guide</span>
           </div>
         </div>
 
@@ -85,8 +108,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               onFocus={() => setActiveIndex(index)}
               onClick={() => {
                 setActiveIndex(index);
-                const realIndex = gallery.findIndex((p) => p.title === photo.title);
-                setSelectedIndex(realIndex);
+                openMission(photo);
               }}
               type="button"
             >
@@ -110,10 +132,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
           <div>
             <small>Selected Mission</small>
+
             <h2>
               <span>{activeIndex + 1}</span>
               {activePhoto.title}
             </h2>
+
             <h3>{activePhoto.subtitle}</h3>
 
             <p>{activePhoto.notes}</p>
@@ -125,7 +149,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <span><b>Captured</b>{activePhoto.captureDate}</span>
             </div>
 
-            <button type="button" onClick={openMission}>
+            <button type="button" onClick={() => openMission(activePhoto)}>
               Open Mission Report →
             </button>
           </div>
@@ -133,4 +157,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       )}
     </div>
   );
+}
+
+function labelPosition(name) {
+  const positions = {
+    Hercules: { left: '39%', top: '24%' },
+    Cygnus: { left: '66%', top: '17%' },
+    Lyra: { left: '53%', top: '16%' },
+    Vulpecula: { left: '73%', top: '39%' },
+    Sagittarius: { left: '80%', top: '63%' },
+    Lunar: { left: '20%', top: '52%' }
+  };
+
+  return positions[name] || { left: '50%', top: '50%' };
 }
