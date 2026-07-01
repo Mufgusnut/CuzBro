@@ -349,19 +349,6 @@ function formatDec(decDegrees) {
   return `${decDegrees.toFixed(2)}°`;
 }
 
-function markerOffset(index) {
-  const offsets = [
-    { x: 30, y: -20 },
-    { x: -30, y: -20 },
-    { x: 32, y: 20 },
-    { x: -32, y: 20 },
-    { x: 26, y: 0 },
-    { x: -26, y: 0 }
-  ];
-
-  return offsets[index % offsets.length];
-}
-
 function getPointerAngle(event, element) {
   const rect = element.getBoundingClientRect();
 
@@ -382,6 +369,72 @@ function formatMapTime(mapDate) {
     hour: 'numeric',
     minute: '2-digit'
   });
+}
+
+function pointDistance(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function buildMissionCallouts(objects) {
+  const placed = [];
+
+  const sorted = [...objects]
+    .map((photo, index) => ({
+      ...photo,
+      originalIndex: index
+    }))
+    .sort((a, b) => {
+      const aAngle = Math.atan2(a.y - CENTER, a.x - CENTER);
+      const bAngle = Math.atan2(b.y - CENTER, b.x - CENTER);
+      return aAngle - bAngle;
+    });
+
+  const laidOut = sorted.map((photo) => {
+    const dx = photo.x - CENTER;
+    const dy = photo.y - CENTER;
+    const angle = Math.atan2(dy, dx);
+
+    const baseRadius = RADIUS + 72;
+    const tangentX = -Math.sin(angle);
+    const tangentY = Math.cos(angle);
+
+    const baseX = CENTER + Math.cos(angle) * baseRadius;
+    const baseY = CENTER + Math.sin(angle) * baseRadius;
+
+    let chosen = {
+      x: clamp(baseX, 54, MAP_SIZE - 54),
+      y: clamp(baseY, 54, MAP_SIZE - 54)
+    };
+
+    for (let i = 0; i < 18; i += 1) {
+      const band = Math.ceil(i / 2);
+      const direction = i === 0 ? 0 : i % 2 === 1 ? 1 : -1;
+      const shift = band * 26 * direction;
+
+      const test = {
+        x: clamp(baseX + tangentX * shift, 54, MAP_SIZE - 54),
+        y: clamp(baseY + tangentY * shift, 54, MAP_SIZE - 54)
+      };
+
+      const overlaps = placed.some((item) => pointDistance(item, test) < 58);
+
+      if (!overlaps) {
+        chosen = test;
+        break;
+      }
+    }
+
+    placed.push(chosen);
+
+    return {
+      ...photo,
+      markerX: chosen.x,
+      markerY: chosen.y,
+      labelSide: chosen.x > CENTER ? 'left' : 'right'
+    };
+  });
+
+  return laidOut.sort((a, b) => a.originalIndex - b.originalIndex);
 }
 
 export default function SkyMap({ gallery, setSelectedIndex }) {
@@ -430,6 +483,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const visibleObjects = useMemo(() => {
     return mappedObjects.filter((photo) => isInsideSky(photo, 12));
   }, [mappedObjects]);
+
+  const missionCallouts = useMemo(() => {
+    return buildMissionCallouts(visibleObjects);
+  }, [visibleObjects]);
 
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
@@ -624,7 +681,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const handlePointerDown = (event) => {
     if (shouldIgnoreDrag(event.target)) return;
 
-    // Touch dragging fights mobile scroll, so mobile uses rotate buttons instead.
     if (event.pointerType === 'touch') return;
 
     const angle = getPointerAngle(event, event.currentTarget);
@@ -765,36 +821,42 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </g>
               ))}
 
-              {visibleObjects.map((photo) => {
+              {missionCallouts.map((photo) => {
                 const index = mappedObjects.findIndex((item) => item.title === photo.title);
-                const offset = markerOffset(index);
-                const markerX = photo.x + offset.x;
-                const markerY = photo.y + offset.y;
                 const markerColor = getObjectColor(photo.objectType);
 
                 return (
-                  <g key={`${photo.title}-leader`}>
+                  <g key={`${photo.title}-callout`}>
                     <line
                       x1={photo.x}
                       y1={photo.y}
-                      x2={markerX}
-                      y2={markerY}
-                      className="missionLeaderLine"
+                      x2={photo.markerX}
+                      y2={photo.markerY}
+                      className="missionGuideLine"
                     />
 
-                    <circle
-                      cx={photo.x}
-                      cy={photo.y}
-                      r={4}
-                      className="missionAnchorDot"
-                      style={{ fill: markerColor }}
+                    <line
+                      x1={photo.x - 5}
+                      y1={photo.y - 5}
+                      x2={photo.x + 5}
+                      y2={photo.y + 5}
+                      className="missionAnchorX"
+                      style={{ stroke: markerColor }}
+                    />
+                    <line
+                      x1={photo.x + 5}
+                      y1={photo.y - 5}
+                      x2={photo.x - 5}
+                      y2={photo.y + 5}
+                      className="missionAnchorX"
+                      style={{ stroke: markerColor }}
                     />
 
                     {activeIndex === index && (
                       <circle
                         cx={photo.x}
                         cy={photo.y}
-                        r={11}
+                        r={13}
                         className="missionAnchorGlow"
                         style={{ stroke: markerColor }}
                       />
@@ -833,19 +895,22 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               </text>
             </svg>
 
-            {visibleObjects.map((photo) => {
+            {missionCallouts.map((photo) => {
               const index = mappedObjects.findIndex((item) => item.title === photo.title);
-              const offset = markerOffset(index);
               const markerColor = getObjectColor(photo.objectType);
               const isActive = activeIndex === index;
 
               return (
                 <div
                   key={photo.title}
-                  className={isActive ? 'missionMarkerWrap active' : 'missionMarkerWrap'}
+                  className={[
+                    'missionMarkerWrap',
+                    isActive ? 'active' : '',
+                    `label-${photo.labelSide}`
+                  ].join(' ')}
                   style={{
-                    left: `${((photo.x + offset.x) / MAP_SIZE) * 100}%`,
-                    top: `${((photo.y + offset.y) / MAP_SIZE) * 100}%`,
+                    left: `${(photo.markerX / MAP_SIZE) * 100}%`,
+                    top: `${(photo.markerY / MAP_SIZE) * 100}%`,
                     '--marker-color': markerColor
                   }}
                   onPointerDown={stopMapPointerEvents}
