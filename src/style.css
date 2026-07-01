@@ -2484,3 +2484,98 @@ footer p {
     height: 520px;
   }
 }
+/* Celestial Atlas: wide map layout */
+.realAtlasLayout {
+  grid-template-columns: 1fr !important;
+  gap: 22px;
+}
+
+.realSkyMap {
+  min-height: 860px !important;
+}
+
+.skyPanLayer {
+  min-height: 860px !important;
+}
+
+.skySvg {
+  height: 860px !important;
+}
+
+.atlasCatalog {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.atlasCatalog > small {
+  grid-column: 1 / -1;
+}
+
+.catalogItem + .catalogItem {
+  border-top: none;
+}
+
+.catalogItem {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(2,7,16,.28);
+}
+
+/* Make real constellations more obvious */
+.constellationSegment {
+  stroke: rgba(114,217,255,.58);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px rgba(114,217,255,.28));
+}
+
+.constellationText {
+  fill: rgba(180,215,255,.9);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  text-anchor: middle;
+  filter: drop-shadow(0 0 8px rgba(0,0,0,.9));
+}
+
+.skyStar {
+  fill: rgba(255,255,255,.98);
+  filter: drop-shadow(0 0 7px rgba(180,215,255,.7));
+}
+
+.polarisLabel,
+.planetLabel,
+.pathLabel {
+  filter: drop-shadow(0 0 8px rgba(0,0,0,.9));
+}
+
+@media (max-width: 1000px) {
+  .atlasCatalog {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .realSkyMap,
+  .skyPanLayer {
+    min-height: 680px !important;
+  }
+
+  .skySvg {
+    height: 680px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .atlasCatalog {
+    grid-template-columns: 1fr;
+  }
+
+  .realSkyMap,
+  .skyPanLayer {
+    min-height: 520px !important;
+  }
+
+  .skySvg {
+    height: 520px !important;
+  }
+}
