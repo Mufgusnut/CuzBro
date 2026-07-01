@@ -1566,8 +1566,8 @@ footer p {
 }
 
 .rating svg {
-  width: 54px;
-  height: 54px;
+  width: 42px;
+  height: 42px;
 }
 
 .weatherMetrics {
@@ -1589,4 +1589,29 @@ footer p {
 
 .weatherMetrics strong {
   font-size: 16px;
+}
+.skyStars svg {
+  width: 16px;
+  height: 16px;
+}
+.weather {
+  padding: 18px 20px;
+}
+
+.weatherTop {
+  margin-bottom: 6px;
+}
+
+.weatherTop h3 {
+  margin: 0;
+}
+
+.rating {
+  margin: 8px 0 10px;
+  gap: 14px;
+}
+
+.weatherMetrics {
+  margin: 8px 0;
+  padding: 10px 0;
 }
