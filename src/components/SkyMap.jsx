@@ -73,7 +73,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           {mapped.map((photo, index) => (
             <button
               key={photo.title}
-              className={index === activeIndex ? 'atlasMarker active' : 'atlasMarker'}
+              className={[
+  'atlasMarker',
+  `type-${photo.objectType?.replaceAll(' ', '-').toLowerCase()}`,
+  index === activeIndex ? 'active' : ''
+].join(' ')}
               style={{
                 left: `${photo.mapX}%`,
                 top: `${photo.mapY}%`
