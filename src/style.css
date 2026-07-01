@@ -2259,3 +2259,22 @@ footer p {
     opacity: 0;
   }
 }
+.legendCyan {
+  background: var(--cyan);
+}
+
+.legendPurple {
+  background: var(--purple);
+}
+
+.legendOrange {
+  background: var(--orange);
+}
+
+.legendGold {
+  background: #ffdc82;
+}
+
+.legendSilver {
+  background: #e6eeff;
+}

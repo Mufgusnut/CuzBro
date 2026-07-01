@@ -96,9 +96,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           ))}
 
           <div className="atlasLegend">
-            <span><i className="legendOrange"></i> Active Mission</span>
-            <span><i className="legendBlue"></i> Constellation Guide</span>
-          </div>
+  <span><i className="legendCyan"></i> Planetary Nebula</span>
+  <span><i className="legendPurple"></i> Emission Nebula</span>
+  <span><i className="legendOrange"></i> Globular Cluster</span>
+  <span><i className="legendGold"></i> Double Star</span>
+  <span><i className="legendSilver"></i> Lunar</span>
+</div>
         </div>
 
         <aside className="atlasCatalog">
