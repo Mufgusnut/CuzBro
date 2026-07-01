@@ -1551,3 +1551,42 @@ footer p {
     font-size:15px;
     color:white;
 }
+.weather {
+  padding: 22px 24px;
+}
+
+.weatherTop {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.rating {
+  margin: 14px 0 14px;
+  gap: 14px;
+}
+
+.rating svg {
+  width: 54px;
+  height: 54px;
+}
+
+.weatherMetrics {
+  margin: 14px 0;
+  padding: 12px 0;
+}
+
+.weatherMetrics div {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+}
+
+.weatherMetrics svg {
+  width: 28px;
+  height: 28px;
+  color: #d8e5ff;
+}
+
+.weatherMetrics strong {
+  font-size: 16px;
+}
