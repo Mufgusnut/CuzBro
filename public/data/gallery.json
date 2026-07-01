@@ -6,15 +6,15 @@
     "objectType": "Globular Cluster",
     "constellation": "Hercules",
     "distance": "22,200 light-years",
-    "mapX": 42,
-    "mapY": 34,
     "captureDate": "June 2026",
     "exposure": "30 seconds",
     "processing": "AstroShader",
     "equipment": "Celestron CPC 800 with iPhone 16 Pro",
     "notes": "A bright globular cluster and one of the first showcase targets for CuzBro Observatory.",
     "nextGoal": "Capture again with longer exposure time and improved tracking.",
-    "image": "images/deepsky/M13.jpg"
+    "image": "images/deepsky/M13.jpg",
+    "ra": 16.6949,
+    "dec": 36.4602
   },
   {
     "title": "Albireo",
@@ -23,15 +23,15 @@
     "objectType": "Double Star",
     "constellation": "Cygnus",
     "distance": "Approximately 430 light-years",
-    "mapX": 63,
-    "mapY": 28,
     "captureDate": "June 2026",
     "exposure": "Short exposure stacking",
     "processing": "AstroShader",
     "equipment": "Celestron CPC 800 with iPhone 16 Pro",
     "notes": "A beautiful blue and gold double star and one of the best color contrast targets in the summer sky.",
     "nextGoal": "Capture a sharper version with better focus and steadier seeing.",
-    "image": "images/deepsky/Albireo.jpg"
+    "image": "images/deepsky/Albireo.jpg",
+    "ra": 19.5126,
+    "dec": 27.9597
   },
   {
     "title": "Dumbbell Nebula",
@@ -40,15 +40,15 @@
     "objectType": "Planetary Nebula",
     "constellation": "Vulpecula",
     "distance": "Approximately 1,360 light-years",
-    "mapX": 68,
-    "mapY": 43,
     "captureDate": "June 2026",
     "exposure": "30 seconds",
     "processing": "AstroShader",
     "equipment": "Celestron CPC 800 with iPhone 16 Pro",
     "notes": "A classic planetary nebula target with a distinct dumbbell shape and a rewarding object for smartphone astrophotography.",
     "nextGoal": "Try again with a UHC filter and longer stacked exposures.",
-    "image": "images/deepsky/M27.jpg"
+    "image": "images/deepsky/M27.jpg",
+    "ra": 19.9965,
+    "dec": 22.7210
   },
   {
     "title": "Ring Nebula",
@@ -57,15 +57,15 @@
     "objectType": "Planetary Nebula",
     "constellation": "Lyra",
     "distance": "Approximately 2,300 light-years",
-    "mapX": 56,
-    "mapY": 25,
     "captureDate": "June 2026",
     "exposure": "Short exposure",
     "processing": "AstroShader",
     "equipment": "Celestron CPC 800 with iPhone 16 Pro",
     "notes": "A small but iconic smoke-ring shaped planetary nebula near Vega.",
     "nextGoal": "Capture with higher magnification and improved focus.",
-    "image": "images/deepsky/M57.jpg"
+    "image": "images/deepsky/M57.jpg",
+    "ra": 18.8930,
+    "dec": 33.0290
   },
   {
     "title": "Lagoon Nebula",
@@ -74,15 +74,15 @@
     "objectType": "Emission Nebula",
     "constellation": "Sagittarius",
     "distance": "Approximately 4,100 light-years",
-    "mapX": 78,
-    "mapY": 72,
     "captureDate": "June 2026",
     "exposure": "30 seconds",
     "processing": "AstroShader",
     "equipment": "Celestron CPC 800 with iPhone 16 Pro",
     "notes": "A bright summer nebula rich with glowing gas, star-forming regions, and dramatic structure.",
     "nextGoal": "Revisit from a darker sky with the UHC filter.",
-    "image": "images/deepsky/M8.jpg"
+    "image": "images/deepsky/M8.jpg",
+    "ra": 18.0500,
+    "dec": -24.3830
   },
   {
     "title": "Moon",
@@ -91,8 +91,6 @@
     "objectType": "Lunar",
     "constellation": "N/A",
     "distance": "Approximately 238,900 miles",
-    "mapX": 22,
-    "mapY": 62,
     "captureDate": "June 2026",
     "exposure": "Video / short exposure",
     "processing": "AstroShader",
