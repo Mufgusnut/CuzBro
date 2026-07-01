@@ -41,6 +41,7 @@ export default function Hero({
         <img
           src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'}
           className="logo"
+          alt="CuzBro logo"
         />
 
         <nav>
@@ -49,7 +50,7 @@ export default function Hero({
           <a href="#gallery">Archive</a>
           <a href="#gear">Gear</a>
           <a href="#crew">Crew</a>
-          <a href="/skymap">SkyMap</a>
+          <a href="/skymap">Sky Map</a>
           <a href="#about">About</a>
         </nav>
       </header>
