@@ -4828,3 +4828,56 @@ footer p {
     font-size: 10px !important;
   }
 }
+/* =========================================================
+   SKY MAP: BACKYARD TREE HORIZON
+========================================================= */
+
+.horizonSilhouette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.treeBand {
+  position: absolute;
+  background-repeat: repeat-x;
+  background-position: bottom center;
+  background-size: auto 100%;
+  opacity: 0.86;
+  filter: blur(0.15px);
+}
+
+.tree-ne {
+  top: 8%;
+  right: -1%;
+  width: 26%;
+  height: 14%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 120'><path fill='rgba(5,9,16,0.94)' d='M0,120 L0,96 L18,90 L34,73 L47,85 L59,69 L74,80 L88,63 L103,82 L120,75 L134,90 L148,72 L163,85 L178,68 L194,88 L211,74 L228,90 L246,77 L264,94 L282,80 L300,91 L319,75 L337,95 L356,85 L375,98 L400,88 L400,120 Z'/></svg>");
+}
+
+.tree-se {
+  bottom: 0;
+  right: 0;
+  width: 36%;
+  height: 28%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 180'><path fill='rgba(4,8,14,0.98)' d='M0,180 L0,150 L18,142 L34,108 L50,134 L66,95 L82,126 L98,82 L116,122 L134,88 L152,136 L170,96 L188,148 L206,102 L224,138 L242,84 L260,146 L278,110 L296,154 L316,100 L336,142 L356,88 L376,134 L396,96 L416,145 L436,108 L456,150 L476,120 L500,154 L500,180 Z'/></svg>");
+}
+
+.tree-s {
+  bottom: 0;
+  left: 22%;
+  width: 44%;
+  height: 32%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 700 220'><path fill='rgba(3,7,12,0.99)' d='M0,220 L0,180 L20,174 L40,132 L60,166 L80,110 L100,152 L120,92 L140,148 L160,100 L180,160 L200,114 L220,176 L240,118 L260,166 L280,96 L300,154 L320,88 L340,168 L360,110 L380,182 L400,118 L420,166 L440,96 L460,160 L480,110 L500,175 L520,124 L540,184 L560,128 L580,172 L600,118 L620,164 L640,108 L660,176 L680,136 L700,182 L700,220 Z'/></svg>");
+}
+
+.tree-w {
+  bottom: 0;
+  left: 0;
+  width: 21%;
+  height: 18%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 120'><path fill='rgba(5,9,16,0.95)' d='M0,120 L0,96 L14,90 L28,84 L42,72 L56,82 L70,65 L84,78 L100,66 L118,82 L136,72 L154,88 L172,75 L190,90 L208,80 L226,96 L246,82 L268,98 L292,86 L316,100 L338,90 L360,102 L360,120 Z'/></svg>");
+}

@@ -1953,6 +1953,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           onTouchCancel={handleTouchEnd}
         >
           <div className="skyPanLayer" style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) rotate(${rotation}deg) scale(${zoom})`, transformOrigin: '50% 50%' }}>
+            <div className="horizonSilhouette" aria-hidden="true">
+              <div className="treeBand tree-ne" />
+              <div className="treeBand tree-se" />
+              <div className="treeBand tree-s" />
+              <div className="treeBand tree-w" />
+            </div>
+
             <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label="Live sky map for Eliot, Maine">
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
 
