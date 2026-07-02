@@ -54,6 +54,120 @@ function createBackgroundStars(count = 360) {
 
 const BACKGROUND_STARS = createBackgroundStars();
 
+const FUTURE_TARGETS = [
+  {
+    title: 'M57 Ring Nebula',
+    shortTitle: 'M57',
+    constellation: 'Lyra',
+    objectType: 'Planetary Nebula',
+    ra: 18.893,
+    dec: 33.03,
+    priority: 'High',
+    bestSeason: 'Summer',
+    gear: 'CPC 800, high power eyepiece, or camera crop',
+    notes: 'Small but bright planetary nebula near Vega. Great next target after M13 and Albireo.'
+  },
+  {
+    title: 'M51 Whirlpool Galaxy',
+    shortTitle: 'M51',
+    constellation: 'Canes Venatici',
+    objectType: 'Galaxy',
+    ra: 13.498,
+    dec: 47.195,
+    priority: 'High',
+    bestSeason: 'Spring / early summer',
+    gear: 'Camera preferred; best on darker, moonless nights',
+    notes: 'Beautiful galaxy pair, but it needs dark sky and careful tracking. Better when high in the west/northwest.'
+  },
+  {
+    title: 'Cat’s Eye Nebula',
+    shortTitle: 'NGC 6543',
+    constellation: 'Draco',
+    objectType: 'Planetary Nebula',
+    ra: 17.972,
+    dec: 66.633,
+    priority: 'Medium',
+    bestSeason: 'Summer',
+    gear: 'High power; small bright target',
+    notes: 'Tiny but bright planetary nebula. A good challenge target for the CPC 800.'
+  },
+  {
+    title: 'North America Nebula',
+    shortTitle: 'NGC 7000',
+    constellation: 'Cygnus',
+    objectType: 'Emission Nebula',
+    ra: 20.973,
+    dec: 44.317,
+    priority: 'Medium',
+    bestSeason: 'Summer / fall',
+    gear: 'Wide field camera and UHC/filter help a lot',
+    notes: 'Very large nebula near Deneb. Better for camera/wide field than high magnification visual work.'
+  },
+  {
+    title: 'Veil Nebula',
+    shortTitle: 'Veil',
+    constellation: 'Cygnus',
+    objectType: 'Supernova Remnant',
+    ra: 20.755,
+    dec: 30.75,
+    priority: 'Medium',
+    bestSeason: 'Summer / fall',
+    gear: 'UHC/OIII-style filter strongly recommended',
+    notes: 'Huge, delicate supernova remnant. Excellent future project with the right filter and dark sky.'
+  },
+  {
+    title: 'M31 Andromeda Galaxy',
+    shortTitle: 'M31',
+    constellation: 'Andromeda',
+    objectType: 'Galaxy',
+    ra: 0.712,
+    dec: 41.269,
+    priority: 'High',
+    bestSeason: 'Fall',
+    gear: 'Wide field camera; reducer helps',
+    notes: 'Huge target. Gorgeous, but too large for tight SCT framing without a reducer or mosaic.'
+  },
+  {
+    title: 'Double Cluster',
+    shortTitle: 'Double Cluster',
+    constellation: 'Perseus',
+    objectType: 'Open Cluster',
+    ra: 2.333,
+    dec: 57.133,
+    priority: 'High',
+    bestSeason: 'Fall / winter',
+    gear: 'Low power eyepiece or camera',
+    notes: 'Bright, easy, beautiful pair of clusters. Great visual target and a good future photo subject.'
+  },
+  {
+    title: 'Saturn',
+    shortTitle: 'Saturn',
+    constellation: 'Solar System',
+    objectType: 'Planet',
+    ra: null,
+    dec: null,
+    body: Body.Saturn,
+    priority: 'High',
+    bestSeason: 'When high after midnight',
+    gear: 'High power eyepiece, video capture, lucky imaging',
+    notes: 'Excellent planetary target when it climbs high enough. Seeing matters more than darkness.'
+  },
+  {
+    title: 'Jupiter',
+    shortTitle: 'Jupiter',
+    constellation: 'Solar System',
+    objectType: 'Planet',
+    ra: null,
+    dec: null,
+    body: Body.Jupiter,
+    priority: 'High',
+    bestSeason: 'When high late night / morning',
+    gear: 'High power eyepiece, video capture, lucky imaging',
+    notes: 'Great for cloud bands and moons. Best when it is high above the horizon.'
+  }
+];
+
+
 const STAR_CATALOG = [
   { name: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 },
   { name: 'Dubhe', ra: 11.0621, dec: 61.7510, mag: 1.8 },
@@ -620,6 +734,9 @@ function buildMissionCallouts(objects, zoom) {
 
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeFutureIndex, setActiveFutureIndex] = useState(0);
+  const [catalogView, setCatalogView] = useState('future');
+  const [selectedPanel, setSelectedPanel] = useState('future');
   const [zoom, setZoom] = useState(() => getDefaultZoom());
   const [rotation, setRotation] = useState(0);
   const [date, setDate] = useState(() => new Date());
@@ -664,12 +781,49 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       .filter(Boolean);
   }, [gallery, date, observer]);
 
+  const mappedFutureTargets = useMemo(() => {
+    return FUTURE_TARGETS.map((target) => {
+      let ra = target.ra;
+      let dec = target.dec;
+
+      if (target.body) {
+        const eq = getPlanetRaDec(target.body, date, observer);
+        ra = eq.ra;
+        dec = eq.dec;
+      }
+
+      if (ra === undefined || dec === undefined || ra === null || dec === null) return null;
+
+      const altAz = raDecToAltAz(ra, dec, date, SITE.lat, SITE.lon);
+      const point = projectAltAz(altAz.alt, altAz.az);
+      const status = getObservingStatus({ alt: altAz.alt });
+
+      return {
+        ...target,
+        ra,
+        dec,
+        alt: altAz.alt,
+        az: altAz.az,
+        x: point.x,
+        y: point.y,
+        visible: point.visible,
+        observingStatus: status,
+        isFutureTarget: true
+      };
+    }).filter(Boolean);
+  }, [date, observer]);
+
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
-  const activeConstellation = getMissionConstellation(activeObject);
+  const activeFutureTarget = mappedFutureTargets[activeFutureIndex] || mappedFutureTargets[0];
+  const selectedTarget = selectedPanel === 'future' ? activeFutureTarget : activeObject;
+  const activeConstellation = getMissionConstellation(selectedTarget) || selectedTarget?.constellation;
 
   const visibleObjects = useMemo(() => mappedObjects.filter((photo) => isInsideSky(photo, 12)), [mappedObjects]);
+  const visibleFutureTargets = useMemo(() => mappedFutureTargets.filter((target) => isInsideSky(target, 14)), [mappedFutureTargets]);
   const bestObjectCount = useMemo(() => mappedObjects.filter((photo) => photo.observingStatus.score >= 3).length, [mappedObjects]);
   const goodObjectCount = useMemo(() => mappedObjects.filter((photo) => photo.observingStatus.score >= 2).length, [mappedObjects]);
+  const futureBestCount = useMemo(() => mappedFutureTargets.filter((target) => target.observingStatus.score >= 3).length, [mappedFutureTargets]);
+  const futureGoodCount = useMemo(() => mappedFutureTargets.filter((target) => target.observingStatus.score >= 2).length, [mappedFutureTargets]);
   const missionCallouts = useMemo(() => buildMissionCallouts(visibleObjects, zoom), [visibleObjects, zoom]);
 
   const starPoints = useMemo(() => {
@@ -870,7 +1024,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <div className="tonightHeaderRow">
               <div>
                 <strong>{formatMapTime(date)}</strong>
-                <small>{goodObjectCount} good targets · {bestObjectCount} best now</small>
+                <small>{futureGoodCount} future good · {futureBestCount} best now</small>
               </div>
 
               <div className="inlineModeToggle" aria-label="Sky map display mode controls">
@@ -968,6 +1122,76 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </g>
               )}
 
+
+              {visibleFutureTargets.map((target, index) => {
+                const isActive = selectedPanel === 'future' && activeFutureIndex === index;
+                const markerColor = getObjectColor(target.objectType);
+
+                return (
+                  <g
+                    key={`future-${target.title}`}
+                    className={isActive ? 'futureTargetMarker active' : 'futureTargetMarker'}
+                    role="button"
+                    tabIndex={0}
+                    onMouseEnter={() => {
+                      setActiveFutureIndex(index);
+                      setSelectedPanel('future');
+                    }}
+                    onFocus={() => {
+                      setActiveFutureIndex(index);
+                      setSelectedPanel('future');
+                    }}
+                    onClick={() => {
+                      setActiveFutureIndex(index);
+                      setSelectedPanel('future');
+                      setCatalogView('future');
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setActiveFutureIndex(index);
+                        setSelectedPanel('future');
+                        setCatalogView('future');
+                      }
+                    }}
+                  >
+                    <circle
+                      cx={target.x}
+                      cy={target.y}
+                      r={isActive ? 14 : 11}
+                      className="futureTargetHalo"
+                      style={{ stroke: markerColor }}
+                    />
+                    <line
+                      x1={target.x - 7}
+                      y1={target.y}
+                      x2={target.x + 7}
+                      y2={target.y}
+                      className="futureTargetCross"
+                      style={{ stroke: markerColor }}
+                    />
+                    <line
+                      x1={target.x}
+                      y1={target.y - 7}
+                      x2={target.x}
+                      y2={target.y + 7}
+                      className="futureTargetCross"
+                      style={{ stroke: markerColor }}
+                    />
+                    {(isActive || isDetailMode) && (
+                      <text
+                        x={target.x + 16}
+                        y={target.y - 10}
+                        className="futureTargetLabel"
+                        transform={keepUpright(target.x + 16, target.y - 10)}
+                      >
+                        {target.shortTitle || target.title}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+
               {missionCallouts.map((photo) => {
                 const index = mappedObjects.findIndex((item) => item.title === photo.title);
                 const markerColor = getObjectColor(photo.objectType);
@@ -981,10 +1205,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     className="missionSvgCallout"
                     role="button"
                     tabIndex={0}
-                    onMouseEnter={() => setActiveIndex(index)}
-                    onFocus={() => setActiveIndex(index)}
+                    onMouseEnter={() => { setActiveIndex(index); setSelectedPanel('captured'); }}
+                    onFocus={() => { setActiveIndex(index); setSelectedPanel('captured'); }}
                     onClick={() => {
                       setActiveIndex(index);
+                      setSelectedPanel('captured');
+                      setCatalogView('captured');
                       openMission(photo);
                     }}
                     onKeyDown={(event) => {
@@ -1114,16 +1340,69 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         </div>
         </div>
 
-        <aside className="atlasCatalog">
-          <small>Mission Catalog</small>
-          {mappedObjects.map((photo, index) => (
+        <aside className="atlasCatalog plannerCatalog">
+          <div className="catalogTabs" aria-label="Mission catalog tabs">
+            <button
+              type="button"
+              className={catalogView === 'future' ? 'active' : ''}
+              onClick={() => setCatalogView('future')}
+            >
+              Future
+            </button>
+            <button
+              type="button"
+              className={catalogView === 'captured' ? 'active' : ''}
+              onClick={() => setCatalogView('captured')}
+            >
+              Captured
+            </button>
+          </div>
+
+          <small>{catalogView === 'future' ? 'Target Planner' : 'Mission Archive'}</small>
+
+          {catalogView === 'future' && mappedFutureTargets.map((target, index) => (
+            <button
+              key={target.title}
+              className={index === activeFutureIndex && selectedPanel === 'future' ? 'catalogItem futureItem active' : 'catalogItem futureItem'}
+              onMouseEnter={() => {
+                setActiveFutureIndex(index);
+                setSelectedPanel('future');
+              }}
+              onFocus={() => {
+                setActiveFutureIndex(index);
+                setSelectedPanel('future');
+              }}
+              onClick={() => {
+                setActiveFutureIndex(index);
+                setSelectedPanel('future');
+              }}
+              type="button"
+            >
+              <b>＋</b>
+              <span>
+                <strong>{target.title}</strong>
+                <em>{target.constellation}</em>
+                <small>{target.objectType} · {target.priority} priority</small>
+                <i className={`targetStatusBadge ${target.observingStatus.className}`}>{target.observingStatus.label}</i>
+              </span>
+            </button>
+          ))}
+
+          {catalogView === 'captured' && mappedObjects.map((photo, index) => (
             <button
               key={photo.title}
-              className={index === activeIndex ? 'catalogItem active' : 'catalogItem'}
-              onMouseEnter={() => setActiveIndex(index)}
-              onFocus={() => setActiveIndex(index)}
+              className={index === activeIndex && selectedPanel === 'captured' ? 'catalogItem active' : 'catalogItem'}
+              onMouseEnter={() => {
+                setActiveIndex(index);
+                setSelectedPanel('captured');
+              }}
+              onFocus={() => {
+                setActiveIndex(index);
+                setSelectedPanel('captured');
+              }}
               onClick={() => {
                 setActiveIndex(index);
+                setSelectedPanel('captured');
                 openMission(photo);
               }}
               type="button"
@@ -1140,7 +1419,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         </aside>
       </section>
 
-      {activeObject && (
+      {selectedPanel === 'captured' && activeObject && (
         <section className="atlasDetail">
           <img src={import.meta.env.BASE_URL + activeObject.image} alt={activeObject.title} />
           <div>
@@ -1160,6 +1439,30 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
             </div>
             <button type="button" onClick={() => openMission(activeObject)}>Open Mission Report →</button>
+          </div>
+        </section>
+      )}
+
+      {selectedPanel === 'future' && activeFutureTarget && (
+        <section className="atlasDetail plannerDetail">
+          <div className="futureDetailBadge">NEXT TARGET</div>
+          <div>
+            <small>Target Planner</small>
+            <h2><span>＋</span>{activeFutureTarget.title}</h2>
+            <h3>{activeFutureTarget.constellation} · {activeFutureTarget.objectType}</h3>
+            <p>{activeFutureTarget.notes}</p>
+            <div className="atlasFacts">
+              <span><b>Status</b>{activeFutureTarget.observingStatus.label}</span>
+              <span><b>Priority</b>{activeFutureTarget.priority}</span>
+              <span><b>Best Season</b>{activeFutureTarget.bestSeason}</span>
+              <span><b>Gear</b>{activeFutureTarget.gear}</span>
+              <span><b>RA</b>{formatRa(activeFutureTarget.ra)}</span>
+              <span><b>Dec</b>{formatDec(activeFutureTarget.dec)}</span>
+              <span><b>Altitude</b>{activeFutureTarget.alt.toFixed(1)}°</span>
+              <span><b>Azimuth</b>{activeFutureTarget.az.toFixed(1)}°</span>
+              <span><b>Map Time</b>{formatCompactTime(date)}</span>
+              <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
+            </div>
           </div>
         </section>
       )}
