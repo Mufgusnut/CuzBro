@@ -194,6 +194,53 @@ const FUTURE_TARGETS = [
   }
 ];
 
+const FUTURE_TARGET_GUIDES = {
+  'Fireworks Galaxy': {
+    guideConstellation: 'Cepheus',
+    anchorStars: ['Alderamin', 'Delta Cep', 'Zeta Cep'],
+    finderNote: 'Use Cepheus as the finder frame. Fireworks Galaxy sits near the Cepheus/Cygnus border, so Deneb and the Cepheus house are useful anchors.'
+  },
+  'M51 Whirlpool Galaxy': {
+    guideConstellation: 'Canes Venatici',
+    anchorStars: ['Cor Caroli', 'Chara'],
+    finderNote: 'Start with Cor Caroli in Canes Venatici. M51 is north of the Big Dipper handle region and benefits from dark sky.'
+  },
+  'Cat’s Eye Nebula': {
+    guideConstellation: 'Draco',
+    anchorStars: ['Eltanin', 'Rastaban', 'Kuma'],
+    finderNote: 'Use the Draco head stars Eltanin and Rastaban as the main finder region. The target is small, bright, and rewards higher power.'
+  },
+  'North America Nebula': {
+    guideConstellation: 'Cygnus',
+    anchorStars: ['Deneb', 'Sadr'],
+    finderNote: 'Use Deneb as the anchor. This is a wide, diffuse nebula; a camera and filter will help far more than magnification.'
+  },
+  'Veil Nebula': {
+    guideConstellation: 'Cygnus',
+    anchorStars: ['Deneb', 'Gienah', 'Sadr'],
+    finderNote: 'Use the eastern wing of Cygnus as the guide. This is huge and faint, so an OIII/UHC-style filter is the secret weapon.'
+  },
+  'M31 Andromeda Galaxy': {
+    guideConstellation: 'Andromeda',
+    anchorStars: ['Alpheratz', 'Mirach', 'Mu And', 'Nu And'],
+    finderNote: 'Trace from Alpheratz to Mirach, then hop through Mu/Nu Andromedae. M31 is huge, so wide-field framing is best.'
+  },
+  'Double Cluster': {
+    guideConstellation: 'Perseus',
+    anchorStars: ['Mirfak', 'Eta Per', 'Delta Per'],
+    finderNote: 'Look between Perseus and Cassiopeia. This is one of the friendliest visual targets and looks great at low power.'
+  },
+  Saturn: {
+    guideConstellation: 'Solar System',
+    anchorStars: [],
+    finderNote: 'Planetary target. Wait until it is high above the horizon and use steady seeing, high power, and video capture.'
+  },
+  Jupiter: {
+    guideConstellation: 'Solar System',
+    anchorStars: [],
+    finderNote: 'Planetary target. Best when high in steady air; video capture and lucky imaging help reveal bands and moons.'
+  }
+};
 
 const STAR_CATALOG = [
   { name: 'Polaris', ra: 2.5303, dec: 89.2641, mag: 2.0 },
@@ -231,7 +278,37 @@ const STAR_CATALOG = [
   { name: 'Kaus Australis', ra: 18.4029, dec: -34.3846, mag: 1.8 },
   { name: 'Ascella', ra: 19.0435, dec: -29.8801, mag: 2.6 },
   { name: 'Kaus Media', ra: 18.3499, dec: -29.8281, mag: 2.7 },
-  { name: 'Kaus Borealis', ra: 18.4662, dec: -25.4217, mag: 2.8 }
+  { name: 'Kaus Borealis', ra: 18.4662, dec: -25.4217, mag: 2.8 },
+
+  // Future target finder constellations
+  { name: 'Alderamin', ra: 21.3096, dec: 62.5856, mag: 2.5 },
+  { name: 'Alfirk', ra: 21.4777, dec: 70.5607, mag: 3.2 },
+  { name: 'Errai', ra: 23.6558, dec: 77.6323, mag: 3.2 },
+  { name: 'Zeta Cep', ra: 22.1809, dec: 58.2012, mag: 3.4 },
+  { name: 'Delta Cep', ra: 22.4862, dec: 58.4152, mag: 3.7 },
+
+  { name: 'Cor Caroli', ra: 12.9338, dec: 38.3184, mag: 2.9 },
+  { name: 'Chara', ra: 12.5624, dec: 41.3575, mag: 4.2 },
+  { name: 'La Superba', ra: 12.7606, dec: 45.4403, mag: 5.0 },
+
+  { name: 'Eltanin', ra: 17.9434, dec: 51.4889, mag: 2.2 },
+  { name: 'Rastaban', ra: 17.5072, dec: 52.3014, mag: 2.8 },
+  { name: 'Kuma', ra: 17.5369, dec: 55.1841, mag: 4.9 },
+  { name: 'Thuban', ra: 14.0732, dec: 64.3758, mag: 3.7 },
+  { name: 'Edasich', ra: 15.4155, dec: 58.9661, mag: 3.3 },
+  { name: 'Giausar', ra: 17.1464, dec: 65.7147, mag: 4.6 },
+
+  { name: 'Alpheratz', ra: 0.1398, dec: 29.0904, mag: 2.1 },
+  { name: 'Mirach', ra: 1.1622, dec: 35.6206, mag: 2.1 },
+  { name: 'Almach', ra: 2.0650, dec: 42.3297, mag: 2.1 },
+  { name: 'Mu And', ra: 0.9451, dec: 38.4993, mag: 3.9 },
+  { name: 'Nu And', ra: 0.8302, dec: 41.0793, mag: 4.5 },
+
+  { name: 'Mirfak', ra: 3.4054, dec: 49.8612, mag: 1.8 },
+  { name: 'Algol', ra: 3.1361, dec: 40.9556, mag: 2.1 },
+  { name: 'Atik', ra: 3.9022, dec: 31.8836, mag: 3.8 },
+  { name: 'Delta Per', ra: 3.7154, dec: 47.7876, mag: 3.0 },
+  { name: 'Eta Per', ra: 2.8449, dec: 55.8955, mag: 3.8 }
 ];
 
 const CONSTELLATION_SEGMENTS = [
@@ -266,7 +343,34 @@ const CONSTELLATION_SEGMENTS = [
   { group: 'Sagittarius', stars: ['Kaus Media', 'Kaus Borealis'] },
   { group: 'Sagittarius', stars: ['Kaus Borealis', 'Nunki'] },
   { group: 'Sagittarius', stars: ['Nunki', 'Ascella'] },
-  { group: 'Sagittarius', stars: ['Ascella', 'Kaus Australis'] }
+  { group: 'Sagittarius', stars: ['Ascella', 'Kaus Australis'] },
+
+  { group: 'Cepheus', stars: ['Alderamin', 'Zeta Cep'] },
+  { group: 'Cepheus', stars: ['Zeta Cep', 'Delta Cep'] },
+  { group: 'Cepheus', stars: ['Delta Cep', 'Alfirk'] },
+  { group: 'Cepheus', stars: ['Alfirk', 'Errai'] },
+  { group: 'Cepheus', stars: ['Errai', 'Alderamin'] },
+  { group: 'Cepheus', stars: ['Alderamin', 'Delta Cep'] },
+
+  { group: 'Canes Venatici', stars: ['Cor Caroli', 'Chara'] },
+  { group: 'Canes Venatici', stars: ['Cor Caroli', 'La Superba'] },
+
+  { group: 'Draco', stars: ['Eltanin', 'Rastaban'] },
+  { group: 'Draco', stars: ['Rastaban', 'Kuma'] },
+  { group: 'Draco', stars: ['Kuma', 'Giausar'] },
+  { group: 'Draco', stars: ['Giausar', 'Thuban'] },
+  { group: 'Draco', stars: ['Thuban', 'Edasich'] },
+  { group: 'Draco', stars: ['Edasich', 'Rastaban'] },
+
+  { group: 'Andromeda', stars: ['Alpheratz', 'Mirach'] },
+  { group: 'Andromeda', stars: ['Mirach', 'Almach'] },
+  { group: 'Andromeda', stars: ['Mirach', 'Mu And'] },
+  { group: 'Andromeda', stars: ['Mu And', 'Nu And'] },
+
+  { group: 'Perseus', stars: ['Mirfak', 'Delta Per'] },
+  { group: 'Perseus', stars: ['Delta Per', 'Algol'] },
+  { group: 'Perseus', stars: ['Algol', 'Atik'] },
+  { group: 'Perseus', stars: ['Mirfak', 'Eta Per'] }
 ];
 
 const CONSTELLATION_LABEL_GROUPS = {
@@ -276,7 +380,12 @@ const CONSTELLATION_LABEL_GROUPS = {
   Vulpecula: ['Albireo', 'Anser'],
   'Ursa Major': ['Dubhe', 'Merak', 'Alioth', 'Mizar'],
   Cassiopeia: ['Caph', 'Schedar', 'Gamma Cas', 'Ruchbah'],
-  Sagittarius: ['Nunki', 'Kaus Borealis', 'Kaus Australis', 'Ascella']
+  Sagittarius: ['Nunki', 'Kaus Borealis', 'Kaus Australis', 'Ascella'],
+  Cepheus: ['Alderamin', 'Alfirk', 'Errai', 'Delta Cep'],
+  'Canes Venatici': ['Cor Caroli', 'Chara', 'La Superba'],
+  Draco: ['Eltanin', 'Rastaban', 'Kuma', 'Thuban', 'Edasich'],
+  Andromeda: ['Alpheratz', 'Mirach', 'Almach', 'Mu And'],
+  Perseus: ['Mirfak', 'Algol', 'Delta Per', 'Eta Per']
 };
 
 const CONSTELLATION_LABEL_OFFSETS = {
@@ -286,7 +395,12 @@ const CONSTELLATION_LABEL_OFFSETS = {
   Vulpecula: { x: 10, y: -18 },
   'Ursa Major': { x: 40, y: 18 },
   Cassiopeia: { x: -10, y: -18 },
-  Sagittarius: { x: 0, y: 24 }
+  Sagittarius: { x: 0, y: 24 },
+  Cepheus: { x: 4, y: -18 },
+  'Canes Venatici': { x: 0, y: -18 },
+  Draco: { x: 0, y: -18 },
+  Andromeda: { x: 12, y: -18 },
+  Perseus: { x: 0, y: -18 }
 };
 
 function clamp(value, min, max) {
@@ -978,6 +1092,19 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const visibleStars = useMemo(() => starPoints.filter((star) => isInsideSky(star, 12)), [starPoints]);
   const starLookup = useMemo(() => Object.fromEntries(starPoints.map((star) => [star.name, star])), [starPoints]);
 
+  const activeFutureGuide = useMemo(() => {
+    if (selectedPanel !== 'future' || !activeFutureTarget) return null;
+    return FUTURE_TARGET_GUIDES[activeFutureTarget.title] || null;
+  }, [activeFutureTarget, selectedPanel]);
+
+  const activeFutureGuideStars = useMemo(() => {
+    if (!activeFutureGuide?.anchorStars?.length) return [];
+
+    return activeFutureGuide.anchorStars
+      .map((starName) => starLookup[starName])
+      .filter((star) => star && isInsideSky(star, 24));
+  }, [activeFutureGuide, starLookup]);
+
   const constellationLines = useMemo(() => {
     return CONSTELLATION_SEGMENTS.map((segment) => {
       const [nameA, nameB] = segment.stars;
@@ -1131,6 +1258,28 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       }
     }
 
+    if (selectedPanel === 'future' && activeFutureGuideStars.length) {
+      activeFutureGuideStars.forEach((star) => {
+        labelItems.push({
+          id: `finderStar:${star.name}`,
+          text: star.name,
+          anchorX: star.x,
+          anchorY: star.y,
+          fontSize: mobileLayout ? 10 : 12,
+          priority: 118,
+          distance: mobileLayout ? 16 : 20,
+          padding: 5,
+          candidates: [
+            { dx: 16, dy: -9, anchor: 'start' },
+            { dx: -16, dy: -9, anchor: 'end' },
+            { dx: 16, dy: 16, anchor: 'start' },
+            { dx: -16, dy: 16, anchor: 'end' },
+            { dx: 0, dy: -22, anchor: 'middle' }
+          ]
+        });
+      });
+    }
+
     visiblePlanets.forEach((planet) => {
       labelItems.push({
         id: `planet:${planet.name}`,
@@ -1233,6 +1382,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return placeCollisionSafeLabels(labelItems, fixedBoxes);
   }, [
     activeConstellation,
+    activeFutureGuideStars,
     activeFutureIndex,
     activeIndex,
     catalogView,
@@ -1486,6 +1636,24 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 />
               ))}
 
+              {selectedPanel === 'future' && activeFutureTarget && activeFutureGuideStars.length > 0 && isInsideSky(activeFutureTarget, 18) && (
+                <g className="futureFinderGuide">
+                  {activeFutureGuideStars.map((star) => (
+                    <g key={`finder-${activeFutureTarget.title}-${star.name}`}>
+                      <line
+                        x1={star.x}
+                        y1={star.y}
+                        x2={activeFutureTarget.x}
+                        y2={activeFutureTarget.y}
+                        className="futureFinderLine"
+                      />
+                      <circle cx={star.x} cy={star.y} r={6} className="futureFinderStarHalo" />
+                      <circle cx={star.x} cy={star.y} r={2.8} className="futureFinderStarDot" />
+                    </g>
+                  ))}
+                </g>
+              )}
+
               {visibleStars.map((star) => (
                 <g key={star.name}>
                   <circle cx={star.x} cy={star.y} r={Math.max(1.5, 5 - star.mag)} className={star.name === 'Polaris' ? 'skyStar polarisStar' : 'skyStar'} />
@@ -1494,6 +1662,24 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   )}
                 </g>
               ))}
+
+              {selectedPanel === 'future' && activeFutureGuideStars.map((star) => {
+                const label = getMapLabel(`finderStar:${star.name}`);
+                if (!label) return null;
+
+                return (
+                  <text
+                    key={`finder-label-${star.name}`}
+                    x={label.x}
+                    y={label.y}
+                    className="futureFinderStarLabel"
+                    textAnchor={label.anchor}
+                    transform={keepUpright(label.x, label.y)}
+                  >
+                    {star.name}
+                  </text>
+                );
+              })}
 
               {visiblePlanets.map((planet) => (
                 <g key={planet.name}>
@@ -1927,10 +2113,16 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <h2><span>＋</span>{activeFutureTarget.title}</h2>
             <h3>{activeFutureTarget.constellation} · {activeFutureTarget.objectType}</h3>
             <p>{activeFutureTarget.notes}</p>
+            {activeFutureGuide?.finderNote && (
+              <p className="futureFinderNote">
+                <b>Finder guide:</b> {activeFutureGuide.finderNote}
+              </p>
+            )}
             <div className="atlasFacts">
               <span><b>Status</b>{activeFutureTarget.observingStatus.label}</span>
               <span><b>Priority</b>{activeFutureTarget.priority}</span>
               <span><b>Best Season</b>{activeFutureTarget.bestSeason}</span>
+              <span><b>Finder Region</b>{activeFutureGuide?.guideConstellation || activeFutureTarget.constellation}</span>
               <span><b>Gear</b>{activeFutureTarget.gear}</span>
               <span><b>RA</b>{formatRa(activeFutureTarget.ra)}</span>
               <span><b>Dec</b>{formatDec(activeFutureTarget.dec)}</span>

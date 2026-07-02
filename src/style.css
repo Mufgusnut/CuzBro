@@ -4663,3 +4663,74 @@ footer p {
 .futureCalloutName {
   fill: rgba(226, 247, 255, 0.98) !important;
 }
+/* =========================================================
+   SKY MAP FUTURE TARGET FINDER MODE
+========================================================= */
+
+.futureFinderGuide {
+  pointer-events: none;
+}
+
+.futureFinderLine {
+  stroke: rgba(94, 220, 255, 0.48) !important;
+  stroke-width: 1.25 !important;
+  stroke-dasharray: 5 8 !important;
+  stroke-linecap: round !important;
+  filter:
+    drop-shadow(0 0 8px rgba(94, 220, 255, 0.22))
+    drop-shadow(0 0 18px rgba(94, 220, 255, 0.12)) !important;
+}
+
+.futureFinderStarHalo {
+  fill: rgba(94, 220, 255, 0.12) !important;
+  stroke: rgba(94, 220, 255, 0.45) !important;
+  stroke-width: 1.4 !important;
+  filter:
+    drop-shadow(0 0 7px rgba(94, 220, 255, 0.45))
+    drop-shadow(0 0 16px rgba(94, 220, 255, 0.18)) !important;
+}
+
+.futureFinderStarDot {
+  fill: rgba(230, 250, 255, 0.98) !important;
+}
+
+.futureFinderStarLabel {
+  fill: rgba(220, 248, 255, 0.96) !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.04em !important;
+  paint-order: stroke !important;
+  stroke: rgba(4, 8, 18, 0.92) !important;
+  stroke-width: 4px !important;
+}
+
+.futureFinderNote {
+  margin-top: 10px !important;
+  padding: 13px 15px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(94, 220, 255, 0.18) !important;
+  background: rgba(94, 220, 255, 0.075) !important;
+  color: rgba(228, 244, 255, 0.9) !important;
+  font-size: 0.98rem !important;
+  line-height: 1.45 !important;
+}
+
+.futureFinderNote b {
+  color: rgba(136, 232, 255, 0.98) !important;
+}
+
+@media (max-width: 700px) {
+  .futureFinderLine {
+    stroke-width: 1 !important;
+    opacity: 0.7 !important;
+  }
+
+  .futureFinderStarLabel {
+    font-size: 10px !important;
+  }
+
+  .futureFinderNote {
+    font-size: 0.9rem !important;
+    padding: 12px 13px !important;
+  }
+}
