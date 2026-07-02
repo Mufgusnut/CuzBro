@@ -1088,90 +1088,109 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
-function buildForestSection({
-  cx,
-  cy,
-  radius,
-  startDeg,
-  endDeg,
-  treeCount,
-  minHeight,
-  maxHeight,
-  phase = 0
-}) {
+function clamp01(value) {
+  return clamp(value, 0, 1);
+}
+
+function smoothstep(edge0, edge1, value) {
+  const t = clamp01((value - edge0) / (edge1 - edge0));
+  return t * t * (3 - 2 * t);
+}
+
+function stableNoise(seed) {
+  const value = Math.sin(seed * 12.9898) * 43758.5453;
+  return value - Math.floor(value);
+}
+
+function getForestProfile(angleDegrees) {
+  const angle = normalizeDegrees(angleDegrees);
+
+  // Dave's backyard obstruction model:
+  // - Tall forest from S → E
+  // - Short forest from E → NE
+  // - Clear from NE → W
+  // - Short forest from W → S
+  // Angles use the map convention: N=0, E=90, S=180, W=270.
+  let heightBlend = 0;
+  let visibility = 0;
+
+  if (angle <= 270 && angle >= 180) {
+    // W → S: short trees that smoothly grow toward the southern tree line.
+    const progressToSouth = (270 - angle) / 90;
+    heightBlend = smoothstep(0.35, 1, progressToSouth);
+    visibility = 1;
+  } else if (angle < 180 && angle >= 90) {
+    // S → E: tall obstruction zone, tapering down only as it approaches E.
+    const progressToEast = (180 - angle) / 90;
+    heightBlend = 1 - smoothstep(0.62, 1, progressToEast);
+    visibility = 1;
+  } else if (angle < 90 && angle >= 45) {
+    // E → NE: short trees that fade out into the clear NE → W opening.
+    const progressToNorthEast = (90 - angle) / 45;
+    heightBlend = 0;
+    visibility = 1 - smoothstep(0.65, 1, progressToNorthEast);
+  } else {
+    // NE → W is intentionally clear.
+    return null;
+  }
+
+  if (visibility <= 0.04) return null;
+
+  // Previous short trees were roughly 18–34px; make them about 2x taller.
+  const shortMin = 34;
+  const shortMax = 66;
+
+  // Previous tall trees were roughly 48–72px; make them about 85% taller.
+  const tallMin = 89;
+  const tallMax = 133;
+
+  return {
+    minHeight: lerp(shortMin, tallMin, heightBlend) * visibility,
+    maxHeight: lerp(shortMax, tallMax, heightBlend) * visibility,
+    widthScale: lerp(0.92, 1.18, heightBlend),
+    opacity: lerp(0.62, 0.94, visibility) * lerp(0.92, 1, heightBlend)
+  };
+}
+
+function buildConnectedForestTrees() {
+  const radius = RADIUS - 10;
   const trees = [];
-  const angleStep = (endDeg - startDeg) / Math.max(1, treeCount - 1);
+  const step = 3.15;
 
-  for (let i = 0; i < treeCount; i += 1) {
-    const t = treeCount <= 1 ? 0 : i / (treeCount - 1);
-    const angle = startDeg + angleStep * i;
-    const base = polarToCartesian(cx, cy, radius, angle);
+  for (let angle = 270; angle >= 45; angle -= step) {
+    const profile = getForestProfile(angle);
+    if (!profile) continue;
 
-    // Gentle deterministic variation keeps the line organic without turning
-    // it into a saw blade / row of teeth.
-    const ripple = Math.sin(i * 1.73 + phase) * 0.12 + Math.sin(i * 0.57 + phase * 2.1) * 0.08;
-    const height = lerp(minHeight, maxHeight, t) * (1 + ripple);
-    const width = clamp(height * 0.28, 7, 18);
+    const base = polarToCartesian(CENTER, CENTER, radius, angle);
+    const seed = angle * 0.731;
+    const heightNoise = stableNoise(seed);
+    const widthNoise = stableNoise(seed + 19.17);
+    const swayNoise = stableNoise(seed + 41.83);
+    const opacityNoise = stableNoise(seed + 73.29);
+
+    // Stable tree-to-tree variation keeps it natural while still preserving
+    // the smooth regional transition between short and tall zones.
+    const localHeightFactor = lerp(0.82, 1.16, heightNoise);
+    const height = clamp(
+      lerp(profile.minHeight, profile.maxHeight, stableNoise(seed + 7.5)) * localHeightFactor,
+      12,
+      154
+    );
+    const width = clamp(height * lerp(0.13, 0.23, widthNoise) * profile.widthScale, 7, 28);
 
     trees.push({
-      id: `${startDeg}-${endDeg}-${i}`,
-      angle,
+      id: `forest-${angle.toFixed(2)}`,
+      angle: angle + lerp(-0.45, 0.45, swayNoise),
+      baseAngle: angle,
       x: base.x,
       y: base.y,
-      height: clamp(height, 10, 82),
+      height,
       width,
-      opacity: 0.78 + Math.sin(i * 0.91 + phase) * 0.08
+      opacity: clamp(profile.opacity * lerp(0.82, 1.06, opacityNoise), 0.38, 0.98)
     });
   }
 
   return trees;
-}
-
-function buildConnectedForestTrees() {
-  const radius = RADIUS - 8;
-
-  return [
-    // W → S: short trees, gradually taller as the view approaches the south.
-    ...buildForestSection({
-      cx: CENTER,
-      cy: CENTER,
-      radius,
-      startDeg: 270,
-      endDeg: 180,
-      treeCount: 34,
-      minHeight: 18,
-      maxHeight: 34,
-      phase: 0.4
-    }),
-
-    // S → E: main obstruction zone, tallest and densest.
-    ...buildForestSection({
-      cx: CENTER,
-      cy: CENTER,
-      radius,
-      startDeg: 180,
-      endDeg: 90,
-      treeCount: 52,
-      minHeight: 48,
-      maxHeight: 72,
-      phase: 1.7
-    }),
-
-    // E → NE: short trees tapering down toward clear sky.
-    ...buildForestSection({
-      cx: CENTER,
-      cy: CENTER,
-      radius,
-      startDeg: 90,
-      endDeg: 45,
-      treeCount: 24,
-      minHeight: 28,
-      maxHeight: 14,
-      phase: 2.8
-    })
-
-    // NE → W is intentionally clear.
-  ];
 }
 
 function buildForestBasePath(trees) {
@@ -1185,28 +1204,30 @@ function buildForestBasePath(trees) {
 function buildConiferPath(tree) {
   const h = tree.height;
   const w = tree.width;
+  const shoulder = w * 0.72;
+  const mid = w * 0.48;
+  const upper = w * 0.27;
 
   // Local coordinate system: base at (0, 0), treetop points upward.
   // The rendered group rotates this inward toward the map center.
+  // This is intentionally tree-like, not a zig-zag horizon saw blade.
   return [
     `M 0 ${(-h).toFixed(1)}`,
-    `C ${(-w * 0.18).toFixed(1)} ${(-h * 0.86).toFixed(1)} ${(-w * 0.34).toFixed(1)} ${(-h * 0.78).toFixed(1)} ${(-w * 0.22).toFixed(1)} ${(-h * 0.70).toFixed(1)}`,
-    `L ${(-w * 0.50).toFixed(1)} ${(-h * 0.64).toFixed(1)}`,
-    `L ${(-w * 0.20).toFixed(1)} ${(-h * 0.57).toFixed(1)}`,
-    `L ${(-w * 0.62).toFixed(1)} ${(-h * 0.48).toFixed(1)}`,
-    `L ${(-w * 0.24).toFixed(1)} ${(-h * 0.41).toFixed(1)}`,
-    `L ${(-w * 0.70).toFixed(1)} ${(-h * 0.30).toFixed(1)}`,
-    `L ${(-w * 0.28).toFixed(1)} ${(-h * 0.23).toFixed(1)}`,
-    `L ${(-w * 0.50).toFixed(1)} ${(-h * 0.10).toFixed(1)}`,
-    `L 0 0`,
-    `L ${(w * 0.50).toFixed(1)} ${(-h * 0.10).toFixed(1)}`,
-    `L ${(w * 0.28).toFixed(1)} ${(-h * 0.23).toFixed(1)}`,
-    `L ${(w * 0.70).toFixed(1)} ${(-h * 0.30).toFixed(1)}`,
-    `L ${(w * 0.24).toFixed(1)} ${(-h * 0.41).toFixed(1)}`,
-    `L ${(w * 0.62).toFixed(1)} ${(-h * 0.48).toFixed(1)}`,
-    `L ${(w * 0.20).toFixed(1)} ${(-h * 0.57).toFixed(1)}`,
-    `L ${(w * 0.50).toFixed(1)} ${(-h * 0.64).toFixed(1)}`,
-    `C ${(w * 0.34).toFixed(1)} ${(-h * 0.78).toFixed(1)} ${(w * 0.18).toFixed(1)} ${(-h * 0.86).toFixed(1)} 0 ${(-h).toFixed(1)}`,
+    `C ${(-upper * 0.45).toFixed(1)} ${(-h * 0.92).toFixed(1)} ${(-upper).toFixed(1)} ${(-h * 0.83).toFixed(1)} ${(-upper * 0.42).toFixed(1)} ${(-h * 0.77).toFixed(1)}`,
+    `L ${(-mid).toFixed(1)} ${(-h * 0.66).toFixed(1)}`,
+    `L ${(-mid * 0.38).toFixed(1)} ${(-h * 0.59).toFixed(1)}`,
+    `L ${(-shoulder).toFixed(1)} ${(-h * 0.45).toFixed(1)}`,
+    `L ${(-shoulder * 0.34).toFixed(1)} ${(-h * 0.37).toFixed(1)}`,
+    `L ${(-w).toFixed(1)} ${(-h * 0.20).toFixed(1)}`,
+    `L ${(-w * 0.26).toFixed(1)} ${(-h * 0.12).toFixed(1)}`,
+    'L 0 0',
+    `L ${(w * 0.26).toFixed(1)} ${(-h * 0.12).toFixed(1)}`,
+    `L ${(w).toFixed(1)} ${(-h * 0.20).toFixed(1)}`,
+    `L ${(shoulder * 0.34).toFixed(1)} ${(-h * 0.37).toFixed(1)}`,
+    `L ${(shoulder).toFixed(1)} ${(-h * 0.45).toFixed(1)}`,
+    `L ${(mid * 0.38).toFixed(1)} ${(-h * 0.59).toFixed(1)}`,
+    `L ${(mid).toFixed(1)} ${(-h * 0.66).toFixed(1)}`,
+    `C ${(upper).toFixed(1)} ${(-h * 0.83).toFixed(1)} ${(upper * 0.45).toFixed(1)} ${(-h * 0.92).toFixed(1)} 0 ${(-h).toFixed(1)}`,
     'Z'
   ].join(' ');
 }
