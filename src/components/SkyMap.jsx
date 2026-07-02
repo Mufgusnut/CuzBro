@@ -732,6 +732,116 @@ function buildMissionCallouts(objects, zoom) {
   return laidOut.sort((a, b) => a.originalIndex - b.originalIndex);
 }
 
+
+function estimateTextBox(text, fontSize = 15) {
+  const normalized = String(text || '').trim();
+  return {
+    width: Math.max(34, normalized.length * fontSize * 0.62),
+    height: fontSize * 1.45
+  };
+}
+
+function makeTextBox(x, y, text, options = {}) {
+  const fontSize = options.fontSize || 15;
+  const anchor = options.anchor || 'start';
+  const padding = options.padding ?? 5;
+  const size = estimateTextBox(text, fontSize);
+
+  let left = x;
+
+  if (anchor === 'middle') {
+    left = x - size.width / 2;
+  }
+
+  if (anchor === 'end') {
+    left = x - size.width;
+  }
+
+  return {
+    left: left - padding,
+    right: left + size.width + padding,
+    top: y - size.height + padding * -0.2,
+    bottom: y + padding,
+    width: size.width + padding * 2,
+    height: size.height + padding * 1.2
+  };
+}
+
+function boxesOverlap(a, b, gap = 6) {
+  return !(
+    a.right + gap < b.left ||
+    a.left - gap > b.right ||
+    a.bottom + gap < b.top ||
+    a.top - gap > b.bottom
+  );
+}
+
+function boxIsInsideMap(box, margin = 16) {
+  return (
+    box.left >= margin &&
+    box.right <= MAP_SIZE - margin &&
+    box.top >= margin &&
+    box.bottom <= MAP_SIZE - margin
+  );
+}
+
+function defaultLabelCandidates(item) {
+  const distance = item.distance || 24;
+
+  return [
+    { dx: distance, dy: -10, anchor: 'start' },
+    { dx: distance, dy: 18, anchor: 'start' },
+    { dx: -distance, dy: -10, anchor: 'end' },
+    { dx: -distance, dy: 18, anchor: 'end' },
+    { dx: 0, dy: -distance, anchor: 'middle' },
+    { dx: 0, dy: distance + 10, anchor: 'middle' },
+    { dx: distance * 1.7, dy: 0, anchor: 'start' },
+    { dx: -distance * 1.7, dy: 0, anchor: 'end' }
+  ];
+}
+
+function placeCollisionSafeLabels(items, fixedBoxes = []) {
+  const placedBoxes = [...fixedBoxes];
+  const placements = {};
+
+  [...items]
+    .filter((item) => item && item.id && item.text)
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+    .forEach((item) => {
+      const candidates = item.candidates || defaultLabelCandidates(item);
+      let chosen = null;
+
+      for (const candidate of candidates) {
+        const x = clamp(item.anchorX + candidate.dx, 24, MAP_SIZE - 24);
+        const y = clamp(item.anchorY + candidate.dy, 24, MAP_SIZE - 24);
+        const anchor = candidate.anchor || 'start';
+        const box = makeTextBox(x, y, item.text, {
+          fontSize: item.fontSize || 15,
+          anchor,
+          padding: item.padding ?? 6
+        });
+
+        if (!boxIsInsideMap(box, item.margin ?? 18)) continue;
+        if (placedBoxes.some((placed) => boxesOverlap(box, placed, item.gap ?? 8))) continue;
+
+        chosen = {
+          x,
+          y,
+          anchor,
+          box
+        };
+        break;
+      }
+
+      if (chosen) {
+        placements[item.id] = chosen;
+        placedBoxes.push(chosen.box);
+      }
+    });
+
+  return placements;
+}
+
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFutureIndex, setActiveFutureIndex] = useState(0);
@@ -940,6 +1050,175 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return offsetPoint(avgPoint(summerTrianglePoints), { x: 58, y: -10 }, 80);
   }, [summerTrianglePoints]);
 
+  const mapLabelPlacements = useMemo(() => {
+    const fixedBoxes = [];
+    const labelItems = [];
+
+    const addFixedText = (x, y, text, options = {}) => {
+      fixedBoxes.push(makeTextBox(x, y, text, options));
+    };
+
+    constellationLabels
+      .filter((label) => isDetailMode || label.name === activeConstellation)
+      .forEach((label) => {
+        addFixedText(label.x, label.y, label.name, {
+          fontSize: mobileLayout ? 12 : 15,
+          anchor: 'middle',
+          padding: 8
+        });
+      });
+
+    visibleStars
+      .filter((star) => (isDetailMode || star.name === 'Polaris') && ['Polaris', 'Vega', 'Deneb', 'Altair'].includes(star.name))
+      .forEach((star) => {
+        addFixedText(star.x + 10, star.y - 10, star.name, {
+          fontSize: mobileLayout ? 10 : 12,
+          anchor: 'start',
+          padding: 5
+        });
+      });
+
+    if (isDetailMode) {
+      addFixedText(eclipticLabel.x, eclipticLabel.y, 'Ecliptic', {
+        fontSize: mobileLayout ? 11 : 13,
+        anchor: 'start',
+        padding: 5
+      });
+
+      addFixedText(lunarLabel.x, lunarLabel.y, 'Lunar Path', {
+        fontSize: mobileLayout ? 11 : 13,
+        anchor: 'start',
+        padding: 5
+      });
+
+      if (summerTriangleLabel) {
+        addFixedText(summerTriangleLabel.x, summerTriangleLabel.y, 'Summer Triangle', {
+          fontSize: mobileLayout ? 10 : 13,
+          anchor: 'start',
+          padding: 6
+        });
+      }
+    }
+
+    visiblePlanets.forEach((planet) => {
+      labelItems.push({
+        id: `planet:${planet.name}`,
+        text: planet.name,
+        anchorX: planet.x,
+        anchorY: planet.y,
+        fontSize: mobileLayout ? 10 : 12,
+        priority: 90,
+        distance: mobileLayout ? 14 : 17,
+        candidates: [
+          { dx: 14, dy: -8, anchor: 'start' },
+          { dx: 14, dy: 15, anchor: 'start' },
+          { dx: -14, dy: -8, anchor: 'end' },
+          { dx: -14, dy: 15, anchor: 'end' },
+          { dx: 0, dy: -18, anchor: 'middle' }
+        ]
+      });
+    });
+
+    if (isInsideSky(moonData, 14)) {
+      labelItems.push({
+        id: 'moon:main',
+        text: `Moon ${moonData.phasePercent}%`,
+        anchorX: moonData.x,
+        anchorY: moonData.y,
+        fontSize: mobileLayout ? 11 : 15,
+        priority: 95,
+        distance: mobileLayout ? 18 : 24,
+        candidates: [
+          { dx: 20, dy: -10, anchor: 'start' },
+          { dx: 20, dy: 20, anchor: 'start' },
+          { dx: -20, dy: -10, anchor: 'end' },
+          { dx: -20, dy: 20, anchor: 'end' },
+          { dx: 0, dy: -26, anchor: 'middle' }
+        ]
+      });
+    }
+
+    visibleFutureTargets.forEach((target) => {
+      const actualIndex = mappedFutureTargets.findIndex((item) => item.title === target.title);
+      const isActive = selectedPanel === 'future' && activeFutureIndex === actualIndex;
+
+      if (!isActive && !isDetailMode) return;
+
+      labelItems.push({
+        id: `future:${target.title}`,
+        text: target.shortTitle || target.title,
+        anchorX: target.x,
+        anchorY: target.y,
+        fontSize: mobileLayout ? 12 : 15,
+        priority: isActive ? 120 : 62,
+        distance: mobileLayout ? 22 : 26,
+        margin: 22,
+        candidates: [
+          { dx: 24, dy: -12, anchor: 'start' },
+          { dx: 24, dy: 20, anchor: 'start' },
+          { dx: -24, dy: -12, anchor: 'end' },
+          { dx: -24, dy: 20, anchor: 'end' },
+          { dx: 0, dy: -30, anchor: 'middle' },
+          { dx: 0, dy: 34, anchor: 'middle' },
+          { dx: 42, dy: 4, anchor: 'start' },
+          { dx: -42, dy: 4, anchor: 'end' }
+        ]
+      });
+    });
+
+    if (!mobileLayout) {
+      missionCallouts.forEach((photo) => {
+        const actualIndex = mappedObjects.findIndex((item) => item.title === photo.title);
+        const isActive = selectedPanel === 'captured' && activeIndex === actualIndex;
+
+        if (!isActive && !isDetailMode) return;
+
+        const outwardDirection = photo.markerX > CENTER ? 1 : -1;
+
+        labelItems.push({
+          id: `mission:${photo.title}`,
+          text: photo.title,
+          anchorX: photo.markerX,
+          anchorY: photo.markerY,
+          fontSize: 17,
+          priority: isActive ? 125 : 58,
+          distance: 30,
+          margin: 24,
+          candidates: [
+            { dx: outwardDirection * 28, dy: 6, anchor: outwardDirection > 0 ? 'start' : 'end' },
+            { dx: -outwardDirection * 28, dy: 6, anchor: outwardDirection > 0 ? 'end' : 'start' },
+            { dx: 0, dy: -30, anchor: 'middle' },
+            { dx: 0, dy: 38, anchor: 'middle' },
+            { dx: outwardDirection * 44, dy: -16, anchor: outwardDirection > 0 ? 'start' : 'end' },
+            { dx: outwardDirection * 44, dy: 26, anchor: outwardDirection > 0 ? 'start' : 'end' }
+          ]
+        });
+      });
+    }
+
+    return placeCollisionSafeLabels(labelItems, fixedBoxes);
+  }, [
+    activeConstellation,
+    activeFutureIndex,
+    activeIndex,
+    constellationLabels,
+    eclipticLabel,
+    isDetailMode,
+    lunarLabel,
+    mappedFutureTargets,
+    mappedObjects,
+    missionCallouts,
+    mobileLayout,
+    moonData,
+    selectedPanel,
+    summerTriangleLabel,
+    visibleFutureTargets,
+    visiblePlanets,
+    visibleStars
+  ]);
+
+  const getMapLabel = (id) => mapLabelPlacements[id];
+
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
     if (realIndex !== -1) setSelectedIndex(realIndex);
@@ -1109,7 +1388,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               {visiblePlanets.map((planet) => (
                 <g key={planet.name}>
                   <circle cx={planet.x} cy={planet.y} r={5} className="planetMarker" />
-                  <text x={planet.x + 10} y={planet.y - 8} className="planetLabel" transform={keepUpright(planet.x + 10, planet.y - 8)}>{planet.name}</text>
+                  {getMapLabel(`planet:${planet.name}`) && (
+                    <text
+                      x={getMapLabel(`planet:${planet.name}`).x}
+                      y={getMapLabel(`planet:${planet.name}`).y}
+                      className="planetLabel"
+                      textAnchor={getMapLabel(`planet:${planet.name}`).anchor}
+                      transform={keepUpright(getMapLabel(`planet:${planet.name}`).x, getMapLabel(`planet:${planet.name}`).y)}
+                    >
+                      {planet.name}
+                    </text>
+                  )}
                 </g>
               ))}
 
@@ -1117,14 +1406,38 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <g>
                   <circle cx={moonData.x} cy={moonData.y} r={14} className="moonMarkerGlow" />
                   <text x={moonData.x} y={moonData.y + 6} className="moonPhaseIcon" textAnchor="middle" transform={keepUpright(moonData.x, moonData.y)}>{moonData.phaseSymbol}</text>
-                  <text x={moonData.x + 18} y={moonData.y - 12} className="moonLabel" transform={keepUpright(moonData.x + 18, moonData.y - 12)}>Moon {moonData.phasePercent}%</text>
-                  {isDetailMode && <text x={moonData.x + 18} y={moonData.y + 5} className="moonPhaseLabel" transform={keepUpright(moonData.x + 18, moonData.y + 5)}>{moonData.phaseName}</text>}
+                  {getMapLabel('moon:main') && (
+                    <>
+                      <text
+                        x={getMapLabel('moon:main').x}
+                        y={getMapLabel('moon:main').y}
+                        className="moonLabel"
+                        textAnchor={getMapLabel('moon:main').anchor}
+                        transform={keepUpright(getMapLabel('moon:main').x, getMapLabel('moon:main').y)}
+                      >
+                        Moon {moonData.phasePercent}%
+                      </text>
+
+                      {isDetailMode && (
+                        <text
+                          x={getMapLabel('moon:main').x}
+                          y={getMapLabel('moon:main').y + 17}
+                          className="moonPhaseLabel"
+                          textAnchor={getMapLabel('moon:main').anchor}
+                          transform={keepUpright(getMapLabel('moon:main').x, getMapLabel('moon:main').y + 17)}
+                        >
+                          {moonData.phaseName}
+                        </text>
+                      )}
+                    </>
+                  )}
                 </g>
               )}
 
 
-              {visibleFutureTargets.map((target, index) => {
-                const isActive = selectedPanel === 'future' && activeFutureIndex === index;
+              {visibleFutureTargets.map((target) => {
+                const actualIndex = mappedFutureTargets.findIndex((item) => item.title === target.title);
+                const isActive = selectedPanel === 'future' && activeFutureIndex === actualIndex;
                 const markerColor = getObjectColor(target.objectType);
 
                 return (
@@ -1134,22 +1447,22 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     role="button"
                     tabIndex={0}
                     onMouseEnter={() => {
-                      setActiveFutureIndex(index);
+                      setActiveFutureIndex(actualIndex);
                       setSelectedPanel('future');
                     }}
                     onFocus={() => {
-                      setActiveFutureIndex(index);
+                      setActiveFutureIndex(actualIndex);
                       setSelectedPanel('future');
                     }}
                     onClick={() => {
-                      setActiveFutureIndex(index);
+                      setActiveFutureIndex(actualIndex);
                       setSelectedPanel('future');
                       setCatalogView('future');
                     }}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        setActiveFutureIndex(index);
+                        setActiveFutureIndex(actualIndex);
                         setSelectedPanel('future');
                         setCatalogView('future');
                       }
@@ -1178,12 +1491,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                       className="futureTargetCross"
                       style={{ stroke: markerColor }}
                     />
-                    {(isActive || isDetailMode) && (
+                    {getMapLabel(`future:${target.title}`) && (
                       <text
-                        x={target.x + 16}
-                        y={target.y - 10}
+                        x={getMapLabel(`future:${target.title}`).x}
+                        y={getMapLabel(`future:${target.title}`).y}
                         className="futureTargetLabel"
-                        transform={keepUpright(target.x + 16, target.y - 10)}
+                        textAnchor={getMapLabel(`future:${target.title}`).anchor}
+                        transform={keepUpright(getMapLabel(`future:${target.title}`).x, getMapLabel(`future:${target.title}`).y)}
                       >
                         {target.shortTitle || target.title}
                       </text>
@@ -1196,9 +1510,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 const index = mappedObjects.findIndex((item) => item.title === photo.title);
                 const markerColor = getObjectColor(photo.objectType);
                 const isActive = activeIndex === index;
-                const labelOffset = photo.labelSide === 'left' ? -24 : 24;
-                const labelAnchor = photo.labelSide === 'left' ? 'end' : 'start';
-
                 return (
                   <g
                     key={`${photo.title}-callout`}
@@ -1274,12 +1585,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                         {index + 1}
                       </text>
 
-                      {!mobileLayout && (
+                      {getMapLabel(`mission:${photo.title}`) && (
                         <text
-                          x={photo.markerX + labelOffset}
-                          y={photo.markerY + 6}
+                          x={getMapLabel(`mission:${photo.title}`).x}
+                          y={getMapLabel(`mission:${photo.title}`).y}
                           className="missionSvgBadgeName"
-                          textAnchor={labelAnchor}
+                          textAnchor={getMapLabel(`mission:${photo.title}`).anchor}
                         >
                           {photo.title}
                         </text>
