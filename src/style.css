@@ -4734,3 +4734,23 @@ footer p {
     padding: 12px 13px !important;
   }
 }
+/* =========================================================
+   SKY MAP: SMOOTH MOBILE PAN WHEN ZOOMED
+========================================================= */
+
+.realSkyMap {
+  overscroll-behavior: contain !important;
+}
+
+.realSkyMap .skyPanLayer {
+  will-change: transform !important;
+}
+
+.realSkyMap.canPanMap {
+  touch-action: none !important;
+  cursor: grab !important;
+}
+
+.realSkyMap.canPanMap:active {
+  cursor: grabbing !important;
+}

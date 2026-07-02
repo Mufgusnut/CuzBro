@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Body, Observer, Equator, Illumination } from 'astronomy-engine';
 
 const SITE = {
@@ -41,11 +41,15 @@ function getMaxPanForZoom(zoom) {
     return { x: 0, y: 0 };
   }
 
+  const isMobile = isMobileViewport();
   const extraZoom = zoom - defaultZoom;
-  const multiplier = isMobileViewport() ? 210 : 260;
-  const max = clamp(extraZoom * multiplier, 0, isMobileViewport() ? 360 : 420);
 
-  return { x: max, y: max };
+  // Pan is measured in screen pixels because translate happens after scale.
+  // This gives mobile enough travel at 200%+ without letting the chart drift away entirely.
+  const x = clamp(extraZoom * (isMobile ? 310 : 360), 0, isMobile ? 520 : 620);
+  const y = clamp(extraZoom * (isMobile ? 360 : 400), 0, isMobile ? 600 : 700);
+
+  return { x, y };
 }
 
 function clampPanForZoom(pan, zoom) {
@@ -996,11 +1000,37 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activePreset, setActivePreset] = useState('now');
 
   const dragRef = useRef(null);
+  const panFrameRef = useRef(null);
+  const pendingPanRef = useRef(null);
   const mapSectionRef = useRef(null);
   const mapRef = useRef(null);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
   const isDetailMode = viewMode === 'detail';
   const mobileLayout = isMobileViewport();
+  const canPanMap = zoom > getDefaultZoom() + 0.02;
+
+  useEffect(() => {
+    return () => {
+      if (panFrameRef.current) {
+        cancelAnimationFrame(panFrameRef.current);
+      }
+    };
+  }, []);
+
+  const schedulePan = (nextPan) => {
+    pendingPanRef.current = nextPan;
+
+    if (panFrameRef.current) return;
+
+    panFrameRef.current = requestAnimationFrame(() => {
+      if (pendingPanRef.current) {
+        setPan(pendingPanRef.current);
+      }
+
+      pendingPanRef.current = null;
+      panFrameRef.current = null;
+    });
+  };
 
   const mappedObjects = useMemo(() => {
     return gallery
@@ -1489,37 +1519,53 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const handlePointerDown = (event) => {
     if (shouldIgnoreDrag(event.target)) return;
 
-    const canPan = zoom > getDefaultZoom() + 0.02;
-
-    if (canPan) {
+    // When zoomed, drag should pan the view. This is the behavior mobile expects,
+    // and it also gives desktop a useful click-drag pan while zoomed in.
+    if (canPanMap) {
       event.preventDefault();
+
       dragRef.current = {
         mode: 'pan',
+        pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
         startPan: pan
       };
+
       event.currentTarget.setPointerCapture?.(event.pointerId);
       return;
     }
 
+    // At default zoom, mobile should still scroll the page naturally.
+    // Desktop drag rotates the chart.
     if (event.pointerType === 'touch') return;
 
     const angle = getPointerAngle(event, event.currentTarget);
-    dragRef.current = { mode: 'rotate', startAngle: angle, startRotation: rotation };
+    dragRef.current = {
+      mode: 'rotate',
+      pointerId: event.pointerId,
+      startAngle: angle,
+      startRotation: rotation
+    };
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const handlePointerMove = (event) => {
     if (!dragRef.current) return;
+    if (dragRef.current.pointerId !== event.pointerId) return;
 
     if (dragRef.current.mode === 'pan') {
       event.preventDefault();
-      const nextPan = {
-        x: dragRef.current.startPan.x + event.clientX - dragRef.current.startX,
-        y: dragRef.current.startPan.y + event.clientY - dragRef.current.startY
-      };
-      setPan(clampPanForZoom(nextPan, zoom));
+
+      const nextPan = clampPanForZoom(
+        {
+          x: dragRef.current.startPan.x + event.clientX - dragRef.current.startX,
+          y: dragRef.current.startPan.y + event.clientY - dragRef.current.startY
+        },
+        zoom
+      );
+
+      schedulePan(nextPan);
       return;
     }
 
@@ -1529,7 +1575,16 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   };
 
   const handlePointerUp = (event) => {
+    if (dragRef.current?.pointerId !== event.pointerId) return;
+
     dragRef.current = null;
+    pendingPanRef.current = null;
+
+    if (panFrameRef.current) {
+      cancelAnimationFrame(panFrameRef.current);
+      panFrameRef.current = null;
+    }
+
     event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
 
@@ -1587,8 +1642,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
         <div
           ref={mapRef}
-          className={isDetailMode ? 'atlasMap realSkyMap detailMode' : 'atlasMap realSkyMap cleanMode'}
-          style={{ touchAction: zoom > getDefaultZoom() + 0.02 ? 'none' : 'pan-y' }}
+          className={[
+            'atlasMap realSkyMap',
+            isDetailMode ? 'detailMode' : 'cleanMode',
+            canPanMap ? 'canPanMap' : ''
+          ].join(' ')}
+          style={{ touchAction: canPanMap ? 'none' : 'pan-y' }}
+          onContextMenu={(event) => event.preventDefault()}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
