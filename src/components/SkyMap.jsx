@@ -958,6 +958,140 @@ function getMoonImpact(target, moonInfo) {
 }
 
 
+function angularDistanceClockwise(startDegrees, endDegrees) {
+  return normalizeDegrees(endDegrees - startDegrees);
+}
+
+function azimuthInClockwiseArc(azDegrees, startDegrees, endDegrees) {
+  return angularDistanceClockwise(startDegrees, azDegrees) <= angularDistanceClockwise(startDegrees, endDegrees);
+}
+
+function smoothstep01(value) {
+  const t = clamp(value, 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+function getBackyardTreeAltitude(azDegrees) {
+  const az = normalizeDegrees(azDegrees);
+
+  // Backyard obstruction model:
+  // - Tall trees from S → E
+  // - Short trees from E → NE
+  // - Clear from NE → W
+  // - Short trees from W → S
+  // Azimuth convention: N=0, E=90, S=180, W=270.
+  if (azimuthInClockwiseArc(90, az, 180)) {
+    const t = angularDistanceClockwise(90, az) / angularDistanceClockwise(90, 180);
+    return 30 + smoothstep01(t) * 12; // 30° near E, ~42° near S.
+  }
+
+  if (azimuthInClockwiseArc(45, az, 90)) {
+    const t = angularDistanceClockwise(45, az) / angularDistanceClockwise(45, 90);
+    return 10 + smoothstep01(t) * 10; // 10° near NE, ~20° near E.
+  }
+
+  if (azimuthInClockwiseArc(180, az, 270)) {
+    const t = angularDistanceClockwise(180, az) / angularDistanceClockwise(180, 270);
+    return 24 - smoothstep01(t) * 8; // 24° near S, ~16° near W.
+  }
+
+  return 0; // Clear from NE → W through N/NW.
+}
+
+function getTreeObstruction(target, tonightPlan) {
+  if (!target) {
+    return {
+      label: 'Clear view',
+      detail: 'No local tree obstruction check is needed.',
+      className: 'ok',
+      rankPenalty: 0,
+      horizonAltitude: 0,
+      clearanceDegrees: null,
+      clearWindow: 'N/A'
+    };
+  }
+
+  const horizonAltitude = getBackyardTreeAltitude(target.az);
+  const clearanceDegrees = target.alt - horizonAltitude;
+  const usefulClearSamples = (tonightPlan?.samples || [])
+    .map((sample) => {
+      const sampleHorizon = getBackyardTreeAltitude(sample.az);
+      return {
+        ...sample,
+        treeHorizonAltitude: sampleHorizon,
+        treeClearance: sample.alt - sampleHorizon
+      };
+    })
+    .filter((sample) => sample.alt >= 0 && sample.status.score >= 2 && sample.treeClearance >= 6);
+
+  const clearWindow = usefulClearSamples.length
+    ? usefulClearSamples.map((sample) => sample.label).join(' / ')
+    : 'No clear window';
+
+  if (horizonAltitude <= 1) {
+    return {
+      label: 'Clear view',
+      detail: 'This direction is in your clearer NE-to-W sky, so local trees should not be a major issue.',
+      className: 'ok',
+      rankPenalty: 0,
+      horizonAltitude,
+      clearanceDegrees,
+      clearWindow
+    };
+  }
+
+  if (target.alt < 0) {
+    return {
+      label: 'Below horizon',
+      detail: 'This target is below the astronomical horizon at the selected map time.',
+      className: 'bad',
+      rankPenalty: 80,
+      horizonAltitude,
+      clearanceDegrees,
+      clearWindow
+    };
+  }
+
+  if (clearanceDegrees < -3) {
+    const clearsLater = usefulClearSamples.some((sample) => sample.date > new Date());
+
+    return {
+      label: clearsLater ? 'Trees now' : 'Tree blocked',
+      detail: clearsLater
+        ? `It is likely behind your local tree line right now, but it may clear later around ${clearWindow}.`
+        : 'It is likely too low behind your local tree line during the useful part of tonight.',
+      className: clearsLater ? 'caution' : 'bad',
+      rankPenalty: clearsLater ? 48 : 95,
+      horizonAltitude,
+      clearanceDegrees,
+      clearWindow
+    };
+  }
+
+  if (clearanceDegrees < 7) {
+    return {
+      label: 'Tree risk',
+      detail: 'This target is close to your local tree line. It may be visible, but branches or the roofline could interfere.',
+      className: 'caution',
+      rankPenalty: 32,
+      horizonAltitude,
+      clearanceDegrees,
+      clearWindow
+    };
+  }
+
+  return {
+    label: 'Above trees',
+    detail: 'This target is comfortably above your estimated backyard tree line at the selected map time.',
+    className: 'ok',
+    rankPenalty: 0,
+    horizonAltitude,
+    clearanceDegrees,
+    clearWindow
+  };
+}
+
+
 
 
 function getPriorityWeight(priority) {
@@ -1095,18 +1229,20 @@ function buildTargetTrack(target, mapDate, observer) {
   };
 }
 
-function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDate = new Date(), moonImpact = null) {
+function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDate = new Date(), moonImpact = null, treeObstruction = null) {
   const peakAlt = tonightPlan?.peak?.alt ?? -90;
   const hasBestLater = tonightPlan?.bestSamples?.some((sample) => sample.date > referenceDate && sample.status.score >= 3);
   const hasGoodLater = tonightPlan?.goodSamples?.some((sample) => sample.date > referenceDate && sample.status.score >= 2);
   const priorityWeight = getPriorityWeight(target.priority);
   const moonPenalty = moonImpact?.rankPenalty ?? 0;
+  const treePenalty = treeObstruction?.rankPenalty ?? 0;
+  const plannerPenalty = moonPenalty + treePenalty;
 
   if (currentStatus.score >= 3) {
     return {
       label: 'Best Now',
       className: 'best',
-      rankScore: 500 + currentStatus.score * 20 + peakAlt + priorityWeight * 10 - moonPenalty
+      rankScore: 500 + currentStatus.score * 20 + peakAlt + priorityWeight * 10 - plannerPenalty
     };
   }
 
@@ -1114,7 +1250,7 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Best Later',
       className: 'best',
-      rankScore: 420 + peakAlt + priorityWeight * 10 - moonPenalty
+      rankScore: 420 + peakAlt + priorityWeight * 10 - plannerPenalty
     };
   }
 
@@ -1122,7 +1258,7 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Good Now',
       className: 'good',
-      rankScore: 360 + peakAlt + priorityWeight * 10 - moonPenalty
+      rankScore: 360 + peakAlt + priorityWeight * 10 - plannerPenalty
     };
   }
 
@@ -1130,7 +1266,7 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Good Later',
       className: 'good',
-      rankScore: 300 + peakAlt + priorityWeight * 10 - moonPenalty
+      rankScore: 300 + peakAlt + priorityWeight * 10 - plannerPenalty
     };
   }
 
@@ -1138,7 +1274,7 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Low Tonight',
       className: 'low',
-      rankScore: 170 + peakAlt + priorityWeight * 8 - moonPenalty
+      rankScore: 170 + peakAlt + priorityWeight * 8 - plannerPenalty
     };
   }
 
@@ -1146,14 +1282,14 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Barely Up',
       className: 'low',
-      rankScore: 100 + peakAlt + priorityWeight * 6 - moonPenalty
+      rankScore: 100 + peakAlt + priorityWeight * 6 - plannerPenalty
     };
   }
 
   return {
     label: 'Not Tonight',
     className: 'below',
-    rankScore: priorityWeight * 5 - moonPenalty
+    rankScore: priorityWeight * 5 - plannerPenalty
   };
 }
 
@@ -1615,7 +1751,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       const status = getObservingStatus({ alt: altAz.alt });
       const moonImpact = getMoonImpact({ ...target, ra, dec }, moonInfo);
       const tonightPlan = buildTonightPlan({ ...target, ra, dec }, date, observer);
-      const plannerStatus = getFuturePlannerStatus(status, tonightPlan, target, date, moonImpact);
+      const treeObstruction = getTreeObstruction({ ...target, ra, dec, alt: altAz.alt, az: altAz.az }, tonightPlan);
+      const plannerStatus = getFuturePlannerStatus(status, tonightPlan, target, date, moonImpact, treeObstruction);
 
       return {
         ...target,
@@ -1629,6 +1766,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         visible: point.visible,
         observingStatus: status,
         moonImpact,
+        treeObstruction,
         tonightPlan,
         plannerStatus,
         isFutureTarget: true
@@ -2846,6 +2984,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     {target.moonImpact.label}
                   </i>
                 )}
+                {target.treeObstruction && (
+                  <i className={`targetStatusBadge treeObstructionBadge ${target.treeObstruction.className}`}>
+                    {target.treeObstruction.label}
+                  </i>
+                )}
               </span>
             </button>
           ))}
@@ -2913,6 +3056,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <b>Moon check:</b> {activeFutureTarget.moonImpact.detail}
               </p>
             )}
+            {activeFutureTarget.treeObstruction && (
+              <p className={`futureFinderNote treeObstructionNote ${activeFutureTarget.treeObstruction.className}`}>
+                <b>Tree line:</b> {activeFutureTarget.treeObstruction.detail}
+              </p>
+            )}
             <div className="atlasFacts">
               <span><b>Planner Status</b>{activeFutureTarget.plannerStatus.label}</span>
               <span><b>Best Tonight</b>{activeFutureTarget.tonightPlan.bestWindow}</span>
@@ -2931,6 +3079,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
               <span><b>Moon Impact</b>{activeFutureTarget.moonImpact.label}</span>
               <span><b>Moon Separation</b>{activeFutureTarget.moonImpact.separationDegrees === null ? 'N/A' : `${activeFutureTarget.moonImpact.separationDegrees.toFixed(0)}°`}</span>
+              <span><b>Tree Line</b>{activeFutureTarget.treeObstruction.label}</span>
+              <span><b>Tree Clearance</b>{activeFutureTarget.treeObstruction.clearanceDegrees === null ? 'N/A' : `${activeFutureTarget.treeObstruction.clearanceDegrees.toFixed(0)}°`}</span>
+              <span><b>Tree Horizon</b>{`${activeFutureTarget.treeObstruction.horizonAltitude.toFixed(0)}° at az ${activeFutureTarget.az.toFixed(0)}°`}</span>
+              <span><b>Clear Window</b>{activeFutureTarget.treeObstruction.clearWindow}</span>
             </div>
           </div>
         </section>

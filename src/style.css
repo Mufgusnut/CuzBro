@@ -5151,3 +5151,39 @@ footer p {
   border-color: rgba(255, 115, 95, 0.26) !important;
   background: rgba(255, 90, 60, 0.085) !important;
 }
+/* =========================================================
+   SKY MAP: TREE OBSTRUCTION SCORING
+========================================================= */
+
+.treeObstructionBadge.ok {
+  border-color: rgba(120, 220, 255, 0.42) !important;
+  color: rgba(195, 242, 255, 0.96) !important;
+  background: rgba(90, 210, 255, 0.07) !important;
+}
+
+.treeObstructionBadge.caution {
+  border-color: rgba(255, 190, 90, 0.58) !important;
+  color: rgba(255, 220, 160, 0.98) !important;
+  background: rgba(255, 166, 60, 0.11) !important;
+}
+
+.treeObstructionBadge.bad {
+  border-color: rgba(255, 115, 95, 0.62) !important;
+  color: rgba(255, 190, 180, 0.98) !important;
+  background: rgba(255, 90, 60, 0.12) !important;
+}
+
+.treeObstructionNote.ok {
+  border-color: rgba(120, 220, 255, 0.18) !important;
+  background: rgba(90, 210, 255, 0.06) !important;
+}
+
+.treeObstructionNote.caution {
+  border-color: rgba(255, 190, 90, 0.22) !important;
+  background: rgba(255, 166, 60, 0.075) !important;
+}
+
+.treeObstructionNote.bad {
+  border-color: rgba(255, 115, 95, 0.26) !important;
+  background: rgba(255, 90, 60, 0.085) !important;
+}
