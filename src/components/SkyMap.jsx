@@ -2257,21 +2257,12 @@ function getTargetDifficultyScore(target) {
 
 
 const SESSION_MODES = [
-  { key: 'balanced', label: 'Balanced' },
-  { key: 'visual', label: 'Visual' },
-  { key: 'iphone', label: 'iPhone' },
-  { key: 'camera', label: 'Camera' },
-  { key: 'planetary', label: 'Planetary' }
-];
-
-const SMART_FILTERS = [
-  { key: 'all', label: 'All' },
-  { key: 'easy', label: 'Easy Tonight' },
-  { key: 'visual', label: 'Visual Targets' },
-  { key: 'camera', label: 'Camera Targets' },
-  { key: 'moon-safe', label: 'Avoid Moon' },
-  { key: 'tree-clear', label: 'Clear of Trees' },
-  { key: 'best', label: 'Best Window' }
+  { key: 'balanced', label: 'Best Overall' },
+  { key: 'visual', label: 'Easy Visual' },
+  { key: 'iphone', label: 'iPhone Friendly' },
+  { key: 'camera', label: 'Deep Sky Photo' },
+  { key: 'planetary', label: 'Planetary' },
+  { key: 'visitors', label: 'Visitors' }
 ];
 
 function getSessionModeBonus(target, sessionMode = 'balanced') {
@@ -2310,6 +2301,12 @@ function getSessionModeBonus(target, sessionMode = 'balanced') {
     return -90;
   }
 
+  if (sessionMode === 'visitors') {
+    if (type === 'Comet') return noEphemeris ? 30 : 160;
+    if (target?.isVisitorTarget) return 140;
+    return -60;
+  }
+
   let conditionPenalty = 0;
   if (moonBad) conditionPenalty -= 30;
   if (treeBad) conditionPenalty -= 35;
@@ -2327,39 +2324,38 @@ function getModeAdjustedRankScore(target, sessionMode = 'balanced') {
   return base + modeBonus - difficultyPenalty;
 }
 
-function targetMatchesSmartFilter(target, smartFilter = 'all') {
-  if (!target) return false;
-  if (smartFilter === 'all') return true;
+function targetMatchesTonightMode(target, sessionMode = 'balanced') {
+  if (!target || sessionMode === 'balanced') return true;
 
   const type = target.objectType || '';
+  const title = target.title || '';
   const difficulty = getTargetDifficultyScore(target);
-  const moonClass = target.moonImpact?.className || 'ok';
-  const treeClass = target.treeObstruction?.className || 'ok';
-  const plannerLabel = target.plannerStatus?.label || '';
-  const isUsableTonight = !['Below Horizon', 'Not Tonight'].includes(plannerLabel);
+  const hasEphemeris = type !== 'Comet' || visitorHasEphemeris(target);
 
-  if (smartFilter === 'easy') {
-    return ['easy', 'medium'].includes(difficulty.className) && isUsableTonight && moonClass !== 'bad' && treeClass !== 'bad';
+  if (sessionMode === 'visual') {
+    return ['Open Cluster', 'Globular Cluster', 'Double Star', 'Planet', 'Planetary Nebula'].includes(type) && difficulty.className !== 'expert';
   }
 
-  if (smartFilter === 'visual') {
-    return ['Open Cluster', 'Globular Cluster', 'Double Star', 'Planet', 'Planetary Nebula'].includes(type);
+  if (sessionMode === 'iphone') {
+    return (
+      type === 'Planet' ||
+      type === 'Open Cluster' ||
+      type === 'Planetary Nebula' ||
+      type === 'Globular Cluster' ||
+      (type === 'Galaxy' && (title.includes('Andromeda') || title.includes('M31')))
+    );
   }
 
-  if (smartFilter === 'camera') {
-    return ['Galaxy', 'Emission Nebula', 'Supernova Remnant', 'Comet'].includes(type);
+  if (sessionMode === 'camera') {
+    return ['Galaxy', 'Emission Nebula', 'Supernova Remnant', 'Comet', 'Open Cluster', 'Planetary Nebula'].includes(type) && hasEphemeris;
   }
 
-  if (smartFilter === 'moon-safe') {
-    return moonClass === 'ok';
+  if (sessionMode === 'planetary') {
+    return type === 'Planet';
   }
 
-  if (smartFilter === 'tree-clear') {
-    return treeClass === 'ok';
-  }
-
-  if (smartFilter === 'best') {
-    return plannerLabel.includes('Best') || plannerLabel.includes('Good');
+  if (sessionMode === 'visitors') {
+    return target.isVisitorTarget || type === 'Comet';
   }
 
   return true;
@@ -2433,32 +2429,35 @@ function getTargetWhyExplanation(target, sessionMode = 'balanced') {
     good.unshift('Planetary mode puts this target near the top.');
   }
 
+  if (sessionMode === 'visitors' && type === 'Comet') {
+    good.unshift('Visitors mode highlights current or upcoming moving targets.');
+  }
+
   if (!good.length) good.push('It remains on the list because it is a useful future target.');
   if (!watch.length) watch.push('No major planner warnings right now.');
 
   return {
     headline: type === 'Comet' ? 'Why this visitor?' : 'Why this target?',
-    summary: `${target.title} is ranked using altitude, Moon impact, local trees, framing, difficulty, and the selected session mode.`,
+    summary: `${target.title} is filtered and ranked using altitude, Moon impact, local trees, framing, difficulty, and the selected Tonight Mode.`,
     good: good.slice(0, 5),
     watch: watch.slice(0, 5)
   };
 }
 
-function buildShareTonightCard(sessionPlan, rankedTargets, rankedVisitors, sessionMode, smartFilter) {
-  const start = sessionPlan?.startTarget || rankedTargets?.[0] || null;
+function buildShareTonightCard(sessionPlan, rankedTargets, rankedVisitors, sessionMode) {
+  const visitor = rankedVisitors?.[0] || null;
+  const preferredStart = sessionMode === 'visitors' && visitorHasEphemeris(visitor) ? visitor : null;
+  const start = preferredStart || sessionPlan?.startTarget || rankedTargets?.[0] || null;
   const backup = sessionPlan?.backupTarget || rankedTargets?.find((target) => target.title !== start?.title) || null;
   const skipStep = sessionPlan?.steps?.find((step) => step.key === 'skip') || null;
-  const visitor = rankedVisitors?.[0] || null;
-  const modeLabel = SESSION_MODES.find((mode) => mode.key === sessionMode)?.label || 'Balanced';
-  const filterLabel = SMART_FILTERS.find((filter) => filter.key === smartFilter)?.label || 'All';
+  const modeLabel = SESSION_MODES.find((mode) => mode.key === sessionMode)?.label || 'Best Overall';
 
   return {
     start,
     backup,
     visitor,
     skipTargets: skipStep?.extraTargets?.length ? [skipStep.target, ...skipStep.extraTargets].filter(Boolean) : skipStep?.target ? [skipStep.target] : [],
-    modeLabel,
-    filterLabel
+    modeLabel
   };
 }
 
@@ -2476,7 +2475,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const [showHorizon, setShowHorizon] = useState(true);
   const [activePreset, setActivePreset] = useState('now');
   const [sessionMode, setSessionMode] = useState('balanced');
-  const [smartFilter, setSmartFilter] = useState('all');
 
   const dragRef = useRef(null);
   const panFrameRef = useRef(null);
@@ -2664,7 +2662,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const rankedFutureTargets = useMemo(() => {
     return [...mappedFutureTargets]
-      .filter((target) => targetMatchesSmartFilter(target, smartFilter))
+      .filter((target) => targetMatchesTonightMode(target, sessionMode))
       .sort((a, b) => {
         const bScore = getModeAdjustedRankScore(b, sessionMode);
         const aScore = getModeAdjustedRankScore(a, sessionMode);
@@ -2684,13 +2682,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         rankNumber: rankIndex + 1,
         modeAdjustedRankScore: getModeAdjustedRankScore(target, sessionMode)
       }));
-  }, [mappedFutureTargets, sessionMode, smartFilter]);
+  }, [mappedFutureTargets, sessionMode]);
 
 
 
   const rankedVisitorTargets = useMemo(() => {
     return [...mappedVisitorTargets]
-      .filter((target) => targetMatchesSmartFilter(target, smartFilter))
+      .filter((target) => targetMatchesTonightMode(target, sessionMode))
       .sort((a, b) => {
         const bScore = getModeAdjustedRankScore(b, sessionMode);
         const aScore = getModeAdjustedRankScore(a, sessionMode);
@@ -2706,13 +2704,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         rankNumber: rankIndex + 1,
         modeAdjustedRankScore: getModeAdjustedRankScore(target, sessionMode)
       }));
-  }, [mappedVisitorTargets, sessionMode, smartFilter]);
-
-  const tonightSessionPlan = useMemo(() => buildTonightSessionPlan(rankedFutureTargets), [rankedFutureTargets]);
-  const shareTonightCard = useMemo(
-    () => buildShareTonightCard(tonightSessionPlan, rankedFutureTargets, rankedVisitorTargets, sessionMode, smartFilter),
-    [tonightSessionPlan, rankedFutureTargets, rankedVisitorTargets, sessionMode, smartFilter]
-  );
+  }, [mappedVisitorTargets, sessionMode]);
 
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
   const activeFutureTarget = rankedFutureTargets.find((target) => target.actualIndex === activeFutureIndex) || rankedFutureTargets[0] || mappedFutureTargets[0];
@@ -4027,9 +4019,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           <small>{catalogView === 'future' ? 'Target Planner' : catalogView === 'visitors' ? 'Closest Visitors' : 'Mission Archive'}</small>
 
           {(catalogView === 'future' || catalogView === 'visitors') && (
-            <div className="plannerControlsPanel">
+            <div className="plannerControlsPanel tonightModePanel">
               <div>
-                <small>Session Mode</small>
+                <small>Tonight Mode</small>
+                <p>Choose the kind of observing session you want. The planner will show and rank the targets that fit that goal.</p>
                 <div className="plannerControlChips">
                   {SESSION_MODES.map((mode) => (
                     <button
@@ -4043,30 +4036,15 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   ))}
                 </div>
               </div>
-              <div>
-                <small>Smart Filters</small>
-                <div className="plannerControlChips">
-                  {SMART_FILTERS.map((filter) => (
-                    <button
-                      key={filter.key}
-                      type="button"
-                      className={smartFilter === filter.key ? 'active' : ''}
-                      onClick={() => setSmartFilter(filter.key)}
-                    >
-                      {filter.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
 
           {catalogView === 'future' && rankedFutureTargets.length === 0 && (
-            <p className="catalogEmptyState">No future targets match this mode/filter combo. Try All or Balanced.</p>
+            <p className="catalogEmptyState">No future targets match this mode in this tab. Try Best Overall or switch tabs.</p>
           )}
 
           {catalogView === 'visitors' && rankedVisitorTargets.length === 0 && (
-            <p className="catalogEmptyState">No visitors match this mode/filter combo. Try All or add RA/Dec to a visitor.</p>
+            <p className="catalogEmptyState">No visitors match this mode yet. Add RA/Dec to a visitor when you have it, or switch back to Best Overall.</p>
           )}
 
           {catalogView === 'future' && rankedFutureTargets.map((target) => (
@@ -4165,95 +4143,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         </aside>
       </section>
 
-      {selectedPanel === 'future' && tonightSessionPlan.steps.length > 0 && (
-        <section className="tonightSessionPlan">
-          <div className="sessionPlanHeader">
-            <div>
-              <small>Tonight's Plan</small>
-              <h2>Suggested observing order</h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => tonightSessionPlan.startTarget && selectFutureTarget(tonightSessionPlan.startTarget.actualIndex, true)}
-              disabled={!tonightSessionPlan.startTarget}
-            >
-              Highlight first target
-            </button>
-          </div>
-
-          <div className="sessionPlanSteps">
-            {tonightSessionPlan.steps.map((step, index) => (
-              <button
-                key={step.key}
-                type="button"
-                className={`sessionPlanStep ${step.className}`}
-                onClick={() => step.target && selectFutureTarget(step.target.actualIndex, true)}
-              >
-                <b>{index + 1}</b>
-                <span>
-                  <strong>{step.label}: {step.target?.title}</strong>
-                  <em>{step.note}</em>
-                  {step.target && (
-                    <small>Setup: {getTargetActionPlan(step.target).eyepiece}</small>
-                  )}
-                  {step.extraTargets?.length > 0 && (
-                    <small>
-                      Also skip: {step.extraTargets.map((target) => target.shortTitle || target.title).join(', ')}
-                    </small>
-                  )}
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {selectedPanel === 'future' && shareTonightCard.start && (
-        <section className="shareTonightCard">
-          <div className="shareTonightHeader">
-            <div>
-              <small>Share Tonight Card</small>
-              <h2>Tonight from {SITE.name}</h2>
-            </div>
-            <i>{shareTonightCard.modeLabel} · {shareTonightCard.filterLabel}</i>
-          </div>
-
-          <div className="shareTonightGrid">
-            <span>
-              <b>Best Target</b>
-              {shareTonightCard.start.title}
-              <em>{shareTonightCard.start.plannerStatus.label} · {shareTonightCard.start.tonightPlan.bestWindow}</em>
-            </span>
-            {shareTonightCard.backup && (
-              <span>
-                <b>Backup</b>
-                {shareTonightCard.backup.title}
-                <em>{getTargetActionPlan(shareTonightCard.backup).eyepiece}</em>
-              </span>
-            )}
-            {shareTonightCard.visitor && (
-              <span>
-                <b>Visitor Watch</b>
-                {shareTonightCard.visitor.title}
-                <em>{shareTonightCard.visitor.ephemerisNeeded ? 'Add RA/Dec to activate' : shareTonightCard.visitor.plannerStatus.label}</em>
-              </span>
-            )}
-            <span>
-              <b>Skip / Caution</b>
-              {shareTonightCard.skipTargets.length
-                ? shareTonightCard.skipTargets.map((target) => target.shortTitle || target.title).join(', ')
-                : 'No major skip warning'}
-              <em>Based on Moon, trees, difficulty, and framing</em>
-            </span>
-          </div>
-        </section>
-      )}
-
-
-
       {selectedPanel === 'visitor' && activeVisitorTarget && (
-        <section className="atlasDetail plannerDetail visitorDetail">
-          <div className="futureDetailBadge">V{activeVisitorTarget.rankNumber || activeVisitorIndex + 1}<br />{activeVisitorTarget.plannerStatus.label}</div>
+        <section className="atlasDetail plannerDetail plannerDetailNoBadge visitorDetail">
           <div>
             <small>Closest Visitor</small>
             <h2><span>☄</span>{activeVisitorTarget.title}</h2>
@@ -4403,8 +4294,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       )}
 
       {selectedPanel === 'future' && activeFutureTarget && (
-        <section className="atlasDetail plannerDetail">
-          <div className="futureDetailBadge">#{activeFutureTarget.rankNumber || activeFutureIndex + 1}<br />{activeFutureTarget.plannerStatus.label}</div>
+        <section className="atlasDetail plannerDetail plannerDetailNoBadge">
           <div>
             <small>Target Planner</small>
             <h2><span>＋</span>{activeFutureTarget.title}</h2>

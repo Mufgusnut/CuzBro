@@ -5884,3 +5884,32 @@ footer p {
     flex-direction: column !important;
   }
 }
+/* =========================================================
+   SKY MAP: TONIGHT MODE SIMPLIFIED
+========================================================= */
+
+.tonightModePanel {
+  margin: 14px 0 16px !important;
+}
+
+.tonightModePanel p {
+  margin: -2px 0 10px !important;
+  color: rgba(226,236,255,0.72) !important;
+  font-size: 0.92rem !important;
+  line-height: 1.4 !important;
+}
+
+.tonightModePanel .plannerControlChips button {
+  padding: 8px 11px !important;
+}
+/* =========================================================
+   SKY MAP: REMOVE DETAIL SIDE BADGE RAIL
+========================================================= */
+
+.plannerDetailNoBadge {
+  grid-template-columns: 1fr !important;
+}
+
+.plannerDetailNoBadge > div {
+  grid-column: 1 / -1 !important;
+}
