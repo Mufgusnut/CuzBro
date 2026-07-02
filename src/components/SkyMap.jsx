@@ -1002,6 +1002,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const dragRef = useRef(null);
   const panFrameRef = useRef(null);
   const pendingPanRef = useRef(null);
+  const touchDragRef = useRef(null);
   const mapSectionRef = useRef(null);
   const mapRef = useRef(null);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
@@ -1516,28 +1517,76 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     );
   };
 
+  const startPanDrag = ({ pointerId = null, clientX, clientY, event = null }) => {
+    event?.preventDefault?.();
+
+    dragRef.current = {
+      mode: 'pan',
+      pointerId,
+      startX: clientX,
+      startY: clientY,
+      startPan: pan,
+      moved: false
+    };
+  };
+
+  const updatePanDrag = ({ pointerId = null, clientX, clientY, event = null }) => {
+    if (!dragRef.current) return;
+    if (dragRef.current.mode !== 'pan') return;
+    if (dragRef.current.pointerId !== null && pointerId !== null && dragRef.current.pointerId !== pointerId) return;
+
+    event?.preventDefault?.();
+
+    const dx = clientX - dragRef.current.startX;
+    const dy = clientY - dragRef.current.startY;
+
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      dragRef.current.moved = true;
+    }
+
+    const nextPan = clampPanForZoom(
+      {
+        x: dragRef.current.startPan.x + dx,
+        y: dragRef.current.startPan.y + dy
+      },
+      zoom
+    );
+
+    // Update immediately. The previous requestAnimationFrame throttle felt like
+    // the gesture was being ignored on some mobile browsers.
+    setPan(nextPan);
+  };
+
+  const endPanDrag = ({ pointerId = null, event = null } = {}) => {
+    if (dragRef.current?.pointerId !== null && pointerId !== null && dragRef.current.pointerId !== pointerId) return;
+
+    dragRef.current = null;
+    touchDragRef.current = null;
+    pendingPanRef.current = null;
+
+    if (panFrameRef.current) {
+      cancelAnimationFrame(panFrameRef.current);
+      panFrameRef.current = null;
+    }
+
+    event?.currentTarget?.releasePointerCapture?.(pointerId);
+  };
+
   const handlePointerDown = (event) => {
     if (shouldIgnoreDrag(event.target)) return;
 
-    // When zoomed, drag should pan the view. This is the behavior mobile expects,
-    // and it also gives desktop a useful click-drag pan while zoomed in.
     if (canPanMap) {
-      event.preventDefault();
-
-      dragRef.current = {
-        mode: 'pan',
+      startPanDrag({
         pointerId: event.pointerId,
-        startX: event.clientX,
-        startY: event.clientY,
-        startPan: pan
-      };
+        clientX: event.clientX,
+        clientY: event.clientY,
+        event
+      });
 
       event.currentTarget.setPointerCapture?.(event.pointerId);
       return;
     }
 
-    // At default zoom, mobile should still scroll the page naturally.
-    // Desktop drag rotates the chart.
     if (event.pointerType === 'touch') return;
 
     const angle = getPointerAngle(event, event.currentTarget);
@@ -1555,17 +1604,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     if (dragRef.current.pointerId !== event.pointerId) return;
 
     if (dragRef.current.mode === 'pan') {
-      event.preventDefault();
-
-      const nextPan = clampPanForZoom(
-        {
-          x: dragRef.current.startPan.x + event.clientX - dragRef.current.startX,
-          y: dragRef.current.startPan.y + event.clientY - dragRef.current.startY
-        },
-        zoom
-      );
-
-      schedulePan(nextPan);
+      updatePanDrag({
+        pointerId: event.pointerId,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        event
+      });
       return;
     }
 
@@ -1575,17 +1619,43 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   };
 
   const handlePointerUp = (event) => {
-    if (dragRef.current?.pointerId !== event.pointerId) return;
+    endPanDrag({ pointerId: event.pointerId, event });
+  };
 
-    dragRef.current = null;
-    pendingPanRef.current = null;
+  const handleTouchStart = (event) => {
+    if (!canPanMap) return;
+    if (shouldIgnoreDrag(event.target)) return;
+    if (event.touches.length !== 1) return;
 
-    if (panFrameRef.current) {
-      cancelAnimationFrame(panFrameRef.current);
-      panFrameRef.current = null;
-    }
+    const touch = event.touches[0];
+    touchDragRef.current = touch.identifier;
 
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    startPanDrag({
+      pointerId: null,
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      event
+    });
+  };
+
+  const handleTouchMove = (event) => {
+    if (!canPanMap) return;
+    if (!dragRef.current || dragRef.current.mode !== 'pan') return;
+
+    const touch = Array.from(event.touches).find((item) => item.identifier === touchDragRef.current) || event.touches[0];
+    if (!touch) return;
+
+    updatePanDrag({
+      pointerId: null,
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      event
+    });
+  };
+
+  const handleTouchEnd = (event) => {
+    if (!dragRef.current || dragRef.current.mode !== 'pan') return;
+    endPanDrag({ event });
   };
 
   const stopMapPointerEvents = (event) => event.stopPropagation();
@@ -1647,15 +1717,18 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             isDetailMode ? 'detailMode' : 'cleanMode',
             canPanMap ? 'canPanMap' : ''
           ].join(' ')}
-          style={{ touchAction: canPanMap ? 'none' : 'pan-y' }}
+          style={{ touchAction: canPanMap ? 'none' : 'pan-y', WebkitUserSelect: 'none', userSelect: 'none' }}
           onContextMenu={(event) => event.preventDefault()}
-          onPointerDown={handlePointerDown}
+          onPointerDownCapture={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
-          onPointerLeave={handlePointerUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
         >
-          <div className="skyPanLayer" style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) rotate(${rotation}deg) scale(${zoom})` }}>
+          <div className="skyPanLayer" style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) rotate(${rotation}deg) scale(${zoom})`, transformOrigin: '50% 50%' }}>
             <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label="Live sky map for Eliot, Maine">
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
 
