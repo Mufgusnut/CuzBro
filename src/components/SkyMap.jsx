@@ -1965,6 +1965,39 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label="Live sky map for Eliot, Maine">
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
 
+              {showHorizon && (
+                <g className="horizonSilhouetteSvg" aria-hidden="true">
+                  <defs>
+                    <clipPath id="backyardTreeHorizonClipSvg">
+                      <circle cx={CENTER} cy={CENTER} r={RADIUS} />
+                    </clipPath>
+                  </defs>
+
+                  <g clipPath="url(#backyardTreeHorizonClipSvg)">
+                    <path
+                      className="treeShadow treeShadowNorth"
+                      d="M488 88 L488 158 L508 146 L526 118 L544 144 L563 104 L582 138 L601 96 L620 142 L640 113 L660 151 L682 128 L704 166 L726 138 L748 174 L770 150 L792 184 L814 162 L838 190 L862 174 L862 88 Z"
+                    />
+                    <path
+                      className="treeShadow treeShadowNorthEast"
+                      d="M736 132 L754 190 L772 176 L790 132 L807 166 L826 118 L844 156 L864 106 L884 166 L903 138 L923 190 L943 158 L962 210 L982 184 L1000 206 L1000 132 Z"
+                    />
+                    <path
+                      className="treeShadow treeShadowWest"
+                      d="M70 930 L70 846 L88 834 L105 812 L122 832 L140 792 L158 822 L176 784 L195 828 L215 802 L235 850 L255 820 L276 870 L298 844 L320 890 L342 864 L364 904 L386 886 L410 918 L410 1000 L70 1000 Z"
+                    />
+                    <path
+                      className="treeShadow treeShadowSouth"
+                      d="M218 1000 L218 870 L236 858 L254 812 L273 854 L292 780 L312 842 L332 742 L353 834 L374 776 L396 862 L418 792 L440 884 L462 816 L484 864 L506 758 L528 850 L550 732 L572 872 L596 808 L620 892 L644 818 L668 866 L692 800 L716 888 L740 838 L764 906 L788 874 L812 920 L812 1000 Z"
+                    />
+                    <path
+                      className="treeShadow treeShadowSouthEast"
+                      d="M624 1000 L624 838 L642 826 L660 772 L678 820 L696 742 L716 808 L736 702 L756 802 L776 734 L796 840 L817 748 L838 866 L860 776 L882 850 L904 796 L926 888 L948 840 L970 906 L990 874 L1000 890 L1000 1000 Z"
+                    />
+                  </g>
+                </g>
+              )}
+
               {BACKGROUND_STARS.map((star) => (
                 <circle
                   key={star.id}
@@ -2398,42 +2431,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
 
 
-          {showHorizon && (
-            <svg className="horizonSilhouette" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} aria-hidden="true">
-              <defs>
-                <clipPath id="backyardHorizonClip">
-                  <circle cx={CENTER} cy={CENTER} r={RADIUS} />
-                </clipPath>
-                <linearGradient id="treeFadeSouth" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stopColor="rgba(5, 10, 18, 0.72)" />
-                  <stop offset="1" stopColor="rgba(2, 5, 10, 0.99)" />
-                </linearGradient>
-                <linearGradient id="treeFadeSide" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stopColor="rgba(6, 12, 22, 0.58)" />
-                  <stop offset="1" stopColor="rgba(3, 7, 13, 0.96)" />
-                </linearGradient>
-              </defs>
-
-              <g clipPath="url(#backyardHorizonClip)">
-                <path
-                  className="treeShadow treeShadowWest"
-                  d="M76 928 L76 842 L92 831 L107 810 L121 827 L138 792 L154 818 L170 781 L188 822 L207 798 L226 842 L245 815 L264 862 L284 838 L306 883 L326 858 L347 895 L365 880 L383 908 L400 896 L400 1000 L76 1000 Z"
-                />
-                <path
-                  className="treeShadow treeShadowSouth"
-                  d="M235 1000 L235 870 L253 858 L270 807 L288 850 L306 782 L326 838 L345 742 L365 826 L386 776 L407 860 L429 794 L451 880 L472 820 L493 858 L515 764 L536 844 L557 738 L579 872 L602 812 L624 890 L646 824 L668 864 L690 804 L711 884 L733 842 L755 904 L776 872 L776 1000 Z"
-                />
-                <path
-                  className="treeShadow treeShadowSouthEast"
-                  d="M640 1000 L640 840 L658 825 L675 770 L693 818 L711 742 L730 804 L748 704 L768 800 L786 735 L806 836 L826 748 L846 864 L866 776 L887 846 L909 798 L929 884 L949 842 L968 905 L988 874 L1000 890 L1000 1000 Z"
-                />
-                <path
-                  className="treeShadow treeShadowNorthEast"
-                  d="M744 284 L762 270 L780 236 L796 262 L814 230 L832 257 L850 218 L868 264 L887 240 L905 286 L924 260 L942 300 L960 282 L978 318 L1000 302 L1000 445 L744 445 Z"
-                />
-              </g>
-            </svg>
-          )}
 
           <div className="atlasLegend enhancedLegend">
             <span><i className="legendCyan"></i> Planetary Nebula</span>

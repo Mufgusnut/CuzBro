@@ -4928,3 +4928,47 @@ footer p {
     opacity: 0.86 !important;
   }
 }
+/* =========================================================
+   SKY MAP: TOGGLEABLE TREE HORIZON — DESKTOP + MOBILE
+========================================================= */
+
+.inlineModeToggle {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.horizonSilhouetteSvg {
+  pointer-events: none !important;
+  opacity: 1 !important;
+}
+
+.treeShadow {
+  fill: rgba(255, 143, 64, 0.18) !important;
+  stroke: rgba(255, 166, 86, 0.42) !important;
+  stroke-width: 2 !important;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 132, 45, 0.24))
+    drop-shadow(0 0 22px rgba(0, 0, 0, 0.42)) !important;
+}
+
+.treeShadowSouth,
+.treeShadowSouthEast {
+  fill: rgba(255, 126, 42, 0.26) !important;
+  stroke: rgba(255, 180, 92, 0.52) !important;
+}
+
+.treeShadowWest,
+.treeShadowNorth,
+.treeShadowNorthEast {
+  fill: rgba(255, 158, 84, 0.16) !important;
+  stroke: rgba(255, 190, 120, 0.38) !important;
+}
+
+@media (max-width: 700px) {
+  .inlineModeToggle {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .treeShadow {
+    stroke-width: 2.4 !important;
+  }
+}
