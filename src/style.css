@@ -5452,3 +5452,117 @@ footer p {
   stroke-width: 2 !important;
   filter: drop-shadow(0 0 8px rgba(255, 132, 45, 0.34)) !important;
 }
+/* =========================================================
+   SKY MAP: TARGET FRAMING PREVIEW - CLEAN LAYOUT
+========================================================= */
+
+.targetFramingCard {
+  margin: 18px 0 20px !important;
+  padding: 18px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 157, 28, 0.20) !important;
+  background:
+    radial-gradient(circle at top left, rgba(255, 157, 28, 0.10), transparent 36%),
+    rgba(7, 14, 30, 0.58) !important;
+}
+
+.targetFramingHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+}
+
+.targetFramingHeader small {
+  display: block !important;
+  color: rgba(255, 180, 95, 0.95) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 8px !important;
+}
+
+.targetFramingHeader h3 {
+  margin: 0 !important;
+  font-size: clamp(1.35rem, 2vw, 1.9rem) !important;
+  color: rgba(150, 220, 255, 0.98) !important;
+  line-height: 1.15 !important;
+}
+
+.targetFramingHeader i {
+  flex: 0 0 auto !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  font-size: 0.78rem !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+  color: rgba(255, 230, 195, 0.95) !important;
+  border: 1px solid rgba(255, 166, 70, 0.32) !important;
+  background: rgba(255, 157, 28, 0.08) !important;
+}
+
+.targetFramingCard > p {
+  margin: 8px 0 14px !important;
+  color: rgba(255,255,255,0.88) !important;
+  font-style: italic !important;
+  font-size: 1rem !important;
+  line-height: 1.45 !important;
+}
+
+.targetFramingGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 14px 0 !important;
+}
+
+.targetFramingGrid span {
+  display: block !important;
+  padding: 12px 13px !important;
+  border-radius: 16px !important;
+  background: rgba(0,0,0,0.18) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  color: rgba(226,236,255,0.82) !important;
+  line-height: 1.38 !important;
+  font-size: 0.95rem !important;
+}
+
+.targetFramingGrid b {
+  display: block !important;
+  color: #fff !important;
+  margin: 0 0 5px !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.targetFramingChips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-top: 13px !important;
+}
+
+.targetFramingChips em {
+  display: inline-flex !important;
+  align-items: center !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  font-size: 0.78rem !important;
+  font-style: normal !important;
+  font-weight: 800 !important;
+  color: rgba(255, 226, 190, 0.95) !important;
+  border: 1px solid rgba(255, 166, 70, 0.26) !important;
+  background: rgba(255, 157, 28, 0.07) !important;
+}
+
+@media (max-width: 700px) {
+  .targetFramingHeader {
+    flex-direction: column !important;
+  }
+
+  .targetFramingGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
