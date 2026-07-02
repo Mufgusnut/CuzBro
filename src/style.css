@@ -5187,3 +5187,111 @@ footer p {
   border-color: rgba(255, 115, 95, 0.26) !important;
   background: rgba(255, 90, 60, 0.085) !important;
 }
+/* =========================================================
+   SKY MAP: TONIGHT'S SESSION PLAN
+========================================================= */
+
+.tonightSessionPlan {
+  margin: 28px auto 0 !important;
+  max-width: 1180px !important;
+  padding: 22px !important;
+  border-radius: 28px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background:
+    radial-gradient(circle at top left, rgba(255,157,28,0.13), transparent 34%),
+    rgba(7, 14, 30, 0.72) !important;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.28) !important;
+}
+
+.sessionPlanHeader {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.sessionPlanHeader small {
+  color: rgba(255, 180, 95, 0.95) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+
+.sessionPlanHeader h2 {
+  margin: 4px 0 0 !important;
+}
+
+.sessionPlanHeader button {
+  border-radius: 999px !important;
+  padding: 10px 14px !important;
+}
+
+.sessionPlanSteps {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.sessionPlanStep {
+  display: grid !important;
+  grid-template-columns: 34px 1fr !important;
+  gap: 12px !important;
+  text-align: left !important;
+  align-items: start !important;
+  padding: 15px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgba(255,255,255,0.045) !important;
+  color: inherit !important;
+  cursor: pointer !important;
+}
+
+.sessionPlanStep b {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  background: rgba(255,255,255,0.08) !important;
+  color: #fff !important;
+}
+
+.sessionPlanStep strong {
+  display: block !important;
+  margin-bottom: 6px !important;
+  color: #fff !important;
+}
+
+.sessionPlanStep em,
+.sessionPlanStep small {
+  display: block !important;
+  color: rgba(226,236,255,0.74) !important;
+  font-style: normal !important;
+  line-height: 1.35 !important;
+}
+
+.sessionPlanStep.ok {
+  border-color: rgba(120, 220, 255, 0.22) !important;
+}
+
+.sessionPlanStep.caution {
+  border-color: rgba(255, 190, 90, 0.34) !important;
+  background: rgba(255, 166, 60, 0.06) !important;
+}
+
+.sessionPlanStep.bad {
+  border-color: rgba(255, 115, 95, 0.34) !important;
+  background: rgba(255, 90, 60, 0.065) !important;
+}
+
+@media (max-width: 900px) {
+  .sessionPlanSteps {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sessionPlanHeader {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+}

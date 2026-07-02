@@ -1640,6 +1640,142 @@ function placeCollisionSafeLabels(items, fixedBoxes = []) {
   return placements;
 }
 
+function targetHasBadMoon(target) {
+  return target?.moonImpact?.className === 'bad';
+}
+
+function targetHasTreeProblem(target) {
+  return target?.treeObstruction?.className === 'bad';
+}
+
+function targetHasCaution(target) {
+  return target?.moonImpact?.className === 'caution' || target?.treeObstruction?.className === 'caution';
+}
+
+function isPlanetTarget(target) {
+  return target?.objectType === 'Planet';
+}
+
+function isTargetUsableTonight(target) {
+  if (!target) return false;
+  if (target.plannerStatus?.className === 'below') return false;
+  if (targetHasBadMoon(target) || targetHasTreeProblem(target)) return false;
+  return (target.tonightPlan?.peak?.alt ?? -90) >= 15;
+}
+
+function buildPlanReason(target) {
+  if (!target) return '';
+
+  const reasons = [];
+
+  if (target.tonightPlan?.bestWindow) {
+    reasons.push(`best window: ${target.tonightPlan.bestWindow}`);
+  }
+
+  if (target.treeObstruction?.className === 'ok') {
+    reasons.push(target.treeObstruction.label.toLowerCase());
+  } else if (target.treeObstruction) {
+    reasons.push(target.treeObstruction.label.toLowerCase());
+  }
+
+  if (target.moonImpact?.className === 'ok') {
+    reasons.push(target.moonImpact.label.toLowerCase());
+  } else if (target.moonImpact) {
+    reasons.push(target.moonImpact.label.toLowerCase());
+  }
+
+  return reasons.join(' · ');
+}
+
+function buildTonightSessionPlan(targets) {
+  const ranked = [...(targets || [])];
+  const usable = ranked.filter(isTargetUsableTonight);
+  const nonPlanetUsable = usable.filter((target) => !isPlanetTarget(target));
+  const planetTargets = ranked.filter(isPlanetTarget);
+
+  const startTarget =
+    nonPlanetUsable.find((target) => target.plannerStatus?.label?.includes('Now') && !targetHasCaution(target)) ||
+    nonPlanetUsable.find((target) => target.plannerStatus?.label?.includes('Now')) ||
+    nonPlanetUsable[0] ||
+    usable[0] ||
+    ranked[0] ||
+    null;
+
+  const laterTarget =
+    nonPlanetUsable.find((target) => target.title !== startTarget?.title && target.plannerStatus?.label?.includes('Later')) ||
+    nonPlanetUsable.find((target) => target.title !== startTarget?.title) ||
+    usable.find((target) => target.title !== startTarget?.title) ||
+    null;
+
+  const planetBackup =
+    planetTargets.find((target) => target.plannerStatus?.className !== 'below' && !targetHasTreeProblem(target)) ||
+    planetTargets[0] ||
+    null;
+
+  const avoidTargets = ranked
+    .filter((target) => {
+      if (!target) return false;
+      if (target.title === startTarget?.title || target.title === laterTarget?.title || target.title === planetBackup?.title) return false;
+      return targetHasBadMoon(target) || targetHasTreeProblem(target) || target.plannerStatus?.className === 'below';
+    })
+    .slice(0, 3);
+
+  const steps = [];
+
+  if (startTarget) {
+    steps.push({
+      key: 'start',
+      label: 'Start here',
+      target: startTarget,
+      note: `Best first pick. ${buildPlanReason(startTarget)}.`,
+      className: targetHasCaution(startTarget) ? 'caution' : 'ok'
+    });
+  }
+
+  if (laterTarget) {
+    steps.push({
+      key: 'later',
+      label: 'Then try',
+      target: laterTarget,
+      note: `Good follow-up. ${buildPlanReason(laterTarget)}.`,
+      className: targetHasCaution(laterTarget) ? 'caution' : 'ok'
+    });
+  }
+
+  if (planetBackup) {
+    steps.push({
+      key: 'backup',
+      label: 'Backup target',
+      target: planetBackup,
+      note: `Use this if seeing is steady or deep-sky contrast is poor. ${buildPlanReason(planetBackup)}.`,
+      className: targetHasTreeProblem(planetBackup) ? 'caution' : 'ok'
+    });
+  }
+
+  if (avoidTargets.length) {
+    steps.push({
+      key: 'avoid',
+      label: 'Skip for now',
+      target: avoidTargets[0],
+      extraTargets: avoidTargets.slice(1),
+      note: `Lower priority tonight because of ${[
+        avoidTargets[0].moonImpact?.className === 'bad' ? 'moonlight' : null,
+        avoidTargets[0].treeObstruction?.className === 'bad' ? 'trees' : null,
+        avoidTargets[0].plannerStatus?.className === 'below' ? 'low altitude' : null
+      ].filter(Boolean).join(' / ') || 'conditions'}.`,
+      className: 'bad'
+    });
+  }
+
+  return {
+    startTarget,
+    laterTarget,
+    planetBackup,
+    avoidTargets,
+    steps
+  };
+}
+
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFutureIndex, setActiveFutureIndex] = useState(0);
@@ -1789,6 +1925,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       })
       .map((target, rankIndex) => ({ ...target, rankNumber: rankIndex + 1 }));
   }, [mappedFutureTargets]);
+
+  const tonightSessionPlan = useMemo(() => buildTonightSessionPlan(rankedFutureTargets), [rankedFutureTargets]);
 
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
   const activeFutureTarget = rankedFutureTargets.find((target) => target.actualIndex === activeFutureIndex) || rankedFutureTargets[0] || mappedFutureTargets[0];
@@ -3013,6 +3151,46 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           ))}
         </aside>
       </section>
+
+      {selectedPanel === 'future' && tonightSessionPlan.steps.length > 0 && (
+        <section className="tonightSessionPlan">
+          <div className="sessionPlanHeader">
+            <div>
+              <small>Tonight's Plan</small>
+              <h2>Suggested observing order</h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => tonightSessionPlan.startTarget && selectFutureTarget(tonightSessionPlan.startTarget.actualIndex, true)}
+              disabled={!tonightSessionPlan.startTarget}
+            >
+              Highlight first target
+            </button>
+          </div>
+
+          <div className="sessionPlanSteps">
+            {tonightSessionPlan.steps.map((step, index) => (
+              <button
+                key={step.key}
+                type="button"
+                className={`sessionPlanStep ${step.className}`}
+                onClick={() => step.target && selectFutureTarget(step.target.actualIndex, true)}
+              >
+                <b>{index + 1}</b>
+                <span>
+                  <strong>{step.label}: {step.target?.title}</strong>
+                  <em>{step.note}</em>
+                  {step.extraTargets?.length > 0 && (
+                    <small>
+                      Also skip: {step.extraTargets.map((target) => target.shortTitle || target.title).join(', ')}
+                    </small>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {selectedPanel === 'captured' && activeObject && (
         <section className="atlasDetail">
