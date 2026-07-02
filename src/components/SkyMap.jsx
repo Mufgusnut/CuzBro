@@ -1830,6 +1830,157 @@ function getVisitorActionNote(visitor) {
   return 'Add the current RA/Dec at the top of SkyMap.jsx to make this visitor appear on the map.';
 }
 
+
+function getTargetFramingPreview(target) {
+  const type = target?.objectType || 'Target';
+  const title = target?.title || '';
+  const shortTitle = target?.shortTitle || title || 'Target';
+
+  const base = {
+    headline: 'Framing preview',
+    fit: 'Moderate fit',
+    className: 'moderate',
+    native: 'CPC 800 native: workable, but framing depends on target size.',
+    reducer: 'Reducer: helpful for easier framing and brighter images when you add one.',
+    eyepiece32: '32mm eyepiece: best starting view and finder eyepiece.',
+    eyepiece10: '10mm eyepiece: use only after centering and only if the target benefits from scale.',
+    iphone: 'iPhone: take a short test capture first, then adjust exposure/focus.',
+    note: 'Start wide, center carefully, then decide whether more scale or wider field is the right move.',
+    chips: ['CPC 800', '32mm finder', 'test frame']
+  };
+
+  if (type === 'Comet') {
+    return {
+      headline: 'Moving target framing',
+      fit: visitorHasEphemeris(target) ? 'Field check needed' : 'Needs RA/Dec',
+      className: visitorHasEphemeris(target) ? 'moderate' : 'caution',
+      native: 'CPC 800 native: possible, but the comet may be faint and field verification matters.',
+      reducer: 'Reducer: useful for a wider field and easier star-field matching.',
+      eyepiece32: '32mm eyepiece: best way to confirm the predicted field visually.',
+      eyepiece10: '10mm eyepiece: usually too tight unless the comet is bright and condensed.',
+      iphone: 'iPhone: stack many short exposures; compare frames for motion against background stars.',
+      note: visitorHasEphemeris(target)
+        ? 'Use the loaded ephemeris as the starting point, then verify the surrounding star pattern.'
+        : 'Add current RA/Dec first so the map can place the visitor and estimate the field.',
+      chips: ['Update ephemeris', 'wide first', 'stack short frames']
+    };
+  }
+
+  if (type === 'Planet') {
+    return {
+      headline: 'Planet framing preview',
+      fit: 'Tiny but bright',
+      className: 'good',
+      native: 'CPC 800 native: good planetary scale, especially with careful focus.',
+      reducer: 'Reducer: not recommended for planets; you want image scale, not a wider field.',
+      eyepiece32: '32mm eyepiece: useful for initial alignment/locating, but too low-power for detail.',
+      eyepiece10: '10mm eyepiece: good starting high-power view; add Barlow only if seeing is steady.',
+      iphone: 'iPhone: video capture is the right move. Stack the sharpest frames for detail.',
+      note: 'Planet framing is easy; the real challenge is steady seeing and sharp focus.',
+      chips: ['video', '10mm', 'seeing-limited']
+    };
+  }
+
+  if (type === 'Open Cluster') {
+    const isDoubleCluster = title.includes('Double Cluster');
+    return {
+      headline: 'Cluster framing preview',
+      fit: isDoubleCluster ? 'Wide visual target' : 'Good fit',
+      className: isDoubleCluster ? 'moderate' : 'good',
+      native: isDoubleCluster
+        ? 'CPC 800 native: beautiful, but tight; you may frame one cluster at a time or the central region.'
+        : 'CPC 800 native: generally good for many clusters.',
+      reducer: 'Reducer: helpful for a more relaxed, wider cluster composition.',
+      eyepiece32: '32mm eyepiece: preferred. Keep the view wide and bright.',
+      eyepiece10: '10mm eyepiece: usually too zoomed for wide clusters, but useful for inspecting dense regions.',
+      iphone: 'iPhone: short exposures work well; avoid blowing out the brightest stars.',
+      note: 'Clusters usually reward wider framing more than magnification.',
+      chips: ['32mm best', 'wide view', 'short exposures']
+    };
+  }
+
+  if (type === 'Planetary Nebula') {
+    return {
+      headline: 'Tiny target framing preview',
+      fit: 'Small but suitable',
+      className: 'good',
+      native: 'CPC 800 native: good match. The target is tiny, so the SCT scale helps.',
+      reducer: 'Reducer: not necessary unless you want easier finding or a wider star field.',
+      eyepiece32: '32mm eyepiece: use first to locate the field.',
+      eyepiece10: '10mm eyepiece: useful once centered; the object can take more magnification than big nebulae.',
+      iphone: 'iPhone: use short video or many short exposures; crop/stack for scale.',
+      note: 'The challenge is finding and focusing, not fitting it in the field.',
+      chips: ['small target', '10mm useful', 'focus critical']
+    };
+  }
+
+  if (type === 'Galaxy') {
+    const isM31 = title.includes('Andromeda') || title.includes('M31');
+    if (isM31) {
+      return {
+        headline: 'Huge galaxy framing preview',
+        fit: 'Too large native',
+        className: 'caution',
+        native: 'CPC 800 native: far too tight for the full galaxy; expect the bright core and nearby dust/glow only.',
+        reducer: 'Reducer: strongly recommended, though M31 is still a wide-field/mosaic target.',
+        eyepiece32: '32mm eyepiece: best visual option, but still only a portion of the full object.',
+        eyepiece10: '10mm eyepiece: too zoomed for M31 except for inspecting the core.',
+        iphone: 'iPhone: can capture the core; a wide-field camera/lens is better for the whole galaxy.',
+        note: 'Treat this as an M31 core/detail target with the CPC 800, not a full-galaxy framing target.',
+        chips: ['huge target', 'reducer helps', 'core/detail']
+      };
+    }
+
+    return {
+      headline: 'Galaxy framing preview',
+      fit: 'Small and faint',
+      className: 'moderate',
+      native: 'CPC 800 native: good scale for many galaxies, but tracking/focus must be solid.',
+      reducer: 'Reducer: helpful because it brightens the field and makes tracking more forgiving.',
+      eyepiece32: '32mm eyepiece: use to find and center; visual detail may be very subtle.',
+      eyepiece10: '10mm eyepiece: usually not helpful; galaxies need brightness and contrast more than magnification.',
+      iphone: 'iPhone: camera/stacking preferred. Use many short exposures and avoid bright Moon nights.',
+      note: 'The size is workable; the hard part is faint surface brightness.',
+      chips: ['faint', 'stacking', 'dark sky']
+    };
+  }
+
+  if (type === 'Emission Nebula' || type === 'Supernova Remnant') {
+    const isHuge = title.includes('North America') || title.includes('Veil');
+    return {
+      headline: isHuge ? 'Huge nebula framing preview' : 'Nebula framing preview',
+      fit: isHuge ? 'Too large native' : 'Wide field preferred',
+      className: isHuge ? 'caution' : 'moderate',
+      native: isHuge
+        ? 'CPC 800 native: much too tight for the full object; you will see/capture only a small section.'
+        : 'CPC 800 native: workable for smaller nebula detail, but still benefits from wider field.',
+      reducer: 'Reducer: strongly recommended for nebulae when you add one; wider and brighter is better.',
+      eyepiece32: '32mm eyepiece: use the widest field available. Do not chase magnification.',
+      eyepiece10: '10mm eyepiece: too zoomed for this kind of target.',
+      iphone: 'iPhone: possible as a project, but stacking/stretching and dark sky matter a lot.',
+      note: 'For diffuse nebulae, field width and contrast beat magnification every time.',
+      chips: ['UHC helpful', 'wide field', 'not 10mm']
+    };
+  }
+
+  if (type === 'Globular Cluster') {
+    return {
+      headline: 'Globular framing preview',
+      fit: 'Good fit',
+      className: 'good',
+      native: 'CPC 800 native: strong match. Globulars benefit from SCT aperture and scale.',
+      reducer: 'Reducer: optional; native scale is usually fine for a globular cluster.',
+      eyepiece32: '32mm eyepiece: use to locate and center the cluster.',
+      eyepiece10: '10mm eyepiece: useful when seeing is steady to resolve outer stars.',
+      iphone: 'iPhone: short captures can work well; protect the core from overexposure.',
+      note: 'This is one of the better target types for the CPC 800 visually and photographically.',
+      chips: ['native good', '10mm useful', 'core exposure']
+    };
+  }
+
+  return base;
+}
+
 function getTargetActionPlan(target) {
   const type = target?.objectType || 'Target';
   const title = target?.title || '';
@@ -3665,7 +3816,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             {(() => {
               const actionPlan = getTargetActionPlan(activeVisitorTarget);
 
+              const framingPreview = getTargetFramingPreview(activeVisitorTarget);
+
               return (
+                <>
                 <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
                   <div className="targetActionHeader">
                     <small>Recommended Setup</small>
@@ -3685,6 +3839,28 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     ))}
                   </ul>
                 </div>
+
+                <div className={`targetFramingCard ${framingPreview.className}`}>
+                  <div className="targetFramingHeader">
+                    <small>Framing Preview</small>
+                    <h3>{framingPreview.headline}</h3>
+                    <i>{framingPreview.fit}</i>
+                  </div>
+                  <div className="targetFramingGrid">
+                    <span><b>Native CPC 800</b>{framingPreview.native}</span>
+                    <span><b>Reducer</b>{framingPreview.reducer}</span>
+                    <span><b>32mm Eyepiece</b>{framingPreview.eyepiece32}</span>
+                    <span><b>10mm / High Power</b>{framingPreview.eyepiece10}</span>
+                    <span><b>iPhone Capture</b>{framingPreview.iphone}</span>
+                    <span><b>Bottom Line</b>{framingPreview.note}</span>
+                  </div>
+                  <div className="targetFramingChips">
+                    {framingPreview.chips.map((chip) => (
+                      <em key={chip}>{chip}</em>
+                    ))}
+                  </div>
+                </div>
+                </>
               );
             })()}
             <div className="atlasFacts">
@@ -3755,7 +3931,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             {(() => {
               const actionPlan = getTargetActionPlan(activeFutureTarget);
 
+              const framingPreview = getTargetFramingPreview(activeFutureTarget);
+
               return (
+                <>
                 <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
                   <div className="targetActionHeader">
                     <small>Recommended Setup</small>
@@ -3775,6 +3954,28 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     ))}
                   </ul>
                 </div>
+
+                <div className={`targetFramingCard ${framingPreview.className}`}>
+                  <div className="targetFramingHeader">
+                    <small>Framing Preview</small>
+                    <h3>{framingPreview.headline}</h3>
+                    <i>{framingPreview.fit}</i>
+                  </div>
+                  <div className="targetFramingGrid">
+                    <span><b>Native CPC 800</b>{framingPreview.native}</span>
+                    <span><b>Reducer</b>{framingPreview.reducer}</span>
+                    <span><b>32mm Eyepiece</b>{framingPreview.eyepiece32}</span>
+                    <span><b>10mm / High Power</b>{framingPreview.eyepiece10}</span>
+                    <span><b>iPhone Capture</b>{framingPreview.iphone}</span>
+                    <span><b>Bottom Line</b>{framingPreview.note}</span>
+                  </div>
+                  <div className="targetFramingChips">
+                    {framingPreview.chips.map((chip) => (
+                      <em key={chip}>{chip}</em>
+                    ))}
+                  </div>
+                </div>
+                </>
               );
             })()}
             <div className="atlasFacts">
