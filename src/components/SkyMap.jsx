@@ -2265,6 +2265,15 @@ const SESSION_MODES = [
   { key: 'visitors', label: 'Visitors' }
 ];
 
+const PLANNER_DETAIL_TABS = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'why', label: 'Why Tonight' },
+  { key: 'difficulty', label: 'Difficulty' },
+  { key: 'setup', label: 'Setup' },
+  { key: 'framing', label: 'Framing' },
+  { key: 'info', label: 'General Info' }
+];
+
 function getSessionModeBonus(target, sessionMode = 'balanced') {
   const type = target?.objectType || '';
   const title = target?.title || '';
@@ -2475,6 +2484,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const [showHorizon, setShowHorizon] = useState(true);
   const [activePreset, setActivePreset] = useState('now');
   const [sessionMode, setSessionMode] = useState('balanced');
+  const [activePlannerTab, setActivePlannerTab] = useState('overview');
 
   const dragRef = useRef(null);
   const panFrameRef = useRef(null);
@@ -2482,6 +2492,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const touchDragRef = useRef(null);
   const mapSectionRef = useRef(null);
   const mapRef = useRef(null);
+  const plannerDetailRef = useRef(null);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
   const isDetailMode = viewMode === 'detail';
   const mobileLayout = isMobileViewport();
@@ -3103,27 +3114,37 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     if (realIndex !== -1) setSelectedIndex(realIndex);
   };
 
-  const scrollToMap = () => {
+  const scrollToElement = (targetRef, fallbackRef = null) => {
     window.requestAnimationFrame(() => {
-      const target = mapRef.current || mapSectionRef.current;
-      if (!target) return;
+      window.requestAnimationFrame(() => {
+        const target = targetRef.current || fallbackRef?.current;
+        if (!target) return;
 
-      const rect = target.getBoundingClientRect();
-      const pageY = window.scrollY || window.pageYOffset || 0;
-      const desiredTop = rect.top + pageY + rect.height / 2 - window.innerHeight / 2;
+        const rect = target.getBoundingClientRect();
+        const pageY = window.scrollY || window.pageYOffset || 0;
+        const desiredTop = rect.top + pageY - 18;
 
-      window.scrollTo({
-        top: Math.max(0, desiredTop),
-        behavior: 'smooth'
+        window.scrollTo({
+          top: Math.max(0, desiredTop),
+          behavior: 'smooth'
+        });
       });
     });
+  };
+
+  const scrollToMap = () => {
+    scrollToElement(mapRef, mapSectionRef);
+  };
+
+  const scrollToPlannerDetail = () => {
+    scrollToElement(plannerDetailRef, mapSectionRef);
   };
 
   const selectFutureTarget = (index, shouldScroll = false) => {
     setActiveFutureIndex(index);
     setSelectedPanel('future');
     setCatalogView('future');
-    if (shouldScroll) scrollToMap();
+    if (shouldScroll) scrollToPlannerDetail();
   };
 
 
@@ -3132,14 +3153,14 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     setActiveVisitorIndex(index);
     setSelectedPanel('visitor');
     setCatalogView('visitors');
-    if (shouldScroll) scrollToMap();
+    if (shouldScroll) scrollToPlannerDetail();
   };
 
   const selectCapturedTarget = (index, shouldScroll = false) => {
     setActiveIndex(index);
     setSelectedPanel('captured');
     setCatalogView('captured');
-    if (shouldScroll) scrollToMap();
+    if (shouldScroll) scrollToPlannerDetail();
   };
 
   const zoomIn = () => {
@@ -4016,7 +4037,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             </button>
           </div>
 
-          <small>{catalogView === 'future' ? 'Target Planner' : catalogView === 'visitors' ? 'Closest Visitors' : 'Mission Archive'}</small>
+          <small>{catalogView === 'future' ? 'Target Planner List' : catalogView === 'visitors' ? 'Closest Visitors List' : 'Mission Archive'}</small>
 
           {(catalogView === 'future' || catalogView === 'visitors') && (
             <div className="plannerControlsPanel tonightModePanel">
@@ -4144,25 +4165,24 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       </section>
 
       {selectedPanel === 'visitor' && activeVisitorTarget && (
-        <section className="atlasDetail plannerDetail plannerDetailNoBadge visitorDetail">
+        <section ref={plannerDetailRef} className="atlasDetail plannerDetail plannerDetailNoBadge plannerTabbedDetail visitorDetail">
           <div>
             <small>Closest Visitor</small>
-            <h2><span>☄</span>{activeVisitorTarget.title}</h2>
-            <h3>{activeVisitorTarget.objectType} · {activeVisitorTarget.constellation}</h3>
-            <p>{activeVisitorTarget.notes}</p>
-            <p className={`futureFinderNote visitorNote ${activeVisitorTarget.ephemerisNeeded ? 'caution' : 'ok'}`}>
-              <b>Visitor status:</b> {getVisitorActionNote(activeVisitorTarget)}
-            </p>
-            {activeVisitorTarget.moonImpact && (
-              <p className={`futureFinderNote moonImpactNote ${activeVisitorTarget.moonImpact.className}`}>
-                <b>Moon check:</b> {activeVisitorTarget.moonImpact.detail}
-              </p>
-            )}
-            {activeVisitorTarget.treeObstruction && (
-              <p className={`futureFinderNote treeObstructionNote ${activeVisitorTarget.treeObstruction.className}`}>
-                <b>Tree line:</b> {activeVisitorTarget.treeObstruction.detail}
-              </p>
-            )}
+            <div className="plannerDetailTabs" role="tablist" aria-label="Visitor detail tabs">
+              {PLANNER_DETAIL_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activePlannerTab === tab.key}
+                  className={activePlannerTab === tab.key ? 'active' : ''}
+                  onClick={() => setActivePlannerTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
             {(() => {
               const actionPlan = getTargetActionPlan(activeVisitorTarget);
               const framingPreview = getTargetFramingPreview(activeVisitorTarget);
@@ -4170,107 +4190,141 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               const whyExplanation = getTargetWhyExplanation(activeVisitorTarget, sessionMode);
 
               return (
-                <>
-                <div className="targetWhyCard">
-                  <div className="targetWhyHeader">
-                    <small>{whyExplanation.headline}</small>
-                    <h3>Why it is ranked here</h3>
-                  </div>
-                  <p>{whyExplanation.summary}</p>
-                  <div className="targetWhyColumns">
-                    <div>
-                      <b>Good tonight</b>
+                <div className="plannerTabPanel">
+                  {activePlannerTab === 'overview' && (
+                    <>
+                      <h2><span>☄</span>{activeVisitorTarget.title}</h2>
+                      <h3>{activeVisitorTarget.objectType} · {activeVisitorTarget.constellation}</h3>
+                      <p>{activeVisitorTarget.notes}</p>
+                      <p className={`futureFinderNote visitorNote ${activeVisitorTarget.ephemerisNeeded ? 'caution' : 'ok'}`}>
+                        <b>Visitor status:</b> {getVisitorActionNote(activeVisitorTarget)}
+                      </p>
+                      {activeVisitorTarget.moonImpact && (
+                        <p className={`futureFinderNote moonImpactNote ${activeVisitorTarget.moonImpact.className}`}>
+                          <b>Moon check:</b> {activeVisitorTarget.moonImpact.detail}
+                        </p>
+                      )}
+                      {activeVisitorTarget.treeObstruction && (
+                        <p className={`futureFinderNote treeObstructionNote ${activeVisitorTarget.treeObstruction.className}`}>
+                          <b>Tree line:</b> {activeVisitorTarget.treeObstruction.detail}
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  {activePlannerTab === 'why' && (
+                    <>
+                      <div className="targetWhyCard">
+                        <div className="targetWhyHeader">
+                          <small>{whyExplanation.headline}</small>
+                          <h3>Why it is ranked here</h3>
+                        </div>
+                        <p>{whyExplanation.summary}</p>
+                        <div className="targetWhyColumns">
+                          <div>
+                            <b>Good tonight</b>
+                            <ul>
+                              {whyExplanation.good.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </div>
+                          <div>
+                            <b>Watch out</b>
+                            <ul>
+                              {whyExplanation.watch.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {activePlannerTab === 'difficulty' && (
+                    <div className={`targetDifficultyCard ${difficultyScore.className}`}>
+                      <div className="targetDifficultyHeader">
+                        <small>Target Difficulty</small>
+                        <h3>{difficultyScore.label}</h3>
+                        <i>{difficultyScore.score.toFixed(1)} / 6</i>
+                      </div>
+                      <p>{difficultyScore.summary}</p>
+                      <div className="targetDifficultyFactors">
+                        {difficultyScore.factors.map((factor) => (
+                          <em key={factor}>{factor}</em>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {activePlannerTab === 'setup' && (
+                    <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                      <div className="targetActionHeader">
+                        <small>Recommended Setup</small>
+                        <h3>{actionPlan.headline}</h3>
+                        <i>{actionPlan.difficulty}</i>
+                      </div>
+                      <div className="targetActionGrid">
+                        <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
+                        <span><b>Filter</b>{actionPlan.filter}</span>
+                        <span><b>Capture</b>{actionPlan.capture}</span>
+                        <span><b>Approach</b>{actionPlan.approach}</span>
+                      </div>
+                      <p><b>Why:</b> {actionPlan.why}</p>
                       <ul>
-                        {whyExplanation.good.map((item) => <li key={item}>{item}</li>)}
+                        {actionPlan.checklist.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
                       </ul>
                     </div>
-                    <div>
-                      <b>Watch out</b>
-                      <ul>
-                        {whyExplanation.watch.map((item) => <li key={item}>{item}</li>)}
-                      </ul>
+                  )}
+
+                  {activePlannerTab === 'framing' && (
+                    <div className={`targetFramingCard ${framingPreview.className}`}>
+                      <div className="targetFramingHeader">
+                        <small>Framing Preview</small>
+                        <h3>{framingPreview.headline}</h3>
+                        <i>{framingPreview.fit}</i>
+                      </div>
+                      <div className="targetFramingGrid">
+                        <span><b>Native CPC 800</b>{framingPreview.native}</span>
+                        <span><b>Reducer</b>{framingPreview.reducer}</span>
+                        <span><b>32mm Eyepiece</b>{framingPreview.eyepiece32}</span>
+                        <span><b>10mm / High Power</b>{framingPreview.eyepiece10}</span>
+                        <span><b>iPhone Capture</b>{framingPreview.iphone}</span>
+                        <span><b>Bottom Line</b>{framingPreview.note}</span>
+                      </div>
+                      <div className="targetFramingChips">
+                        {framingPreview.chips.map((chip) => (
+                          <em key={chip}>{chip}</em>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )}
 
-                <div className={`targetDifficultyCard ${difficultyScore.className}`}>
-                  <div className="targetDifficultyHeader">
-                    <small>Target Difficulty</small>
-                    <h3>{difficultyScore.label}</h3>
-                    <i>{difficultyScore.score.toFixed(1)} / 6</i>
-                  </div>
-                  <p>{difficultyScore.summary}</p>
-                  <div className="targetDifficultyFactors">
-                    {difficultyScore.factors.map((factor) => (
-                      <em key={factor}>{factor}</em>
-                    ))}
-                  </div>
+                  {activePlannerTab === 'info' && (
+                    <div className="atlasFacts plannerGeneralInfoFacts">
+                      <span><b>Status</b>{activeVisitorTarget.plannerStatus.label}</span>
+                      <span><b>Difficulty</b>{difficultyScore.label}</span>
+                      <span><b>Closest Approach</b>{activeVisitorTarget.closestApproach}</span>
+                      <span><b>Estimated Brightness</b>{activeVisitorTarget.magnitude}</span>
+                      <span><b>Best Window</b>{activeVisitorTarget.tonightPlan.bestWindow}</span>
+                      <span><b>Gear</b>{activeVisitorTarget.gear}</span>
+                      <span><b>RA</b>{visitorHasEphemeris(activeVisitorTarget) ? formatRa(activeVisitorTarget.ra) : 'Add ephemeris'}</span>
+                      <span><b>Dec</b>{visitorHasEphemeris(activeVisitorTarget) ? formatDec(activeVisitorTarget.dec) : 'Add ephemeris'}</span>
+                      <span><b>Altitude</b>{visitorHasEphemeris(activeVisitorTarget) ? `${activeVisitorTarget.alt.toFixed(1)}°` : 'N/A'}</span>
+                      <span><b>Azimuth</b>{visitorHasEphemeris(activeVisitorTarget) ? `${activeVisitorTarget.az.toFixed(1)}°` : 'N/A'}</span>
+                      <span><b>Moon Impact</b>{activeVisitorTarget.moonImpact?.label || 'Needs RA/Dec'}</span>
+                      <span><b>Tree Line</b>{activeVisitorTarget.treeObstruction?.label || 'Needs RA/Dec'}</span>
+                      <span><b>Map Time</b>{formatCompactTime(date)}</span>
+                    </div>
+                  )}
                 </div>
-
-                <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
-                  <div className="targetActionHeader">
-                    <small>Recommended Setup</small>
-                    <h3>{actionPlan.headline}</h3>
-                    <i>{actionPlan.difficulty}</i>
-                  </div>
-                  <div className="targetActionGrid">
-                    <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
-                    <span><b>Filter</b>{actionPlan.filter}</span>
-                    <span><b>Capture</b>{actionPlan.capture}</span>
-                    <span><b>Approach</b>{actionPlan.approach}</span>
-                  </div>
-                  <p><b>Why:</b> {actionPlan.why}</p>
-                  <ul>
-                    {actionPlan.checklist.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className={`targetFramingCard ${framingPreview.className}`}>
-                  <div className="targetFramingHeader">
-                    <small>Framing Preview</small>
-                    <h3>{framingPreview.headline}</h3>
-                    <i>{framingPreview.fit}</i>
-                  </div>
-                  <div className="targetFramingGrid">
-                    <span><b>Native CPC 800</b>{framingPreview.native}</span>
-                    <span><b>Reducer</b>{framingPreview.reducer}</span>
-                    <span><b>32mm Eyepiece</b>{framingPreview.eyepiece32}</span>
-                    <span><b>10mm / High Power</b>{framingPreview.eyepiece10}</span>
-                    <span><b>iPhone Capture</b>{framingPreview.iphone}</span>
-                    <span><b>Bottom Line</b>{framingPreview.note}</span>
-                  </div>
-                  <div className="targetFramingChips">
-                    {framingPreview.chips.map((chip) => (
-                      <em key={chip}>{chip}</em>
-                    ))}
-                  </div>
-                </div>
-                </>
               );
             })()}
-            <div className="atlasFacts">
-              <span><b>Status</b>{activeVisitorTarget.plannerStatus.label}</span>
-              <span><b>Difficulty</b>{getTargetDifficultyScore(activeVisitorTarget).label}</span>
-              <span><b>Closest Approach</b>{activeVisitorTarget.closestApproach}</span>
-              <span><b>Estimated Brightness</b>{activeVisitorTarget.magnitude}</span>
-              <span><b>Best Window</b>{activeVisitorTarget.tonightPlan.bestWindow}</span>
-              <span><b>Gear</b>{activeVisitorTarget.gear}</span>
-              <span><b>RA</b>{visitorHasEphemeris(activeVisitorTarget) ? formatRa(activeVisitorTarget.ra) : 'Add ephemeris'}</span>
-              <span><b>Dec</b>{visitorHasEphemeris(activeVisitorTarget) ? formatDec(activeVisitorTarget.dec) : 'Add ephemeris'}</span>
-              <span><b>Altitude</b>{visitorHasEphemeris(activeVisitorTarget) ? `${activeVisitorTarget.alt.toFixed(1)}°` : 'N/A'}</span>
-              <span><b>Azimuth</b>{visitorHasEphemeris(activeVisitorTarget) ? `${activeVisitorTarget.az.toFixed(1)}°` : 'N/A'}</span>
-              <span><b>Moon Impact</b>{activeVisitorTarget.moonImpact?.label || 'Needs RA/Dec'}</span>
-              <span><b>Tree Line</b>{activeVisitorTarget.treeObstruction?.label || 'Needs RA/Dec'}</span>
-              <span><b>Map Time</b>{formatCompactTime(date)}</span>
-            </div>
           </div>
         </section>
       )}
 
       {selectedPanel === 'captured' && activeObject && (
-        <section className="atlasDetail">
+        <section ref={plannerDetailRef} className="atlasDetail">
           <img src={import.meta.env.BASE_URL + activeObject.image} alt={activeObject.title} />
           <div>
             <small>Selected Mission</small>
@@ -4294,27 +4348,24 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       )}
 
       {selectedPanel === 'future' && activeFutureTarget && (
-        <section className="atlasDetail plannerDetail plannerDetailNoBadge">
+        <section ref={plannerDetailRef} className="atlasDetail plannerDetail plannerDetailNoBadge plannerTabbedDetail">
           <div>
             <small>Target Planner</small>
-            <h2><span>＋</span>{activeFutureTarget.title}</h2>
-            <h3>{activeFutureTarget.constellation} · {activeFutureTarget.objectType}</h3>
-            <p>{activeFutureTarget.notes}</p>
-            {activeFutureGuide?.finderNote && (
-              <p className="futureFinderNote">
-                <b>Finder guide:</b> {activeFutureGuide.finderNote}
-              </p>
-            )}
-            {activeFutureTarget.moonImpact && (
-              <p className={`futureFinderNote moonImpactNote ${activeFutureTarget.moonImpact.className}`}>
-                <b>Moon check:</b> {activeFutureTarget.moonImpact.detail}
-              </p>
-            )}
-            {activeFutureTarget.treeObstruction && (
-              <p className={`futureFinderNote treeObstructionNote ${activeFutureTarget.treeObstruction.className}`}>
-                <b>Tree line:</b> {activeFutureTarget.treeObstruction.detail}
-              </p>
-            )}
+            <div className="plannerDetailTabs" role="tablist" aria-label="Target planner detail tabs">
+              {PLANNER_DETAIL_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activePlannerTab === tab.key}
+                  className={activePlannerTab === tab.key ? 'active' : ''}
+                  onClick={() => setActivePlannerTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
             {(() => {
               const actionPlan = getTargetActionPlan(activeFutureTarget);
               const framingPreview = getTargetFramingPreview(activeFutureTarget);
@@ -4322,110 +4373,146 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               const whyExplanation = getTargetWhyExplanation(activeFutureTarget, sessionMode);
 
               return (
-                <>
-                <div className="targetWhyCard">
-                  <div className="targetWhyHeader">
-                    <small>{whyExplanation.headline}</small>
-                    <h3>Why it is ranked here</h3>
-                  </div>
-                  <p>{whyExplanation.summary}</p>
-                  <div className="targetWhyColumns">
-                    <div>
-                      <b>Good tonight</b>
+                <div className="plannerTabPanel">
+                  {activePlannerTab === 'overview' && (
+                    <>
+                      <h2><span>＋</span>{activeFutureTarget.title}</h2>
+                      <h3>{activeFutureTarget.constellation} · {activeFutureTarget.objectType}</h3>
+                      <p>{activeFutureTarget.notes}</p>
+                      {activeFutureGuide?.finderNote && (
+                        <p className="futureFinderNote">
+                          <b>Finder guide:</b> {activeFutureGuide.finderNote}
+                        </p>
+                      )}
+                      {activeFutureTarget.moonImpact && (
+                        <p className={`futureFinderNote moonImpactNote ${activeFutureTarget.moonImpact.className}`}>
+                          <b>Moon check:</b> {activeFutureTarget.moonImpact.detail}
+                        </p>
+                      )}
+                      {activeFutureTarget.treeObstruction && (
+                        <p className={`futureFinderNote treeObstructionNote ${activeFutureTarget.treeObstruction.className}`}>
+                          <b>Tree line:</b> {activeFutureTarget.treeObstruction.detail}
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  {activePlannerTab === 'why' && (
+                    <>
+                      <div className="targetWhyCard">
+                        <div className="targetWhyHeader">
+                          <small>{whyExplanation.headline}</small>
+                          <h3>Why it is ranked here</h3>
+                        </div>
+                        <p>{whyExplanation.summary}</p>
+                        <div className="targetWhyColumns">
+                          <div>
+                            <b>Good tonight</b>
+                            <ul>
+                              {whyExplanation.good.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </div>
+                          <div>
+                            <b>Watch out</b>
+                            <ul>
+                              {whyExplanation.watch.map((item) => <li key={item}>{item}</li>)}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {activePlannerTab === 'difficulty' && (
+                    <div className={`targetDifficultyCard ${difficultyScore.className}`}>
+                      <div className="targetDifficultyHeader">
+                        <small>Target Difficulty</small>
+                        <h3>{difficultyScore.label}</h3>
+                        <i>{difficultyScore.score.toFixed(1)} / 6</i>
+                      </div>
+                      <p>{difficultyScore.summary}</p>
+                      <div className="targetDifficultyFactors">
+                        {difficultyScore.factors.map((factor) => (
+                          <em key={factor}>{factor}</em>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {activePlannerTab === 'setup' && (
+                    <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                      <div className="targetActionHeader">
+                        <small>Recommended Setup</small>
+                        <h3>{actionPlan.headline}</h3>
+                        <i>{actionPlan.difficulty}</i>
+                      </div>
+                      <div className="targetActionGrid">
+                        <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
+                        <span><b>Filter</b>{actionPlan.filter}</span>
+                        <span><b>Capture</b>{actionPlan.capture}</span>
+                        <span><b>Approach</b>{actionPlan.approach}</span>
+                      </div>
+                      <p><b>Why:</b> {actionPlan.why}</p>
                       <ul>
-                        {whyExplanation.good.map((item) => <li key={item}>{item}</li>)}
+                        {actionPlan.checklist.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
                       </ul>
                     </div>
-                    <div>
-                      <b>Watch out</b>
-                      <ul>
-                        {whyExplanation.watch.map((item) => <li key={item}>{item}</li>)}
-                      </ul>
+                  )}
+
+                  {activePlannerTab === 'framing' && (
+                    <div className={`targetFramingCard ${framingPreview.className}`}>
+                      <div className="targetFramingHeader">
+                        <small>Framing Preview</small>
+                        <h3>{framingPreview.headline}</h3>
+                        <i>{framingPreview.fit}</i>
+                      </div>
+                      <div className="targetFramingGrid">
+                        <span><b>Native CPC 800</b>{framingPreview.native}</span>
+                        <span><b>Reducer</b>{framingPreview.reducer}</span>
+                        <span><b>32mm Eyepiece</b>{framingPreview.eyepiece32}</span>
+                        <span><b>10mm / High Power</b>{framingPreview.eyepiece10}</span>
+                        <span><b>iPhone Capture</b>{framingPreview.iphone}</span>
+                        <span><b>Bottom Line</b>{framingPreview.note}</span>
+                      </div>
+                      <div className="targetFramingChips">
+                        {framingPreview.chips.map((chip) => (
+                          <em key={chip}>{chip}</em>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )}
 
-                <div className={`targetDifficultyCard ${difficultyScore.className}`}>
-                  <div className="targetDifficultyHeader">
-                    <small>Target Difficulty</small>
-                    <h3>{difficultyScore.label}</h3>
-                    <i>{difficultyScore.score.toFixed(1)} / 6</i>
-                  </div>
-                  <p>{difficultyScore.summary}</p>
-                  <div className="targetDifficultyFactors">
-                    {difficultyScore.factors.map((factor) => (
-                      <em key={factor}>{factor}</em>
-                    ))}
-                  </div>
+                  {activePlannerTab === 'info' && (
+                    <div className="atlasFacts plannerGeneralInfoFacts">
+                      <span><b>Planner Status</b>{activeFutureTarget.plannerStatus.label}</span>
+                      <span><b>Difficulty</b>{difficultyScore.label}</span>
+                      <span><b>Best Tonight</b>{activeFutureTarget.tonightPlan.bestWindow}</span>
+                      <span><b>Track</b>{activeTargetTrack?.isRising === null ? 'Visible path shown on map' : activeTargetTrack.isRising ? 'Generally rising tonight' : 'Generally setting tonight'}</span>
+                      <span><b>Peak Altitude</b>{activeFutureTarget.tonightPlan.peak.alt.toFixed(1)}° at {activeFutureTarget.tonightPlan.peak.label}</span>
+                      <span><b>Now</b>{activeFutureTarget.observingStatus.label}</span>
+                      <span><b>Priority</b>{activeFutureTarget.priority}</span>
+                      <span><b>Best Season</b>{activeFutureTarget.bestSeason}</span>
+                      <span><b>Finder Region</b>{activeFutureGuide?.guideConstellation || activeFutureTarget.constellation}</span>
+                      <span><b>Gear</b>{activeFutureTarget.gear}</span>
+                      <span><b>RA</b>{formatRa(activeFutureTarget.ra)}</span>
+                      <span><b>Dec</b>{formatDec(activeFutureTarget.dec)}</span>
+                      <span><b>Altitude</b>{activeFutureTarget.alt.toFixed(1)}°</span>
+                      <span><b>Azimuth</b>{activeFutureTarget.az.toFixed(1)}°</span>
+                      <span><b>Map Time</b>{formatCompactTime(date)}</span>
+                      <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
+                      <span><b>Moon Impact</b>{activeFutureTarget.moonImpact.label}</span>
+                      <span><b>Moon Separation</b>{activeFutureTarget.moonImpact.separationDegrees === null ? 'N/A' : `${activeFutureTarget.moonImpact.separationDegrees.toFixed(0)}°`}</span>
+                      <span><b>Tree Line</b>{activeFutureTarget.treeObstruction.label}</span>
+                      <span><b>Tree Clearance</b>{activeFutureTarget.treeObstruction.clearanceDegrees === null ? 'N/A' : `${activeFutureTarget.treeObstruction.clearanceDegrees.toFixed(0)}°`}</span>
+                      <span><b>Tree Horizon</b>{`${activeFutureTarget.treeObstruction.horizonAltitude.toFixed(0)}° at az ${activeFutureTarget.az.toFixed(0)}°`}</span>
+                      <span><b>Clear Window</b>{activeFutureTarget.treeObstruction.clearWindow}</span>
+                    </div>
+                  )}
                 </div>
-
-                <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
-                  <div className="targetActionHeader">
-                    <small>Recommended Setup</small>
-                    <h3>{actionPlan.headline}</h3>
-                    <i>{actionPlan.difficulty}</i>
-                  </div>
-                  <div className="targetActionGrid">
-                    <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
-                    <span><b>Filter</b>{actionPlan.filter}</span>
-                    <span><b>Capture</b>{actionPlan.capture}</span>
-                    <span><b>Approach</b>{actionPlan.approach}</span>
-                  </div>
-                  <p><b>Why:</b> {actionPlan.why}</p>
-                  <ul>
-                    {actionPlan.checklist.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className={`targetFramingCard ${framingPreview.className}`}>
-                  <div className="targetFramingHeader">
-                    <small>Framing Preview</small>
-                    <h3>{framingPreview.headline}</h3>
-                    <i>{framingPreview.fit}</i>
-                  </div>
-                  <div className="targetFramingGrid">
-                    <span><b>Native CPC 800</b>{framingPreview.native}</span>
-                    <span><b>Reducer</b>{framingPreview.reducer}</span>
-                    <span><b>32mm Eyepiece</b>{framingPreview.eyepiece32}</span>
-                    <span><b>10mm / High Power</b>{framingPreview.eyepiece10}</span>
-                    <span><b>iPhone Capture</b>{framingPreview.iphone}</span>
-                    <span><b>Bottom Line</b>{framingPreview.note}</span>
-                  </div>
-                  <div className="targetFramingChips">
-                    {framingPreview.chips.map((chip) => (
-                      <em key={chip}>{chip}</em>
-                    ))}
-                  </div>
-                </div>
-                </>
               );
             })()}
-            <div className="atlasFacts">
-              <span><b>Planner Status</b>{activeFutureTarget.plannerStatus.label}</span>
-              <span><b>Difficulty</b>{getTargetDifficultyScore(activeFutureTarget).label}</span>
-              <span><b>Best Tonight</b>{activeFutureTarget.tonightPlan.bestWindow}</span>
-              <span><b>Track</b>{activeTargetTrack?.isRising === null ? 'Visible path shown on map' : activeTargetTrack.isRising ? 'Generally rising tonight' : 'Generally setting tonight'}</span>
-              <span><b>Peak Altitude</b>{activeFutureTarget.tonightPlan.peak.alt.toFixed(1)}° at {activeFutureTarget.tonightPlan.peak.label}</span>
-              <span><b>Now</b>{activeFutureTarget.observingStatus.label}</span>
-              <span><b>Priority</b>{activeFutureTarget.priority}</span>
-              <span><b>Best Season</b>{activeFutureTarget.bestSeason}</span>
-              <span><b>Finder Region</b>{activeFutureGuide?.guideConstellation || activeFutureTarget.constellation}</span>
-              <span><b>Gear</b>{activeFutureTarget.gear}</span>
-              <span><b>RA</b>{formatRa(activeFutureTarget.ra)}</span>
-              <span><b>Dec</b>{formatDec(activeFutureTarget.dec)}</span>
-              <span><b>Altitude</b>{activeFutureTarget.alt.toFixed(1)}°</span>
-              <span><b>Azimuth</b>{activeFutureTarget.az.toFixed(1)}°</span>
-              <span><b>Map Time</b>{formatCompactTime(date)}</span>
-              <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
-              <span><b>Moon Impact</b>{activeFutureTarget.moonImpact.label}</span>
-              <span><b>Moon Separation</b>{activeFutureTarget.moonImpact.separationDegrees === null ? 'N/A' : `${activeFutureTarget.moonImpact.separationDegrees.toFixed(0)}°`}</span>
-              <span><b>Tree Line</b>{activeFutureTarget.treeObstruction.label}</span>
-              <span><b>Tree Clearance</b>{activeFutureTarget.treeObstruction.clearanceDegrees === null ? 'N/A' : `${activeFutureTarget.treeObstruction.clearanceDegrees.toFixed(0)}°`}</span>
-              <span><b>Tree Horizon</b>{`${activeFutureTarget.treeObstruction.horizonAltitude.toFixed(0)}° at az ${activeFutureTarget.az.toFixed(0)}°`}</span>
-              <span><b>Clear Window</b>{activeFutureTarget.treeObstruction.clearWindow}</span>
-            </div>
           </div>
         </section>
       )}

@@ -5913,3 +5913,79 @@ footer p {
 .plannerDetailNoBadge > div {
   grid-column: 1 / -1 !important;
 }
+/* =========================================================
+   SKY MAP: TABBED TARGET PLANNER DETAIL
+========================================================= */
+
+.plannerTabbedDetail {
+  display: block !important;
+  grid-template-columns: none !important;
+}
+
+.plannerTabbedDetail > div {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.plannerDetailTabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin: 12px 0 18px !important;
+  padding: 8px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  background: rgba(0,0,0,0.13) !important;
+}
+
+.plannerDetailTabs button {
+  border-radius: 999px !important;
+  padding: 8px 12px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgba(255,255,255,0.055) !important;
+  color: rgba(226,236,255,0.78) !important;
+  cursor: pointer !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.03em !important;
+}
+
+.plannerDetailTabs button.active {
+  color: rgba(255, 236, 210, 0.98) !important;
+  border-color: rgba(255, 166, 70, 0.58) !important;
+  background: rgba(255, 157, 28, 0.14) !important;
+  box-shadow: 0 0 18px rgba(255, 132, 45, 0.10) !important;
+}
+
+.plannerTabPanel {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.plannerTabPanel > h2,
+.plannerTabPanel > h3,
+.plannerTabPanel > p,
+.plannerTabPanel > .futureFinderNote,
+.plannerTabPanel > .targetWhyCard,
+.plannerTabPanel > .targetDifficultyCard,
+.plannerTabPanel > .targetActionCard,
+.plannerTabPanel > .targetFramingCard,
+.plannerTabPanel > .atlasFacts {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.plannerGeneralInfoFacts {
+  margin-top: 8px !important;
+}
+
+@media (max-width: 700px) {
+  .plannerDetailTabs {
+    gap: 6px !important;
+  }
+
+  .plannerDetailTabs button {
+    padding: 7px 10px !important;
+    font-size: 0.74rem !important;
+  }
+}
