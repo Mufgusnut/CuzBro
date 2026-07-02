@@ -56,16 +56,16 @@ const BACKGROUND_STARS = createBackgroundStars();
 
 const FUTURE_TARGETS = [
   {
-    title: 'M57 Ring Nebula',
-    shortTitle: 'M57',
-    constellation: 'Lyra',
-    objectType: 'Planetary Nebula',
-    ra: 18.893,
-    dec: 33.03,
+    title: 'Fireworks Galaxy',
+    shortTitle: 'NGC 6946',
+    constellation: 'Cepheus',
+    objectType: 'Galaxy',
+    ra: 20.581,
+    dec: 60.154,
     priority: 'High',
-    bestSeason: 'Summer',
-    gear: 'CPC 800, high power eyepiece, or camera crop',
-    notes: 'Small but bright planetary nebula near Vega. Great next target after M13 and Albireo.'
+    bestSeason: 'Late summer / fall',
+    gear: 'Camera preferred; dark, moonless sky helps a lot',
+    notes: 'Beautiful face-on galaxy near Cepheus/Cygnus. A challenging but worthwhile future target once tracking and camera workflow are dialed in.'
   },
   {
     title: 'M51 Whirlpool Galaxy',
@@ -854,6 +854,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activePreset, setActivePreset] = useState('now');
 
   const dragRef = useRef(null);
+  const mapSectionRef = useRef(null);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
   const isDetailMode = viewMode === 'detail';
   const mobileLayout = isMobileViewport();
@@ -935,6 +936,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const futureBestCount = useMemo(() => mappedFutureTargets.filter((target) => target.observingStatus.score >= 3).length, [mappedFutureTargets]);
   const futureGoodCount = useMemo(() => mappedFutureTargets.filter((target) => target.observingStatus.score >= 2).length, [mappedFutureTargets]);
   const missionCallouts = useMemo(() => buildMissionCallouts(visibleObjects, zoom), [visibleObjects, zoom]);
+  const futureCallouts = useMemo(() => buildMissionCallouts(visibleFutureTargets, zoom), [visibleFutureTargets, zoom]);
 
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
@@ -1138,35 +1140,38 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       });
     }
 
-    visibleFutureTargets.forEach((target) => {
-      const actualIndex = mappedFutureTargets.findIndex((item) => item.title === target.title);
-      const isActive = selectedPanel === 'future' && activeFutureIndex === actualIndex;
+    if (catalogView === 'future') {
+      futureCallouts.forEach((target) => {
+        const actualIndex = mappedFutureTargets.findIndex((item) => item.title === target.title);
+        const isActive = selectedPanel === 'future' && activeFutureIndex === actualIndex;
 
-      if (!isActive && !isDetailMode) return;
+        if (mobileLayout && !isActive && !isDetailMode) return;
+        if (!mobileLayout && !isActive && !isDetailMode) return;
 
-      labelItems.push({
-        id: `future:${target.title}`,
-        text: target.shortTitle || target.title,
-        anchorX: target.x,
-        anchorY: target.y,
-        fontSize: mobileLayout ? 12 : 15,
-        priority: isActive ? 120 : 62,
-        distance: mobileLayout ? 22 : 26,
-        margin: 22,
-        candidates: [
-          { dx: 24, dy: -12, anchor: 'start' },
-          { dx: 24, dy: 20, anchor: 'start' },
-          { dx: -24, dy: -12, anchor: 'end' },
-          { dx: -24, dy: 20, anchor: 'end' },
-          { dx: 0, dy: -30, anchor: 'middle' },
-          { dx: 0, dy: 34, anchor: 'middle' },
-          { dx: 42, dy: 4, anchor: 'start' },
-          { dx: -42, dy: 4, anchor: 'end' }
-        ]
+        const outwardDirection = target.markerX > CENTER ? 1 : -1;
+
+        labelItems.push({
+          id: `futureCallout:${target.title}`,
+          text: target.shortTitle || target.title,
+          anchorX: target.markerX,
+          anchorY: target.markerY,
+          fontSize: mobileLayout ? 13 : 17,
+          priority: isActive ? 135 : 72,
+          distance: mobileLayout ? 30 : 34,
+          margin: 24,
+          candidates: [
+            { dx: outwardDirection * 30, dy: 6, anchor: outwardDirection > 0 ? 'start' : 'end' },
+            { dx: -outwardDirection * 30, dy: 6, anchor: outwardDirection > 0 ? 'end' : 'start' },
+            { dx: 0, dy: -32, anchor: 'middle' },
+            { dx: 0, dy: 38, anchor: 'middle' },
+            { dx: outwardDirection * 46, dy: -16, anchor: outwardDirection > 0 ? 'start' : 'end' },
+            { dx: outwardDirection * 46, dy: 28, anchor: outwardDirection > 0 ? 'start' : 'end' }
+          ]
+        });
       });
-    });
+    }
 
-    if (!mobileLayout) {
+    if (catalogView === 'captured' && !mobileLayout) {
       missionCallouts.forEach((photo) => {
         const actualIndex = mappedObjects.findIndex((item) => item.title === photo.title);
         const isActive = selectedPanel === 'captured' && activeIndex === actualIndex;
@@ -1201,8 +1206,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     activeConstellation,
     activeFutureIndex,
     activeIndex,
+    catalogView,
     constellationLabels,
     eclipticLabel,
+    futureCallouts,
     isDetailMode,
     lunarLabel,
     mappedFutureTargets,
@@ -1222,6 +1229,26 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
     if (realIndex !== -1) setSelectedIndex(realIndex);
+  };
+
+  const scrollToMap = () => {
+    window.requestAnimationFrame(() => {
+      mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  const selectFutureTarget = (index, shouldScroll = false) => {
+    setActiveFutureIndex(index);
+    setSelectedPanel('future');
+    setCatalogView('future');
+    if (shouldScroll) scrollToMap();
+  };
+
+  const selectCapturedTarget = (index, shouldScroll = false) => {
+    setActiveIndex(index);
+    setSelectedPanel('captured');
+    setCatalogView('captured');
+    if (shouldScroll) scrollToMap();
   };
 
   const zoomIn = () => setZoom((current) => Math.min(getMaxZoom(), Number((current + 0.08).toFixed(2))));
@@ -1291,7 +1318,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       </section>
 
       <section className="atlasLayout realAtlasLayout">
-        <div className="atlasMapStack">
+        <div className="atlasMapStack" ref={mapSectionRef}>
           <div
             className="atlasTimeControls tonightControls compactTonightControls"
             aria-label="Sky map time controls"
@@ -1435,7 +1462,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               )}
 
 
-              {visibleFutureTargets.map((target) => {
+              {catalogView === 'captured' && isDetailMode && visibleFutureTargets.map((target) => {
                 const actualIndex = mappedFutureTargets.findIndex((item) => item.title === target.title);
                 const isActive = selectedPanel === 'future' && activeFutureIndex === actualIndex;
                 const markerColor = getObjectColor(target.objectType);
@@ -1446,25 +1473,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     className={isActive ? 'futureTargetMarker active' : 'futureTargetMarker'}
                     role="button"
                     tabIndex={0}
-                    onMouseEnter={() => {
-                      setActiveFutureIndex(actualIndex);
-                      setSelectedPanel('future');
-                    }}
-                    onFocus={() => {
-                      setActiveFutureIndex(actualIndex);
-                      setSelectedPanel('future');
-                    }}
-                    onClick={() => {
-                      setActiveFutureIndex(actualIndex);
-                      setSelectedPanel('future');
-                      setCatalogView('future');
-                    }}
+                    onMouseEnter={() => selectFutureTarget(actualIndex)}
+                    onFocus={() => selectFutureTarget(actualIndex)}
+                    onClick={() => selectFutureTarget(actualIndex)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        setActiveFutureIndex(actualIndex);
-                        setSelectedPanel('future');
-                        setCatalogView('future');
+                        selectFutureTarget(actualIndex);
                       }
                     }}
                   >
@@ -1506,29 +1521,115 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 );
               })}
 
-              {missionCallouts.map((photo) => {
-                const index = mappedObjects.findIndex((item) => item.title === photo.title);
-                const markerColor = getObjectColor(photo.objectType);
-                const isActive = activeIndex === index;
+              {catalogView === 'future' && futureCallouts.map((target) => {
+                const index = mappedFutureTargets.findIndex((item) => item.title === target.title);
+                const markerColor = getObjectColor(target.objectType);
+                const isActive = selectedPanel === 'future' && activeFutureIndex === index;
+                const label = getMapLabel(`futureCallout:${target.title}`);
+
                 return (
                   <g
-                    key={`${photo.title}-callout`}
-                    className="missionSvgCallout"
+                    key={`${target.title}-future-callout`}
+                    className={isActive ? 'missionSvgCallout futureSvgCallout active' : 'missionSvgCallout futureSvgCallout'}
                     role="button"
                     tabIndex={0}
-                    onMouseEnter={() => { setActiveIndex(index); setSelectedPanel('captured'); }}
-                    onFocus={() => { setActiveIndex(index); setSelectedPanel('captured'); }}
-                    onClick={() => {
-                      setActiveIndex(index);
-                      setSelectedPanel('captured');
-                      setCatalogView('captured');
-                      openMission(photo);
-                    }}
+                    onMouseEnter={() => selectFutureTarget(index)}
+                    onFocus={() => selectFutureTarget(index)}
+                    onClick={() => selectFutureTarget(index)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        setActiveIndex(index);
-                        openMission(photo);
+                        selectFutureTarget(index);
+                      }
+                    }}
+                  >
+                    <line
+                      x1={target.x}
+                      y1={target.y}
+                      x2={target.markerX}
+                      y2={target.markerY}
+                      className={isActive ? 'missionGuideLine active' : 'missionGuideLine'}
+                    />
+
+                    <line
+                      x1={target.x - 6}
+                      y1={target.y}
+                      x2={target.x + 6}
+                      y2={target.y}
+                      className="futureTargetCross"
+                      style={{ stroke: markerColor }}
+                    />
+                    <line
+                      x1={target.x}
+                      y1={target.y - 6}
+                      x2={target.x}
+                      y2={target.y + 6}
+                      className="futureTargetCross"
+                      style={{ stroke: markerColor }}
+                    />
+
+                    {isActive && (
+                      <circle
+                        cx={target.x}
+                        cy={target.y}
+                        r={15}
+                        className="missionAnchorGlow"
+                        style={{ stroke: markerColor }}
+                      />
+                    )}
+
+                    <g transform={keepUpright(target.markerX, target.markerY)}>
+                      <circle
+                        cx={target.markerX}
+                        cy={target.markerY}
+                        r={mobileLayout ? 17 : 19}
+                        className={isActive ? 'missionSvgBadge active' : 'missionSvgBadge'}
+                        style={{ stroke: markerColor }}
+                      />
+
+                      <text
+                        x={target.markerX}
+                        y={target.markerY + 6}
+                        className="missionSvgBadgeText"
+                        textAnchor="middle"
+                      >
+                        {index + 1}
+                      </text>
+
+                      {label && (
+                        <text
+                          x={label.x}
+                          y={label.y}
+                          className="missionSvgBadgeName futureCalloutName"
+                          textAnchor={label.anchor}
+                        >
+                          {target.shortTitle || target.title}
+                        </text>
+                      )}
+                    </g>
+                  </g>
+                );
+              })}
+
+              {catalogView === 'captured' && missionCallouts.map((photo) => {
+                const index = mappedObjects.findIndex((item) => item.title === photo.title);
+                const markerColor = getObjectColor(photo.objectType);
+                const isActive = selectedPanel === 'captured' && activeIndex === index;
+                const label = getMapLabel(`mission:${photo.title}`);
+
+                return (
+                  <g
+                    key={`${photo.title}-callout`}
+                    className={isActive ? 'missionSvgCallout active' : 'missionSvgCallout'}
+                    role="button"
+                    tabIndex={0}
+                    onMouseEnter={() => selectCapturedTarget(index)}
+                    onFocus={() => selectCapturedTarget(index)}
+                    onClick={() => selectCapturedTarget(index)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        selectCapturedTarget(index);
                       }
                     }}
                   >
@@ -1537,7 +1638,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                       y1={photo.y}
                       x2={photo.markerX}
                       y2={photo.markerY}
-                      className="missionGuideLine"
+                      className={isActive ? 'missionGuideLine active' : 'missionGuideLine'}
                     />
 
                     <line
@@ -1585,12 +1686,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                         {index + 1}
                       </text>
 
-                      {getMapLabel(`mission:${photo.title}`) && (
+                      {label && (
                         <text
-                          x={getMapLabel(`mission:${photo.title}`).x}
-                          y={getMapLabel(`mission:${photo.title}`).y}
+                          x={label.x}
+                          y={label.y}
                           className="missionSvgBadgeName"
-                          textAnchor={getMapLabel(`mission:${photo.title}`).anchor}
+                          textAnchor={label.anchor}
                         >
                           {photo.title}
                         </text>
@@ -1656,14 +1757,14 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <button
               type="button"
               className={catalogView === 'future' ? 'active' : ''}
-              onClick={() => setCatalogView('future')}
+              onClick={() => { setCatalogView('future'); setSelectedPanel('future'); }}
             >
               Future
             </button>
             <button
               type="button"
               className={catalogView === 'captured' ? 'active' : ''}
-              onClick={() => setCatalogView('captured')}
+              onClick={() => { setCatalogView('captured'); setSelectedPanel('captured'); }}
             >
               Captured
             </button>
@@ -1675,21 +1776,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <button
               key={target.title}
               className={index === activeFutureIndex && selectedPanel === 'future' ? 'catalogItem futureItem active' : 'catalogItem futureItem'}
-              onMouseEnter={() => {
-                setActiveFutureIndex(index);
-                setSelectedPanel('future');
-              }}
-              onFocus={() => {
-                setActiveFutureIndex(index);
-                setSelectedPanel('future');
-              }}
-              onClick={() => {
-                setActiveFutureIndex(index);
-                setSelectedPanel('future');
-              }}
+              onMouseEnter={() => selectFutureTarget(index)}
+              onFocus={() => selectFutureTarget(index)}
+              onClick={() => selectFutureTarget(index, true)}
               type="button"
             >
-              <b>＋</b>
+              <b>{index + 1}</b>
               <span>
                 <strong>{target.title}</strong>
                 <em>{target.constellation}</em>
@@ -1703,19 +1795,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <button
               key={photo.title}
               className={index === activeIndex && selectedPanel === 'captured' ? 'catalogItem active' : 'catalogItem'}
-              onMouseEnter={() => {
-                setActiveIndex(index);
-                setSelectedPanel('captured');
-              }}
-              onFocus={() => {
-                setActiveIndex(index);
-                setSelectedPanel('captured');
-              }}
-              onClick={() => {
-                setActiveIndex(index);
-                setSelectedPanel('captured');
-                openMission(photo);
-              }}
+              onMouseEnter={() => selectCapturedTarget(index)}
+              onFocus={() => selectCapturedTarget(index)}
+              onClick={() => selectCapturedTarget(index, true)}
               type="button"
             >
               <b>{index + 1}</b>

@@ -4636,3 +4636,30 @@ footer p {
     font-size: 12px !important;
   }
 }
+/* =========================================================
+   SKY MAP ACTIVE CALLOUT HIGHLIGHT
+========================================================= */
+
+.missionSvgCallout .missionGuideLine.active,
+.missionSvgCallout.active .missionGuideLine {
+  opacity: 1 !important;
+  stroke-width: 2.4 !important;
+  stroke-dasharray: 7 6 !important;
+  filter:
+    drop-shadow(0 0 7px rgba(255, 157, 28, 0.55))
+    drop-shadow(0 0 16px rgba(255, 157, 28, 0.22)) !important;
+}
+
+.futureSvgCallout .missionGuideLine.active,
+.futureSvgCallout.active .missionGuideLine {
+  opacity: 1 !important;
+  stroke-width: 2.4 !important;
+  stroke-dasharray: 7 6 !important;
+  filter:
+    drop-shadow(0 0 7px rgba(94, 220, 255, 0.55))
+    drop-shadow(0 0 16px rgba(94, 220, 255, 0.22)) !important;
+}
+
+.futureCalloutName {
+  fill: rgba(226, 247, 255, 0.98) !important;
+}
