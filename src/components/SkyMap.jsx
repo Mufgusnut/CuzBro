@@ -837,6 +837,82 @@ function buildTonightPlan(target, mapDate, observer) {
   };
 }
 
+function dateIsBetween(date, start, end) {
+  return date >= start && date <= end;
+}
+
+function makeTrackPoint(target, sampleDate, observer) {
+  const eq = getTargetRaDecAt(target, sampleDate, observer);
+  const altAz = raDecToAltAz(eq.ra, eq.dec, sampleDate, SITE.lat, SITE.lon);
+  const point = projectAltAz(altAz.alt, altAz.az);
+
+  return {
+    date: sampleDate,
+    ra: eq.ra,
+    dec: eq.dec,
+    alt: altAz.alt,
+    az: altAz.az,
+    x: point.x,
+    y: point.y,
+    visible: point.visible
+  };
+}
+
+function buildTargetTrack(target, mapDate, observer) {
+  if (!target) return null;
+
+  let start = getPresetDate('sunset', mapDate);
+  let end = getPresetDate('predawn', mapDate);
+
+  if (end <= start) {
+    end = new Date(end.getTime() + 24 * 60 * 60 * 1000);
+  }
+
+  const points = [];
+  const stepMinutes = 20;
+
+  for (let time = start.getTime(); time <= end.getTime(); time += stepMinutes * 60 * 1000) {
+    points.push(makeTrackPoint(target, new Date(time), observer));
+  }
+
+  const path = buildSmoothVisiblePath(points, 20);
+  const now = new Date();
+  const markerDefs = [
+    { key: 'sunset', label: 'Sunset', date: start },
+    { key: 'now', label: 'Now', date: now },
+    { key: '10pm', label: '10 PM', date: getPresetDate('10pm', mapDate) },
+    { key: 'midnight', label: 'Midnight', date: getPresetDate('midnight', mapDate) },
+    { key: '2am', label: '2 AM', date: getLocalDateAt(mapDate, 2, 0, 1) },
+    { key: 'predawn', label: 'Pre-dawn', date: end }
+  ];
+
+  const markers = markerDefs
+    .filter((sample) => dateIsBetween(sample.date, start, end))
+    .map((sample) => ({ ...sample, ...makeTrackPoint(target, sample.date, observer) }))
+    .filter((sample) => isInsideSky(sample, 18));
+
+  const peakDate = target.tonightPlan?.peak?.date;
+  const peak = peakDate ? makeTrackPoint(target, peakDate, observer) : null;
+  const peakMarker = peak && isInsideSky(peak, 18)
+    ? { ...peak, key: 'peak', label: `Peak ${target.tonightPlan.peak.label}` }
+    : null;
+
+  const visiblePoints = points.filter((point) => isInsideSky(point, 18));
+  const firstVisible = visiblePoints[0] || null;
+  const lastVisible = visiblePoints[visiblePoints.length - 1] || null;
+  const isRising = firstVisible && lastVisible ? lastVisible.alt > firstVisible.alt : null;
+
+  return {
+    path,
+    points,
+    markers,
+    peak: peakMarker,
+    isRising,
+    start,
+    end
+  };
+}
+
 function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDate = new Date()) {
   const peakAlt = tonightPlan?.peak?.alt ?? -90;
   const hasBestLater = tonightPlan?.bestSamples?.some((sample) => sample.date > referenceDate && sample.status.score >= 3);
@@ -1278,6 +1354,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       .map((starName) => starLookup[starName])
       .filter((star) => star && isInsideSky(star, 24));
   }, [activeFutureGuide, starLookup]);
+
+  const activeTargetTrack = useMemo(() => {
+    if (selectedPanel !== 'future' || !activeFutureTarget) return null;
+    return buildTargetTrack(activeFutureTarget, date, observer);
+  }, [activeFutureTarget, date, observer, selectedPanel]);
 
   const constellationLines = useMemo(() => {
     return CONSTELLATION_SEGMENTS.map((segment) => {
@@ -1930,6 +2011,41 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </g>
               )}
 
+              {selectedPanel === 'future' && activeTargetTrack?.path && (
+                <g className="futureTargetTrack" pointerEvents="none">
+                  <path d={activeTargetTrack.path} className="futureTargetTrackPath" />
+
+                  {activeTargetTrack.markers.map((marker) => (
+                    <g key={`track-${marker.key}`}>
+                      <circle cx={marker.x} cy={marker.y} r={marker.key === 'now' ? 5.2 : 4.2} className={marker.key === 'now' ? 'futureTargetTrackDot now' : 'futureTargetTrackDot'} />
+                      <text
+                        x={marker.x + 10}
+                        y={marker.y - 8}
+                        className="futureTargetTrackLabel"
+                        transform={keepUpright(marker.x + 10, marker.y - 8)}
+                      >
+                        {marker.label}
+                      </text>
+                    </g>
+                  ))}
+
+                  {activeTargetTrack.peak && (
+                    <g>
+                      <circle cx={activeTargetTrack.peak.x} cy={activeTargetTrack.peak.y} r={8.5} className="futureTargetTrackPeakHalo" />
+                      <circle cx={activeTargetTrack.peak.x} cy={activeTargetTrack.peak.y} r={4.4} className="futureTargetTrackDot peak" />
+                      <text
+                        x={activeTargetTrack.peak.x + 12}
+                        y={activeTargetTrack.peak.y + 18}
+                        className="futureTargetTrackPeakLabel"
+                        transform={keepUpright(activeTargetTrack.peak.x + 12, activeTargetTrack.peak.y + 18)}
+                      >
+                        Peaks {activeFutureTarget.tonightPlan.peak.label}
+                      </text>
+                    </g>
+                  )}
+                </g>
+              )}
+
               {visibleStars.map((star) => (
                 <g key={star.name}>
                   <circle cx={star.x} cy={star.y} r={Math.max(1.5, 5 - star.mag)} className={star.name === 'Polaris' ? 'skyStar polarisStar' : 'skyStar'} />
@@ -2397,6 +2513,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <div className="atlasFacts">
               <span><b>Planner Status</b>{activeFutureTarget.plannerStatus.label}</span>
               <span><b>Best Tonight</b>{activeFutureTarget.tonightPlan.bestWindow}</span>
+              <span><b>Track</b>{activeTargetTrack?.isRising === null ? 'Visible path shown on map' : activeTargetTrack.isRising ? 'Generally rising tonight' : 'Generally setting tonight'}</span>
               <span><b>Peak Altitude</b>{activeFutureTarget.tonightPlan.peak.alt.toFixed(1)}° at {activeFutureTarget.tonightPlan.peak.label}</span>
               <span><b>Now</b>{activeFutureTarget.observingStatus.label}</span>
               <span><b>Priority</b>{activeFutureTarget.priority}</span>
