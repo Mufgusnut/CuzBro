@@ -5674,3 +5674,213 @@ footer p {
     flex-direction: column !important;
   }
 }
+/* =========================================================
+   SKY MAP: PHASE 15 PLANNER TOOLS
+========================================================= */
+
+.plannerControlsPanel {
+  display: grid !important;
+  gap: 12px !important;
+  margin: 14px 0 16px !important;
+  padding: 14px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  background: rgba(255,255,255,0.035) !important;
+}
+
+.plannerControlsPanel small {
+  display: block !important;
+  margin-bottom: 8px !important;
+  color: rgba(255, 180, 95, 0.95) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.plannerControlChips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+}
+
+.plannerControlChips button {
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgba(255,255,255,0.055) !important;
+  color: rgba(226,236,255,0.78) !important;
+  cursor: pointer !important;
+  font-size: 0.78rem !important;
+  font-weight: 850 !important;
+}
+
+.plannerControlChips button.active {
+  color: rgba(255, 236, 210, 0.98) !important;
+  border-color: rgba(255, 166, 70, 0.56) !important;
+  background: rgba(255, 157, 28, 0.14) !important;
+  box-shadow: 0 0 18px rgba(255, 132, 45, 0.10) !important;
+}
+
+.catalogEmptyState {
+  margin: 14px 0 !important;
+  padding: 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 190, 90, 0.25) !important;
+  background: rgba(255, 166, 60, 0.07) !important;
+  color: rgba(255, 226, 190, 0.92) !important;
+}
+
+.targetWhyCard {
+  margin: 18px 0 20px !important;
+  padding: 18px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(120, 220, 255, 0.18) !important;
+  background:
+    radial-gradient(circle at top left, rgba(120, 220, 255, 0.09), transparent 38%),
+    rgba(7, 14, 30, 0.58) !important;
+}
+
+.targetWhyHeader {
+  margin-bottom: 12px !important;
+}
+
+.targetWhyHeader small {
+  display: block !important;
+  color: rgba(255, 180, 95, 0.95) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 8px !important;
+}
+
+.targetWhyHeader h3 {
+  margin: 0 !important;
+  font-size: clamp(1.35rem, 2vw, 1.9rem) !important;
+  color: rgba(150, 220, 255, 0.98) !important;
+}
+
+.targetWhyCard p {
+  margin: 0 0 14px !important;
+  color: rgba(226,236,255,0.82) !important;
+  line-height: 1.45 !important;
+}
+
+.targetWhyColumns {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+}
+
+.targetWhyColumns div {
+  padding: 13px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  background: rgba(0,0,0,0.15) !important;
+}
+
+.targetWhyColumns b {
+  display: block !important;
+  margin-bottom: 8px !important;
+  color: #fff !important;
+}
+
+.targetWhyColumns ul {
+  margin: 0 !important;
+  padding-left: 18px !important;
+  color: rgba(226,236,255,0.80) !important;
+  line-height: 1.45 !important;
+}
+
+.targetWhyColumns li {
+  margin: 5px 0 !important;
+}
+
+.shareTonightCard {
+  margin: 28px auto 0 !important;
+  max-width: 1180px !important;
+  padding: 22px !important;
+  border-radius: 28px !important;
+  border: 1px solid rgba(255, 157, 28, 0.18) !important;
+  background:
+    radial-gradient(circle at top left, rgba(255,157,28,0.13), transparent 34%),
+    rgba(7, 14, 30, 0.72) !important;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.24) !important;
+}
+
+.shareTonightHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  margin-bottom: 14px !important;
+}
+
+.shareTonightHeader small {
+  display: block !important;
+  color: rgba(255, 180, 95, 0.95) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 6px !important;
+}
+
+.shareTonightHeader h2 {
+  margin: 0 !important;
+}
+
+.shareTonightHeader i {
+  flex: 0 0 auto !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+  color: rgba(255, 226, 190, 0.95) !important;
+  border: 1px solid rgba(255, 166, 70, 0.30) !important;
+  background: rgba(255, 157, 28, 0.08) !important;
+}
+
+.shareTonightGrid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.shareTonightGrid span {
+  padding: 13px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  background: rgba(0,0,0,0.15) !important;
+  color: rgba(255,255,255,0.92) !important;
+  line-height: 1.35 !important;
+}
+
+.shareTonightGrid b,
+.shareTonightGrid em {
+  display: block !important;
+}
+
+.shareTonightGrid b {
+  margin-bottom: 6px !important;
+  color: rgba(150, 220, 255, 0.98) !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.shareTonightGrid em {
+  margin-top: 6px !important;
+  color: rgba(226,236,255,0.70) !important;
+  font-size: 0.88rem !important;
+  font-style: normal !important;
+}
+
+@media (max-width: 900px) {
+  .targetWhyColumns,
+  .shareTonightGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shareTonightHeader {
+    flex-direction: column !important;
+  }
+}
