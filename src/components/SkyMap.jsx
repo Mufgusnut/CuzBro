@@ -776,6 +776,128 @@ function getObservingStatus(photo) {
   return { label: 'Best Now', className: 'best', score: 3 };
 }
 
+
+
+function getPriorityWeight(priority) {
+  if (priority === 'High') return 3;
+  if (priority === 'Medium') return 2;
+  return 1;
+}
+
+function getTonightSampleDates(mapDate) {
+  return [
+    { key: 'sunset', label: 'Sunset', date: getPresetDate('sunset', mapDate) },
+    { key: '10pm', label: '10 PM', date: getPresetDate('10pm', mapDate) },
+    { key: 'midnight', label: 'Midnight', date: getPresetDate('midnight', mapDate) },
+    { key: 'predawn', label: 'Pre-dawn', date: getPresetDate('predawn', mapDate) }
+  ].sort((a, b) => a.date - b.date);
+}
+
+function getTargetRaDecAt(target, sampleDate, observer) {
+  if (target.body) return getPlanetRaDec(target.body, sampleDate, observer);
+  return { ra: target.ra, dec: target.dec };
+}
+
+function buildTonightPlan(target, mapDate, observer) {
+  const samples = getTonightSampleDates(mapDate).map((sample) => {
+    const eq = getTargetRaDecAt(target, sample.date, observer);
+    const altAz = raDecToAltAz(eq.ra, eq.dec, sample.date, SITE.lat, SITE.lon);
+    const status = getObservingStatus({ alt: altAz.alt });
+
+    return {
+      ...sample,
+      ra: eq.ra,
+      dec: eq.dec,
+      alt: altAz.alt,
+      az: altAz.az,
+      status
+    };
+  });
+
+  const visibleSamples = samples.filter((sample) => sample.alt >= 0);
+  const peak = samples.reduce((best, sample) => (sample.alt > best.alt ? sample : best), samples[0]);
+  const bestSamples = samples.filter((sample) => sample.status.score >= 3);
+  const goodSamples = samples.filter((sample) => sample.status.score >= 2);
+
+  const bestWindow = bestSamples.length
+    ? bestSamples.map((sample) => sample.label).join(' / ')
+    : goodSamples.length
+      ? goodSamples.map((sample) => sample.label).join(' / ')
+      : peak?.alt >= 0
+        ? peak.label
+        : 'Not tonight';
+
+  return {
+    samples,
+    visibleSamples,
+    peak,
+    bestSamples,
+    goodSamples,
+    bestWindow
+  };
+}
+
+function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDate = new Date()) {
+  const peakAlt = tonightPlan?.peak?.alt ?? -90;
+  const hasBestLater = tonightPlan?.bestSamples?.some((sample) => sample.date > referenceDate && sample.status.score >= 3);
+  const hasGoodLater = tonightPlan?.goodSamples?.some((sample) => sample.date > referenceDate && sample.status.score >= 2);
+  const priorityWeight = getPriorityWeight(target.priority);
+
+  if (currentStatus.score >= 3) {
+    return {
+      label: 'Best Now',
+      className: 'best',
+      rankScore: 500 + currentStatus.score * 20 + peakAlt + priorityWeight * 10
+    };
+  }
+
+  if (hasBestLater || tonightPlan?.bestSamples?.length) {
+    return {
+      label: 'Best Later',
+      className: 'best',
+      rankScore: 420 + peakAlt + priorityWeight * 10
+    };
+  }
+
+  if (currentStatus.score >= 2) {
+    return {
+      label: 'Good Now',
+      className: 'good',
+      rankScore: 360 + peakAlt + priorityWeight * 10
+    };
+  }
+
+  if (hasGoodLater || tonightPlan?.goodSamples?.length) {
+    return {
+      label: 'Good Later',
+      className: 'good',
+      rankScore: 300 + peakAlt + priorityWeight * 10
+    };
+  }
+
+  if (peakAlt >= 20) {
+    return {
+      label: 'Low Tonight',
+      className: 'low',
+      rankScore: 170 + peakAlt + priorityWeight * 8
+    };
+  }
+
+  if (peakAlt >= 0) {
+    return {
+      label: 'Barely Up',
+      className: 'low',
+      rankScore: 100 + peakAlt + priorityWeight * 6
+    };
+  }
+
+  return {
+    label: 'Not Tonight',
+    className: 'below',
+    rankScore: priorityWeight * 5
+  };
+}
+
 function getZoomSafeBounds(zoom, isMobile) {
   const safeInset = isMobile ? 74 : 92;
   const halfVisible = (CENTER - safeInset) / Math.max(zoom, getMinZoom());
@@ -1067,7 +1189,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [gallery, date, observer]);
 
   const mappedFutureTargets = useMemo(() => {
-    return FUTURE_TARGETS.map((target) => {
+    return FUTURE_TARGETS.map((target, actualIndex) => {
       let ra = target.ra;
       let dec = target.dec;
 
@@ -1082,9 +1204,12 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       const altAz = raDecToAltAz(ra, dec, date, SITE.lat, SITE.lon);
       const point = projectAltAz(altAz.alt, altAz.az);
       const status = getObservingStatus({ alt: altAz.alt });
+      const tonightPlan = buildTonightPlan({ ...target, ra, dec }, date, observer);
+      const plannerStatus = getFuturePlannerStatus(status, tonightPlan, target, date);
 
       return {
         ...target,
+        actualIndex,
         ra,
         dec,
         alt: altAz.alt,
@@ -1093,22 +1218,40 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         y: point.y,
         visible: point.visible,
         observingStatus: status,
+        tonightPlan,
+        plannerStatus,
         isFutureTarget: true
       };
     }).filter(Boolean);
   }, [date, observer]);
 
+  const rankedFutureTargets = useMemo(() => {
+    return [...mappedFutureTargets]
+      .sort((a, b) => {
+        if (b.plannerStatus.rankScore !== a.plannerStatus.rankScore) {
+          return b.plannerStatus.rankScore - a.plannerStatus.rankScore;
+        }
+
+        if ((b.tonightPlan?.peak?.alt ?? -90) !== (a.tonightPlan?.peak?.alt ?? -90)) {
+          return (b.tonightPlan?.peak?.alt ?? -90) - (a.tonightPlan?.peak?.alt ?? -90);
+        }
+
+        return a.title.localeCompare(b.title);
+      })
+      .map((target, rankIndex) => ({ ...target, rankNumber: rankIndex + 1 }));
+  }, [mappedFutureTargets]);
+
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
-  const activeFutureTarget = mappedFutureTargets[activeFutureIndex] || mappedFutureTargets[0];
+  const activeFutureTarget = rankedFutureTargets.find((target) => target.actualIndex === activeFutureIndex) || rankedFutureTargets[0] || mappedFutureTargets[0];
   const selectedTarget = selectedPanel === 'future' ? activeFutureTarget : activeObject;
   const activeConstellation = getMissionConstellation(selectedTarget) || selectedTarget?.constellation;
 
   const visibleObjects = useMemo(() => mappedObjects.filter((photo) => isInsideSky(photo, 12)), [mappedObjects]);
-  const visibleFutureTargets = useMemo(() => mappedFutureTargets.filter((target) => isInsideSky(target, 14)), [mappedFutureTargets]);
+  const visibleFutureTargets = useMemo(() => rankedFutureTargets.filter((target) => isInsideSky(target, 14)), [rankedFutureTargets]);
   const bestObjectCount = useMemo(() => mappedObjects.filter((photo) => photo.observingStatus.score >= 3).length, [mappedObjects]);
   const goodObjectCount = useMemo(() => mappedObjects.filter((photo) => photo.observingStatus.score >= 2).length, [mappedObjects]);
-  const futureBestCount = useMemo(() => mappedFutureTargets.filter((target) => target.observingStatus.score >= 3).length, [mappedFutureTargets]);
-  const futureGoodCount = useMemo(() => mappedFutureTargets.filter((target) => target.observingStatus.score >= 2).length, [mappedFutureTargets]);
+  const futureBestCount = useMemo(() => rankedFutureTargets.filter((target) => target.plannerStatus.label === 'Best Now').length, [rankedFutureTargets]);
+  const futureGoodCount = useMemo(() => rankedFutureTargets.filter((target) => target.plannerStatus.className === 'good' || target.plannerStatus.className === 'best').length, [rankedFutureTargets]);
   const missionCallouts = useMemo(() => buildMissionCallouts(visibleObjects, zoom), [visibleObjects, zoom]);
   const futureCallouts = useMemo(() => buildMissionCallouts(visibleFutureTargets, zoom), [visibleFutureTargets, zoom]);
 
@@ -1686,7 +1829,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <div className="tonightHeaderRow">
               <div>
                 <strong>{formatMapTime(date)}</strong>
-                <small>{futureGoodCount} future good · {futureBestCount} best now</small>
+                <small>{futureBestCount} best now · {futureGoodCount} worth tracking</small>
               </div>
 
               <div className="inlineModeToggle" aria-label="Sky map display mode controls">
@@ -1995,7 +2138,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                         className="missionSvgBadgeText"
                         textAnchor="middle"
                       >
-                        {index + 1}
+                        {target.rankNumber || index + 1}
                       </text>
 
                       {label && (
@@ -2174,21 +2317,21 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
           <small>{catalogView === 'future' ? 'Target Planner' : 'Mission Archive'}</small>
 
-          {catalogView === 'future' && mappedFutureTargets.map((target, index) => (
+          {catalogView === 'future' && rankedFutureTargets.map((target) => (
             <button
               key={target.title}
-              className={index === activeFutureIndex && selectedPanel === 'future' ? 'catalogItem futureItem active' : 'catalogItem futureItem'}
-              onMouseEnter={() => selectFutureTarget(index)}
-              onFocus={() => selectFutureTarget(index)}
-              onClick={() => selectFutureTarget(index, true)}
+              className={target.actualIndex === activeFutureIndex && selectedPanel === 'future' ? 'catalogItem futureItem active' : 'catalogItem futureItem'}
+              onMouseEnter={() => selectFutureTarget(target.actualIndex)}
+              onFocus={() => selectFutureTarget(target.actualIndex)}
+              onClick={() => selectFutureTarget(target.actualIndex, true)}
               type="button"
             >
-              <b>{index + 1}</b>
+              <b>{target.rankNumber}</b>
               <span>
                 <strong>{target.title}</strong>
                 <em>{target.constellation}</em>
-                <small>{target.objectType} · {target.priority} priority</small>
-                <i className={`targetStatusBadge ${target.observingStatus.className}`}>{target.observingStatus.label}</i>
+                <small>{target.objectType} · best: {target.tonightPlan.bestWindow}</small>
+                <i className={`targetStatusBadge ${target.plannerStatus.className}`}>{target.plannerStatus.label}</i>
               </span>
             </button>
           ))}
@@ -2240,7 +2383,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
       {selectedPanel === 'future' && activeFutureTarget && (
         <section className="atlasDetail plannerDetail">
-          <div className="futureDetailBadge">NEXT TARGET</div>
+          <div className="futureDetailBadge">#{activeFutureTarget.rankNumber || activeFutureIndex + 1}<br />{activeFutureTarget.plannerStatus.label}</div>
           <div>
             <small>Target Planner</small>
             <h2><span>＋</span>{activeFutureTarget.title}</h2>
@@ -2252,7 +2395,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               </p>
             )}
             <div className="atlasFacts">
-              <span><b>Status</b>{activeFutureTarget.observingStatus.label}</span>
+              <span><b>Planner Status</b>{activeFutureTarget.plannerStatus.label}</span>
+              <span><b>Best Tonight</b>{activeFutureTarget.tonightPlan.bestWindow}</span>
+              <span><b>Peak Altitude</b>{activeFutureTarget.tonightPlan.peak.alt.toFixed(1)}° at {activeFutureTarget.tonightPlan.peak.label}</span>
+              <span><b>Now</b>{activeFutureTarget.observingStatus.label}</span>
               <span><b>Priority</b>{activeFutureTarget.priority}</span>
               <span><b>Best Season</b>{activeFutureTarget.bestSeason}</span>
               <span><b>Finder Region</b>{activeFutureGuide?.guideConstellation || activeFutureTarget.constellation}</span>
