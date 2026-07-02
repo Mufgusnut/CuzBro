@@ -5026,3 +5026,42 @@ footer p {
     stroke-width: 2.4 !important;
   }
 }
+.treeHorizon {
+  opacity: 1;
+}
+/* =========================================================
+   SKY MAP: INWARD BACKYARD TREE HORIZON
+========================================================= */
+
+.treeHorizon {
+  pointer-events: none !important;
+  opacity: 1 !important;
+}
+
+.treeHorizonGlow {
+  fill: none !important;
+  stroke: rgba(255, 150, 72, 0.14) !important;
+  stroke-width: 10 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  filter: drop-shadow(0 0 10px rgba(255, 132, 45, 0.22)) !important;
+}
+
+.treeHorizonLine {
+  fill: none !important;
+  stroke: rgba(255, 178, 96, 0.58) !important;
+  stroke-width: 2.2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  filter: drop-shadow(0 0 6px rgba(255, 150, 72, 0.28)) !important;
+}
+
+@media (max-width: 700px) {
+  .treeHorizonGlow {
+    stroke-width: 8 !important;
+  }
+
+  .treeHorizonLine {
+    stroke-width: 2 !important;
+  }
+}

@@ -1075,6 +1075,103 @@ function buildMissionCallouts(objects, zoom) {
   return laidOut.sort((a, b) => a.originalIndex - b.originalIndex);
 }
 
+function polarToCartesian(cx, cy, radius, angleDeg) {
+  const angle = (angleDeg - 90) * (Math.PI / 180);
+
+  return {
+    x: cx + radius * Math.cos(angle),
+    y: cy + radius * Math.sin(angle)
+  };
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function buildForestSection({
+  cx,
+  cy,
+  radius,
+  startDeg,
+  endDeg,
+  treeCount,
+  minDepth,
+  maxDepth
+}) {
+  const points = [];
+  const angleStep = (endDeg - startDeg) / treeCount;
+
+  for (let i = 0; i <= treeCount; i += 1) {
+    const angle = startDeg + angleStep * i;
+    const rim = polarToCartesian(cx, cy, radius, angle);
+    points.push(rim);
+
+    if (i < treeCount) {
+      const midAngle = angle + angleStep * 0.5;
+      const t = treeCount <= 1 ? 0 : i / (treeCount - 1);
+      const depth = lerp(minDepth, maxDepth, t);
+      const tip = polarToCartesian(cx, cy, radius - depth, midAngle);
+      points.push(tip);
+    }
+  }
+
+  return points;
+}
+
+function buildConnectedForestPath() {
+  const radius = RADIUS - 10;
+
+  const allPoints = [
+    // W → S: short trees, gradually taller toward the south.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 270,
+      endDeg: 180,
+      treeCount: 18,
+      minDepth: 18,
+      maxDepth: 36
+    }),
+
+    // S → E: the tallest obstruction zone.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 180,
+      endDeg: 90,
+      treeCount: 28,
+      minDepth: 54,
+      maxDepth: 78
+    }).slice(1),
+
+    // E → NE: short trees tapering down toward clear sky.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 90,
+      endDeg: 45,
+      treeCount: 12,
+      minDepth: 28,
+      maxDepth: 14
+    }).slice(1)
+
+    // NE → W is intentionally clear.
+  ];
+
+  if (!allPoints.length) return '';
+
+  let d = `M ${allPoints[0].x.toFixed(1)} ${allPoints[0].y.toFixed(1)}`;
+
+  for (let i = 1; i < allPoints.length; i += 1) {
+    d += ` L ${allPoints[i].x.toFixed(1)} ${allPoints[i].y.toFixed(1)}`;
+  }
+
+  return d;
+}
+
 
 function estimateTextBox(text, fontSize = 15) {
   const normalized = String(text || '').trim();
@@ -1208,6 +1305,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const isDetailMode = viewMode === 'detail';
   const mobileLayout = isMobileViewport();
   const canPanMap = zoom > getDefaultZoom() + 0.02;
+  const forestPath = useMemo(() => buildConnectedForestPath(), []);
 
   useEffect(() => {
     return () => {
@@ -1983,6 +2081,21 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <line x1={CENTER} y1={CENTER - RADIUS} x2={CENTER} y2={CENTER + RADIUS} className="skyAxis" />
               <line x1={CENTER - RADIUS} y1={CENTER} x2={CENTER + RADIUS} y2={CENTER} className="skyAxis" />
 
+              {showHorizon && forestPath && (
+                <g className="treeHorizon" pointerEvents="none">
+                  <path
+                    d={forestPath}
+                    className="treeHorizonGlow"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <path
+                    d={forestPath}
+                    className="treeHorizonLine"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </g>
+              )}
+
               <text x={CENTER} y={CENTER - RADIUS - 18} className="compassLabel" transform={keepUpright(CENTER, CENTER - RADIUS - 18)}>N</text>
               <text x={CENTER + RADIUS + 16} y={CENTER + 6} className="compassLabel" transform={keepUpright(CENTER + RADIUS + 16, CENTER + 6)}>E</text>
               <text x={CENTER} y={CENTER + RADIUS + 28} className="compassLabel" transform={keepUpright(CENTER, CENTER + RADIUS + 28)}>S</text>
@@ -2395,59 +2508,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               )}
             </svg>
           </div>
-
-          {showHorizon && (
-            <svg
-              className="horizonSilhouetteSvgFixed"
-              viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
-              aria-hidden="true"
-            >
-              <defs>
-                <clipPath id="backyardTreeHorizonClipFixed">
-                  <circle cx={CENTER} cy={CENTER} r={RADIUS} />
-                </clipPath>
-              </defs>
-
-              <g clipPath="url(#backyardTreeHorizonClipFixed)">
-                {/* Short north to northeast tree line, tight against the horizon circle */}
-                <path
-                  className="treeShadow treeShadowNorth"
-                  d="M470 42 L470 86 L488 96 L506 116 L524 96 L542 132 L560 104 L580 148 L600 108 L620 156 L642 128 L664 170 L686 138 L708 184 L732 154 L756 202 L780 174 L806 214 L834 196 L858 230 L894 238 L918 244 L918 42 Z"
-                />
-
-                {/* Short northeast through east toward southeast tree line */}
-                <path
-                  className="treeShadow treeShadowNorthEast"
-                  d="M930 118 L890 118 L878 140 L850 160 L878 178 L838 200 L868 222 L824 246 L862 270 L812 296 L850 322 L806 352 L844 382 L802 414 L842 446 L806 480 L846 512 L812 548 L858 586 L826 624 L874 664 L846 706 L894 748 L874 790 L930 826 L1000 826 L1000 118 Z"
-                />
-
-                {/* Short southwest to west tree line */}
-                <path
-                  className="treeShadow treeShadowSouthWest"
-                  d="M70 610 L126 610 L148 640 L120 662 L164 690 L132 718 L178 746 L146 776 L196 804 L164 834 L214 860 L186 890 L238 912 L218 940 L70 940 Z"
-                />
-
-                {/* Short west tree line */}
-                <path
-                  className="treeShadow treeShadowWest"
-                  d="M42 742 L102 742 L124 764 L96 786 L140 810 L108 834 L158 858 L126 884 L182 906 L160 928 L42 928 Z"
-                />
-
-                {/* Tall southern tree line */}
-                <path
-                  className="treeShadow treeShadowSouth"
-                  d="M198 1000 L198 918 L220 898 L242 856 L264 900 L286 820 L308 888 L330 774 L354 878 L378 812 L402 904 L426 830 L450 918 L474 846 L500 892 L526 790 L552 882 L578 758 L604 908 L630 842 L656 922 L682 854 L708 902 L734 834 L760 926 L788 884 L818 934 L842 912 L842 1000 Z"
-                />
-
-                {/* Taller southeast tree line blending into the shorter east trees */}
-                <path
-                  className="treeShadow treeShadowSouthEast"
-                  d="M610 1000 L610 914 L632 894 L654 836 L676 888 L698 806 L722 874 L746 766 L770 868 L794 804 L818 914 L842 822 L866 936 L890 858 L914 930 L938 882 L962 948 L986 918 L1000 930 L1000 1000 Z"
-                />
-              </g>
-            </svg>
-          )}
-
 
           <div className="atlasLegend enhancedLegend">
             <span><i className="legendCyan"></i> Planetary Nebula</span>
