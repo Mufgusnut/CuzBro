@@ -4881,3 +4881,50 @@ footer p {
   height: 18%;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 120'><path fill='rgba(5,9,16,0.95)' d='M0,120 L0,96 L14,90 L28,84 L42,72 L56,82 L70,65 L84,78 L100,66 L118,82 L136,72 L154,88 L172,75 L190,90 L208,80 L226,96 L246,82 L268,98 L292,86 L316,100 L338,90 L360,102 L360,120 Z'/></svg>");
 }
+/* =========================================================
+   SKY MAP: TOGGLEABLE TREE HORIZON
+========================================================= */
+
+.inlineModeToggle {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.horizonSilhouette {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 18 !important;
+  opacity: 0.9 !important;
+}
+
+.treeShadow {
+  fill: rgba(2, 6, 12, 0.96) !important;
+  filter:
+    drop-shadow(0 0 14px rgba(0, 0, 0, 0.45))
+    drop-shadow(0 -8px 20px rgba(20, 70, 95, 0.08)) !important;
+}
+
+.treeShadowSouth {
+  fill: rgba(1, 4, 9, 0.99) !important;
+}
+
+.treeShadowSouthEast {
+  fill: rgba(2, 5, 10, 0.98) !important;
+}
+
+.treeShadowWest,
+.treeShadowNorthEast {
+  fill: rgba(4, 9, 17, 0.93) !important;
+}
+
+@media (max-width: 700px) {
+  .inlineModeToggle {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .horizonSilhouette {
+    opacity: 0.86 !important;
+  }
+}
