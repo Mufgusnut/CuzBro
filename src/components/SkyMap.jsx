@@ -1095,56 +1095,67 @@ function buildForestSection({
   startDeg,
   endDeg,
   treeCount,
-  minDepth,
-  maxDepth
+  minHeight,
+  maxHeight,
+  phase = 0
 }) {
-  const points = [];
-  const angleStep = (endDeg - startDeg) / treeCount;
+  const trees = [];
+  const angleStep = (endDeg - startDeg) / Math.max(1, treeCount - 1);
 
-  for (let i = 0; i <= treeCount; i += 1) {
+  for (let i = 0; i < treeCount; i += 1) {
+    const t = treeCount <= 1 ? 0 : i / (treeCount - 1);
     const angle = startDeg + angleStep * i;
-    const rim = polarToCartesian(cx, cy, radius, angle);
-    points.push(rim);
+    const base = polarToCartesian(cx, cy, radius, angle);
 
-    if (i < treeCount) {
-      const midAngle = angle + angleStep * 0.5;
-      const t = treeCount <= 1 ? 0 : i / (treeCount - 1);
-      const depth = lerp(minDepth, maxDepth, t);
-      const tip = polarToCartesian(cx, cy, radius - depth, midAngle);
-      points.push(tip);
-    }
+    // Gentle deterministic variation keeps the line organic without turning
+    // it into a saw blade / row of teeth.
+    const ripple = Math.sin(i * 1.73 + phase) * 0.12 + Math.sin(i * 0.57 + phase * 2.1) * 0.08;
+    const height = lerp(minHeight, maxHeight, t) * (1 + ripple);
+    const width = clamp(height * 0.28, 7, 18);
+
+    trees.push({
+      id: `${startDeg}-${endDeg}-${i}`,
+      angle,
+      x: base.x,
+      y: base.y,
+      height: clamp(height, 10, 82),
+      width,
+      opacity: 0.78 + Math.sin(i * 0.91 + phase) * 0.08
+    });
   }
 
-  return points;
+  return trees;
 }
 
-function buildConnectedForestPath() {
-  const radius = RADIUS - 10;
+function buildConnectedForestTrees() {
+  const radius = RADIUS - 8;
 
-  const allPoints = [
-    // W → S: short trees, gradually taller toward the south.
+  return [
+    // W → S: short trees, gradually taller as the view approaches the south.
     ...buildForestSection({
       cx: CENTER,
       cy: CENTER,
       radius,
       startDeg: 270,
       endDeg: 180,
-      treeCount: 18,
-      minDepth: 18,
-      maxDepth: 36
+      treeCount: 34,
+      minHeight: 18,
+      maxHeight: 34,
+      phase: 0.4
     }),
 
-    // S → E: the tallest obstruction zone.
+    // S → E: main obstruction zone, tallest and densest.
     ...buildForestSection({
       cx: CENTER,
       cy: CENTER,
       radius,
       startDeg: 180,
       endDeg: 90,
-      treeCount: 28,
-      minDepth: 54,
-      maxDepth: 78
-    }).slice(1),
+      treeCount: 52,
+      minHeight: 48,
+      maxHeight: 72,
+      phase: 1.7
+    }),
 
     // E → NE: short trees tapering down toward clear sky.
     ...buildForestSection({
@@ -1153,23 +1164,51 @@ function buildConnectedForestPath() {
       radius,
       startDeg: 90,
       endDeg: 45,
-      treeCount: 12,
-      minDepth: 28,
-      maxDepth: 14
-    }).slice(1)
+      treeCount: 24,
+      minHeight: 28,
+      maxHeight: 14,
+      phase: 2.8
+    })
 
     // NE → W is intentionally clear.
   ];
+}
 
-  if (!allPoints.length) return '';
+function buildForestBasePath(trees) {
+  if (!trees.length) return '';
 
-  let d = `M ${allPoints[0].x.toFixed(1)} ${allPoints[0].y.toFixed(1)}`;
+  return trees
+    .map((tree, index) => `${index === 0 ? 'M' : 'L'} ${tree.x.toFixed(1)} ${tree.y.toFixed(1)}`)
+    .join(' ');
+}
 
-  for (let i = 1; i < allPoints.length; i += 1) {
-    d += ` L ${allPoints[i].x.toFixed(1)} ${allPoints[i].y.toFixed(1)}`;
-  }
+function buildConiferPath(tree) {
+  const h = tree.height;
+  const w = tree.width;
 
-  return d;
+  // Local coordinate system: base at (0, 0), treetop points upward.
+  // The rendered group rotates this inward toward the map center.
+  return [
+    `M 0 ${(-h).toFixed(1)}`,
+    `C ${(-w * 0.18).toFixed(1)} ${(-h * 0.86).toFixed(1)} ${(-w * 0.34).toFixed(1)} ${(-h * 0.78).toFixed(1)} ${(-w * 0.22).toFixed(1)} ${(-h * 0.70).toFixed(1)}`,
+    `L ${(-w * 0.50).toFixed(1)} ${(-h * 0.64).toFixed(1)}`,
+    `L ${(-w * 0.20).toFixed(1)} ${(-h * 0.57).toFixed(1)}`,
+    `L ${(-w * 0.62).toFixed(1)} ${(-h * 0.48).toFixed(1)}`,
+    `L ${(-w * 0.24).toFixed(1)} ${(-h * 0.41).toFixed(1)}`,
+    `L ${(-w * 0.70).toFixed(1)} ${(-h * 0.30).toFixed(1)}`,
+    `L ${(-w * 0.28).toFixed(1)} ${(-h * 0.23).toFixed(1)}`,
+    `L ${(-w * 0.50).toFixed(1)} ${(-h * 0.10).toFixed(1)}`,
+    `L 0 0`,
+    `L ${(w * 0.50).toFixed(1)} ${(-h * 0.10).toFixed(1)}`,
+    `L ${(w * 0.28).toFixed(1)} ${(-h * 0.23).toFixed(1)}`,
+    `L ${(w * 0.70).toFixed(1)} ${(-h * 0.30).toFixed(1)}`,
+    `L ${(w * 0.24).toFixed(1)} ${(-h * 0.41).toFixed(1)}`,
+    `L ${(w * 0.62).toFixed(1)} ${(-h * 0.48).toFixed(1)}`,
+    `L ${(w * 0.20).toFixed(1)} ${(-h * 0.57).toFixed(1)}`,
+    `L ${(w * 0.50).toFixed(1)} ${(-h * 0.64).toFixed(1)}`,
+    `C ${(w * 0.34).toFixed(1)} ${(-h * 0.78).toFixed(1)} ${(w * 0.18).toFixed(1)} ${(-h * 0.86).toFixed(1)} 0 ${(-h).toFixed(1)}`,
+    'Z'
+  ].join(' ');
 }
 
 
@@ -1305,7 +1344,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const isDetailMode = viewMode === 'detail';
   const mobileLayout = isMobileViewport();
   const canPanMap = zoom > getDefaultZoom() + 0.02;
-  const forestPath = useMemo(() => buildConnectedForestPath(), []);
+  const forestTrees = useMemo(() => buildConnectedForestTrees(), []);
+  const forestBasePath = useMemo(() => buildForestBasePath(forestTrees), [forestTrees]);
 
   useEffect(() => {
     return () => {
@@ -2081,18 +2121,43 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <line x1={CENTER} y1={CENTER - RADIUS} x2={CENTER} y2={CENTER + RADIUS} className="skyAxis" />
               <line x1={CENTER - RADIUS} y1={CENTER} x2={CENTER + RADIUS} y2={CENTER} className="skyAxis" />
 
-              {showHorizon && forestPath && (
+              {showHorizon && forestTrees.length > 0 && (
                 <g className="treeHorizon" pointerEvents="none">
-                  <path
-                    d={forestPath}
-                    className="treeHorizonGlow"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  <path
-                    d={forestPath}
-                    className="treeHorizonLine"
-                    vectorEffect="non-scaling-stroke"
-                  />
+                  {forestBasePath && (
+                    <path
+                      d={forestBasePath}
+                      className="treeHorizonBaseGlow"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
+
+                  {forestTrees.map((tree) => (
+                    <g
+                      key={tree.id}
+                      className="treeHorizonTreeGroup"
+                      transform={`translate(${tree.x.toFixed(1)} ${tree.y.toFixed(1)}) rotate(${(tree.angle + 180).toFixed(1)})`}
+                      style={{ opacity: tree.opacity }}
+                    >
+                      <path
+                        d={buildConiferPath(tree)}
+                        className="treeHorizonTreeGlow"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <path
+                        d={buildConiferPath(tree)}
+                        className="treeHorizonTree"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <line
+                        x1="0"
+                        y1={(-tree.height * 0.54).toFixed(1)}
+                        x2="0"
+                        y2="0"
+                        className="treeHorizonTrunk"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </g>
+                  ))}
                 </g>
               )}
 

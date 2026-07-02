@@ -5065,3 +5065,53 @@ footer p {
     stroke-width: 2 !important;
   }
 }
+/* =========================================================
+   SKY MAP: INWARD CONIFER TREE HORIZON
+========================================================= */
+
+.treeHorizon {
+  pointer-events: none !important;
+  opacity: 1 !important;
+}
+
+.treeHorizonBaseGlow {
+  fill: none !important;
+  stroke: rgba(255, 150, 72, 0.12) !important;
+  stroke-width: 10 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  filter: drop-shadow(0 0 10px rgba(255, 132, 45, 0.18)) !important;
+}
+
+.treeHorizonTreeGlow {
+  fill: rgba(255, 138, 58, 0.10) !important;
+  stroke: none !important;
+  filter: drop-shadow(0 0 8px rgba(255, 132, 45, 0.18)) !important;
+}
+
+.treeHorizonTree {
+  fill: rgba(255, 159, 83, 0.19) !important;
+  stroke: rgba(255, 190, 126, 0.34) !important;
+  stroke-width: 0.85 !important;
+  stroke-linejoin: round !important;
+}
+
+.treeHorizonTrunk {
+  stroke: rgba(255, 205, 150, 0.28) !important;
+  stroke-width: 0.75 !important;
+  stroke-linecap: round !important;
+}
+
+@media (max-width: 700px) {
+  .treeHorizonBaseGlow {
+    stroke-width: 8 !important;
+  }
+
+  .treeHorizonTree {
+    stroke-width: 0.7 !important;
+  }
+
+  .treeHorizonTrunk {
+    stroke-width: 0.6 !important;
+  }
+}
