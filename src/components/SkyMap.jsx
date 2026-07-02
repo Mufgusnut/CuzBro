@@ -27,7 +27,34 @@ function getMinZoom() {
 }
 
 function getMaxZoom() {
-  return isMobileViewport() ? 1.5 : 1.25;
+  return isMobileViewport() ? 2.5 : 1.25;
+}
+
+function getDefaultPan() {
+  return { x: 0, y: 0 };
+}
+
+function getMaxPanForZoom(zoom) {
+  const defaultZoom = getDefaultZoom();
+
+  if (zoom <= defaultZoom + 0.02) {
+    return { x: 0, y: 0 };
+  }
+
+  const extraZoom = zoom - defaultZoom;
+  const multiplier = isMobileViewport() ? 210 : 260;
+  const max = clamp(extraZoom * multiplier, 0, isMobileViewport() ? 360 : 420);
+
+  return { x: max, y: max };
+}
+
+function clampPanForZoom(pan, zoom) {
+  const maxPan = getMaxPanForZoom(zoom);
+
+  return {
+    x: clamp(pan.x, -maxPan.x, maxPan.x),
+    y: clamp(pan.y, -maxPan.y, maxPan.y)
+  };
 }
 
 function createBackgroundStars(count = 360) {
@@ -848,6 +875,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const [catalogView, setCatalogView] = useState('future');
   const [selectedPanel, setSelectedPanel] = useState('future');
   const [zoom, setZoom] = useState(() => getDefaultZoom());
+  const [pan, setPan] = useState(() => getDefaultPan());
   const [rotation, setRotation] = useState(0);
   const [date, setDate] = useState(() => new Date());
   const [viewMode, setViewMode] = useState('clean');
@@ -855,6 +883,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const dragRef = useRef(null);
   const mapSectionRef = useRef(null);
+  const mapRef = useRef(null);
   const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
   const isDetailMode = viewMode === 'detail';
   const mobileLayout = isMobileViewport();
@@ -1233,7 +1262,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const scrollToMap = () => {
     window.requestAnimationFrame(() => {
-      mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const target = mapRef.current || mapSectionRef.current;
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+      const pageY = window.scrollY || window.pageYOffset || 0;
+      const desiredTop = rect.top + pageY + rect.height / 2 - window.innerHeight / 2;
+
+      window.scrollTo({
+        top: Math.max(0, desiredTop),
+        behavior: 'smooth'
+      });
     });
   };
 
@@ -1251,11 +1290,25 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     if (shouldScroll) scrollToMap();
   };
 
-  const zoomIn = () => setZoom((current) => Math.min(getMaxZoom(), Number((current + 0.08).toFixed(2))));
-  const zoomOut = () => setZoom((current) => Math.max(getMinZoom(), Number((current - 0.08).toFixed(2))));
+  const zoomIn = () => {
+    setZoom((current) => {
+      const next = Math.min(getMaxZoom(), Number((current + 0.1).toFixed(2)));
+      setPan((currentPan) => clampPanForZoom(currentPan, next));
+      return next;
+    });
+  };
+
+  const zoomOut = () => {
+    setZoom((current) => {
+      const next = Math.max(getMinZoom(), Number((current - 0.1).toFixed(2)));
+      setPan((currentPan) => clampPanForZoom(currentPan, next));
+      return next;
+    });
+  };
+
   const rotateLeft = () => setRotation((current) => current - 15);
   const rotateRight = () => setRotation((current) => current + 15);
-  const resetView = () => { setZoom(getDefaultZoom()); setRotation(0); };
+  const resetView = () => { setZoom(getDefaultZoom()); setPan(getDefaultPan()); setRotation(0); };
 
   const changeTime = (hours) => {
     setActivePreset('custom');
@@ -1277,21 +1330,49 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     return Boolean(
       target.closest('.atlasZoomControls') ||
       target.closest('.atlasTimeControls') ||
-      target.closest('.atlasLegend')
+      target.closest('.atlasLegend') ||
+      target.closest('.missionSvgCallout') ||
+      target.closest('.futureTargetMarker')
     );
   };
 
   const handlePointerDown = (event) => {
     if (shouldIgnoreDrag(event.target)) return;
+
+    const canPan = zoom > getDefaultZoom() + 0.02;
+
+    if (canPan) {
+      event.preventDefault();
+      dragRef.current = {
+        mode: 'pan',
+        startX: event.clientX,
+        startY: event.clientY,
+        startPan: pan
+      };
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      return;
+    }
+
     if (event.pointerType === 'touch') return;
 
     const angle = getPointerAngle(event, event.currentTarget);
-    dragRef.current = { startAngle: angle, startRotation: rotation };
+    dragRef.current = { mode: 'rotate', startAngle: angle, startRotation: rotation };
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const handlePointerMove = (event) => {
     if (!dragRef.current) return;
+
+    if (dragRef.current.mode === 'pan') {
+      event.preventDefault();
+      const nextPan = {
+        x: dragRef.current.startPan.x + event.clientX - dragRef.current.startX,
+        y: dragRef.current.startPan.y + event.clientY - dragRef.current.startY
+      };
+      setPan(clampPanForZoom(nextPan, zoom));
+      return;
+    }
+
     const angle = getPointerAngle(event, event.currentTarget);
     const delta = angle - dragRef.current.startAngle;
     setRotation(dragRef.current.startRotation + delta);
@@ -1355,14 +1436,16 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
 
         <div
+          ref={mapRef}
           className={isDetailMode ? 'atlasMap realSkyMap detailMode' : 'atlasMap realSkyMap cleanMode'}
+          style={{ touchAction: zoom > getDefaultZoom() + 0.02 ? 'none' : 'pan-y' }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          <div className="skyPanLayer" style={{ transform: `rotate(${rotation}deg) scale(${zoom})` }}>
+          <div className="skyPanLayer" style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) rotate(${rotation}deg) scale(${zoom})` }}>
             <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label="Live sky map for Eliot, Maine">
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
 
