@@ -2127,6 +2127,133 @@ function getTargetActionPlan(target) {
   return common;
 }
 
+
+function getTargetDifficultyScore(target) {
+  if (!target) {
+    return {
+      label: 'Medium',
+      className: 'medium',
+      score: 3,
+      summary: 'A balanced target with moderate setup demands.',
+      factors: ['check altitude', 'start wide']
+    };
+  }
+
+  const type = target.objectType || 'Target';
+  const title = target.title || '';
+  const factors = [];
+  let score = 2.5;
+
+  switch (type) {
+    case 'Planet':
+      score = 1.4;
+      factors.push('bright target', 'seeing matters');
+      break;
+    case 'Open Cluster':
+      score = 1.2;
+      factors.push('bright stars', 'forgiving target');
+      break;
+    case 'Globular Cluster':
+      score = 2.0;
+      factors.push('good CPC 800 match', 'focus matters');
+      break;
+    case 'Planetary Nebula':
+      score = 3.0;
+      factors.push('tiny target', 'accurate centering');
+      break;
+    case 'Galaxy':
+      score = title.includes('Andromeda') || title.includes('M31') ? 3.0 : 4.2;
+      factors.push('faint contrast', 'dark sky helps');
+      break;
+    case 'Emission Nebula':
+    case 'Supernova Remnant':
+      score = 4.7;
+      factors.push('very faint', 'filter/dark sky');
+      break;
+    case 'Comet':
+      score = visitorHasEphemeris(target) ? 4.4 : 5.5;
+      factors.push(visitorHasEphemeris(target) ? 'moving target' : 'needs RA/Dec');
+      break;
+    default:
+      score = 2.6;
+      factors.push('moderate setup');
+  }
+
+  if (target.plannerStatus?.className === 'below') {
+    score += 1.1;
+    factors.push('low/not up');
+  } else if (target.observingStatus?.className === 'low' || target.plannerStatus?.className === 'low') {
+    score += 0.6;
+    factors.push('low altitude');
+  }
+
+  if (target.moonImpact?.className === 'bad') {
+    score += 1.0;
+    factors.push('Moon hurts');
+  } else if (target.moonImpact?.className === 'caution') {
+    score += 0.45;
+    factors.push('Moon caution');
+  }
+
+  if (target.treeObstruction?.className === 'bad') {
+    score += 1.0;
+    factors.push('tree blocked');
+  } else if (target.treeObstruction?.className === 'caution') {
+    score += 0.45;
+    factors.push('tree risk');
+  }
+
+  const framingPreview = getTargetFramingPreview(target);
+  if (framingPreview?.className === 'caution') {
+    score += 0.55;
+    factors.push('framing challenge');
+  } else if (framingPreview?.className === 'good') {
+    score -= 0.25;
+  }
+
+  const normalizedScore = clamp(score, 1, 6);
+  let label = 'Easy';
+  let className = 'easy';
+
+  if (normalizedScore >= 4.75) {
+    label = 'Expert';
+    className = 'expert';
+  } else if (normalizedScore >= 3.45) {
+    label = 'Hard';
+    className = 'hard';
+  } else if (normalizedScore >= 2.1) {
+    label = 'Medium';
+    className = 'medium';
+  }
+
+  const uniqueFactors = [...new Set(factors)].slice(0, 4);
+
+  const summaries = {
+    Easy: 'Good confidence target. It should be forgiving if the sky cooperates.',
+    Medium: 'Worth trying, but it needs a little care with centering, focus, or timing.',
+    Hard: 'A real project target. Conditions, tracking, and patience matter.',
+    Expert: 'Challenge target. Best saved for strong conditions or a dedicated attempt.'
+  };
+
+  if (type === 'Comet' && !visitorHasEphemeris(target)) {
+    return {
+      label: 'Expert',
+      className: 'expert',
+      score: normalizedScore,
+      summary: 'Challenge target until current RA/Dec is loaded; then the planner can score it properly.',
+      factors: uniqueFactors
+    };
+  }
+
+  return {
+    label,
+    className,
+    score: normalizedScore,
+    summary: summaries[label],
+    factors: uniqueFactors
+  };
+}
+
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFutureIndex, setActiveFutureIndex] = useState(0);
@@ -3693,6 +3820,14 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     {target.treeObstruction.label}
                   </i>
                 )}
+                {(() => {
+                  const difficultyScore = getTargetDifficultyScore(target);
+                  return (
+                    <i className={`targetStatusBadge targetDifficultyBadge ${difficultyScore.className}`}>
+                      {difficultyScore.label}
+                    </i>
+                  );
+                })()}
               </span>
             </button>
           ))}
@@ -3723,6 +3858,14 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                     {target.treeObstruction.label}
                   </i>
                 )}
+                {(() => {
+                  const difficultyScore = getTargetDifficultyScore(target);
+                  return (
+                    <i className={`targetStatusBadge targetDifficultyBadge ${difficultyScore.className}`}>
+                      {difficultyScore.label}
+                    </i>
+                  );
+                })()}
               </span>
             </button>
           ))}
@@ -3815,11 +3958,25 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             )}
             {(() => {
               const actionPlan = getTargetActionPlan(activeVisitorTarget);
-
               const framingPreview = getTargetFramingPreview(activeVisitorTarget);
+              const difficultyScore = getTargetDifficultyScore(activeVisitorTarget);
 
               return (
                 <>
+                <div className={`targetDifficultyCard ${difficultyScore.className}`}>
+                  <div className="targetDifficultyHeader">
+                    <small>Target Difficulty</small>
+                    <h3>{difficultyScore.label}</h3>
+                    <i>{difficultyScore.score.toFixed(1)} / 6</i>
+                  </div>
+                  <p>{difficultyScore.summary}</p>
+                  <div className="targetDifficultyFactors">
+                    {difficultyScore.factors.map((factor) => (
+                      <em key={factor}>{factor}</em>
+                    ))}
+                  </div>
+                </div>
+
                 <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
                   <div className="targetActionHeader">
                     <small>Recommended Setup</small>
@@ -3865,6 +4022,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             })()}
             <div className="atlasFacts">
               <span><b>Status</b>{activeVisitorTarget.plannerStatus.label}</span>
+              <span><b>Difficulty</b>{getTargetDifficultyScore(activeVisitorTarget).label}</span>
               <span><b>Closest Approach</b>{activeVisitorTarget.closestApproach}</span>
               <span><b>Estimated Brightness</b>{activeVisitorTarget.magnitude}</span>
               <span><b>Best Window</b>{activeVisitorTarget.tonightPlan.bestWindow}</span>
@@ -3930,11 +4088,25 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             )}
             {(() => {
               const actionPlan = getTargetActionPlan(activeFutureTarget);
-
               const framingPreview = getTargetFramingPreview(activeFutureTarget);
+              const difficultyScore = getTargetDifficultyScore(activeFutureTarget);
 
               return (
                 <>
+                <div className={`targetDifficultyCard ${difficultyScore.className}`}>
+                  <div className="targetDifficultyHeader">
+                    <small>Target Difficulty</small>
+                    <h3>{difficultyScore.label}</h3>
+                    <i>{difficultyScore.score.toFixed(1)} / 6</i>
+                  </div>
+                  <p>{difficultyScore.summary}</p>
+                  <div className="targetDifficultyFactors">
+                    {difficultyScore.factors.map((factor) => (
+                      <em key={factor}>{factor}</em>
+                    ))}
+                  </div>
+                </div>
+
                 <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
                   <div className="targetActionHeader">
                     <small>Recommended Setup</small>
@@ -3980,6 +4152,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             })()}
             <div className="atlasFacts">
               <span><b>Planner Status</b>{activeFutureTarget.plannerStatus.label}</span>
+              <span><b>Difficulty</b>{getTargetDifficultyScore(activeFutureTarget).label}</span>
               <span><b>Best Tonight</b>{activeFutureTarget.tonightPlan.bestWindow}</span>
               <span><b>Track</b>{activeTargetTrack?.isRising === null ? 'Visible path shown on map' : activeTargetTrack.isRising ? 'Generally rising tonight' : 'Generally setting tonight'}</span>
               <span><b>Peak Altitude</b>{activeFutureTarget.tonightPlan.peak.alt.toFixed(1)}° at {activeFutureTarget.tonightPlan.peak.label}</span>

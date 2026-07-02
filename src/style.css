@@ -5566,3 +5566,111 @@ footer p {
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================================
+   SKY MAP: TARGET DIFFICULTY SCORE
+========================================================= */
+
+.targetDifficultyCard {
+  margin: 18px 0 20px !important;
+  padding: 18px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,0.13) !important;
+  background:
+    radial-gradient(circle at top left, rgba(120, 220, 255, 0.10), transparent 36%),
+    rgba(7, 14, 30, 0.58) !important;
+}
+
+.targetDifficultyHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 12px !important;
+}
+
+.targetDifficultyHeader small {
+  display: block !important;
+  color: rgba(255, 180, 95, 0.95) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 8px !important;
+}
+
+.targetDifficultyHeader h3 {
+  margin: 0 !important;
+  font-size: clamp(1.4rem, 2vw, 2rem) !important;
+  line-height: 1.1 !important;
+}
+
+.targetDifficultyHeader i {
+  flex: 0 0 auto !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  font-size: 0.78rem !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  background: rgba(255,255,255,0.06) !important;
+}
+
+.targetDifficultyCard p {
+  margin: 0 0 13px !important;
+  color: rgba(226,236,255,0.82) !important;
+  line-height: 1.45 !important;
+}
+
+.targetDifficultyFactors {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+.targetDifficultyFactors em,
+.targetDifficultyBadge {
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  font-size: 0.78rem !important;
+  font-style: normal !important;
+  font-weight: 850 !important;
+}
+
+.targetDifficultyCard.easy,
+.targetDifficultyBadge.easy {
+  border-color: rgba(120, 220, 255, 0.34) !important;
+  color: rgba(200, 244, 255, 0.96) !important;
+  background: rgba(90, 210, 255, 0.07) !important;
+}
+
+.targetDifficultyCard.medium,
+.targetDifficultyBadge.medium {
+  border-color: rgba(255, 190, 90, 0.34) !important;
+  color: rgba(255, 226, 180, 0.98) !important;
+  background: rgba(255, 166, 60, 0.075) !important;
+}
+
+.targetDifficultyCard.hard,
+.targetDifficultyBadge.hard {
+  border-color: rgba(255, 132, 80, 0.42) !important;
+  color: rgba(255, 204, 180, 0.98) !important;
+  background: rgba(255, 108, 60, 0.085) !important;
+}
+
+.targetDifficultyCard.expert,
+.targetDifficultyBadge.expert {
+  border-color: rgba(255, 95, 120, 0.48) !important;
+  color: rgba(255, 205, 215, 0.98) !important;
+  background: rgba(255, 70, 100, 0.095) !important;
+}
+
+.targetDifficultyFactors em {
+  color: rgba(255, 226, 190, 0.95) !important;
+  border: 1px solid rgba(255, 166, 70, 0.24) !important;
+  background: rgba(255, 157, 28, 0.065) !important;
+}
+
+@media (max-width: 700px) {
+  .targetDifficultyHeader {
+    flex-direction: column !important;
+  }
+}
