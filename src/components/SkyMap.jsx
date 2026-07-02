@@ -1965,39 +1965,6 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label="Live sky map for Eliot, Maine">
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
 
-              {showHorizon && (
-                <g className="horizonSilhouetteSvg" aria-hidden="true">
-                  <defs>
-                    <clipPath id="backyardTreeHorizonClipSvg">
-                      <circle cx={CENTER} cy={CENTER} r={RADIUS} />
-                    </clipPath>
-                  </defs>
-
-                  <g clipPath="url(#backyardTreeHorizonClipSvg)">
-                    <path
-                      className="treeShadow treeShadowNorth"
-                      d="M488 88 L488 158 L508 146 L526 118 L544 144 L563 104 L582 138 L601 96 L620 142 L640 113 L660 151 L682 128 L704 166 L726 138 L748 174 L770 150 L792 184 L814 162 L838 190 L862 174 L862 88 Z"
-                    />
-                    <path
-                      className="treeShadow treeShadowNorthEast"
-                      d="M736 132 L754 190 L772 176 L790 132 L807 166 L826 118 L844 156 L864 106 L884 166 L903 138 L923 190 L943 158 L962 210 L982 184 L1000 206 L1000 132 Z"
-                    />
-                    <path
-                      className="treeShadow treeShadowWest"
-                      d="M70 930 L70 846 L88 834 L105 812 L122 832 L140 792 L158 822 L176 784 L195 828 L215 802 L235 850 L255 820 L276 870 L298 844 L320 890 L342 864 L364 904 L386 886 L410 918 L410 1000 L70 1000 Z"
-                    />
-                    <path
-                      className="treeShadow treeShadowSouth"
-                      d="M218 1000 L218 870 L236 858 L254 812 L273 854 L292 780 L312 842 L332 742 L353 834 L374 776 L396 862 L418 792 L440 884 L462 816 L484 864 L506 758 L528 850 L550 732 L572 872 L596 808 L620 892 L644 818 L668 866 L692 800 L716 888 L740 838 L764 906 L788 874 L812 920 L812 1000 Z"
-                    />
-                    <path
-                      className="treeShadow treeShadowSouthEast"
-                      d="M624 1000 L624 838 L642 826 L660 772 L678 820 L696 742 L716 808 L736 702 L756 802 L776 734 L796 840 L817 748 L838 866 L860 776 L882 850 L904 796 L926 888 L948 840 L970 906 L990 874 L1000 890 L1000 1000 Z"
-                    />
-                  </g>
-                </g>
-              )}
-
               {BACKGROUND_STARS.map((star) => (
                 <circle
                   key={star.id}
@@ -2429,7 +2396,57 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             </svg>
           </div>
 
+          {showHorizon && (
+            <svg
+              className="horizonSilhouetteSvgFixed"
+              viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
+              aria-hidden="true"
+            >
+              <defs>
+                <clipPath id="backyardTreeHorizonClipFixed">
+                  <circle cx={CENTER} cy={CENTER} r={RADIUS} />
+                </clipPath>
+              </defs>
 
+              <g clipPath="url(#backyardTreeHorizonClipFixed)">
+                {/* Short north to northeast tree line, tight against the horizon circle */}
+                <path
+                  className="treeShadow treeShadowNorth"
+                  d="M470 42 L470 86 L488 96 L506 116 L524 96 L542 132 L560 104 L580 148 L600 108 L620 156 L642 128 L664 170 L686 138 L708 184 L732 154 L756 202 L780 174 L806 214 L834 196 L858 230 L894 238 L918 244 L918 42 Z"
+                />
+
+                {/* Short northeast through east toward southeast tree line */}
+                <path
+                  className="treeShadow treeShadowNorthEast"
+                  d="M930 118 L890 118 L878 140 L850 160 L878 178 L838 200 L868 222 L824 246 L862 270 L812 296 L850 322 L806 352 L844 382 L802 414 L842 446 L806 480 L846 512 L812 548 L858 586 L826 624 L874 664 L846 706 L894 748 L874 790 L930 826 L1000 826 L1000 118 Z"
+                />
+
+                {/* Short southwest to west tree line */}
+                <path
+                  className="treeShadow treeShadowSouthWest"
+                  d="M70 610 L126 610 L148 640 L120 662 L164 690 L132 718 L178 746 L146 776 L196 804 L164 834 L214 860 L186 890 L238 912 L218 940 L70 940 Z"
+                />
+
+                {/* Short west tree line */}
+                <path
+                  className="treeShadow treeShadowWest"
+                  d="M42 742 L102 742 L124 764 L96 786 L140 810 L108 834 L158 858 L126 884 L182 906 L160 928 L42 928 Z"
+                />
+
+                {/* Tall southern tree line */}
+                <path
+                  className="treeShadow treeShadowSouth"
+                  d="M198 1000 L198 918 L220 898 L242 856 L264 900 L286 820 L308 888 L330 774 L354 878 L378 812 L402 904 L426 830 L450 918 L474 846 L500 892 L526 790 L552 882 L578 758 L604 908 L630 842 L656 922 L682 854 L708 902 L734 834 L760 926 L788 884 L818 934 L842 912 L842 1000 Z"
+                />
+
+                {/* Taller southeast tree line blending into the shorter east trees */}
+                <path
+                  className="treeShadow treeShadowSouthEast"
+                  d="M610 1000 L610 914 L632 894 L654 836 L676 888 L698 806 L722 874 L746 766 L770 868 L794 804 L818 914 L842 822 L866 936 L890 858 L914 930 L938 882 L962 948 L986 918 L1000 930 L1000 1000 Z"
+                />
+              </g>
+            </svg>
+          )}
 
 
           <div className="atlasLegend enhancedLegend">

@@ -4972,3 +4972,57 @@ footer p {
     stroke-width: 2.4 !important;
   }
 }
+/* =========================================================
+   SKY MAP: LOCKED BACKYARD TREE HORIZON
+========================================================= */
+
+.inlineModeToggle {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.horizonSilhouetteSvgFixed {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 18 !important;
+  opacity: 1 !important;
+}
+
+.treeShadow {
+  fill: rgba(255, 143, 64, 0.18) !important;
+  stroke: rgba(255, 176, 96, 0.48) !important;
+  stroke-width: 2.1 !important;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 132, 45, 0.28))
+    drop-shadow(0 0 24px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.treeShadowSouth,
+.treeShadowSouthEast {
+  fill: rgba(255, 126, 42, 0.28) !important;
+  stroke: rgba(255, 190, 104, 0.58) !important;
+}
+
+.treeShadowNorth,
+.treeShadowNorthEast,
+.treeShadowSouthWest,
+.treeShadowWest {
+  fill: rgba(255, 158, 84, 0.17) !important;
+  stroke: rgba(255, 202, 138, 0.42) !important;
+}
+
+@media (max-width: 700px) {
+  .inlineModeToggle {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .horizonSilhouetteSvgFixed {
+    opacity: 0.95 !important;
+  }
+
+  .treeShadow {
+    stroke-width: 2.4 !important;
+  }
+}
