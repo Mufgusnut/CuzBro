@@ -843,6 +843,122 @@ function getObservingStatus(photo) {
 }
 
 
+function angularSeparationDegrees(raHoursA, decDegreesA, raHoursB, decDegreesB) {
+  const raA = toRadians(raHoursA * 15);
+  const decA = toRadians(decDegreesA);
+  const raB = toRadians(raHoursB * 15);
+  const decB = toRadians(decDegreesB);
+
+  const cosSeparation =
+    Math.sin(decA) * Math.sin(decB) +
+    Math.cos(decA) * Math.cos(decB) * Math.cos(raA - raB);
+
+  return toDegrees(Math.acos(clamp(cosSeparation, -1, 1)));
+}
+
+function getMoonSensitivity(objectType) {
+  switch (objectType) {
+    case 'Galaxy':
+    case 'Emission Nebula':
+    case 'Supernova Remnant':
+      return 1;
+    case 'Planetary Nebula':
+      return 0.72;
+    case 'Open Cluster':
+    case 'Globular Cluster':
+      return 0.38;
+    case 'Double Star':
+      return 0.18;
+    case 'Planet':
+    case 'Lunar':
+      return 0;
+    default:
+      return 0.55;
+  }
+}
+
+function getMoonImpact(target, moonInfo) {
+  if (!target || !moonInfo || target.ra === null || target.dec === null) {
+    return {
+      label: 'Moon OK',
+      detail: 'Moon impact is minimal for this target.',
+      className: 'ok',
+      score: 0,
+      rankPenalty: 0,
+      separationDegrees: null
+    };
+  }
+
+  const sensitivity = getMoonSensitivity(target.objectType);
+  const separationDegrees = angularSeparationDegrees(target.ra, target.dec, moonInfo.ra, moonInfo.dec);
+  const moonAboveFactor = moonInfo.alt > 0 ? 1 : moonInfo.alt > -8 ? 0.35 : 0.12;
+  const brightnessFactor = clamp(moonInfo.phasePercent / 100, 0, 1);
+
+  let separationFactor = 0.15;
+  if (separationDegrees < 18) separationFactor = 1;
+  else if (separationDegrees < 35) separationFactor = 0.86;
+  else if (separationDegrees < 55) separationFactor = 0.68;
+  else if (separationDegrees < 80) separationFactor = 0.46;
+  else if (separationDegrees < 115) separationFactor = 0.25;
+
+  const score = Math.round(100 * sensitivity * brightnessFactor * moonAboveFactor * separationFactor);
+
+  if (sensitivity === 0) {
+    return {
+      label: 'Moon irrelevant',
+      detail: 'The Moon does not meaningfully hurt planetary targets.',
+      className: 'ok',
+      score: 0,
+      rankPenalty: 0,
+      separationDegrees
+    };
+  }
+
+  if (moonInfo.alt < -8 || moonInfo.phasePercent < 25 || score < 12) {
+    return {
+      label: 'Dark-sky friendly',
+      detail: 'Moon impact should be low for this target.',
+      className: 'ok',
+      score,
+      rankPenalty: 0,
+      separationDegrees
+    };
+  }
+
+  if (score >= 62) {
+    return {
+      label: 'Moon hurts',
+      detail: 'Bright moonlight is a major problem for this target tonight.',
+      className: 'bad',
+      score,
+      rankPenalty: Math.round(score * 1.25),
+      separationDegrees
+    };
+  }
+
+  if (score >= 34) {
+    return {
+      label: 'Moon caution',
+      detail: 'The Moon may wash out contrast, especially for faint structure.',
+      className: 'caution',
+      score,
+      rankPenalty: Math.round(score * 0.9),
+      separationDegrees
+    };
+  }
+
+  return {
+    label: 'Moon OK',
+    detail: 'The Moon is present, but this target is not badly affected.',
+    className: 'ok',
+    score,
+    rankPenalty: Math.round(score * 0.35),
+    separationDegrees
+  };
+}
+
+
+
 
 function getPriorityWeight(priority) {
   if (priority === 'High') return 3;
@@ -979,17 +1095,18 @@ function buildTargetTrack(target, mapDate, observer) {
   };
 }
 
-function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDate = new Date()) {
+function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDate = new Date(), moonImpact = null) {
   const peakAlt = tonightPlan?.peak?.alt ?? -90;
   const hasBestLater = tonightPlan?.bestSamples?.some((sample) => sample.date > referenceDate && sample.status.score >= 3);
   const hasGoodLater = tonightPlan?.goodSamples?.some((sample) => sample.date > referenceDate && sample.status.score >= 2);
   const priorityWeight = getPriorityWeight(target.priority);
+  const moonPenalty = moonImpact?.rankPenalty ?? 0;
 
   if (currentStatus.score >= 3) {
     return {
       label: 'Best Now',
       className: 'best',
-      rankScore: 500 + currentStatus.score * 20 + peakAlt + priorityWeight * 10
+      rankScore: 500 + currentStatus.score * 20 + peakAlt + priorityWeight * 10 - moonPenalty
     };
   }
 
@@ -997,7 +1114,7 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Best Later',
       className: 'best',
-      rankScore: 420 + peakAlt + priorityWeight * 10
+      rankScore: 420 + peakAlt + priorityWeight * 10 - moonPenalty
     };
   }
 
@@ -1005,7 +1122,7 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Good Now',
       className: 'good',
-      rankScore: 360 + peakAlt + priorityWeight * 10
+      rankScore: 360 + peakAlt + priorityWeight * 10 - moonPenalty
     };
   }
 
@@ -1013,7 +1130,7 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Good Later',
       className: 'good',
-      rankScore: 300 + peakAlt + priorityWeight * 10
+      rankScore: 300 + peakAlt + priorityWeight * 10 - moonPenalty
     };
   }
 
@@ -1021,7 +1138,7 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Low Tonight',
       className: 'low',
-      rankScore: 170 + peakAlt + priorityWeight * 8
+      rankScore: 170 + peakAlt + priorityWeight * 8 - moonPenalty
     };
   }
 
@@ -1029,14 +1146,14 @@ function getFuturePlannerStatus(currentStatus, tonightPlan, target, referenceDat
     return {
       label: 'Barely Up',
       className: 'low',
-      rankScore: 100 + peakAlt + priorityWeight * 6
+      rankScore: 100 + peakAlt + priorityWeight * 6 - moonPenalty
     };
   }
 
   return {
     label: 'Not Tonight',
     className: 'below',
-    rankScore: priorityWeight * 5
+    rankScore: priorityWeight * 5 - moonPenalty
   };
 }
 
@@ -1470,6 +1587,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [gallery, date, observer]);
 
   const mappedFutureTargets = useMemo(() => {
+    const moonEq = getPlanetRaDec(Body.Moon, date, observer);
+    const moonAltAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
+    const moonIllumination = Illumination(Body.Moon, date);
+    const moonInfo = {
+      ra: moonEq.ra,
+      dec: moonEq.dec,
+      alt: moonAltAz.alt,
+      az: moonAltAz.az,
+      phasePercent: Math.round((moonIllumination.phase_fraction ?? 0) * 100)
+    };
+
     return FUTURE_TARGETS.map((target, actualIndex) => {
       let ra = target.ra;
       let dec = target.dec;
@@ -1485,8 +1613,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       const altAz = raDecToAltAz(ra, dec, date, SITE.lat, SITE.lon);
       const point = projectAltAz(altAz.alt, altAz.az);
       const status = getObservingStatus({ alt: altAz.alt });
+      const moonImpact = getMoonImpact({ ...target, ra, dec }, moonInfo);
       const tonightPlan = buildTonightPlan({ ...target, ra, dec }, date, observer);
-      const plannerStatus = getFuturePlannerStatus(status, tonightPlan, target, date);
+      const plannerStatus = getFuturePlannerStatus(status, tonightPlan, target, date, moonImpact);
 
       return {
         ...target,
@@ -1499,6 +1628,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         y: point.y,
         visible: point.visible,
         observingStatus: status,
+        moonImpact,
         tonightPlan,
         plannerStatus,
         isFutureTarget: true
@@ -2711,6 +2841,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <em>{target.constellation}</em>
                 <small>{target.objectType} · best: {target.tonightPlan.bestWindow}</small>
                 <i className={`targetStatusBadge ${target.plannerStatus.className}`}>{target.plannerStatus.label}</i>
+                {target.moonImpact && (
+                  <i className={`targetStatusBadge moonImpactBadge ${target.moonImpact.className}`}>
+                    {target.moonImpact.label}
+                  </i>
+                )}
               </span>
             </button>
           ))}
@@ -2773,6 +2908,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <b>Finder guide:</b> {activeFutureGuide.finderNote}
               </p>
             )}
+            {activeFutureTarget.moonImpact && (
+              <p className={`futureFinderNote moonImpactNote ${activeFutureTarget.moonImpact.className}`}>
+                <b>Moon check:</b> {activeFutureTarget.moonImpact.detail}
+              </p>
+            )}
             <div className="atlasFacts">
               <span><b>Planner Status</b>{activeFutureTarget.plannerStatus.label}</span>
               <span><b>Best Tonight</b>{activeFutureTarget.tonightPlan.bestWindow}</span>
@@ -2789,6 +2929,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <span><b>Azimuth</b>{activeFutureTarget.az.toFixed(1)}°</span>
               <span><b>Map Time</b>{formatCompactTime(date)}</span>
               <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
+              <span><b>Moon Impact</b>{activeFutureTarget.moonImpact.label}</span>
+              <span><b>Moon Separation</b>{activeFutureTarget.moonImpact.separationDegrees === null ? 'N/A' : `${activeFutureTarget.moonImpact.separationDegrees.toFixed(0)}°`}</span>
             </div>
           </div>
         </section>

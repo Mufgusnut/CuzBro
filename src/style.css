@@ -5115,3 +5115,39 @@ footer p {
     stroke-width: 0.6 !important;
   }
 }
+/* =========================================================
+   SKY MAP: MOON IMPACT SCORING
+========================================================= */
+
+.moonImpactBadge.ok {
+  border-color: rgba(120, 220, 255, 0.45) !important;
+  color: rgba(190, 240, 255, 0.96) !important;
+  background: rgba(90, 210, 255, 0.08) !important;
+}
+
+.moonImpactBadge.caution {
+  border-color: rgba(255, 190, 90, 0.58) !important;
+  color: rgba(255, 218, 154, 0.98) !important;
+  background: rgba(255, 166, 60, 0.11) !important;
+}
+
+.moonImpactBadge.bad {
+  border-color: rgba(255, 115, 95, 0.62) !important;
+  color: rgba(255, 190, 180, 0.98) !important;
+  background: rgba(255, 90, 60, 0.12) !important;
+}
+
+.moonImpactNote.ok {
+  border-color: rgba(120, 220, 255, 0.18) !important;
+  background: rgba(90, 210, 255, 0.065) !important;
+}
+
+.moonImpactNote.caution {
+  border-color: rgba(255, 190, 90, 0.22) !important;
+  background: rgba(255, 166, 60, 0.075) !important;
+}
+
+.moonImpactNote.bad {
+  border-color: rgba(255, 115, 95, 0.26) !important;
+  background: rgba(255, 90, 60, 0.085) !important;
+}
