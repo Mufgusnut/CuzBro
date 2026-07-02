@@ -198,6 +198,24 @@ const FUTURE_TARGETS = [
   }
 ];
 
+const VISITOR_TARGETS = [
+  {
+    title: '10P/Tempel 2',
+    shortTitle: 'Tempel 2',
+    constellation: 'Moving Target',
+    objectType: 'Comet',
+    ra: null,
+    dec: null,
+    priority: 'Visitor',
+    closestApproach: 'Update with current ephemeris',
+    bestSeason: 'When current ephemeris places it high enough',
+    magnitude: 'Varies nightly',
+    gear: 'Camera preferred; dark sky and stacking help a lot',
+    notes: 'Periodic comet visitor. Add this week\'s RA/Dec from SkySafari, Stellarium, or another ephemeris source to activate live map position, Moon scoring, tree scoring, and session-plan ranking.',
+    ephemerisNote: 'RA/Dec not loaded yet — this card is ready for manual ephemeris updates.'
+  }
+];
+
 const FUTURE_TARGET_GUIDES = {
   'Fireworks Galaxy': {
     guideConstellation: 'Cepheus',
@@ -693,6 +711,8 @@ function getObjectColor(objectType) {
       return '#f6d36b';
     case 'Lunar':
       return '#d9e1ff';
+    case 'Comet':
+      return 'var(--orange)';
     default:
       return '#ffffff';
   }
@@ -861,6 +881,7 @@ function getMoonSensitivity(objectType) {
     case 'Galaxy':
     case 'Emission Nebula':
     case 'Supernova Remnant':
+    case 'Comet':
       return 1;
     case 'Planetary Nebula':
       return 0.72;
@@ -1777,6 +1798,38 @@ function buildTonightSessionPlan(targets) {
 }
 
 
+
+function visitorHasEphemeris(visitor) {
+  return Number.isFinite(visitor?.ra) && Number.isFinite(visitor?.dec);
+}
+
+function getVisitorEphemerisStatus(visitor) {
+  if (visitorHasEphemeris(visitor)) return null;
+
+  return {
+    label: 'Ephemeris needed',
+    className: 'low',
+    rankScore: -500,
+    detail: visitor?.ephemerisNote || 'Add current RA/Dec to activate live scoring.'
+  };
+}
+
+function buildVisitorUnavailablePlan(visitor) {
+  return {
+    samples: [],
+    visibleSamples: [],
+    peak: { alt: -90, label: 'N/A', date: new Date() },
+    bestSamples: [],
+    goodSamples: [],
+    bestWindow: 'Add RA/Dec'
+  };
+}
+
+function getVisitorActionNote(visitor) {
+  if (visitorHasEphemeris(visitor)) return 'Live scoring active from the loaded RA/Dec.';
+  return 'Add the current RA/Dec at the top of SkyMap.jsx to make this visitor appear on the map.';
+}
+
 function getTargetActionPlan(target) {
   const type = target?.objectType || 'Target';
   const title = target?.title || '';
@@ -1797,6 +1850,24 @@ function getTargetActionPlan(target) {
       'Take a short test exposure before committing'
     ]
   };
+
+
+  if (type === 'Comet') {
+    return {
+      headline: 'Comet visitor setup',
+      difficulty: 'Variable',
+      eyepiece: '32mm to locate the field; avoid high power unless it is bright and condensed',
+      filter: 'Usually no UHC. Dark sky beats filters for most comets.',
+      capture: 'Camera preferred. Take many short exposures and stack; watch for motion against the stars.',
+      approach: 'Use the current ephemeris, hop to the predicted field, then compare the fuzzy object against nearby stars over time.',
+      why: 'Comets move and change brightness, so fresh RA/Dec and repeated short captures matter more than a permanent catalog position.',
+      checklist: [
+        'Update RA/Dec from SkySafari/Stellarium before observing',
+        'Use low power first and confirm the star field',
+        'Shoot multiple short frames so motion does not smear the comet'
+      ]
+    };
+  }
 
   if (type === 'Planet') {
     return {
@@ -1908,6 +1979,7 @@ function getTargetActionPlan(target) {
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFutureIndex, setActiveFutureIndex] = useState(0);
+  const [activeVisitorIndex, setActiveVisitorIndex] = useState(0);
   const [catalogView, setCatalogView] = useState('future');
   const [selectedPanel, setSelectedPanel] = useState('future');
   const [zoom, setZoom] = useState(() => getDefaultZoom());
@@ -2039,6 +2111,69 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     }).filter(Boolean);
   }, [date, observer]);
 
+
+
+  const mappedVisitorTargets = useMemo(() => {
+    const moonEq = getPlanetRaDec(Body.Moon, date, observer);
+    const moonAltAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
+    const moonIllumination = Illumination(Body.Moon, date);
+    const moonInfo = {
+      ra: moonEq.ra,
+      dec: moonEq.dec,
+      alt: moonAltAz.alt,
+      az: moonAltAz.az,
+      phasePercent: Math.round((moonIllumination.phase_fraction ?? 0) * 100)
+    };
+
+    return VISITOR_TARGETS.map((visitor, actualIndex) => {
+      if (!visitorHasEphemeris(visitor)) {
+        const plannerStatus = getVisitorEphemerisStatus(visitor);
+        const tonightPlan = buildVisitorUnavailablePlan(visitor);
+
+        return {
+          ...visitor,
+          actualIndex,
+          ephemerisNeeded: true,
+          alt: -90,
+          az: 0,
+          x: CENTER,
+          y: CENTER,
+          visible: false,
+          observingStatus: { label: 'Needs RA/Dec', className: 'low', score: 0 },
+          moonImpact: null,
+          treeObstruction: null,
+          tonightPlan,
+          plannerStatus,
+          isVisitorTarget: true
+        };
+      }
+
+      const altAz = raDecToAltAz(visitor.ra, visitor.dec, date, SITE.lat, SITE.lon);
+      const point = projectAltAz(altAz.alt, altAz.az);
+      const status = getObservingStatus({ alt: altAz.alt });
+      const moonImpact = getMoonImpact(visitor, moonInfo);
+      const tonightPlan = buildTonightPlan(visitor, date, observer);
+      const treeObstruction = getTreeObstruction({ ...visitor, alt: altAz.alt, az: altAz.az }, tonightPlan);
+      const plannerStatus = getFuturePlannerStatus(status, tonightPlan, visitor, date, moonImpact, treeObstruction);
+
+      return {
+        ...visitor,
+        actualIndex,
+        alt: altAz.alt,
+        az: altAz.az,
+        x: point.x,
+        y: point.y,
+        visible: point.visible,
+        observingStatus: status,
+        moonImpact,
+        treeObstruction,
+        tonightPlan,
+        plannerStatus,
+        isVisitorTarget: true
+      };
+    });
+  }, [date, observer]);
+
   const rankedFutureTargets = useMemo(() => {
     return [...mappedFutureTargets]
       .sort((a, b) => {
@@ -2055,21 +2190,38 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       .map((target, rankIndex) => ({ ...target, rankNumber: rankIndex + 1 }));
   }, [mappedFutureTargets]);
 
+
+
+  const rankedVisitorTargets = useMemo(() => {
+    return [...mappedVisitorTargets]
+      .sort((a, b) => {
+        if ((b.plannerStatus?.rankScore ?? -999) !== (a.plannerStatus?.rankScore ?? -999)) {
+          return (b.plannerStatus?.rankScore ?? -999) - (a.plannerStatus?.rankScore ?? -999);
+        }
+
+        return a.title.localeCompare(b.title);
+      })
+      .map((target, rankIndex) => ({ ...target, rankNumber: rankIndex + 1 }));
+  }, [mappedVisitorTargets]);
+
   const tonightSessionPlan = useMemo(() => buildTonightSessionPlan(rankedFutureTargets), [rankedFutureTargets]);
 
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
   const activeFutureTarget = rankedFutureTargets.find((target) => target.actualIndex === activeFutureIndex) || rankedFutureTargets[0] || mappedFutureTargets[0];
-  const selectedTarget = selectedPanel === 'future' ? activeFutureTarget : activeObject;
+  const activeVisitorTarget = rankedVisitorTargets.find((target) => target.actualIndex === activeVisitorIndex) || rankedVisitorTargets[0] || mappedVisitorTargets[0];
+  const selectedTarget = selectedPanel === 'future' ? activeFutureTarget : selectedPanel === 'visitor' ? activeVisitorTarget : activeObject;
   const activeConstellation = getMissionConstellation(selectedTarget) || selectedTarget?.constellation;
 
   const visibleObjects = useMemo(() => mappedObjects.filter((photo) => isInsideSky(photo, 12)), [mappedObjects]);
   const visibleFutureTargets = useMemo(() => rankedFutureTargets.filter((target) => isInsideSky(target, 14)), [rankedFutureTargets]);
+  const visibleVisitorTargets = useMemo(() => rankedVisitorTargets.filter((target) => visitorHasEphemeris(target) && isInsideSky(target, 14)), [rankedVisitorTargets]);
   const bestObjectCount = useMemo(() => mappedObjects.filter((photo) => photo.observingStatus.score >= 3).length, [mappedObjects]);
   const goodObjectCount = useMemo(() => mappedObjects.filter((photo) => photo.observingStatus.score >= 2).length, [mappedObjects]);
   const futureBestCount = useMemo(() => rankedFutureTargets.filter((target) => target.plannerStatus.label === 'Best Now').length, [rankedFutureTargets]);
   const futureGoodCount = useMemo(() => rankedFutureTargets.filter((target) => target.plannerStatus.className === 'good' || target.plannerStatus.className === 'best').length, [rankedFutureTargets]);
   const missionCallouts = useMemo(() => buildMissionCallouts(visibleObjects, zoom), [visibleObjects, zoom]);
   const futureCallouts = useMemo(() => buildMissionCallouts(visibleFutureTargets, zoom), [visibleFutureTargets, zoom]);
+  const visitorCallouts = useMemo(() => buildMissionCallouts(visibleVisitorTargets, zoom), [visibleVisitorTargets, zoom]);
 
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
@@ -2096,9 +2248,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [activeFutureGuide, starLookup]);
 
   const activeTargetTrack = useMemo(() => {
-    if (selectedPanel !== 'future' || !activeFutureTarget) return null;
-    return buildTargetTrack(activeFutureTarget, date, observer);
-  }, [activeFutureTarget, date, observer, selectedPanel]);
+    const trackTarget = selectedPanel === 'visitor' ? activeVisitorTarget : activeFutureTarget;
+    if (!['future', 'visitor'].includes(selectedPanel) || !trackTarget || trackTarget.ephemerisNeeded) return null;
+    return buildTargetTrack(trackTarget, date, observer);
+  }, [activeFutureTarget, activeVisitorTarget, date, observer, selectedPanel]);
 
   const constellationLines = useMemo(() => {
     return CONSTELLATION_SEGMENTS.map((segment) => {
@@ -2354,6 +2507,38 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       });
     }
 
+
+    if (catalogView === 'visitors') {
+      visitorCallouts.forEach((target) => {
+        const actualIndex = mappedVisitorTargets.findIndex((item) => item.title === target.title);
+        const isActive = selectedPanel === 'visitor' && activeVisitorIndex === actualIndex;
+
+        if (mobileLayout && !isActive && !isDetailMode) return;
+        if (!mobileLayout && !isActive && !isDetailMode) return;
+
+        const outwardDirection = target.markerX > CENTER ? 1 : -1;
+
+        labelItems.push({
+          id: `visitorCallout:${target.title}`,
+          text: target.shortTitle || target.title,
+          anchorX: target.markerX,
+          anchorY: target.markerY,
+          fontSize: mobileLayout ? 13 : 17,
+          priority: isActive ? 135 : 72,
+          distance: mobileLayout ? 30 : 34,
+          margin: 24,
+          candidates: [
+            { dx: outwardDirection * 30, dy: 6, anchor: outwardDirection > 0 ? 'start' : 'end' },
+            { dx: -outwardDirection * 30, dy: 6, anchor: outwardDirection > 0 ? 'end' : 'start' },
+            { dx: 0, dy: -32, anchor: 'middle' },
+            { dx: 0, dy: 38, anchor: 'middle' },
+            { dx: outwardDirection * 46, dy: -16, anchor: outwardDirection > 0 ? 'start' : 'end' },
+            { dx: outwardDirection * 46, dy: 28, anchor: outwardDirection > 0 ? 'start' : 'end' }
+          ]
+        });
+      });
+    }
+
     if (catalogView === 'captured' && !mobileLayout) {
       missionCallouts.forEach((photo) => {
         const actualIndex = mappedObjects.findIndex((item) => item.title === photo.title);
@@ -2390,6 +2575,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     activeFutureGuideStars,
     activeFutureIndex,
     activeIndex,
+    activeVisitorIndex,
     catalogView,
     constellationLabels,
     eclipticLabel,
@@ -2398,6 +2584,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     lunarLabel,
     mappedFutureTargets,
     mappedObjects,
+    mappedVisitorTargets,
     missionCallouts,
     mobileLayout,
     moonData,
@@ -2405,6 +2592,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     summerTriangleLabel,
     visibleFutureTargets,
     visiblePlanets,
+    visitorCallouts,
     visibleStars
   ]);
 
@@ -2435,6 +2623,15 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     setActiveFutureIndex(index);
     setSelectedPanel('future');
     setCatalogView('future');
+    if (shouldScroll) scrollToMap();
+  };
+
+
+
+  const selectVisitorTarget = (index, shouldScroll = false) => {
+    setActiveVisitorIndex(index);
+    setSelectedPanel('visitor');
+    setCatalogView('visitors');
     if (shouldScroll) scrollToMap();
   };
 
@@ -3070,6 +3267,88 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 );
               })}
 
+
+              {catalogView === 'visitors' && visitorCallouts.map((target) => {
+                const index = mappedVisitorTargets.findIndex((item) => item.title === target.title);
+                const markerColor = getObjectColor(target.objectType);
+                const isActive = selectedPanel === 'visitor' && activeVisitorIndex === index;
+                const label = getMapLabel(`visitorCallout:${target.title}`);
+
+                return (
+                  <g
+                    key={`${target.title}-visitor-callout`}
+                    className={isActive ? 'missionSvgCallout futureSvgCallout visitorSvgCallout active' : 'missionSvgCallout futureSvgCallout visitorSvgCallout'}
+                    role="button"
+                    tabIndex={0}
+                    onMouseEnter={() => selectVisitorTarget(index)}
+                    onFocus={() => selectVisitorTarget(index)}
+                    onClick={() => selectVisitorTarget(index)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        selectVisitorTarget(index);
+                      }
+                    }}
+                  >
+                    <line
+                      x1={target.x}
+                      y1={target.y}
+                      x2={target.markerX}
+                      y2={target.markerY}
+                      className={isActive ? 'missionGuideLine active' : 'missionGuideLine'}
+                    />
+
+                    <circle
+                      cx={target.x}
+                      cy={target.y}
+                      r={6}
+                      className="visitorTargetDot"
+                      style={{ stroke: markerColor }}
+                    />
+
+                    {isActive && (
+                      <circle
+                        cx={target.x}
+                        cy={target.y}
+                        r={16}
+                        className="missionAnchorGlow"
+                        style={{ stroke: markerColor }}
+                      />
+                    )}
+
+                    <g transform={keepUpright(target.markerX, target.markerY)}>
+                      <circle
+                        cx={target.markerX}
+                        cy={target.markerY}
+                        r={mobileLayout ? 17 : 19}
+                        className={isActive ? 'missionSvgBadge active' : 'missionSvgBadge'}
+                        style={{ stroke: markerColor }}
+                      />
+
+                      <text
+                        x={target.markerX}
+                        y={target.markerY + 6}
+                        className="missionSvgBadgeText"
+                        textAnchor="middle"
+                      >
+                        V{target.rankNumber || index + 1}
+                      </text>
+
+                      {label && (
+                        <text
+                          x={label.x}
+                          y={label.y}
+                          className="missionSvgBadgeName futureCalloutName"
+                          textAnchor={label.anchor}
+                        >
+                          {target.shortTitle || target.title}
+                        </text>
+                      )}
+                    </g>
+                  </g>
+                );
+              })}
+
               {catalogView === 'captured' && missionCallouts.map((photo) => {
                 const index = mappedObjects.findIndex((item) => item.title === photo.title);
                 const markerColor = getObjectColor(photo.objectType);
@@ -3227,9 +3506,16 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             >
               Captured
             </button>
+            <button
+              type="button"
+              className={catalogView === 'visitors' ? 'active' : ''}
+              onClick={() => { setCatalogView('visitors'); setSelectedPanel('visitor'); }}
+            >
+              Visitors
+            </button>
           </div>
 
-          <small>{catalogView === 'future' ? 'Target Planner' : 'Mission Archive'}</small>
+          <small>{catalogView === 'future' ? 'Target Planner' : catalogView === 'visitors' ? 'Closest Visitors' : 'Mission Archive'}</small>
 
           {catalogView === 'future' && rankedFutureTargets.map((target) => (
             <button
@@ -3245,6 +3531,36 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <strong>{target.title}</strong>
                 <em>{target.constellation}</em>
                 <small>{target.objectType} · best: {target.tonightPlan.bestWindow}</small>
+                <i className={`targetStatusBadge ${target.plannerStatus.className}`}>{target.plannerStatus.label}</i>
+                {target.moonImpact && (
+                  <i className={`targetStatusBadge moonImpactBadge ${target.moonImpact.className}`}>
+                    {target.moonImpact.label}
+                  </i>
+                )}
+                {target.treeObstruction && (
+                  <i className={`targetStatusBadge treeObstructionBadge ${target.treeObstruction.className}`}>
+                    {target.treeObstruction.label}
+                  </i>
+                )}
+              </span>
+            </button>
+          ))}
+
+
+          {catalogView === 'visitors' && rankedVisitorTargets.map((target) => (
+            <button
+              key={target.title}
+              className={target.actualIndex === activeVisitorIndex && selectedPanel === 'visitor' ? 'catalogItem visitorItem active' : 'catalogItem visitorItem'}
+              onMouseEnter={() => selectVisitorTarget(target.actualIndex)}
+              onFocus={() => selectVisitorTarget(target.actualIndex)}
+              onClick={() => selectVisitorTarget(target.actualIndex, true)}
+              type="button"
+            >
+              <b>{target.rankNumber}</b>
+              <span>
+                <strong>{target.title}</strong>
+                <em>{target.constellation}</em>
+                <small>{target.objectType} · {target.ephemerisNeeded ? 'add RA/Dec to activate' : `best: ${target.tonightPlan.bestWindow}`}</small>
                 <i className={`targetStatusBadge ${target.plannerStatus.className}`}>{target.plannerStatus.label}</i>
                 {target.moonImpact && (
                   <i className={`targetStatusBadge moonImpactBadge ${target.moonImpact.className}`}>
@@ -3320,6 +3636,71 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 </span>
               </button>
             ))}
+          </div>
+        </section>
+      )}
+
+
+      {selectedPanel === 'visitor' && activeVisitorTarget && (
+        <section className="atlasDetail plannerDetail visitorDetail">
+          <div className="futureDetailBadge">V{activeVisitorTarget.rankNumber || activeVisitorIndex + 1}<br />{activeVisitorTarget.plannerStatus.label}</div>
+          <div>
+            <small>Closest Visitor</small>
+            <h2><span>☄</span>{activeVisitorTarget.title}</h2>
+            <h3>{activeVisitorTarget.objectType} · {activeVisitorTarget.constellation}</h3>
+            <p>{activeVisitorTarget.notes}</p>
+            <p className={`futureFinderNote visitorNote ${activeVisitorTarget.ephemerisNeeded ? 'caution' : 'ok'}`}>
+              <b>Visitor status:</b> {getVisitorActionNote(activeVisitorTarget)}
+            </p>
+            {activeVisitorTarget.moonImpact && (
+              <p className={`futureFinderNote moonImpactNote ${activeVisitorTarget.moonImpact.className}`}>
+                <b>Moon check:</b> {activeVisitorTarget.moonImpact.detail}
+              </p>
+            )}
+            {activeVisitorTarget.treeObstruction && (
+              <p className={`futureFinderNote treeObstructionNote ${activeVisitorTarget.treeObstruction.className}`}>
+                <b>Tree line:</b> {activeVisitorTarget.treeObstruction.detail}
+              </p>
+            )}
+            {(() => {
+              const actionPlan = getTargetActionPlan(activeVisitorTarget);
+
+              return (
+                <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                  <div className="targetActionHeader">
+                    <small>Recommended Setup</small>
+                    <h3>{actionPlan.headline}</h3>
+                    <i>{actionPlan.difficulty}</i>
+                  </div>
+                  <div className="targetActionGrid">
+                    <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
+                    <span><b>Filter</b>{actionPlan.filter}</span>
+                    <span><b>Capture</b>{actionPlan.capture}</span>
+                    <span><b>Approach</b>{actionPlan.approach}</span>
+                  </div>
+                  <p><b>Why:</b> {actionPlan.why}</p>
+                  <ul>
+                    {actionPlan.checklist.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()}
+            <div className="atlasFacts">
+              <span><b>Status</b>{activeVisitorTarget.plannerStatus.label}</span>
+              <span><b>Closest Approach</b>{activeVisitorTarget.closestApproach}</span>
+              <span><b>Estimated Brightness</b>{activeVisitorTarget.magnitude}</span>
+              <span><b>Best Window</b>{activeVisitorTarget.tonightPlan.bestWindow}</span>
+              <span><b>Gear</b>{activeVisitorTarget.gear}</span>
+              <span><b>RA</b>{visitorHasEphemeris(activeVisitorTarget) ? formatRa(activeVisitorTarget.ra) : 'Add ephemeris'}</span>
+              <span><b>Dec</b>{visitorHasEphemeris(activeVisitorTarget) ? formatDec(activeVisitorTarget.dec) : 'Add ephemeris'}</span>
+              <span><b>Altitude</b>{visitorHasEphemeris(activeVisitorTarget) ? `${activeVisitorTarget.alt.toFixed(1)}°` : 'N/A'}</span>
+              <span><b>Azimuth</b>{visitorHasEphemeris(activeVisitorTarget) ? `${activeVisitorTarget.az.toFixed(1)}°` : 'N/A'}</span>
+              <span><b>Moon Impact</b>{activeVisitorTarget.moonImpact?.label || 'Needs RA/Dec'}</span>
+              <span><b>Tree Line</b>{activeVisitorTarget.treeObstruction?.label || 'Needs RA/Dec'}</span>
+              <span><b>Map Time</b>{formatCompactTime(date)}</span>
+            </div>
           </div>
         </section>
       )}

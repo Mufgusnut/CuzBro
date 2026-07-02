@@ -5417,3 +5417,38 @@ footer p {
 .sessionPlanHeader button:active {
   transform: translateY(1px) !important;
 }
+/* =========================================================
+   SKY MAP: CLOSEST VISITORS
+========================================================= */
+
+.visitorItem strong::before {
+  content: "☄ ";
+  color: rgba(255, 170, 78, 0.95);
+}
+
+.visitorDetail .futureDetailBadge {
+  border-color: rgba(255, 166, 70, 0.5) !important;
+  background:
+    radial-gradient(circle at top, rgba(255, 166, 70, 0.22), transparent 58%),
+    rgba(255,255,255,0.06) !important;
+}
+
+.visitorNote.ok {
+  border-color: rgba(120, 220, 255, 0.18) !important;
+  background: rgba(90, 210, 255, 0.06) !important;
+}
+
+.visitorNote.caution {
+  border-color: rgba(255, 190, 90, 0.26) !important;
+  background: rgba(255, 166, 60, 0.08) !important;
+}
+
+.visitorSvgCallout .missionSvgBadge {
+  fill: rgba(255, 142, 58, 0.14) !important;
+}
+
+.visitorTargetDot {
+  fill: rgba(255, 166, 70, 0.28) !important;
+  stroke-width: 2 !important;
+  filter: drop-shadow(0 0 8px rgba(255, 132, 45, 0.34)) !important;
+}
