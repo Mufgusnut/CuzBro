@@ -559,6 +559,72 @@ function buildSmoothVisiblePath(points, buffer = 18) {
   return path;
 }
 
+function buildSmoothPathFromSegment(segment) {
+  if (!segment.length) return '';
+  if (segment.length === 1) {
+    return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
+  }
+  if (segment.length === 2) {
+    return `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)} L ${segment[1].x.toFixed(1)} ${segment[1].y.toFixed(1)}`;
+  }
+
+  let path = `M ${segment[0].x.toFixed(1)} ${segment[0].y.toFixed(1)}`;
+
+  for (let i = 1; i < segment.length - 1; i += 1) {
+    const current = segment[i];
+    const next = segment[i + 1];
+    const midX = (current.x + next.x) / 2;
+    const midY = (current.y + next.y) / 2;
+
+    path += ` Q ${current.x.toFixed(1)} ${current.y.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
+  }
+
+  const last = segment[segment.length - 1];
+  path += ` T ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
+
+  return path;
+}
+
+function buildSmoothVisiblePathNearestPoint(points, anchorPoint, buffer = 18) {
+  const segments = [];
+  let currentSegment = [];
+
+  points.forEach((point) => {
+    if (!isInsideSky(point, buffer)) {
+      if (currentSegment.length) {
+        segments.push(currentSegment);
+        currentSegment = [];
+      }
+      return;
+    }
+
+    currentSegment.push(point);
+  });
+
+  if (currentSegment.length) {
+    segments.push(currentSegment);
+  }
+
+  if (!segments.length) return '';
+
+  if (!anchorPoint || !isInsideSky(anchorPoint, buffer)) {
+    return buildSmoothPathFromSegment(segments.sort((a, b) => b.length - a.length)[0] || []);
+  }
+
+  const closestSegment = segments
+    .map((segment) => {
+      const closestDistance = segment.reduce((best, point) => {
+        const distance = pointDistance(point, anchorPoint);
+        return Math.min(best, distance);
+      }, Number.POSITIVE_INFINITY);
+
+      return { segment, closestDistance };
+    })
+    .sort((a, b) => a.closestDistance - b.closestDistance)[0]?.segment || [];
+
+  return buildSmoothPathFromSegment(closestSegment);
+}
+
 function eclipticToRaDec(lambdaDegrees, betaDegrees = 0) {
   const obliquity = toRadians(23.439291);
   const lambda = toRadians(lambdaDegrees);
@@ -1088,109 +1154,90 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
-function clamp01(value) {
-  return clamp(value, 0, 1);
-}
-
-function smoothstep(edge0, edge1, value) {
-  const t = clamp01((value - edge0) / (edge1 - edge0));
-  return t * t * (3 - 2 * t);
-}
-
-function stableNoise(seed) {
-  const value = Math.sin(seed * 12.9898) * 43758.5453;
-  return value - Math.floor(value);
-}
-
-function getForestProfile(angleDegrees) {
-  const angle = normalizeDegrees(angleDegrees);
-
-  // Dave's backyard obstruction model:
-  // - Tall forest from S → E
-  // - Short forest from E → NE
-  // - Clear from NE → W
-  // - Short forest from W → S
-  // Angles use the map convention: N=0, E=90, S=180, W=270.
-  let heightBlend = 0;
-  let visibility = 0;
-
-  if (angle <= 270 && angle >= 180) {
-    // W → S: short trees that smoothly grow toward the southern tree line.
-    const progressToSouth = (270 - angle) / 90;
-    heightBlend = smoothstep(0.35, 1, progressToSouth);
-    visibility = 1;
-  } else if (angle < 180 && angle >= 90) {
-    // S → E: tall obstruction zone, tapering down only as it approaches E.
-    const progressToEast = (180 - angle) / 90;
-    heightBlend = 1 - smoothstep(0.62, 1, progressToEast);
-    visibility = 1;
-  } else if (angle < 90 && angle >= 45) {
-    // E → NE: short trees that fade out into the clear NE → W opening.
-    const progressToNorthEast = (90 - angle) / 45;
-    heightBlend = 0;
-    visibility = 1 - smoothstep(0.65, 1, progressToNorthEast);
-  } else {
-    // NE → W is intentionally clear.
-    return null;
-  }
-
-  if (visibility <= 0.04) return null;
-
-  // Previous short trees were roughly 18–34px; make them about 2x taller.
-  const shortMin = 34;
-  const shortMax = 66;
-
-  // Previous tall trees were roughly 48–72px; make them about 85% taller.
-  const tallMin = 89;
-  const tallMax = 133;
-
-  return {
-    minHeight: lerp(shortMin, tallMin, heightBlend) * visibility,
-    maxHeight: lerp(shortMax, tallMax, heightBlend) * visibility,
-    widthScale: lerp(0.92, 1.18, heightBlend),
-    opacity: lerp(0.62, 0.94, visibility) * lerp(0.92, 1, heightBlend)
-  };
-}
-
-function buildConnectedForestTrees() {
-  const radius = RADIUS - 10;
+function buildForestSection({
+  cx,
+  cy,
+  radius,
+  startDeg,
+  endDeg,
+  treeCount,
+  minHeight,
+  maxHeight,
+  phase = 0
+}) {
   const trees = [];
-  const step = 3.15;
+  const angleStep = (endDeg - startDeg) / Math.max(1, treeCount - 1);
 
-  for (let angle = 270; angle >= 45; angle -= step) {
-    const profile = getForestProfile(angle);
-    if (!profile) continue;
+  for (let i = 0; i < treeCount; i += 1) {
+    const t = treeCount <= 1 ? 0 : i / (treeCount - 1);
+    const angle = startDeg + angleStep * i;
+    const base = polarToCartesian(cx, cy, radius, angle);
 
-    const base = polarToCartesian(CENTER, CENTER, radius, angle);
-    const seed = angle * 0.731;
-    const heightNoise = stableNoise(seed);
-    const widthNoise = stableNoise(seed + 19.17);
-    const swayNoise = stableNoise(seed + 41.83);
-    const opacityNoise = stableNoise(seed + 73.29);
-
-    // Stable tree-to-tree variation keeps it natural while still preserving
-    // the smooth regional transition between short and tall zones.
-    const localHeightFactor = lerp(0.82, 1.16, heightNoise);
-    const height = clamp(
-      lerp(profile.minHeight, profile.maxHeight, stableNoise(seed + 7.5)) * localHeightFactor,
-      12,
-      154
-    );
-    const width = clamp(height * lerp(0.13, 0.23, widthNoise) * profile.widthScale, 7, 28);
+    // Gentle deterministic variation keeps the line organic without turning
+    // it into a saw blade / row of teeth.
+    const ripple = Math.sin(i * 1.73 + phase) * 0.12 + Math.sin(i * 0.57 + phase * 2.1) * 0.08;
+    const height = lerp(minHeight, maxHeight, t) * (1 + ripple);
+    const width = clamp(height * 0.28, 7, 18);
 
     trees.push({
-      id: `forest-${angle.toFixed(2)}`,
-      angle: angle + lerp(-0.45, 0.45, swayNoise),
-      baseAngle: angle,
+      id: `${startDeg}-${endDeg}-${i}`,
+      angle,
       x: base.x,
       y: base.y,
-      height,
+      height: clamp(height, 10, 82),
       width,
-      opacity: clamp(profile.opacity * lerp(0.82, 1.06, opacityNoise), 0.38, 0.98)
+      opacity: 0.78 + Math.sin(i * 0.91 + phase) * 0.08
     });
   }
 
   return trees;
+}
+
+function buildConnectedForestTrees() {
+  const radius = RADIUS - 8;
+
+  return [
+    // W → S: short trees, gradually taller as the view approaches the south.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 270,
+      endDeg: 180,
+      treeCount: 34,
+      minHeight: 18,
+      maxHeight: 34,
+      phase: 0.4
+    }),
+
+    // S → E: main obstruction zone, tallest and densest.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 180,
+      endDeg: 90,
+      treeCount: 52,
+      minHeight: 48,
+      maxHeight: 72,
+      phase: 1.7
+    }),
+
+    // E → NE: short trees tapering down toward clear sky.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 90,
+      endDeg: 45,
+      treeCount: 24,
+      minHeight: 28,
+      maxHeight: 14,
+      phase: 2.8
+    })
+
+    // NE → W is intentionally clear.
+  ];
 }
 
 function buildForestBasePath(trees) {
@@ -1204,30 +1251,28 @@ function buildForestBasePath(trees) {
 function buildConiferPath(tree) {
   const h = tree.height;
   const w = tree.width;
-  const shoulder = w * 0.72;
-  const mid = w * 0.48;
-  const upper = w * 0.27;
 
   // Local coordinate system: base at (0, 0), treetop points upward.
   // The rendered group rotates this inward toward the map center.
-  // This is intentionally tree-like, not a zig-zag horizon saw blade.
   return [
     `M 0 ${(-h).toFixed(1)}`,
-    `C ${(-upper * 0.45).toFixed(1)} ${(-h * 0.92).toFixed(1)} ${(-upper).toFixed(1)} ${(-h * 0.83).toFixed(1)} ${(-upper * 0.42).toFixed(1)} ${(-h * 0.77).toFixed(1)}`,
-    `L ${(-mid).toFixed(1)} ${(-h * 0.66).toFixed(1)}`,
-    `L ${(-mid * 0.38).toFixed(1)} ${(-h * 0.59).toFixed(1)}`,
-    `L ${(-shoulder).toFixed(1)} ${(-h * 0.45).toFixed(1)}`,
-    `L ${(-shoulder * 0.34).toFixed(1)} ${(-h * 0.37).toFixed(1)}`,
-    `L ${(-w).toFixed(1)} ${(-h * 0.20).toFixed(1)}`,
-    `L ${(-w * 0.26).toFixed(1)} ${(-h * 0.12).toFixed(1)}`,
-    'L 0 0',
-    `L ${(w * 0.26).toFixed(1)} ${(-h * 0.12).toFixed(1)}`,
-    `L ${(w).toFixed(1)} ${(-h * 0.20).toFixed(1)}`,
-    `L ${(shoulder * 0.34).toFixed(1)} ${(-h * 0.37).toFixed(1)}`,
-    `L ${(shoulder).toFixed(1)} ${(-h * 0.45).toFixed(1)}`,
-    `L ${(mid * 0.38).toFixed(1)} ${(-h * 0.59).toFixed(1)}`,
-    `L ${(mid).toFixed(1)} ${(-h * 0.66).toFixed(1)}`,
-    `C ${(upper).toFixed(1)} ${(-h * 0.83).toFixed(1)} ${(upper * 0.45).toFixed(1)} ${(-h * 0.92).toFixed(1)} 0 ${(-h).toFixed(1)}`,
+    `C ${(-w * 0.18).toFixed(1)} ${(-h * 0.86).toFixed(1)} ${(-w * 0.34).toFixed(1)} ${(-h * 0.78).toFixed(1)} ${(-w * 0.22).toFixed(1)} ${(-h * 0.70).toFixed(1)}`,
+    `L ${(-w * 0.50).toFixed(1)} ${(-h * 0.64).toFixed(1)}`,
+    `L ${(-w * 0.20).toFixed(1)} ${(-h * 0.57).toFixed(1)}`,
+    `L ${(-w * 0.62).toFixed(1)} ${(-h * 0.48).toFixed(1)}`,
+    `L ${(-w * 0.24).toFixed(1)} ${(-h * 0.41).toFixed(1)}`,
+    `L ${(-w * 0.70).toFixed(1)} ${(-h * 0.30).toFixed(1)}`,
+    `L ${(-w * 0.28).toFixed(1)} ${(-h * 0.23).toFixed(1)}`,
+    `L ${(-w * 0.50).toFixed(1)} ${(-h * 0.10).toFixed(1)}`,
+    `L 0 0`,
+    `L ${(w * 0.50).toFixed(1)} ${(-h * 0.10).toFixed(1)}`,
+    `L ${(w * 0.28).toFixed(1)} ${(-h * 0.23).toFixed(1)}`,
+    `L ${(w * 0.70).toFixed(1)} ${(-h * 0.30).toFixed(1)}`,
+    `L ${(w * 0.24).toFixed(1)} ${(-h * 0.41).toFixed(1)}`,
+    `L ${(w * 0.62).toFixed(1)} ${(-h * 0.48).toFixed(1)}`,
+    `L ${(w * 0.20).toFixed(1)} ${(-h * 0.57).toFixed(1)}`,
+    `L ${(w * 0.50).toFixed(1)} ${(-h * 0.64).toFixed(1)}`,
+    `C ${(w * 0.34).toFixed(1)} ${(-h * 0.78).toFixed(1)} ${(w * 0.18).toFixed(1)} ${(-h * 0.86).toFixed(1)} 0 ${(-h).toFixed(1)}`,
     'Z'
   ].join(' ');
 }
@@ -1570,7 +1615,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   }, [date, observer]);
 
   const eclipticPath = useMemo(() => buildVisiblePath(eclipticPoints), [eclipticPoints]);
-  const lunarPath = useMemo(() => buildSmoothVisiblePath(lunarPoints, 18), [lunarPoints]);
+  const lunarPath = useMemo(() => {
+    const moonEq = getPlanetRaDec(Body.Moon, date, observer);
+    const altAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
+    const currentMoonPoint = projectAltAz(altAz.alt, altAz.az);
+
+    // The Moon can rise/set within the 48-hour sampled path. Choosing the
+    // longest visible segment can accidentally draw tomorrow's lunar track
+    // instead of the segment containing the current Moon. Anchor the path to
+    // the Moon's current position so the marker sits on its own lunar path.
+    return buildSmoothVisiblePathNearestPoint(lunarPoints, currentMoonPoint, 18);
+  }, [lunarPoints, date, observer]);
   const eclipticLabel = useMemo(() => pickPathLabel(eclipticPoints, 0.72, { x: 24, y: -20 }), [eclipticPoints]);
   const lunarLabel = useMemo(() => pickPathLabel(lunarPoints, 0.18, { x: -12, y: -18 }), [lunarPoints]);
 
