@@ -5295,3 +5295,125 @@ footer p {
     flex-direction: column !important;
   }
 }
+/* =========================================================
+   SKY MAP: TARGET ACTION CARDS
+========================================================= */
+
+.targetActionCard {
+  margin: 18px 0 20px !important;
+  padding: 18px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,0.13) !important;
+  background:
+    radial-gradient(circle at top left, rgba(120, 220, 255, 0.10), transparent 36%),
+    rgba(255,255,255,0.045) !important;
+}
+
+.targetActionHeader {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+}
+
+.targetActionHeader small {
+  color: rgba(255, 180, 95, 0.95) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+.targetActionHeader h3 {
+  margin: 4px 0 0 !important;
+}
+
+.targetActionHeader i {
+  flex: 0 0 auto !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  font-size: 0.78rem !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+  color: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  background: rgba(255,255,255,0.07) !important;
+}
+
+.targetActionGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 12px 0 !important;
+}
+
+.targetActionGrid span {
+  padding: 12px !important;
+  border-radius: 16px !important;
+  background: rgba(0,0,0,0.14) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  color: rgba(226,236,255,0.82) !important;
+  line-height: 1.35 !important;
+}
+
+.targetActionGrid b,
+.targetActionCard p b {
+  display: block !important;
+  color: #fff !important;
+  margin-bottom: 4px !important;
+}
+
+.targetActionCard p {
+  margin: 12px 0 !important;
+  color: rgba(226,236,255,0.82) !important;
+}
+
+.targetActionCard ul {
+  margin: 12px 0 0 !important;
+  padding-left: 20px !important;
+  color: rgba(226,236,255,0.78) !important;
+}
+
+.targetActionCard li {
+  margin: 5px 0 !important;
+}
+
+@media (max-width: 700px) {
+  .targetActionHeader {
+    flex-direction: column !important;
+  }
+
+  .targetActionGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* =========================================================
+   SKY MAP: SESSION PLAN BUTTON POLISH
+========================================================= */
+
+.sessionPlanHeader button {
+  color: rgba(255, 226, 190, 0.96) !important;
+  border: 1px solid rgba(255, 166, 70, 0.45) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 166, 70, 0.24), rgba(255, 132, 45, 0.13)),
+    rgba(20, 26, 42, 0.72) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 10px 28px rgba(255, 132, 45, 0.10) !important;
+  text-shadow: none !important;
+}
+
+.sessionPlanHeader button:hover {
+  color: #fff4e8 !important;
+  border-color: rgba(255, 178, 88, 0.68) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 178, 88, 0.30), rgba(255, 132, 45, 0.17)),
+    rgba(24, 30, 48, 0.78) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 34px rgba(255, 132, 45, 0.16) !important;
+}
+
+.sessionPlanHeader button:active {
+  transform: translateY(1px) !important;
+}

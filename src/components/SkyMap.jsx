@@ -1776,6 +1776,135 @@ function buildTonightSessionPlan(targets) {
   };
 }
 
+
+function getTargetActionPlan(target) {
+  const type = target?.objectType || 'Target';
+  const title = target?.title || '';
+  const isMoonSensitive = target?.moonImpact?.className === 'bad' || target?.moonImpact?.className === 'caution';
+  const isTreeSensitive = target?.treeObstruction?.className === 'bad' || target?.treeObstruction?.className === 'caution';
+
+  const common = {
+    headline: 'Use this setup',
+    difficulty: 'Medium',
+    eyepiece: '32mm to locate, then adjust power once centered',
+    filter: 'None required',
+    capture: 'iPhone 16 Pro: short test frames, then stack the best results',
+    approach: 'Start wide, center carefully, then refine focus and exposure.',
+    why: 'Balanced setup for the CPC 800 and phone capture.',
+    checklist: [
+      'Center a bright nearby star first',
+      'Confirm focus before switching targets',
+      'Take a short test exposure before committing'
+    ]
+  };
+
+  if (type === 'Planet') {
+    return {
+      headline: 'Planet setup',
+      difficulty: 'Seeing dependent',
+      eyepiece: '10mm first; add Barlow only if the image stays steady',
+      filter: 'No deep-sky filter. Variable polarizer only if glare is uncomfortable.',
+      capture: 'iPhone video / lucky imaging. Record video, then stack the sharpest frames.',
+      approach: 'Wait for moments of steady air. Keep the planet centered and use short video clips.',
+      why: 'Planets are bright, so sharpness and seeing matter more than long exposure or dark sky.',
+      checklist: [
+        'Use high power only if the planet is not boiling',
+        'Capture video instead of single stills',
+        'Refocus after changing eyepieces or adding a Barlow'
+      ]
+    };
+  }
+
+  if (type === 'Open Cluster') {
+    return {
+      headline: 'Cluster setup',
+      difficulty: 'Easy',
+      eyepiece: title.includes('Double Cluster') ? '32mm preferred; keep it low power and wide' : '32mm to locate, 25mm if you want a tighter view',
+      filter: 'None. Skip UHC for open clusters.',
+      capture: 'iPhone photo or short exposure stack. Keep stars from overexposing.',
+      approach: 'Use low power, frame the whole cluster, then take several short captures.',
+      why: 'Open clusters are bright and forgiving, so wide framing usually looks better than high magnification.',
+      checklist: [
+        'Use the 32mm eyepiece first',
+        'Avoid overexposing the brightest stars',
+        'Try a few framing positions before recording'
+      ]
+    };
+  }
+
+  if (type === 'Planetary Nebula') {
+    return {
+      headline: 'Small bright nebula setup',
+      difficulty: 'Medium-hard',
+      eyepiece: '25mm to locate, then 10mm or 25mm + Barlow if seeing allows',
+      filter: 'UHC can help contrast; compare with and without it.',
+      capture: 'Short video or many short exposures. Treat it more like a tiny bright target than a wide nebula.',
+      approach: 'Use finder stars to land on the field, center the tiny disk, then increase power carefully.',
+      why: 'Planetary nebulae are compact and fairly bright, so magnification helps once you are centered.',
+      checklist: [
+        'Locate at lower power first',
+        'Use the UHC filter as a contrast test',
+        'Do not chase high power if stars get mushy'
+      ]
+    };
+  }
+
+  if (type === 'Galaxy') {
+    const isM31 = title.includes('Andromeda') || title.includes('M31');
+    return {
+      headline: isM31 ? 'Wide galaxy setup' : 'Galaxy setup',
+      difficulty: isM31 ? 'Medium' : 'Hard',
+      eyepiece: isM31 ? '32mm only; this target is huge' : '32mm to locate; avoid too much magnification',
+      filter: 'No UHC. Galaxies need dark, transparent sky more than filters.',
+      capture: isM31 ? 'Wide-field camera/reducer preferred. iPhone can capture the core, but not the whole galaxy.' : 'Camera preferred. Use many short exposures and stack; avoid bright Moon nights.',
+      approach: isM31 ? 'Frame wide and expose for the core first, then try longer/lighter stretches.' : 'Wait until it is clear of trees and as high as possible. Take lots of short subs.',
+      why: isMoonSensitive ? 'Galaxy contrast is easily washed out by moonlight, so dark-sky timing matters a lot.' : 'Galaxies are faint, so altitude, tracking, and dark sky matter more than magnification.',
+      checklist: [
+        isMoonSensitive ? 'Consider skipping until the Moon is dimmer or farther away' : 'Prefer the darkest part of the night',
+        isTreeSensitive ? 'Wait for the clear window above the tree line' : 'Shoot when it is highest',
+        'Use a bright star nearby to nail focus'
+      ]
+    };
+  }
+
+  if (type === 'Emission Nebula' || type === 'Supernova Remnant') {
+    const isHuge = title.includes('North America') || title.includes('Veil');
+    return {
+      headline: isHuge ? 'Huge faint nebula setup' : 'Nebula setup',
+      difficulty: isHuge ? 'Hard' : 'Medium-hard',
+      eyepiece: '32mm / widest field available. Do not use high power.',
+      filter: 'UHC strongly recommended; OIII-style would be ideal for Veil if you add one later.',
+      capture: 'Camera preferred. iPhone may need stacking and careful stretching; visual can be very subtle.',
+      approach: 'Use Deneb/Cygnus finder stars, keep the field wide, and compare filtered vs unfiltered views.',
+      why: isMoonSensitive ? 'Diffuse nebula contrast drops fast under moonlight, even when the target is technically high enough.' : 'These targets are large and faint, so filter + dark sky beats magnification.',
+      checklist: [
+        'Use the UHC filter',
+        isMoonSensitive ? 'Avoid bright Moon windows' : 'Pick the darkest/clearest window',
+        isTreeSensitive ? 'Wait until it clears the local tree line' : 'Keep the field as wide as possible'
+      ]
+    };
+  }
+
+  if (type === 'Globular Cluster') {
+    return {
+      headline: 'Globular cluster setup',
+      difficulty: 'Easy-medium',
+      eyepiece: '32mm to locate, then 10mm if seeing is steady',
+      filter: 'None. Filters usually do not help globular clusters.',
+      capture: 'Short exposures or video. Avoid blowing out the core.',
+      approach: 'Center at low power, focus sharply, then increase power to resolve edge stars.',
+      why: 'Globulars reward sharp focus and moderate power, but they are forgiving compared with galaxies.',
+      checklist: [
+        'Start with 32mm',
+        'Try 10mm only after centering',
+        'Protect the core from overexposure'
+      ]
+    };
+  }
+
+  return common;
+}
+
 export default function SkyMap({ gallery, setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFutureIndex, setActiveFutureIndex] = useState(0);
@@ -3180,6 +3309,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <span>
                   <strong>{step.label}: {step.target?.title}</strong>
                   <em>{step.note}</em>
+                  {step.target && (
+                    <small>Setup: {getTargetActionPlan(step.target).eyepiece}</small>
+                  )}
                   {step.extraTargets?.length > 0 && (
                     <small>
                       Also skip: {step.extraTargets.map((target) => target.shortTitle || target.title).join(', ')}
@@ -3239,6 +3371,31 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <b>Tree line:</b> {activeFutureTarget.treeObstruction.detail}
               </p>
             )}
+            {(() => {
+              const actionPlan = getTargetActionPlan(activeFutureTarget);
+
+              return (
+                <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                  <div className="targetActionHeader">
+                    <small>Recommended Setup</small>
+                    <h3>{actionPlan.headline}</h3>
+                    <i>{actionPlan.difficulty}</i>
+                  </div>
+                  <div className="targetActionGrid">
+                    <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
+                    <span><b>Filter</b>{actionPlan.filter}</span>
+                    <span><b>Capture</b>{actionPlan.capture}</span>
+                    <span><b>Approach</b>{actionPlan.approach}</span>
+                  </div>
+                  <p><b>Why:</b> {actionPlan.why}</p>
+                  <ul>
+                    {actionPlan.checklist.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()}
             <div className="atlasFacts">
               <span><b>Planner Status</b>{activeFutureTarget.plannerStatus.label}</span>
               <span><b>Best Tonight</b>{activeFutureTarget.tonightPlan.bestWindow}</span>
