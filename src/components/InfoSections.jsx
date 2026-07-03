@@ -71,7 +71,7 @@ export default function InfoSections() {
 </section>
 
 <section className="crewSupport">
-  <small>MISSION SUPPORT</small>
+  <a className="crewSupportLink" href="/mission-support">MISSION SUPPORT</a>
   <p>Gus, Muffy, Hazelnut, Beau, and Echo provide morale, supervision, equipment inspection, and occasional mission interference.</p>
 </section>
 

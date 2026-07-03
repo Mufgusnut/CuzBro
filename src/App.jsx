@@ -1,6 +1,7 @@
 import SkyMap from './components/SkyMap.jsx';
 import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
+import MissionSupport from './components/MissionSupport.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 import Hero from './components/Hero.jsx';
@@ -30,7 +31,8 @@ function PageNav({ scrolled }) {
         <a href="/#gallery">Archive</a>
         <a href="/#gear">Gear</a>
         <a href="/#crew">Crew</a>
-        <a href="/skymap" className="active">Sky Map</a>
+        <a href="/mission-support" className={window.location.pathname === '/mission-support' ? 'active' : ''}>Mission Support</a>
+        <a href="/skymap" className={window.location.pathname === '/skymap' ? 'active' : ''}>Sky Map</a>
         <a href="/#about">About</a>
       </nav>
     </header>
@@ -47,6 +49,7 @@ export default function App() {
 
   const scroller = useRef(null);
   const isSkyMapPage = window.location.pathname === '/skymap';
+  const isMissionSupportPage = window.location.pathname === '/mission-support';
 
   const filteredGallery =
     activeFilter === 'All'
@@ -132,7 +135,7 @@ export default function App() {
     <>
       <SpaceBackground />
 
-      {isSkyMapPage ? (
+      {isSkyMapPage || isMissionSupportPage ? (
         <PageNav scrolled={scrolled} />
       ) : (
         <Hero
@@ -144,12 +147,14 @@ export default function App() {
         />
       )}
 
-      <main className={isSkyMapPage ? 'skyMapPage' : ''}>
+      <main className={isSkyMapPage ? 'skyMapPage' : isMissionSupportPage ? 'missionSupportPage' : ''}>
         {isSkyMapPage ? (
           <SkyMap
             gallery={gallery}
             setSelectedIndex={setSelectedIndex}
           />
+        ) : isMissionSupportPage ? (
+          <MissionSupport />
         ) : (
           <>
             <QuickLinks />
