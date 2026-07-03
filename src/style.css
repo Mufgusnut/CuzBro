@@ -6359,3 +6359,31 @@ footer p {
     height: 320px;
   }
 }
+
+/* =========================================================
+   MISSION SUPPORT: POLISH PASS
+========================================================= */
+
+.missionSupportHero h1 {
+  max-width: 1040px !important;
+  font-size: clamp(2.25rem, 5.05vw, 4.95rem) !important;
+  line-height: 0.98 !important;
+  letter-spacing: 0.035em !important;
+}
+
+.missionSupportHero p {
+  max-width: 920px !important;
+  font-size: clamp(1rem, 1.55vw, 1.2rem) !important;
+  line-height: 1.62 !important;
+}
+
+.missionSupportDirectory {
+  display: none !important;
+}
+
+@media (max-width: 800px) {
+  .missionSupportHero h1 {
+    font-size: clamp(2.05rem, 11vw, 3.45rem) !important;
+    line-height: 1 !important;
+  }
+}

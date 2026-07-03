@@ -11,28 +11,28 @@ const animals = [
   {
     name: 'Muffy',
     role: 'Senior Observatory Supervisor',
-    species: 'Cat',
+    species: 'Fluffy Grey Cat',
     image: 'images/mission-support/muffy.jpg',
     notes: 'Regal oversight, sunbeam monitoring, fireplace operations, and treat-based mission review.'
   },
   {
     name: 'Hazelnut',
     role: 'Field Operations Specialist',
-    species: 'Cat',
+    species: 'Tuxedo Cat',
     image: 'images/mission-support/hazelnut.jpg',
     notes: 'Outdoor reconnaissance, rodent patrol, and high-curiosity equipment inspection.'
   },
   {
     name: 'Beau',
-    role: 'Remote Support Consultant',
-    species: 'Cat',
+    role: 'High-Altitude Explorer',
+    species: 'Tuxedo Cat',
     image: 'images/mission-support/beau.jpg',
-    notes: 'Long-distance morale contributor and honorary CuzBro support crew member.'
+    notes: 'Dapper daredevil, curious climber, and crew member who prefers the highest perch available — always reaching for the stars.'
   },
   {
     name: 'Echo',
     role: 'Morale Officer',
-    species: 'Dog',
+    species: 'Minature Poodle',
     image: 'images/mission-support/echo.jpg',
     notes: 'Vibe maintenance, enthusiasm checks, and emotional support for difficult missions.'
   }
@@ -76,15 +76,8 @@ export default function MissionSupport() {
         <h1>Morale crew. Equipment inspectors. Chaos consultants.</h1>
         <p>
           The observatory is powered by curiosity, questionable sleep schedules, and a support staff
-          that takes supervision very seriously. Drop each animal photo into the folder below and the
-          cards will fill themselves in.
+          that takes supervision very seriously.
         </p>
-
-        <div className="missionSupportDirectory">
-          <b>Photo directory</b>
-          <code>public/images/mission-support/</code>
-          <span>Use: gus.jpg, muffy.jpg, hazelnut.jpg, beau.jpg, echo.jpg</span>
-        </div>
       </header>
 
       <section className="supportAnimalGrid">
