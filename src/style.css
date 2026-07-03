@@ -6083,3 +6083,39 @@ footer p {
     border-radius: 24px !important;
   }
 }
+/* =========================================================
+   SKY MAP: VISITOR EPHEMERIS HONESTY
+========================================================= */
+
+.visitorEphemerisBadge.ok {
+  border-color: rgba(120, 220, 255, 0.34) !important;
+  color: rgba(200, 244, 255, 0.96) !important;
+  background: rgba(90, 210, 255, 0.07) !important;
+}
+
+.visitorEphemerisBadge.caution {
+  border-color: rgba(255, 190, 90, 0.34) !important;
+  color: rgba(255, 226, 180, 0.98) !important;
+  background: rgba(255, 166, 60, 0.075) !important;
+}
+
+.visitorEphemerisBadge.bad {
+  border-color: rgba(255, 95, 120, 0.48) !important;
+  color: rgba(255, 205, 215, 0.98) !important;
+  background: rgba(255, 70, 100, 0.095) !important;
+}
+
+.visitorNote.bad {
+  border-color: rgba(255, 95, 120, 0.42) !important;
+  background: rgba(255, 70, 100, 0.075) !important;
+}
+
+.visitorNote.caution {
+  border-color: rgba(255, 190, 90, 0.30) !important;
+  background: rgba(255, 166, 60, 0.075) !important;
+}
+
+.visitorNote.ok {
+  border-color: rgba(120, 220, 255, 0.20) !important;
+  background: rgba(90, 210, 255, 0.06) !important;
+}

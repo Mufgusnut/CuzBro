@@ -204,14 +204,28 @@ const VISITOR_TARGETS = [
     shortTitle: 'Tempel 2',
     constellation: 'Moving Target',
     objectType: 'Comet',
+
+    // Manual ephemeris fields:
+    // 1) Get current apparent RA/Dec from JPL Horizons, TheSkyLive, SkySafari, or Stellarium.
+    // 2) Enter RA as decimal hours and Dec as decimal degrees.
+    // 3) Update ephemerisUpdated using YYYY-MM-DD format.
+    //
+    // Example:
+    // ra: 14.3417,
+    // dec: -4.3075,
+    // ephemerisUpdated: '2026-07-02',
     ra: null,
     dec: null,
+    ephemerisUpdated: null,
+    ephemerisSource: 'JPL Horizons / TheSkyLive / SkySafari',
+    ephemerisRefreshDays: 7,
+
     priority: 'Visitor',
     closestApproach: 'Update with current ephemeris',
     bestSeason: 'When current ephemeris places it high enough',
     magnitude: 'Varies nightly',
     gear: 'Camera preferred; dark sky and stacking help a lot',
-    notes: 'Periodic comet visitor. Add this week\'s RA/Dec from SkySafari, Stellarium, or another ephemeris source to activate live map position, Moon scoring, tree scoring, and session-plan ranking.',
+    notes: 'Periodic comet visitor. Add this week\'s RA/Dec from SkySafari, Stellarium, JPL Horizons, or another ephemeris source to activate live map position, Moon scoring, tree scoring, and planner ranking.',
     ephemerisNote: 'RA/Dec not loaded yet — this card is ready for manual ephemeris updates.'
   }
 ];
@@ -1803,14 +1817,98 @@ function visitorHasEphemeris(visitor) {
   return Number.isFinite(visitor?.ra) && Number.isFinite(visitor?.dec);
 }
 
-function getVisitorEphemerisStatus(visitor) {
-  if (visitorHasEphemeris(visitor)) return null;
+function parseEphemerisDate(value) {
+  if (!value) return null;
+
+  const parsed = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  return parsed;
+}
+
+function getVisitorEphemerisFreshness(visitor, referenceDate = new Date()) {
+  const refreshDays = Number.isFinite(visitor?.ephemerisRefreshDays)
+    ? visitor.ephemerisRefreshDays
+    : 7;
+
+  if (!visitorHasEphemeris(visitor)) {
+    return {
+      label: 'Needs RA/Dec',
+      shortLabel: 'Needs RA/Dec',
+      className: 'bad',
+      rankPenalty: 500,
+      ageDays: null,
+      isFresh: false,
+      detail: visitor?.ephemerisNote || 'Add current RA/Dec before using this visitor in the live planner.',
+      source: visitor?.ephemerisSource || 'Ephemeris source'
+    };
+  }
+
+  const updatedDate = parseEphemerisDate(visitor?.ephemerisUpdated);
+
+  if (!updatedDate) {
+    return {
+      label: 'Ephemeris date missing',
+      shortLabel: 'Date missing',
+      className: 'caution',
+      rankPenalty: 120,
+      ageDays: null,
+      isFresh: false,
+      detail: 'RA/Dec are loaded, but no update date is recorded. Add ephemerisUpdated so the app can warn when the comet position gets stale.',
+      source: visitor?.ephemerisSource || 'Ephemeris source'
+    };
+  }
+
+  const ageDays = Math.max(0, Math.floor((referenceDate.getTime() - updatedDate.getTime()) / 86400000));
+
+  if (ageDays <= refreshDays) {
+    return {
+      label: 'Ephemeris current',
+      shortLabel: 'Current',
+      className: 'ok',
+      rankPenalty: 0,
+      ageDays,
+      isFresh: true,
+      detail: `RA/Dec were updated ${ageDays === 0 ? 'today' : `${ageDays} day${ageDays === 1 ? '' : 's'} ago`}. Refresh after about ${refreshDays} days for a moving comet.`,
+      source: visitor?.ephemerisSource || 'Ephemeris source'
+    };
+  }
+
+  if (ageDays <= refreshDays * 2) {
+    return {
+      label: 'Ephemeris getting old',
+      shortLabel: 'Getting old',
+      className: 'caution',
+      rankPenalty: 80,
+      ageDays,
+      isFresh: false,
+      detail: `RA/Dec are ${ageDays} days old. This may still be a useful finder starting point, but update before a serious observing session.`,
+      source: visitor?.ephemerisSource || 'Ephemeris source'
+    };
+  }
 
   return {
-    label: 'Ephemeris needed',
-    className: 'low',
-    rankScore: -500,
-    detail: visitor?.ephemerisNote || 'Add current RA/Dec to activate live scoring.'
+    label: 'Ephemeris stale',
+    shortLabel: 'Stale',
+    className: 'bad',
+    rankPenalty: 220,
+    ageDays,
+    isFresh: false,
+    detail: `RA/Dec are ${ageDays} days old. Comets move enough that this position should be refreshed before you trust the map marker.`,
+    source: visitor?.ephemerisSource || 'Ephemeris source'
+  };
+}
+
+function getVisitorEphemerisStatus(visitor, referenceDate = new Date()) {
+  const freshness = getVisitorEphemerisFreshness(visitor, referenceDate);
+
+  if (freshness.className === 'ok') return null;
+
+  return {
+    label: freshness.label,
+    className: freshness.className === 'bad' ? 'low' : 'good',
+    rankScore: -freshness.rankPenalty,
+    detail: freshness.detail
   };
 }
 
@@ -1825,8 +1923,10 @@ function buildVisitorUnavailablePlan(visitor) {
   };
 }
 
-function getVisitorActionNote(visitor) {
-  if (visitorHasEphemeris(visitor)) return 'Live scoring active from the loaded RA/Dec.';
+function getVisitorActionNote(visitor, referenceDate = new Date()) {
+  const freshness = getVisitorEphemerisFreshness(visitor, referenceDate);
+
+  if (visitorHasEphemeris(visitor)) return freshness.detail;
   return 'Add the current RA/Dec at the top of SkyMap.jsx to make this visitor appear on the map.';
 }
 
@@ -2261,8 +2361,7 @@ const SESSION_MODES = [
   { key: 'visual', label: 'Easy Visual' },
   { key: 'iphone', label: 'iPhone Friendly' },
   { key: 'camera', label: 'Deep Sky Photo' },
-  { key: 'planetary', label: 'Planetary' },
-  { key: 'visitors', label: 'Visitors' }
+  { key: 'planetary', label: 'Planetary' }
 ];
 
 const PLANNER_DETAIL_TABS = [
@@ -2422,8 +2521,16 @@ function getTargetWhyExplanation(target, sessionMode = 'balanced') {
   if (difficulty.className === 'hard') watch.push('This is a hard target; tracking, focus, and patience matter.');
   if (difficulty.className === 'expert') watch.push('This is an expert-level attempt tonight.');
 
-  if (type === 'Comet' && !visitorHasEphemeris(target)) {
-    watch.unshift('Add current RA/Dec before using this visitor in the live planner.');
+  if (type === 'Comet') {
+    const freshness = getVisitorEphemerisFreshness(target);
+
+    if (!visitorHasEphemeris(target)) {
+      watch.unshift('Add current RA/Dec before using this visitor in the live planner.');
+    } else if (freshness.className === 'ok') {
+      good.push(`Ephemeris check: ${freshness.shortLabel.toLowerCase()} — ${freshness.detail}`);
+    } else {
+      watch.unshift(`Ephemeris check: ${freshness.detail}`);
+    }
   }
 
   if (sessionMode === 'visual' && ['Open Cluster', 'Globular Cluster', 'Double Star', 'Planet', 'Planetary Nebula'].includes(type)) {
@@ -2623,14 +2730,17 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     };
 
     return VISITOR_TARGETS.map((visitor, actualIndex) => {
+      const ephemerisFreshness = getVisitorEphemerisFreshness(visitor, date);
+
       if (!visitorHasEphemeris(visitor)) {
-        const plannerStatus = getVisitorEphemerisStatus(visitor);
+        const plannerStatus = getVisitorEphemerisStatus(visitor, date);
         const tonightPlan = buildVisitorUnavailablePlan(visitor);
 
         return {
           ...visitor,
           actualIndex,
           ephemerisNeeded: true,
+          ephemerisFreshness,
           alt: -90,
           az: 0,
           x: CENTER,
@@ -2651,11 +2761,16 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       const moonImpact = getMoonImpact(visitor, moonInfo);
       const tonightPlan = buildTonightPlan(visitor, date, observer);
       const treeObstruction = getTreeObstruction({ ...visitor, alt: altAz.alt, az: altAz.az }, tonightPlan);
-      const plannerStatus = getFuturePlannerStatus(status, tonightPlan, visitor, date, moonImpact, treeObstruction);
+      const basePlannerStatus = getFuturePlannerStatus(status, tonightPlan, visitor, date, moonImpact, treeObstruction);
+      const plannerStatus = {
+        ...basePlannerStatus,
+        rankScore: basePlannerStatus.rankScore - ephemerisFreshness.rankPenalty
+      };
 
       return {
         ...visitor,
         actualIndex,
+        ephemerisFreshness,
         alt: altAz.alt,
         az: altAz.az,
         x: point.x,
@@ -4060,7 +4175,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
           )}
 
           {catalogView === 'future' && rankedFutureTargets.length === 0 && (
-            <p className="catalogEmptyState">No future targets match this mode in this tab. Try Best Overall or switch tabs.</p>
+            <p className="catalogEmptyState">No future targets match this mode. Try Best Overall or switch tabs.</p>
           )}
 
           {catalogView === 'visitors' && rankedVisitorTargets.length === 0 && (
@@ -4120,6 +4235,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                 <em>{target.constellation}</em>
                 <small>{target.objectType} · {target.ephemerisNeeded ? 'add RA/Dec to activate' : `best: ${target.tonightPlan.bestWindow}`}</small>
                 <i className={`targetStatusBadge ${target.plannerStatus.className}`}>{target.plannerStatus.label}</i>
+                {target.ephemerisFreshness && (
+                  <i className={`targetStatusBadge visitorEphemerisBadge ${target.ephemerisFreshness.className}`}>
+                    {target.ephemerisFreshness.shortLabel}
+                  </i>
+                )}
                 {target.moonImpact && (
                   <i className={`targetStatusBadge moonImpactBadge ${target.moonImpact.className}`}>
                     {target.moonImpact.label}
@@ -4186,7 +4306,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               const actionPlan = getTargetActionPlan(activeVisitorTarget);
               const framingPreview = getTargetFramingPreview(activeVisitorTarget);
               const difficultyScore = getTargetDifficultyScore(activeVisitorTarget);
-              const whyExplanation = getTargetWhyExplanation(activeVisitorTarget, sessionMode);
+              const whyExplanation = getTargetWhyExplanation(activeVisitorTarget, 'balanced');
 
               return (
                 <div className="plannerTabPanel">
@@ -4195,9 +4315,15 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                       <h2><span>☄</span>{activeVisitorTarget.title}</h2>
                       <h3>{activeVisitorTarget.objectType} · {activeVisitorTarget.constellation}</h3>
                       <p>{activeVisitorTarget.notes}</p>
-                      <p className={`futureFinderNote visitorNote ${activeVisitorTarget.ephemerisNeeded ? 'caution' : 'ok'}`}>
-                        <b>Visitor status:</b> {getVisitorActionNote(activeVisitorTarget)}
+                      <p className={`futureFinderNote visitorNote ${activeVisitorTarget.ephemerisFreshness?.className || (activeVisitorTarget.ephemerisNeeded ? 'caution' : 'ok')}`}>
+                        <b>Ephemeris check:</b> {getVisitorActionNote(activeVisitorTarget, date)}
                       </p>
+                      {activeVisitorTarget.ephemerisFreshness?.source && (
+                        <p className="futureFinderNote visitorNote ok">
+                          <b>Source:</b> {activeVisitorTarget.ephemerisFreshness.source}
+                          {activeVisitorTarget.ephemerisUpdated ? ` · updated ${activeVisitorTarget.ephemerisUpdated}` : ' · update date not set'}
+                        </p>
+                      )}
                       {activeVisitorTarget.moonImpact && (
                         <p className={`futureFinderNote moonImpactNote ${activeVisitorTarget.moonImpact.className}`}>
                           <b>Moon check:</b> {activeVisitorTarget.moonImpact.detail}
@@ -4308,6 +4434,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                       <span><b>Gear</b>{activeVisitorTarget.gear}</span>
                       <span><b>RA</b>{visitorHasEphemeris(activeVisitorTarget) ? formatRa(activeVisitorTarget.ra) : 'Add ephemeris'}</span>
                       <span><b>Dec</b>{visitorHasEphemeris(activeVisitorTarget) ? formatDec(activeVisitorTarget.dec) : 'Add ephemeris'}</span>
+                      <span><b>Ephemeris</b>{activeVisitorTarget.ephemerisFreshness?.label || 'Needs RA/Dec'}</span>
+                      <span><b>Updated</b>{activeVisitorTarget.ephemerisUpdated || 'Not set'}</span>
+                      <span><b>Refresh After</b>{`${activeVisitorTarget.ephemerisRefreshDays || 7} days`}</span>
+                      <span><b>Source</b>{activeVisitorTarget.ephemerisSource || 'Not set'}</span>
                       <span><b>Altitude</b>{visitorHasEphemeris(activeVisitorTarget) ? `${activeVisitorTarget.alt.toFixed(1)}°` : 'N/A'}</span>
                       <span><b>Azimuth</b>{visitorHasEphemeris(activeVisitorTarget) ? `${activeVisitorTarget.az.toFixed(1)}°` : 'N/A'}</span>
                       <span><b>Moon Impact</b>{activeVisitorTarget.moonImpact?.label || 'Needs RA/Dec'}</span>
