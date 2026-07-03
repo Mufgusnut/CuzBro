@@ -6466,3 +6466,222 @@ footer p {
     max-width: 9ch !important;
   }
 }
+/* =========================================================
+   MISSION SUPPORT: STRONGER HERO TITLE FIX
+   Paste at the VERY BOTTOM of src/style.css
+========================================================= */
+
+/* Desktop/tablet: slightly smaller and less wide-looking */
+.missionSupportHero h1 {
+  max-width: 920px !important;
+  font-size: clamp(2.15rem, 4.35vw, 4.35rem) !important;
+  line-height: 1.02 !important;
+  letter-spacing: 0.018em !important;
+  text-transform: uppercase !important;
+}
+
+.missionSupportHero p {
+  max-width: 860px !important;
+  font-size: clamp(0.98rem, 1.35vw, 1.12rem) !important;
+  line-height: 1.6 !important;
+}
+
+/* Phone layout: keep the long headline inside the card */
+@media (max-width: 800px) {
+  .missionSupportWrap {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .missionSupportHero {
+    padding: 28px 22px 32px !important;
+    border-radius: 30px !important;
+  }
+
+  .missionSupportHero small {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.20em !important;
+    line-height: 1.35 !important;
+  }
+
+  .missionSupportHero h1 {
+    max-width: 100% !important;
+    margin: 18px 0 16px !important;
+    font-size: clamp(2.05rem, 9.25vw, 2.9rem) !important;
+    line-height: 1.06 !important;
+    letter-spacing: 0.006em !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  .missionSupportHero p {
+    max-width: 100% !important;
+    font-size: clamp(1rem, 4.15vw, 1.18rem) !important;
+    line-height: 1.58 !important;
+  }
+}
+
+/* Very narrow iPhones */
+@media (max-width: 430px) {
+  .missionSupportHero {
+    padding: 26px 20px 30px !important;
+  }
+
+  .missionSupportHero h1 {
+    font-size: clamp(1.9rem, 8.7vw, 2.55rem) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+  }
+}
+/* =========================================================
+   MISSION SUPPORT: NAV CLEARANCE + HERO TITLE FIT
+   Paste at the VERY BOTTOM of src/style.css
+========================================================= */
+
+/* Push Mission Support content below the fixed nav */
+.missionSupportPage,
+.missionSupportWrap {
+  padding-top: 140px !important;
+}
+
+/* Keep Back to Crew safely below nav */
+.missionSupportBack,
+.backToCrew,
+.missionSupportBackButton {
+  margin-top: 12px !important;
+  margin-bottom: 34px !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Actual Mission Support title sizing */
+.missionSupportHero h1 {
+  font-size: clamp(2.8rem, 5.8vw, 6.2rem) !important;
+  line-height: 0.96 !important;
+  letter-spacing: 0.035em !important;
+  max-width: 980px !important;
+}
+
+/* Mobile */
+@media (max-width: 800px) {
+  .missionSupportPage,
+  .missionSupportWrap {
+    padding-top: 120px !important;
+  }
+
+  .missionSupportHero {
+    padding: 28px 22px 32px !important;
+  }
+
+  .missionSupportHero h1 {
+    font-size: clamp(2rem, 8.4vw, 3.15rem) !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0.005em !important;
+    max-width: 100% !important;
+  }
+
+  .missionSupportHero p {
+    font-size: 1.05rem !important;
+    line-height: 1.55 !important;
+  }
+}
+
+/* Very narrow phones */
+@media (max-width: 430px) {
+  .missionSupportPage,
+  .missionSupportWrap {
+    padding-top: 112px !important;
+  }
+
+  .missionSupportHero h1 {
+    font-size: clamp(1.85rem, 8vw, 2.65rem) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+  }
+}
+/* =========================================================
+   MISSION SUPPORT: REDUCED NAV CLEARANCE
+   Paste at the VERY BOTTOM of src/style.css
+========================================================= */
+
+.missionSupportPage,
+.missionSupportWrap {
+  padding-top: 32px !important;
+}
+
+.missionSupportBack,
+.backToCrew,
+.missionSupportBackButton {
+  margin-top: 0 !important;
+  margin-bottom: 24px !important;
+}
+
+/* Only add extra clearance on smaller screens where the nav stacks/takes more room */
+@media (max-width: 1000px) {
+  .missionSupportPage,
+  .missionSupportWrap {
+    padding-top: 46px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .missionSupportPage,
+  .missionSupportWrap {
+    padding-top: 26px !important;
+  }
+
+  .missionSupportBack,
+  .backToCrew,
+  .missionSupportBackButton {
+    margin-bottom: 22px !important;
+  }
+}
+/* =========================================================
+   MISSION SUPPORT: BALANCED NAV CLEARANCE
+   Paste at the VERY BOTTOM of src/style.css
+========================================================= */
+
+/* Desktop fixed nav clearance */
+.missionSupportPage,
+.missionSupportWrap {
+  padding-top: 86px !important;
+}
+
+/* Back button spacing */
+.missionSupportBack,
+.backToCrew,
+.missionSupportBackButton {
+  margin-top: 0 !important;
+  margin-bottom: 28px !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Slightly less gap once the nav shrinks */
+.navSmall ~ main .missionSupportPage,
+.navSmall ~ main .missionSupportWrap {
+  padding-top: 70px !important;
+}
+
+/* Tablet/mobile nav is taller/stackier */
+@media (max-width: 1000px) {
+  .missionSupportPage,
+  .missionSupportWrap {
+    padding-top: 74px !important;
+  }
+}
+
+/* Phone */
+@media (max-width: 700px) {
+  .missionSupportPage,
+  .missionSupportWrap {
+    padding-top: 64px !important;
+  }
+
+  .missionSupportBack,
+  .backToCrew,
+  .missionSupportBackButton {
+    margin-bottom: 24px !important;
+  }
+}
