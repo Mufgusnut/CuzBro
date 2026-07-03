@@ -2699,10 +2699,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const rankedVisitorTargets = useMemo(() => {
     return [...mappedVisitorTargets]
-      .filter((target) => targetMatchesTonightMode(target, sessionMode))
       .sort((a, b) => {
-        const bScore = getModeAdjustedRankScore(b, sessionMode);
-        const aScore = getModeAdjustedRankScore(a, sessionMode);
+        const bScore = getModeAdjustedRankScore(b, 'visitors');
+        const aScore = getModeAdjustedRankScore(a, 'visitors');
 
         if (bScore !== aScore) {
           return bScore - aScore;
@@ -2713,9 +2712,9 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       .map((target, rankIndex) => ({
         ...target,
         rankNumber: rankIndex + 1,
-        modeAdjustedRankScore: getModeAdjustedRankScore(target, sessionMode)
+        modeAdjustedRankScore: getModeAdjustedRankScore(target, 'visitors')
       }));
-  }, [mappedVisitorTargets, sessionMode]);
+  }, [mappedVisitorTargets]);
 
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
   const activeFutureTarget = rankedFutureTargets.find((target) => target.actualIndex === activeFutureIndex) || rankedFutureTargets[0] || mappedFutureTargets[0];
@@ -3985,7 +3984,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             </svg>
           </div>
 
-          <div className="atlasLegend enhancedLegend">
+          <div className="atlasLegend enhancedLegend skyMapLegend">
             <span><i className="legendCyan"></i> Planetary Nebula</span>
             <span><i className="legendPurple"></i> Emission Nebula</span>
             <span><i className="legendOrange"></i> Globular Cluster</span>
@@ -4039,7 +4038,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
           <small>{catalogView === 'future' ? 'Target Planner List' : catalogView === 'visitors' ? 'Closest Visitors List' : 'Mission Archive'}</small>
 
-          {(catalogView === 'future' || catalogView === 'visitors') && (
+          {catalogView === 'future' && (
             <div className="plannerControlsPanel tonightModePanel">
               <div>
                 <small>Tonight Mode</small>

@@ -6026,3 +6026,60 @@ footer p {
     font-size: 0.74rem !important;
   }
 }
+/* =========================================================
+   SKY MAP: PHASE 22 POLISH
+   1) Keep map key clipped to map
+   2) Slightly smaller Future / Captured / Visitors tabs
+========================================================= */
+
+/* Keep the legend/key physically inside the sky-map card while scrolling */
+.realSkyMap {
+  overflow: hidden !important;
+  contain: paint !important;
+  isolation: isolate !important;
+}
+
+.realSkyMap > .atlasLegend.skyMapLegend,
+.realSkyMap > .enhancedLegend.skyMapLegend {
+  position: absolute !important;
+  left: 20px !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 20px !important;
+  transform: none !important;
+  z-index: 25 !important;
+  max-width: min(560px, calc(100% - 40px)) !important;
+}
+
+/* Smaller, centered Future / Captured / Visitors selector */
+.plannerCatalog .catalogTabs {
+  grid-column: 1 / -1 !important;
+  width: min(620px, 100%) !important;
+  max-width: 620px !important;
+  margin: 0 auto 18px !important;
+  padding: 8px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  border-radius: 999px !important;
+}
+
+.plannerCatalog .catalogTabs button {
+  min-height: 40px !important;
+  padding: 7px 12px !important;
+  border-radius: 999px !important;
+  font-size: 0.82rem !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.12em !important;
+  white-space: nowrap !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+@media (max-width: 620px) {
+  .plannerCatalog .catalogTabs {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+    border-radius: 24px !important;
+  }
+}
