@@ -8,7 +8,15 @@ export default function Gallery({
   activeFilter,
   setActiveFilter
 }) {
-  const filters = ["All", "Planetary Nebula", "Emission Nebula", "Globular Cluster", "Double Star", "Lunar"];
+  const filters = [
+    'All',
+    'Galaxy',
+    'Planetary Nebula',
+    'Emission Nebula',
+    'Globular Cluster',
+    'Double Star',
+    'Lunar'
+  ];
 
   return (
     <>
@@ -20,7 +28,7 @@ export default function Gallery({
         {filters.map((filter) => (
           <button
             key={filter}
-            className={activeFilter === filter ? "active" : ""}
+            className={activeFilter === filter ? 'active' : ''}
             onClick={() => setActiveFilter(filter)}
           >
             {filter}
@@ -29,7 +37,7 @@ export default function Gallery({
       </div>
 
       <div className="carouselWrap">
-        <button onClick={() => scroll(-1)}>
+        <button type="button" onClick={() => scroll(-1)} aria-label="Previous missions">
           <ChevronLeft />
         </button>
 
@@ -40,7 +48,10 @@ export default function Gallery({
               key={g.title}
               onClick={() => setSelectedIndex(i)}
             >
-              <img src={import.meta.env.BASE_URL + g.image} />
+              <img
+                src={import.meta.env.BASE_URL + g.image}
+                alt={g.title}
+              />
               <div>
                 <h3>{g.title}</h3>
                 <p>{g.subtitle}</p>
@@ -50,7 +61,7 @@ export default function Gallery({
           ))}
         </div>
 
-        <button onClick={() => scroll(1)}>
+        <button type="button" onClick={() => scroll(1)} aria-label="Next missions">
           <ChevronRight />
         </button>
       </div>

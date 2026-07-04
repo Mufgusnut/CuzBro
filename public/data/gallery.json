@@ -48,7 +48,7 @@
     "nextGoal": "Try again with a UHC filter and longer stacked exposures.",
     "image": "images/deepsky/M27.jpg",
     "ra": 19.9965,
-    "dec": 22.7210
+    "dec": 22.721
   },
   {
     "title": "Ring Nebula",
@@ -64,8 +64,8 @@
     "notes": "A small but iconic smoke-ring shaped planetary nebula near Vega.",
     "nextGoal": "Capture with higher magnification and improved focus.",
     "image": "images/deepsky/M57.jpg",
-    "ra": 18.8930,
-    "dec": 33.0290
+    "ra": 18.893,
+    "dec": 33.029
   },
   {
     "title": "Lagoon Nebula",
@@ -81,8 +81,8 @@
     "notes": "A bright summer nebula rich with glowing gas, star-forming regions, and dramatic structure.",
     "nextGoal": "Revisit from a darker sky with the UHC filter.",
     "image": "images/deepsky/M8.jpg",
-    "ra": 18.0500,
-    "dec": -24.3830
+    "ra": 18.05,
+    "dec": -24.383
   },
   {
     "title": "Moon",
@@ -98,5 +98,39 @@
     "notes": "A detailed lunar capture showing surface texture, craters, and contrast along the terminator.",
     "nextGoal": "Try video stacking for sharper lunar detail.",
     "image": "images/deepsky/Half Moon.jpg"
+  },
+  {
+    "title": "M51 Whirlpool Galaxy",
+    "subtitle": "Interacting galaxy pair",
+    "category": "Astrophotography",
+    "objectType": "Galaxy",
+    "constellation": "Canes Venatici",
+    "distance": "Approximately 23 million light-years",
+    "captureDate": "July 2026",
+    "exposure": "Stacked imaging session",
+    "processing": "Siril + AstroShader",
+    "equipment": "Celestron CPC 800 with ASI294MC",
+    "notes": "A first dedicated-camera capture of the Whirlpool Galaxy and its interacting companion. The spiral structure is a major step forward in the CuzBro deep-sky workflow.",
+    "nextGoal": "Add more total integration time, improve tracking, and preserve more faint outer-arm detail.",
+    "image": "images/deepsky/Whirlpoolgalaxy.jpg",
+    "ra": 13.498,
+    "dec": 47.195
+  },
+  {
+    "title": "Fireworks Galaxy",
+    "subtitle": "NGC 6946 face-on spiral galaxy",
+    "category": "Astrophotography",
+    "objectType": "Galaxy",
+    "constellation": "Cepheus",
+    "distance": "Approximately 25 million light-years",
+    "captureDate": "July 2026",
+    "exposure": "Stacked imaging session",
+    "processing": "Siril + AstroShader",
+    "equipment": "Celestron CPC 800 with ASI294MC",
+    "notes": "A challenging face-on galaxy capture near the Cepheus-Cygnus border. This mission pushed the new camera, stacking, and stretching workflow on a faint deep-sky target.",
+    "nextGoal": "Collect more integration time under darker conditions and refine background noise reduction without losing galaxy detail.",
+    "image": "images/deepsky/Fireworksgalaxy.jpg",
+    "ra": 20.581,
+    "dec": 60.154
   }
 ]

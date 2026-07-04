@@ -86,31 +86,7 @@ function createBackgroundStars(count = 360) {
 const BACKGROUND_STARS = createBackgroundStars();
 
 const FUTURE_TARGETS = [
-  {
-    title: 'Fireworks Galaxy',
-    shortTitle: 'NGC 6946',
-    constellation: 'Cepheus',
-    objectType: 'Galaxy',
-    ra: 20.581,
-    dec: 60.154,
-    priority: 'High',
-    bestSeason: 'Late summer / fall',
-    gear: 'Camera preferred; dark, moonless sky helps a lot',
-    notes: 'Beautiful face-on galaxy near Cepheus/Cygnus. A challenging but worthwhile future target once tracking and camera workflow are dialed in.'
-  },
-  {
-    title: 'M51 Whirlpool Galaxy',
-    shortTitle: 'M51',
-    constellation: 'Canes Venatici',
-    objectType: 'Galaxy',
-    ra: 13.498,
-    dec: 47.195,
-    priority: 'High',
-    bestSeason: 'Spring / early summer',
-    gear: 'Camera preferred; best on darker, moonless nights',
-    notes: 'Beautiful galaxy pair, but it needs dark sky and careful tracking. Better when high in the west/northwest.'
-  },
-  {
+{
     title: 'Cat’s Eye Nebula',
     shortTitle: 'NGC 6543',
     constellation: 'Draco',
@@ -723,6 +699,8 @@ function getObjectColor(objectType) {
       return 'var(--orange)';
     case 'Double Star':
       return '#f6d36b';
+    case 'Galaxy':
+      return '#a8c8ff';
     case 'Lunar':
       return '#d9e1ff';
     case 'Comet':
@@ -4104,6 +4082,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
             <span><i className="legendPurple"></i> Emission Nebula</span>
             <span><i className="legendOrange"></i> Globular Cluster</span>
             <span><i className="legendGold"></i> Double Star</span>
+            <span><i className="legendSilver"></i> Galaxy</span>
             <span><i className="legendSilver"></i> Lunar</span>
             <span><i className="legendOrange"></i> Comet / Visitor</span>
           </div>

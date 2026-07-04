@@ -13,7 +13,7 @@ const animals = [
     role: 'Senior Observatory Supervisor',
     species: 'Fluffy Grey Cat',
     image: 'images/mission-support/muffy.jpg',
-    notes: 'Regal oversight, sunbeam monitoring, fireplace operations, and treat-based mission review.'
+    notes: 'Regal oversight, sunbeam monitoring, cozy operations, and treat-based mission review.'
   },
   {
     name: 'Hazelnut',
