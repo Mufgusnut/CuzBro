@@ -1429,7 +1429,8 @@ function buildForestSection({
   treeCount,
   minHeight,
   maxHeight,
-  phase = 0
+  phase = 0,
+  variation = 0.16
 }) {
   const trees = [];
   const angleStep = (endDeg - startDeg) / Math.max(1, treeCount - 1);
@@ -1439,20 +1440,37 @@ function buildForestSection({
     const angle = startDeg + angleStep * i;
     const base = polarToCartesian(cx, cy, radius, angle);
 
-    // Gentle deterministic variation keeps the line organic without turning
-    // it into a saw blade / row of teeth.
-    const ripple = Math.sin(i * 1.73 + phase) * 0.12 + Math.sin(i * 0.57 + phase * 2.1) * 0.08;
-    const height = lerp(minHeight, maxHeight, t) * (1 + ripple);
-    const width = clamp(height * 0.28, 7, 18);
+    // Smooth the main height transition so adjoining forest sections flow
+    // into one another instead of changing height abruptly at S or E.
+    const easedT = smoothstep01(t);
+    const baseHeight = lerp(minHeight, maxHeight, easedT);
+
+    // Deterministic multi-frequency variation makes individual trees feel
+    // organic. The envelope fades variation to zero at both ends of each
+    // section so shared boundary heights remain perfectly smooth.
+    const variationEnvelope = Math.sin(Math.PI * t);
+    const ripple =
+      Math.sin(i * 1.73 + phase) * variation * 0.58 +
+      Math.sin(i * 0.57 + phase * 2.1) * variation * 0.30 +
+      Math.sin(i * 2.91 + phase * 0.7) * variation * 0.12;
+
+    const height = baseHeight * (1 + ripple * variationEnvelope);
+    const width = clamp(height * 0.25, 9, 30);
 
     trees.push({
       id: `${startDeg}-${endDeg}-${i}`,
       angle,
       x: base.x,
       y: base.y,
-      height: clamp(height, 10, 82),
+      height: clamp(height, 10, 160),
       width,
-      opacity: 0.78 + Math.sin(i * 0.91 + phase) * 0.08
+      opacity: clamp(
+        0.80 +
+          Math.sin(i * 0.91 + phase) * 0.07 +
+          Math.sin(i * 0.37 + phase * 1.6) * 0.035,
+        0.68,
+        0.94
+      )
     });
   }
 
@@ -1463,46 +1481,91 @@ function buildConnectedForestTrees() {
   const radius = RADIUS - 8;
 
   return [
-    // W → S: short trees, gradually taller as the view approaches the south.
+    // W → S: reference short-tree section.
     ...buildForestSection({
       cx: CENTER,
       cy: CENTER,
       radius,
       startDeg: 270,
       endDeg: 180,
-      treeCount: 34,
-      minHeight: 18,
-      maxHeight: 34,
-      phase: 0.4
+      treeCount: 40,
+      minHeight: 40,
+      maxHeight: 106,
+      phase: 0.4,
+      variation: 0.18
     }),
 
-    // S → E: main obstruction zone, tallest and densest.
+    // S → E: main tall obstruction zone.
     ...buildForestSection({
       cx: CENTER,
       cy: CENTER,
       radius,
       startDeg: 180,
       endDeg: 90,
-      treeCount: 52,
-      minHeight: 48,
-      maxHeight: 72,
-      phase: 1.7
+      treeCount: 50,
+      minHeight: 106,
+      maxHeight: 156,
+      phase: 1.7,
+      variation: 0.17
     }),
 
-    // E → NE: short trees tapering down toward clear sky.
+    // E → NE: taper smoothly down from the tall eastern trees.
     ...buildForestSection({
       cx: CENTER,
       cy: CENTER,
       radius,
       startDeg: 90,
       endDeg: 45,
-      treeCount: 24,
-      minHeight: 28,
-      maxHeight: 14,
-      phase: 2.8
-    })
+      treeCount: 28,
+      minHeight: 156,
+      maxHeight: 42,
+      phase: 2.8,
+      variation: 0.20
+    }),
 
-    // NE → W is intentionally clear.
+    // NE → N: match the western short-tree section more closely in both
+    // height and density. The shared NE boundary stays smooth at 42px.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 45,
+      endDeg: 0,
+      treeCount: 22,
+      minHeight: 42,
+      maxHeight: 40,
+      phase: 3.5,
+      variation: 0.18
+    }),
+
+    // NW → N: a loose line of medium trees with broad spacing.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 315,
+      endDeg: 360,
+      treeCount: 8,
+      minHeight: 44,
+      maxHeight: 58,
+      phase: 4.6,
+      variation: 0.22
+    }),
+
+    // NW → W: more sporadic medium trees. Keep the count low enough that
+    // this still reads as isolated obstructions rather than a solid tree line.
+    ...buildForestSection({
+      cx: CENTER,
+      cy: CENTER,
+      radius,
+      startDeg: 315,
+      endDeg: 270,
+      treeCount: 11,
+      minHeight: 48,
+      maxHeight: 40,
+      phase: 5.4,
+      variation: 0.30
+    })
   ];
 }
 

@@ -6685,3 +6685,10 @@ footer p {
     margin-bottom: 24px !important;
   }
 }
+/* =========================================================
+   SKY MAP: REMOVE TREE HORIZON ORANGE BASE BARS
+========================================================= */
+
+.treeHorizonBaseGlow {
+  display: none !important;
+}
