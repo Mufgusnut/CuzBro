@@ -112,7 +112,7 @@
     "equipment": "Celestron CPC 800 with ASI294MC",
     "notes": "A first dedicated-camera capture of the Whirlpool Galaxy and its interacting companion. The spiral structure is a major step forward in the CuzBro deep-sky workflow.",
     "nextGoal": "Add more total integration time, improve tracking, and preserve more faint outer-arm detail.",
-    "image": "images/deepsky/Whirlpoolgalaxy.jpg",
+    "image": "images/deepsky/M51.jpg",
     "ra": 13.498,
     "dec": 47.195
   },
