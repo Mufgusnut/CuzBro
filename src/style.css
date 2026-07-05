@@ -7376,3 +7376,184 @@ footer p {
     white-space: nowrap !important;
   }
 }
+/* =========================================================
+   MOBILE NAV: CLOSE HERO GAP + COMPACT STICKY SCROLL NAV
+========================================================= */
+
+@media (max-width: 700px) {
+
+  /* -------------------------------------------------------
+     CLOSE THE LARGE GAP BETWEEN NAV AND HERO
+  ------------------------------------------------------- */
+
+  .hero {
+    padding-top: 28px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     MOBILE NAV DEFAULT STATE
+  ------------------------------------------------------- */
+
+  .nav {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+
+    overflow: visible !important;
+
+    padding: 18px 18px 16px !important;
+
+    background: rgba(2, 7, 16, .94) !important;
+    backdrop-filter: blur(18px) !important;
+
+    transition:
+      padding .25s ease,
+      background .25s ease,
+      min-height .25s ease,
+      box-shadow .25s ease !important;
+  }
+
+  .nav .logo {
+    width: 165px !important;
+    margin: 0 auto 16px !important;
+
+    transition:
+      width .25s ease,
+      opacity .2s ease,
+      max-height .25s ease,
+      margin .25s ease,
+      transform .25s ease !important;
+  }
+
+
+  /* -------------------------------------------------------
+     FULL MOBILE NAV
+  ------------------------------------------------------- */
+
+  .nav .mainNavMenu {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    gap: 6px !important;
+
+    width: 100% !important;
+    padding: 8px !important;
+
+    overflow: visible !important;
+  }
+
+  .nav .mainNavMenu > a,
+  .navDropdownTrigger {
+    padding: 8px 11px !important;
+    font-size: 1rem !important;
+    white-space: nowrap !important;
+  }
+
+
+  /* -------------------------------------------------------
+     SCROLLED / COMPACT NAV
+  ------------------------------------------------------- */
+
+  .nav.navSmall {
+    min-height: 0 !important;
+
+    padding: 6px 8px !important;
+
+    background: rgba(2, 7, 16, .96) !important;
+
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, .42),
+      0 1px 0 rgba(255,255,255,.08) !important;
+  }
+
+  /* Hide large logo once scrolling */
+  .nav.navSmall .logo {
+    width: 0 !important;
+    max-height: 0 !important;
+
+    margin: 0 !important;
+
+    opacity: 0 !important;
+
+    transform: scale(.7) !important;
+
+    pointer-events: none !important;
+  }
+
+  /* Small single-row command bar */
+  .nav.navSmall .mainNavMenu {
+    flex-wrap: nowrap !important;
+
+    justify-content: center !important;
+
+    gap: 2px !important;
+
+    padding: 3px !important;
+  }
+
+  .nav.navSmall .mainNavMenu > a,
+  .nav.navSmall .navDropdownTrigger {
+    padding: 7px 8px !important;
+
+    font-size: .78rem !important;
+
+    line-height: 1 !important;
+  }
+
+  .nav.navSmall .navDropdownTrigger {
+    gap: 4px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     KEEP DROPDOWNS OUTSIDE THE COMPACT BAR
+  ------------------------------------------------------- */
+
+  .navDropdown {
+    position: relative !important;
+    overflow: visible !important;
+  }
+
+  .navDropdownMenu {
+    position: absolute !important;
+
+    top: calc(100% + 6px) !important;
+    left: 50% !important;
+
+    min-width: 210px !important;
+
+    transform: translate(-50%, -6px) !important;
+
+    z-index: 9999 !important;
+  }
+
+  .navDropdown:hover .navDropdownMenu,
+  .navDropdown:focus-within .navDropdownMenu,
+  .navDropdownMenu:hover {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+
+    transform: translate(-50%, 0) !important;
+  }
+
+
+  /* -------------------------------------------------------
+     HOVER BRIDGE SO DROPDOWN STAYS OPEN
+  ------------------------------------------------------- */
+
+  .navDropdown::after {
+    content: "" !important;
+
+    position: absolute !important;
+
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+
+    height: 12px !important;
+  }
+}
