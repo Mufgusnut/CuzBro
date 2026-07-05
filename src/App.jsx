@@ -2,6 +2,7 @@ import SkyMap from './components/SkyMap.jsx';
 import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
 import MissionSupport from './components/MissionSupport.jsx';
+import CaptainsLog from './components/CaptainsLog.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 import Hero from './components/Hero.jsx';
@@ -25,14 +26,32 @@ function PageNav({ scrolled }) {
         alt="CuzBro logo"
       />
 
-      <nav>
-        <a href="/">Home</a>
+      <nav className="mainNavMenu">
+        <a href="/#home">Home</a>
         <a href="/#observatory">Observatory</a>
-        <a href="/#gallery">Archive</a>
+
+        <div className="navDropdown">
+          <button type="button" className="navDropdownTrigger">
+            Missions <span>⌄</span>
+          </button>
+          <div className="navDropdownMenu">
+            <a href="/#gallery">Mission Archive</a>
+            <a href="/captains-log" className={window.location.pathname === '/captains-log' ? 'active' : ''}>Captain&apos;s Log</a>
+            <a href="/skymap" className={window.location.pathname === '/skymap' ? 'active' : ''}>Sky Map</a>
+          </div>
+        </div>
+
+        <div className="navDropdown">
+          <button type="button" className="navDropdownTrigger">
+            Crew <span>⌄</span>
+          </button>
+          <div className="navDropdownMenu">
+            <a href="/#crew">Crew Dossiers</a>
+            <a href="/mission-support" className={window.location.pathname === '/mission-support' ? 'active' : ''}>Mission Support</a>
+          </div>
+        </div>
+
         <a href="/#gear">Gear</a>
-        <a href="/#crew">Crew</a>
-        <a href="/mission-support" className={window.location.pathname === '/mission-support' ? 'active' : ''}>Mission Support</a>
-        <a href="/skymap" className={window.location.pathname === '/skymap' ? 'active' : ''}>Sky Map</a>
         <a href="/#about">About</a>
       </nav>
     </header>
@@ -50,6 +69,7 @@ export default function App() {
   const scroller = useRef(null);
   const isSkyMapPage = window.location.pathname === '/skymap';
   const isMissionSupportPage = window.location.pathname === '/mission-support';
+  const isCaptainsLogPage = window.location.pathname === '/captains-log';
 
   const filteredGallery =
     activeFilter === 'All'
@@ -135,7 +155,7 @@ export default function App() {
     <>
       <SpaceBackground />
 
-      {isSkyMapPage || isMissionSupportPage ? (
+      {isSkyMapPage || isMissionSupportPage || isCaptainsLogPage ? (
         <PageNav scrolled={scrolled} />
       ) : (
         <Hero
@@ -147,7 +167,17 @@ export default function App() {
         />
       )}
 
-      <main className={isSkyMapPage ? 'skyMapPage' : isMissionSupportPage ? 'missionSupportPage' : ''}>
+      <main
+        className={
+          isSkyMapPage
+            ? 'skyMapPage'
+            : isMissionSupportPage
+              ? 'missionSupportPage'
+              : isCaptainsLogPage
+                ? 'captainsLogPage'
+                : ''
+        }
+      >
         {isSkyMapPage ? (
           <SkyMap
             gallery={gallery}
@@ -155,6 +185,8 @@ export default function App() {
           />
         ) : isMissionSupportPage ? (
           <MissionSupport />
+        ) : isCaptainsLogPage ? (
+          <CaptainsLog />
         ) : (
           <>
             <QuickLinks />

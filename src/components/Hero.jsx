@@ -44,14 +44,33 @@ export default function Hero({
           alt="CuzBro logo"
         />
 
-        <nav>
-          <a href="#home" className="active">Home</a>
-          <a href="#observatory">Observatory</a>
-          <a href="#gallery">Archive</a>
-          <a href="#gear">Gear</a>
-          <a href="#crew">Crew</a>
-          <a href="/skymap">Sky Map</a>
-          <a href="#about">About</a>
+        <nav className="mainNavMenu">
+          <a href="/#home" className="active">Home</a>
+          <a href="/#observatory">Observatory</a>
+
+          <div className="navDropdown">
+            <button type="button" className="navDropdownTrigger">
+              Missions <span>⌄</span>
+            </button>
+            <div className="navDropdownMenu">
+              <a href="/#gallery">Mission Archive</a>
+              <a href="/captains-log">Captain&apos;s Log</a>
+              <a href="/skymap">Sky Map</a>
+            </div>
+          </div>
+
+          <div className="navDropdown">
+            <button type="button" className="navDropdownTrigger">
+              Crew <span>⌄</span>
+            </button>
+            <div className="navDropdownMenu">
+              <a href="/#crew">Crew Dossiers</a>
+              <a href="/mission-support">Mission Support</a>
+            </div>
+          </div>
+
+          <a href="/#gear">Gear</a>
+          <a href="/#about">About</a>
         </nav>
       </header>
 

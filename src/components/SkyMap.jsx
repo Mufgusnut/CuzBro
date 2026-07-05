@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Body, Observer, Equator, Illumination } from 'astronomy-engine';
+import {
+  Body,
+  Observer,
+  Equator,
+  Horizon,
+  Illumination,
+  HorizonFromVector,
+  RotateVector,
+  Rotation_EQJ_HOR,
+  VectorFromSphere
+} from 'astronomy-engine';
 
 const SITE = {
   name: 'Eliot, ME',
@@ -454,35 +464,77 @@ function localSiderealTime(date, longitudeDegrees) {
   return normalizeDegrees(gmst + longitudeDegrees) / 15;
 }
 
-function raDecToAltAz(raHours, decDegrees, date, latitudeDegrees, longitudeDegrees) {
-  const lstHours = localSiderealTime(date, longitudeDegrees);
-  let hourAngleHours = lstHours - raHours;
+function j2000RaDecToAltAz(raHours, decDegrees, date, observer) {
+  // Deep-sky and star catalog coordinates in this file are J2000 coordinates.
+  // Astronomy Engine rotates that fixed J2000 direction into the observer's
+  // horizontal frame for the selected date/time. This automatically includes
+  // the date-dependent equatorial transformation instead of treating J2000
+  // RA/Dec as though they were equator-of-date coordinates.
+  const j2000Vector = VectorFromSphere(
+    {
+      lat: decDegrees,
+      lon: normalizeDegrees(raHours * 15),
+      dist: 1
+    },
+    date
+  );
 
-  if (hourAngleHours > 12) hourAngleHours -= 24;
-  if (hourAngleHours < -12) hourAngleHours += 24;
+  const eqjToHorizon = Rotation_EQJ_HOR(date, observer);
+  const horizontalVector = RotateVector(eqjToHorizon, j2000Vector);
+  const horizontal = HorizonFromVector(horizontalVector, 'normal');
 
-  const hourAngleRadians = toRadians(hourAngleHours * 15);
-  const decRadians = toRadians(decDegrees);
-  const latRadians = toRadians(latitudeDegrees);
+  return {
+    alt: horizontal.lat,
+    az: horizontal.lon
+  };
+}
 
-  const sinAlt =
-    Math.sin(decRadians) * Math.sin(latRadians) +
-    Math.cos(decRadians) * Math.cos(latRadians) * Math.cos(hourAngleRadians);
+function apparentRaDecToAltAz(raHours, decDegrees, date, observer) {
+  // Equator-of-date RA/Dec, such as a current comet ephemeris, can go
+  // directly through Astronomy Engine's Horizon calculation.
+  const horizontal = Horizon(date, observer, raHours, decDegrees, 'normal');
 
-  const altRadians = Math.asin(sinAlt);
-  const altDegrees = toDegrees(altRadians);
+  return {
+    alt: horizontal.altitude,
+    az: horizontal.azimuth
+  };
+}
 
-  const cosAz =
-    (Math.sin(decRadians) - Math.sin(altRadians) * Math.sin(latRadians)) /
-    (Math.cos(altRadians) * Math.cos(latRadians));
+function getBodyAltAz(body, date, observer) {
+  // Equator(..., true, true) returns topocentric equator-of-date coordinates,
+  // which Astronomy Engine documents as the form Horizon expects.
+  const eq = Equator(body, date, observer, true, true);
+  const horizontal = Horizon(date, observer, eq.ra, eq.dec, 'normal');
 
-  let azDegrees = toDegrees(Math.acos(Math.max(-1, Math.min(1, cosAz))));
+  return {
+    ra: eq.ra,
+    dec: eq.dec,
+    alt: horizontal.altitude,
+    az: horizontal.azimuth
+  };
+}
 
-  if (Math.sin(hourAngleRadians) > 0) {
-    azDegrees = 360 - azDegrees;
+function getTargetAltAzAt(target, sampleDate, observer) {
+  if (target?.body) {
+    return getBodyAltAz(target.body, sampleDate, observer);
   }
 
-  return { alt: altDegrees, az: azDegrees };
+  if (target?.isVisitorTarget || target?.objectType === 'Comet') {
+    const altAz = apparentRaDecToAltAz(target.ra, target.dec, sampleDate, observer);
+    return {
+      ra: target.ra,
+      dec: target.dec,
+      ...altAz
+    };
+  }
+
+  const altAz = j2000RaDecToAltAz(target.ra, target.dec, sampleDate, observer);
+
+  return {
+    ra: target.ra,
+    dec: target.dec,
+    ...altAz
+  };
 }
 
 function projectAltAz(altDegrees, azDegrees) {
@@ -868,6 +920,19 @@ function angularSeparationDegrees(raHoursA, decDegreesA, raHoursB, decDegreesB) 
   return toDegrees(Math.acos(clamp(cosSeparation, -1, 1)));
 }
 
+function horizontalSeparationDegrees(altDegreesA, azDegreesA, altDegreesB, azDegreesB) {
+  const altA = toRadians(altDegreesA);
+  const azA = toRadians(azDegreesA);
+  const altB = toRadians(altDegreesB);
+  const azB = toRadians(azDegreesB);
+
+  const cosSeparation =
+    Math.sin(altA) * Math.sin(altB) +
+    Math.cos(altA) * Math.cos(altB) * Math.cos(azA - azB);
+
+  return toDegrees(Math.acos(clamp(cosSeparation, -1, 1)));
+}
+
 function getMoonSensitivity(objectType) {
   switch (objectType) {
     case 'Galaxy':
@@ -903,7 +968,16 @@ function getMoonImpact(target, moonInfo) {
   }
 
   const sensitivity = getMoonSensitivity(target.objectType);
-  const separationDegrees = angularSeparationDegrees(target.ra, target.dec, moonInfo.ra, moonInfo.dec);
+  const hasHorizontalCoordinates =
+    Number.isFinite(target.alt) &&
+    Number.isFinite(target.az) &&
+    Number.isFinite(moonInfo.alt) &&
+    Number.isFinite(moonInfo.az);
+
+  const separationDegrees = hasHorizontalCoordinates
+    ? horizontalSeparationDegrees(target.alt, target.az, moonInfo.alt, moonInfo.az)
+    : angularSeparationDegrees(target.ra, target.dec, moonInfo.ra, moonInfo.dec);
+
   const moonAboveFactor = moonInfo.alt > 0 ? 1 : moonInfo.alt > -8 ? 0.35 : 0.12;
   const brightnessFactor = clamp(moonInfo.phasePercent / 100, 0, 1);
 
@@ -1129,16 +1203,15 @@ function getTargetRaDecAt(target, sampleDate, observer) {
 
 function buildTonightPlan(target, mapDate, observer) {
   const samples = getTonightSampleDates(mapDate).map((sample) => {
-    const eq = getTargetRaDecAt(target, sample.date, observer);
-    const altAz = raDecToAltAz(eq.ra, eq.dec, sample.date, SITE.lat, SITE.lon);
-    const status = getObservingStatus({ alt: altAz.alt });
+    const position = getTargetAltAzAt(target, sample.date, observer);
+    const status = getObservingStatus({ alt: position.alt });
 
     return {
       ...sample,
-      ra: eq.ra,
-      dec: eq.dec,
-      alt: altAz.alt,
-      az: altAz.az,
+      ra: position.ra,
+      dec: position.dec,
+      alt: position.alt,
+      az: position.az,
       status
     };
   });
@@ -1171,16 +1244,15 @@ function dateIsBetween(date, start, end) {
 }
 
 function makeTrackPoint(target, sampleDate, observer) {
-  const eq = getTargetRaDecAt(target, sampleDate, observer);
-  const altAz = raDecToAltAz(eq.ra, eq.dec, sampleDate, SITE.lat, SITE.lon);
-  const point = projectAltAz(altAz.alt, altAz.az);
+  const position = getTargetAltAzAt(target, sampleDate, observer);
+  const point = projectAltAz(position.alt, position.az);
 
   return {
     date: sampleDate,
-    ra: eq.ra,
-    dec: eq.dec,
-    alt: altAz.alt,
-    az: altAz.az,
+    ra: position.ra,
+    dec: position.dec,
+    alt: position.alt,
+    az: position.az,
     x: point.x,
     y: point.y,
     visible: point.visible
@@ -2677,15 +2749,21 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         let ra = photo.ra;
         let dec = photo.dec;
 
+        let altAz;
+
         if (photo.objectType === 'Lunar') {
-          const moon = getPlanetRaDec(Body.Moon, date, observer);
+          const moon = getBodyAltAz(Body.Moon, date, observer);
           ra = moon.ra;
           dec = moon.dec;
+          altAz = { alt: moon.alt, az: moon.az };
         }
 
         if (ra === undefined || dec === undefined) return null;
 
-        const altAz = raDecToAltAz(ra, dec, date, SITE.lat, SITE.lon);
+        if (!altAz) {
+          altAz = j2000RaDecToAltAz(ra, dec, date, observer);
+        }
+
         const point = projectAltAz(altAz.alt, altAz.az);
         const status = getObservingStatus({ alt: altAz.alt });
 
@@ -2706,7 +2784,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const mappedFutureTargets = useMemo(() => {
     const moonEq = getPlanetRaDec(Body.Moon, date, observer);
-    const moonAltAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
+    const moonAltAz = getBodyAltAz(Body.Moon, date, observer);
     const moonIllumination = Illumination(Body.Moon, date);
     const moonInfo = {
       ra: moonEq.ra,
@@ -2720,18 +2798,24 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
       let ra = target.ra;
       let dec = target.dec;
 
+      let altAz;
+
       if (target.body) {
-        const eq = getPlanetRaDec(target.body, date, observer);
-        ra = eq.ra;
-        dec = eq.dec;
+        const bodyPosition = getBodyAltAz(target.body, date, observer);
+        ra = bodyPosition.ra;
+        dec = bodyPosition.dec;
+        altAz = { alt: bodyPosition.alt, az: bodyPosition.az };
       }
 
       if (ra === undefined || dec === undefined || ra === null || dec === null) return null;
 
-      const altAz = raDecToAltAz(ra, dec, date, SITE.lat, SITE.lon);
+      if (!altAz) {
+        altAz = j2000RaDecToAltAz(ra, dec, date, observer);
+      }
+
       const point = projectAltAz(altAz.alt, altAz.az);
       const status = getObservingStatus({ alt: altAz.alt });
-      const moonImpact = getMoonImpact({ ...target, ra, dec }, moonInfo);
+      const moonImpact = getMoonImpact({ ...target, ra, dec, alt: altAz.alt, az: altAz.az }, moonInfo);
       const tonightPlan = buildTonightPlan({ ...target, ra, dec }, date, observer);
       const treeObstruction = getTreeObstruction({ ...target, ra, dec, alt: altAz.alt, az: altAz.az }, tonightPlan);
       const plannerStatus = getFuturePlannerStatus(status, tonightPlan, target, date, moonImpact, treeObstruction);
@@ -2760,7 +2844,7 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const mappedVisitorTargets = useMemo(() => {
     const moonEq = getPlanetRaDec(Body.Moon, date, observer);
-    const moonAltAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
+    const moonAltAz = getBodyAltAz(Body.Moon, date, observer);
     const moonIllumination = Illumination(Body.Moon, date);
     const moonInfo = {
       ra: moonEq.ra,
@@ -2796,10 +2880,10 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
         };
       }
 
-      const altAz = raDecToAltAz(visitor.ra, visitor.dec, date, SITE.lat, SITE.lon);
+      const altAz = apparentRaDecToAltAz(visitor.ra, visitor.dec, date, observer);
       const point = projectAltAz(altAz.alt, altAz.az);
       const status = getObservingStatus({ alt: altAz.alt });
-      const moonImpact = getMoonImpact(visitor, moonInfo);
+      const moonImpact = getMoonImpact({ ...visitor, alt: altAz.alt, az: altAz.az }, moonInfo);
       const tonightPlan = buildTonightPlan(visitor, date, observer);
       const treeObstruction = getTreeObstruction({ ...visitor, alt: altAz.alt, az: altAz.az }, tonightPlan);
       const basePlannerStatus = getFuturePlannerStatus(status, tonightPlan, visitor, date, moonImpact, treeObstruction);
@@ -2891,11 +2975,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const starPoints = useMemo(() => {
     return STAR_CATALOG.map((star) => {
-      const altAz = raDecToAltAz(star.ra, star.dec, date, SITE.lat, SITE.lon);
+      const altAz = j2000RaDecToAltAz(star.ra, star.dec, date, observer);
       const point = projectAltAz(altAz.alt, altAz.az);
       return { ...star, x: point.x, y: point.y, alt: altAz.alt, az: altAz.az, visible: point.visible };
     });
-  }, [date]);
+  }, [date, observer]);
 
   const visibleStars = useMemo(() => starPoints.filter((star) => isInsideSky(star, 12)), [starPoints]);
   const starLookup = useMemo(() => Object.fromEntries(starPoints.map((star) => [star.name, star])), [starPoints]);
@@ -2946,11 +3030,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     const points = [];
     for (let lambda = 0; lambda <= 360; lambda += 3) {
       const eq = eclipticToRaDec(lambda, 0);
-      const altAz = raDecToAltAz(eq.ra, eq.dec, date, SITE.lat, SITE.lon);
+      const altAz = j2000RaDecToAltAz(eq.ra, eq.dec, date, observer);
       points.push(projectAltAz(altAz.alt, altAz.az));
     }
     return points;
-  }, [date]);
+  }, [date, observer]);
 
   const lunarPoints = useMemo(() => {
     const points = [];
@@ -2960,9 +3044,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     // as a short segmented line.
     for (let hour = -12; hour <= 36; hour += 0.5) {
       const sampleTime = new Date(date.getTime() + hour * 60 * 60 * 1000);
-      const moon = getPlanetRaDec(Body.Moon, sampleTime, observer);
-      const altAz = raDecToAltAz(moon.ra, moon.dec, sampleTime, SITE.lat, SITE.lon);
-      points.push(projectAltAz(altAz.alt, altAz.az));
+      const moon = getBodyAltAz(Body.Moon, sampleTime, observer);
+      points.push(projectAltAz(moon.alt, moon.az));
     }
 
     return points;
@@ -2970,9 +3053,8 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
 
   const eclipticPath = useMemo(() => buildVisiblePath(eclipticPoints), [eclipticPoints]);
   const lunarPath = useMemo(() => {
-    const moonEq = getPlanetRaDec(Body.Moon, date, observer);
-    const altAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
-    const currentMoonPoint = projectAltAz(altAz.alt, altAz.az);
+    const moon = getBodyAltAz(Body.Moon, date, observer);
+    const currentMoonPoint = projectAltAz(moon.alt, moon.az);
 
     // The Moon can rise/set within the 48-hour sampled path. Choosing the
     // longest visible segment can accidentally draw tomorrow's lunar track
@@ -2993,28 +3075,34 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
     ];
 
     return bodies.map((planet) => {
-      const eq = getPlanetRaDec(planet.body, date, observer);
-      const altAz = raDecToAltAz(eq.ra, eq.dec, date, SITE.lat, SITE.lon);
-      const point = projectAltAz(altAz.alt, altAz.az);
-      return { ...planet, x: point.x, y: point.y, alt: altAz.alt, az: altAz.az, visible: point.visible };
+      const position = getBodyAltAz(planet.body, date, observer);
+      const point = projectAltAz(position.alt, position.az);
+
+      return {
+        ...planet,
+        x: point.x,
+        y: point.y,
+        alt: position.alt,
+        az: position.az,
+        visible: point.visible
+      };
     });
   }, [date, observer]);
 
   const visiblePlanets = useMemo(() => planets.filter((planet) => isInsideSky(planet, 12)), [planets]);
 
   const moonData = useMemo(() => {
-    const moonEq = getPlanetRaDec(Body.Moon, date, observer);
-    const altAz = raDecToAltAz(moonEq.ra, moonEq.dec, date, SITE.lat, SITE.lon);
-    const point = projectAltAz(altAz.alt, altAz.az);
+    const moonPosition = getBodyAltAz(Body.Moon, date, observer);
+    const point = projectAltAz(moonPosition.alt, moonPosition.az);
     const illum = Illumination(Body.Moon, date);
     const phasePercent = Math.round((illum.phase_fraction ?? 0) * 100);
     const phaseInfo = getMoonPhaseInfo(date, phasePercent);
 
     return {
-      ra: moonEq.ra,
-      dec: moonEq.dec,
-      alt: altAz.alt,
-      az: altAz.az,
+      ra: moonPosition.ra,
+      dec: moonPosition.dec,
+      alt: moonPosition.alt,
+      az: moonPosition.az,
       x: point.x,
       y: point.y,
       visible: point.visible,

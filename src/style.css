@@ -6692,3 +6692,599 @@ footer p {
 .treeHorizonBaseGlow {
   display: none !important;
 }
+
+/* =========================================================
+   CAPTAIN'S LOG
+========================================================= */
+
+.captainsLogPage {
+  min-height: 100vh;
+  padding-top: 118px;
+}
+
+.captainsLogWrap {
+  width: min(1500px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 24px 0 80px;
+}
+
+.captainsLogBack {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 28px;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,157,28,.42);
+  background: rgba(255,157,28,.08);
+  color: #ffe5bf;
+  font-weight: 800;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.captainsLogBack:hover {
+  transform: translateY(-1px);
+  border-color: var(--orange);
+  background: rgba(255,157,28,.14);
+}
+
+.captainsLogHero {
+  padding: clamp(34px, 5vw, 68px);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at top right, rgba(255,157,28,.13), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(74,140,255,.12), transparent 34%),
+    linear-gradient(180deg, rgba(12,25,48,.86), rgba(3,10,22,.94));
+  box-shadow: 0 20px 70px rgba(0,0,0,.42);
+  overflow: hidden;
+}
+
+.captainsLogHero small,
+.captainsLogNarrative small,
+.captainsLogNextMission small {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--orange);
+  font-weight: 900;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+.captainsLogHero h1 {
+  margin: 18px 0 16px;
+  font-size: clamp(3rem, 7vw, 6.8rem);
+  line-height: .95;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.captainsLogHero p {
+  max-width: 920px;
+  margin: 0;
+  color: #d3dced;
+  font-size: clamp(1.08rem, 1.6vw, 1.45rem);
+  line-height: 1.65;
+}
+
+.captainsLogStatusStrip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 18px 0 22px;
+}
+
+.captainsLogStatusStrip span {
+  padding: 15px 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  background: rgba(7,16,34,.72);
+  color: #bcc8dc;
+  text-align: center;
+}
+
+.captainsLogStatusStrip b {
+  color: var(--cyan);
+  margin-right: 6px;
+}
+
+.captainsLogEntries {
+  display: grid;
+  gap: 18px;
+}
+
+.captainsLogEntry {
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top right, rgba(255,157,28,.08), transparent 26%),
+    linear-gradient(180deg, rgba(9,20,40,.86), rgba(3,10,22,.94));
+  box-shadow: 0 16px 50px rgba(0,0,0,.34);
+  overflow: hidden;
+}
+
+.captainsLogEntry.open {
+  border-color: rgba(255,157,28,.30);
+}
+
+.captainsLogEntryHeader {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 24px 26px;
+  border: 0;
+  background: transparent;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.captainsLogMissionBadge {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,157,28,.42);
+  border-radius: 50%;
+  color: var(--orange);
+  background: rgba(255,157,28,.09);
+}
+
+.captainsLogEntryTitle small,
+.captainsLogMissionIntro small {
+  display: block;
+  color: var(--orange);
+  font-size: .75rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.captainsLogEntryTitle strong {
+  display: block;
+  margin: 5px 0 4px;
+  font-size: clamp(1.25rem, 2.2vw, 2rem);
+}
+
+.captainsLogEntryTitle em {
+  display: block;
+  color: #9fc9ff;
+  font-style: normal;
+}
+
+.captainsLogEntryToggle {
+  color: #cbd7ea;
+}
+
+.captainsLogEntryBody {
+  padding: 0 26px 28px;
+}
+
+.captainsLogMissionIntro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: start;
+  padding: 28px 0;
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+
+.captainsLogMissionIntro h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(2rem, 4vw, 4rem);
+  line-height: 1;
+}
+
+.captainsLogMissionIntro p {
+  max-width: 880px;
+  margin: 0;
+  color: #ccd6e7;
+  line-height: 1.65;
+}
+
+.captainsLogStardate {
+  min-width: 190px;
+  padding: 20px;
+  border: 1px solid rgba(114,217,255,.22);
+  border-radius: 20px;
+  background: rgba(3,12,26,.72);
+  text-align: center;
+}
+
+.captainsLogStardate svg {
+  color: var(--orange);
+  margin-bottom: 8px;
+}
+
+.captainsLogStardate small {
+  display: block;
+  color: var(--cyan);
+  font-size: .72rem;
+  letter-spacing: .18em;
+}
+
+.captainsLogStardate strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 1.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.captainsLogFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.captainsLogFacts span {
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  background: rgba(0,0,0,.16);
+  color: white;
+}
+
+.captainsLogFacts b {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--cyan);
+  font-size: .7rem;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+}
+
+.captainsLogNarrative,
+.captainsLogNextMission {
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 18px;
+  background: rgba(2,7,16,.40);
+}
+
+.captainsLogNarrative p,
+.captainsLogNextMission p {
+  margin: 10px 0 0;
+  color: #d0d9e9;
+  line-height: 1.7;
+}
+
+.captainsLogLessons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.captainsLogList {
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 18px;
+  background: rgba(0,0,0,.16);
+}
+
+.captainsLogList.good {
+  border-color: rgba(143,240,177,.22);
+}
+
+.captainsLogList.caution {
+  border-color: rgba(255,157,28,.24);
+}
+
+.captainsLogList > b {
+  display: block;
+  margin-bottom: 12px;
+  color: #fff;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.captainsLogList.good > b {
+  color: var(--green);
+}
+
+.captainsLogList.caution > b {
+  color: #ffc071;
+}
+
+.captainsLogList ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #cbd5e6;
+}
+
+.captainsLogList li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.captainsLogNextMission {
+  border-color: rgba(114,217,255,.18);
+  background:
+    radial-gradient(circle at top left, rgba(74,140,255,.10), transparent 36%),
+    rgba(2,7,16,.42);
+}
+
+.captainsLogMessage {
+  padding: 28px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  background: rgba(7,16,34,.72);
+  color: #cbd5e6;
+  text-align: center;
+}
+
+.captainsLogMessage.error {
+  border-color: rgba(255,110,110,.30);
+  color: #ffb7b7;
+}
+
+@media (max-width: 1000px) {
+  .captainsLogPage {
+    padding-top: 20px;
+  }
+
+  .captainsLogWrap {
+    width: min(100% - 36px, 1500px);
+    padding-top: 20px;
+  }
+
+  .captainsLogFacts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .captainsLogWrap {
+    width: min(100% - 28px, 1500px);
+    padding-bottom: 52px;
+  }
+
+  .captainsLogBack {
+    margin-bottom: 20px;
+  }
+
+  .captainsLogHero {
+    padding: 30px 24px 34px;
+    border-radius: 28px;
+  }
+
+  .captainsLogHero h1 {
+    font-size: clamp(2.3rem, 12vw, 3.5rem);
+    line-height: 1;
+  }
+
+  .captainsLogHero p {
+    font-size: 1.05rem;
+  }
+
+  .captainsLogStatusStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .captainsLogEntryHeader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 20px 18px;
+  }
+
+  .captainsLogMissionBadge {
+    width: 44px;
+    height: 44px;
+  }
+
+  .captainsLogEntryTitle em {
+    font-size: .88rem;
+  }
+
+  .captainsLogEntryBody {
+    padding: 0 18px 20px;
+  }
+
+  .captainsLogMissionIntro {
+    grid-template-columns: 1fr;
+  }
+
+  .captainsLogStardate {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .captainsLogFacts,
+  .captainsLogLessons {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   MAIN NAV: COMPACT DROPDOWN GROUPS
+========================================================= */
+
+.nav .mainNavMenu {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  overflow: visible;
+}
+
+.navDropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.navDropdownTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: white;
+  opacity: .82;
+  cursor: pointer;
+  transition: color .2s ease, opacity .2s ease, background .2s ease;
+}
+
+.navDropdownTrigger span {
+  display: inline-block;
+  font-size: .82em;
+  transform: translateY(-1px);
+  transition: transform .2s ease;
+}
+
+.navDropdown:hover .navDropdownTrigger,
+.navDropdown:focus-within .navDropdownTrigger {
+  color: white;
+  background: rgba(255,255,255,.08);
+  opacity: 1;
+}
+
+.navDropdown:hover .navDropdownTrigger span,
+.navDropdown:focus-within .navDropdownTrigger span {
+  transform: translateY(-1px) rotate(180deg);
+}
+
+.navDropdownMenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  min-width: 220px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  background: rgba(5,13,28,.97);
+  box-shadow: 0 18px 44px rgba(0,0,0,.46);
+  backdrop-filter: blur(18px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -8px);
+  transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+  z-index: 30;
+}
+
+.navDropdown:hover .navDropdownMenu,
+.navDropdown:focus-within .navDropdownMenu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.navDropdownMenu a {
+  display: block;
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.navDropdownMenu a + a {
+  margin-top: 3px;
+}
+
+.navDropdownMenu a:hover {
+  background: rgba(255,157,28,.10);
+}
+
+.navDropdownMenu a.active {
+  background: rgba(255,157,28,.16);
+  box-shadow: inset 0 0 0 1px rgba(255,157,28,.28);
+}
+
+@media (max-width: 1000px) {
+  .nav .mainNavMenu {
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+
+  .navDropdown {
+    flex: 0 0 auto;
+  }
+
+  .navDropdownMenu {
+    left: 0;
+    transform: translateY(-8px);
+  }
+
+  .navDropdown:hover .navDropdownMenu,
+  .navDropdown:focus-within .navDropdownMenu {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 700px) {
+  .nav .mainNavMenu {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 10px;
+  }
+
+  .navDropdownTrigger,
+  .nav .mainNavMenu > a {
+    flex: 0 0 auto;
+  }
+
+  .navDropdownMenu {
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 210px;
+  }
+}
+
+/* =========================================================
+   NAV DROPDOWN: KEEP MENU OPEN WHILE MOVING TO LINKS
+========================================================= */
+
+.navDropdown {
+  position: relative;
+}
+
+/* Invisible hover bridge between trigger and menu */
+.navDropdown::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 14px;
+}
+
+/* Remove the dead hover gap */
+.navDropdownMenu {
+  top: 100% !important;
+  margin-top: 8px !important;
+}
+
+/* Extend hoverable area upward into the gap */
+.navDropdownMenu::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  height: 10px;
+}
+
+/* Keep dropdown visible while trigger OR menu is hovered */
+.navDropdown:hover .navDropdownMenu,
+.navDropdown:focus-within .navDropdownMenu,
+.navDropdownMenu:hover {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translate(-50%, 0) !important;
+}
+
+@media (max-width: 1000px) {
+  .navDropdown:hover .navDropdownMenu,
+  .navDropdown:focus-within .navDropdownMenu,
+  .navDropdownMenu:hover {
+    transform: translateY(0) !important;
+  }
+}

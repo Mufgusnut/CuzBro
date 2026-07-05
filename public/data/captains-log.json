@@ -1,0 +1,36 @@
+[
+  {
+    "id": "MISSION 008",
+    "date": "2026-07-03",
+    "mission": "Deep-Sky Camera Operations",
+    "location": "Eliot, Maine",
+    "targets": [
+      "M51 Whirlpool Galaxy",
+      "Fireworks Galaxy"
+    ],
+    "equipment": [
+      "Celestron CPC 800",
+      "ASI294MC"
+    ],
+    "conditions": {
+      "moon": "Bright",
+      "seeing": "Fair",
+      "transparency": "Good"
+    },
+    "summary": "First serious deep-sky session with the ASI294MC, focused on learning the new capture and processing workflow on two challenging galaxies.",
+    "notes": "M51 was much more cooperative in processing and showed recognizable spiral structure. Fireworks Galaxy was a tougher stretch and became noisy quickly, but the session helped establish a better Siril-to-AstroShader workflow and showed how much the ASI294MC can pull out of short stacked exposures.",
+    "worked": [
+      "Siril stacking workflow",
+      "M51 spiral structure emerged clearly",
+      "ASI294MC sensitivity was a major improvement",
+      "GHS stretching produced a usable deep-sky result"
+    ],
+    "improve": [
+      "Collect more total integration time",
+      "Improve tracking stability",
+      "Reduce background noise during stretching",
+      "Begin using calibration frames"
+    ],
+    "nextMission": "Revisit M51 with at least 100 subs and a more controlled processing workflow, then give Fireworks Galaxy a longer dedicated integration."
+  }
+]
