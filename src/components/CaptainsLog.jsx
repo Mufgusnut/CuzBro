@@ -33,49 +33,15 @@ function LogList({ title, items, tone = 'good' }) {
   );
 }
 
-function TargetReports({ targetNotes }) {
-  const reports = Object.entries(targetNotes || {});
-  if (!reports.length) return null;
-
-  return (
-    <div className="captainsLogTargetReports">
-      <small>Target Reports</small>
-
-      <div className="captainsLogTargetReportGrid">
-        {reports.map(([target, report]) => (
-          <article className="captainsLogTargetReport" key={target}>
-            <h3>{target}</h3>
-
-            {report.result && (
-              <div>
-                <b>Result</b>
-                <p>{report.result}</p>
-              </div>
-            )}
-
-            {report.notes && (
-              <div>
-                <b>Field Notes</b>
-                <p>{report.notes}</p>
-              </div>
-            )}
-
-            {report.lesson && (
-              <div className="captainsLogTargetLesson">
-                <b>Lesson Carried Forward</b>
-                <p>{report.lesson}</p>
-              </div>
-            )}
-          </article>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function LogEntry({ entry, defaultOpen = false }) {
+function LogEntry({ entry, defaultOpen = false, forcedOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   const stardate = useMemo(() => getStardate(entry.date), [entry.date]);
+
+  useEffect(() => {
+    if (forcedOpen) {
+      setOpen(true);
+    }
+  }, [forcedOpen]);
 
   return (
     <article
@@ -135,8 +101,6 @@ function LogEntry({ entry, defaultOpen = false }) {
             </div>
           )}
 
-          <TargetReports targetNotes={entry.targetNotes} />
-
           <div className="captainsLogLessons">
             <LogList title="What Worked" items={entry.worked} tone="good" />
             <LogList title="Needs Improvement" items={entry.improve} tone="caution" />
@@ -155,14 +119,29 @@ function LogEntry({ entry, defaultOpen = false }) {
 }
 
 export default function CaptainsLog({ entries = [], status = 'ready' }) {
-  useEffect(() => {
-    if (status !== 'ready' || !window.location.hash) return;
+  const [linkedMissionAnchor, setLinkedMissionAnchor] = useState(() =>
+    window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : ''
+  );
 
-    const anchor = decodeURIComponent(window.location.hash.slice(1));
+  useEffect(() => {
+    const syncHash = () => {
+      setLinkedMissionAnchor(
+        window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : ''
+      );
+    };
+
+    window.addEventListener('hashchange', syncHash);
+    syncHash();
+
+    return () => window.removeEventListener('hashchange', syncHash);
+  }, []);
+
+  useEffect(() => {
+    if (status !== 'ready' || !linkedMissionAnchor) return;
 
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
-        const target = document.getElementById(anchor);
+        const target = document.getElementById(linkedMissionAnchor);
         if (!target) return;
 
         const nav = document.querySelector('.nav');
@@ -175,7 +154,7 @@ export default function CaptainsLog({ entries = [], status = 'ready' }) {
         });
       });
     });
-  }, [entries, status]);
+  }, [entries, linkedMissionAnchor, status]);
 
   return (
     <section className="captainsLogWrap">
@@ -213,9 +192,19 @@ export default function CaptainsLog({ entries = [], status = 'ready' }) {
           </div>
         )}
 
-        {entries.map((entry, index) => (
-          <LogEntry key={entry.id} entry={entry} defaultOpen={index === 0} />
-        ))}
+        {entries.map((entry) => {
+          const missionAnchor = getMissionAnchor(entry);
+          const isLinkedMission = linkedMissionAnchor === missionAnchor;
+
+          return (
+            <LogEntry
+              key={entry.id}
+              entry={entry}
+              defaultOpen={isLinkedMission}
+              forcedOpen={isLinkedMission}
+            />
+          );
+        })}
       </section>
     </section>
   );

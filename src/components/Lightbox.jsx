@@ -1,9 +1,64 @@
 import { ChevronLeft, ChevronRight, Search, X, ZoomIn, RotateCcw } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
+function normalizeMissionTargetName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function formatMissionStardate(dateString) {
+  const date = new Date(`${dateString}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return 'Unknown';
+
+  const year = date.getFullYear();
+  const start = new Date(year, 0, 0);
+  const dayOfYear = Math.floor((date - start) / 86400000);
+
+  return `${year}.${String(dayOfYear).padStart(3, '0')}`;
+}
+
+function getMissionAnchor(entry) {
+  return String(entry?.id || entry?.mission || 'mission')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function getTargetSpecificMissionNote(entry, targetTitle) {
+  const normalizedTarget = normalizeMissionTargetName(targetTitle);
+  if (!normalizedTarget || !entry?.targetNotes) return null;
+
+  const matchingKey = Object.keys(entry.targetNotes).find(
+    (key) => normalizeMissionTargetName(key) === normalizedTarget
+  );
+
+  return matchingKey ? entry.targetNotes[matchingKey] : null;
+}
+
+function getMatchingMissionLogs(entries, targetTitle) {
+  const normalizedTarget = normalizeMissionTargetName(targetTitle);
+  if (!normalizedTarget) return [];
+
+  return [...(entries || [])]
+    .filter((entry) =>
+      (entry.targets || []).some(
+        (target) => normalizeMissionTargetName(target) === normalizedTarget
+      )
+    )
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+
 export default function Lightbox({
   selectedPhoto,
   gallery,
+  captainsLog = [],
   selectedIndex,
   setSelectedIndex,
   viewerMode,
@@ -15,6 +70,11 @@ export default function Lightbox({
   if (!selectedPhoto) return null;
 
   const isCinema = viewerMode === "cinema" || viewerMode === "inspect";
+  const matchingLogs = getMatchingMissionLogs(captainsLog, selectedPhoto.title);
+  const latestLog = matchingLogs[0] || null;
+  const latestTargetNote = latestLog
+    ? getTargetSpecificMissionNote(latestLog, selectedPhoto.title)
+    : null;
 
   const handleImageClick = () => {
     if (viewerMode === "report") setViewerMode("cinema");
@@ -127,6 +187,53 @@ export default function Lightbox({
 
             <h4>Observing Notes</h4>
             <p>{selectedPhoto.notes}</p>
+
+            <section className={matchingLogs.length ? "missionLogSummary" : "missionLogSummary empty"}>
+              <div className="missionLogSummaryHeader">
+                <span>
+                  <small>Captain&apos;s Log</small>
+                  <h4>
+                    {matchingLogs.length
+                      ? `${matchingLogs.length} ${matchingLogs.length === 1 ? 'Mission' : 'Missions'} Linked`
+                      : 'No Field Reports Linked'}
+                  </h4>
+                </span>
+
+                {latestLog && (
+                  <i>Stardate {formatMissionStardate(latestLog.date)}</i>
+                )}
+              </div>
+
+              {latestLog ? (
+                <>
+                  <div className="missionLogLatest">
+                    <b>Latest Mission</b>
+                    <strong>{latestLog.mission}</strong>
+                    <span>{latestLog.id}</span>
+                  </div>
+
+                  <p>
+                    {latestTargetNote?.notes || latestLog.summary}
+                  </p>
+
+                  {(latestTargetNote?.lesson || latestLog.nextMission) && (
+                    <div className="missionLogLesson">
+                      <b>Latest Lesson</b>
+                      <p>{latestTargetNote?.lesson || latestLog.nextMission}</p>
+                    </div>
+                  )}
+
+                  <a href={`/captains-log#${getMissionAnchor(latestLog)}`}>
+                    View Latest Captain&apos;s Log →
+                  </a>
+                </>
+              ) : (
+                <p>
+                  No Captain&apos;s Log entry is linked to {selectedPhoto.title} yet.
+                  Future field reports will appear here automatically.
+                </p>
+              )}
+            </section>
 
             <h4>Next Goal</h4>
             <p>{selectedPhoto.nextGoal || 'Capture again with improved settings.'}</p>

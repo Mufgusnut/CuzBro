@@ -245,6 +245,7 @@ export default function App() {
       <Lightbox
         selectedPhoto={selectedPhoto}
         gallery={lightboxGallery}
+        captainsLog={captainsLog}
         selectedIndex={selectedIndex}
         setSelectedIndex={setSelectedIndex}
         viewerMode={viewerMode}

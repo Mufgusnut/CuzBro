@@ -7889,3 +7889,144 @@ footer p {
   }
 }
 
+/* =========================================================
+   MISSION REPORT: CAPTAIN'S LOG SUMMARY
+========================================================= */
+
+.missionLogSummary {
+  margin: 20px 0;
+  padding: 17px;
+  border: 1px solid rgba(114,217,255,.20);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at top right, rgba(74,140,255,.10), transparent 38%),
+    rgba(2,7,16,.42);
+}
+
+.missionLogSummary.empty {
+  border-color: rgba(255,255,255,.10);
+}
+
+.missionLogSummaryHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+.missionLogSummaryHeader small {
+  display: block;
+  color: var(--orange);
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.missionLogSummaryHeader h4 {
+  margin: 6px 0 0;
+  color: #fff;
+  letter-spacing: .06em;
+}
+
+.missionLogSummaryHeader i {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid rgba(114,217,255,.20);
+  border-radius: 999px;
+  background: rgba(114,217,255,.06);
+  color: var(--cyan);
+  font-size: .72rem;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.missionLogLatest {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 12px 13px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 13px;
+  background: rgba(0,0,0,.16);
+}
+
+.missionLogLatest b,
+.missionLogLesson b {
+  color: var(--cyan);
+  font-size: .68rem;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.missionLogLatest strong {
+  color: #fff;
+  font-size: 1rem;
+}
+
+.missionLogLatest span {
+  color: #9fb3da;
+  font-size: .82rem;
+}
+
+.missionLogSummary > p,
+.missionLogLesson p {
+  margin: 0;
+  color: #c8d2e4;
+  line-height: 1.55;
+}
+
+.missionLogLesson {
+  margin-top: 12px;
+  padding: 12px 13px;
+  border: 1px solid rgba(255,157,28,.20);
+  border-radius: 13px;
+  background: rgba(255,157,28,.06);
+}
+
+.missionLogLesson b {
+  color: var(--orange);
+}
+
+.missionLogLesson p {
+  margin-top: 6px;
+}
+
+.missionLogSummary > a {
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255,157,28,.34);
+  border-radius: 999px;
+  background: rgba(255,157,28,.08);
+  color: #ffe2b8;
+  font-size: .82rem;
+  font-weight: 850;
+  transition:
+    transform .2s ease,
+    border-color .2s ease,
+    background .2s ease;
+}
+
+.missionLogSummary > a:hover {
+  transform: translateY(-1px);
+  border-color: var(--orange);
+  background: rgba(255,157,28,.14);
+}
+
+@media (max-width: 700px) {
+  .missionLogSummary {
+    padding: 14px;
+  }
+
+  .missionLogSummaryHeader {
+    flex-direction: column;
+  }
+
+  .missionLogSummaryHeader i {
+    align-self: flex-start;
+  }
+}
+
