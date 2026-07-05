@@ -3,6 +3,7 @@ import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
 import MissionSupport from './components/MissionSupport.jsx';
 import CaptainsLog from './components/CaptainsLog.jsx';
+import EquipmentLocker from './components/EquipmentLocker.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 import Hero from './components/Hero.jsx';
@@ -51,7 +52,7 @@ function PageNav({ scrolled }) {
           </div>
         </div>
 
-        <a href="/#gear">Gear</a>
+        <a href="/equipment" className={window.location.pathname === '/equipment' ? 'active' : ''}>Gear</a>
         <a href="/#about">About</a>
       </nav>
     </header>
@@ -64,6 +65,8 @@ export default function App() {
   const [weather, setWeather] = useState({});
   const [captainsLog, setCaptainsLog] = useState([]);
   const [captainsLogStatus, setCaptainsLogStatus] = useState('loading');
+  const [equipment, setEquipment] = useState([]);
+  const [equipmentStatus, setEquipmentStatus] = useState('loading');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [viewerMode, setViewerMode] = useState('report');
   const [scrolled, setScrolled] = useState(false);
@@ -72,6 +75,7 @@ export default function App() {
   const isSkyMapPage = window.location.pathname === '/skymap';
   const isMissionSupportPage = window.location.pathname === '/mission-support';
   const isCaptainsLogPage = window.location.pathname === '/captains-log';
+  const isEquipmentPage = window.location.pathname === '/equipment';
 
   const filteredGallery =
     activeFilter === 'All'
@@ -110,6 +114,26 @@ export default function App() {
     fetch(import.meta.env.BASE_URL + 'data/gallery.json')
       .then((r) => r.json())
       .then(setGallery);
+  }, []);
+
+  useEffect(() => {
+    fetch(import.meta.env.BASE_URL + 'data/equipment.json')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Equipment request failed: ${response.status}`);
+        }
+
+        return response.json();
+      })
+      .then((items) => {
+        setEquipment(items);
+        setEquipmentStatus('ready');
+      })
+      .catch((error) => {
+        console.error(error);
+        setEquipment([]);
+        setEquipmentStatus('error');
+      });
   }, []);
 
   useEffect(() => {
@@ -181,7 +205,7 @@ export default function App() {
     <>
       <SpaceBackground />
 
-      {isSkyMapPage || isMissionSupportPage || isCaptainsLogPage ? (
+      {isSkyMapPage || isMissionSupportPage || isCaptainsLogPage || isEquipmentPage ? (
         <PageNav scrolled={scrolled} />
       ) : (
         <Hero
@@ -201,7 +225,9 @@ export default function App() {
               ? 'missionSupportPage'
               : isCaptainsLogPage
                 ? 'captainsLogPage'
-                : ''
+                : isEquipmentPage
+                  ? 'equipmentLockerPage'
+                  : ''
         }
       >
         {isSkyMapPage ? (
@@ -216,6 +242,11 @@ export default function App() {
           <CaptainsLog
             entries={captainsLog}
             status={captainsLogStatus}
+          />
+        ) : isEquipmentPage ? (
+          <EquipmentLocker
+            equipment={equipment}
+            status={equipmentStatus}
           />
         ) : (
           <>

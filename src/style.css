@@ -8030,3 +8030,508 @@ footer p {
   }
 }
 
+/* =========================================================
+   EQUIPMENT LOCKER
+========================================================= */
+
+.equipmentLockerPage {
+  min-height: 100vh;
+  padding-top: 118px;
+}
+
+.equipmentLockerWrap {
+  width: min(1500px, calc(100% - 64px));
+  margin: 0 auto;
+  padding: 24px 0 80px;
+}
+
+.equipmentLockerBack {
+  display: inline-flex;
+  margin: 0 0 28px;
+  padding: 11px 16px;
+  border: 1px solid rgba(255,157,28,.42);
+  border-radius: 999px;
+  background: rgba(255,157,28,.08);
+  color: #ffe5bf;
+  font-weight: 800;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.equipmentLockerBack:hover {
+  transform: translateY(-1px);
+  border-color: var(--orange);
+  background: rgba(255,157,28,.14);
+}
+
+.equipmentLockerHero {
+  padding: clamp(34px, 5vw, 68px);
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at top right, rgba(114,217,255,.12), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(255,157,28,.11), transparent 34%),
+    linear-gradient(180deg, rgba(12,25,48,.86), rgba(3,10,22,.94));
+  box-shadow: 0 20px 70px rgba(0,0,0,.42);
+}
+
+.equipmentLockerHero small {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--orange);
+  font-weight: 900;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+.equipmentLockerHero h1 {
+  margin: 18px 0 16px;
+  font-size: clamp(3rem, 7vw, 6.8rem);
+  line-height: .95;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.equipmentLockerHero p {
+  max-width: 920px;
+  margin: 0;
+  color: #d3dced;
+  font-size: clamp(1.08rem, 1.6vw, 1.45rem);
+  line-height: 1.65;
+}
+
+.equipmentLockerStatus {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 18px 0 24px;
+}
+
+.equipmentLockerStatus span {
+  padding: 15px 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  background: rgba(7,16,34,.72);
+  color: #bcc8dc;
+  text-align: center;
+}
+
+.equipmentLockerStatus b {
+  color: var(--cyan);
+  margin-right: 6px;
+}
+
+.equipmentCategory {
+  margin-top: 24px;
+}
+
+.equipmentCategoryHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 15px 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 18px;
+  background: rgba(7,16,34,.55);
+}
+
+.equipmentCategoryHeader > span {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,157,28,.34);
+  border-radius: 50%;
+  color: var(--orange);
+  background: rgba(255,157,28,.07);
+}
+
+.equipmentCategoryHeader small {
+  display: block;
+  color: var(--cyan);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.equipmentCategoryHeader h2 {
+  margin: 4px 0 0;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+}
+
+.equipmentCategoryHeader i {
+  color: #9fb3da;
+  font-style: normal;
+  font-size: .82rem;
+}
+
+.equipmentGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.equipmentCard {
+  align-self: start;
+}
+
+.equipmentCard {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(74,140,255,.07), transparent 28%),
+    linear-gradient(180deg, rgba(9,20,40,.84), rgba(3,10,22,.92));
+  overflow: hidden;
+  transition: border-color .2s ease, transform .2s ease;
+}
+
+.equipmentCard:hover,
+.equipmentCard.open {
+  border-color: rgba(255,157,28,.30);
+}
+
+.equipmentCardHeader {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  border: 0;
+  background: transparent;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+}
+
+.equipmentCardIcon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(114,217,255,.22);
+  border-radius: 15px;
+  color: var(--cyan);
+  background: rgba(114,217,255,.06);
+}
+
+.equipmentCardTitle {
+  min-width: 0;
+}
+
+.equipmentCardTitle small {
+  display: block;
+  color: var(--orange);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.equipmentCardTitle strong {
+  display: block;
+  margin: 5px 0 3px;
+  font-size: 1.18rem;
+}
+
+.equipmentCardTitle em {
+  display: block;
+  color: #9fb3da;
+  font-size: .86rem;
+  font-style: normal;
+}
+
+.equipmentStatus {
+  padding: 6px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(143,240,177,.25);
+  background: rgba(143,240,177,.07);
+  color: var(--green);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.equipmentCardToggle {
+  color: #b9c6d9;
+}
+
+.equipmentCardBody {
+  padding: 0 20px 20px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.equipmentCardBody > p {
+  margin: 18px 0;
+  color: #cbd5e6;
+  line-height: 1.62;
+}
+
+.equipmentFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.equipmentFacts span {
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 13px;
+  background: rgba(0,0,0,.15);
+  color: #fff;
+}
+
+.equipmentFacts b {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--cyan);
+  font-size: .68rem;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+}
+
+.equipmentBestFor {
+  margin-top: 15px;
+}
+
+.equipmentBestFor small,
+.equipmentFieldNote small {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--orange);
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.equipmentBestFor > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.equipmentBestFor em {
+  padding: 6px 9px;
+  border: 1px solid rgba(114,217,255,.18);
+  border-radius: 999px;
+  background: rgba(114,217,255,.055);
+  color: #d9efff;
+  font-size: .76rem;
+  font-style: normal;
+}
+
+.equipmentFieldNote {
+  margin-top: 15px;
+  padding: 14px;
+  border: 1px solid rgba(255,157,28,.20);
+  border-radius: 14px;
+  background: rgba(255,157,28,.055);
+}
+
+.equipmentFieldNote p {
+  margin: 0;
+  color: #e4d7c4;
+  line-height: 1.58;
+}
+
+.equipmentLockerMessage {
+  padding: 28px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  background: rgba(7,16,34,.72);
+  color: #cbd5e6;
+  text-align: center;
+}
+
+.equipmentLockerMessage.error {
+  border-color: rgba(255,110,110,.30);
+  color: #ffb7b7;
+}
+
+
+/* =========================================================
+   HOME PAGE: EQUIPMENT LOCKER TEASER
+========================================================= */
+
+.equipmentTeaser {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+  gap: 24px;
+  align-items: stretch;
+  padding: 30px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(114,217,255,.09), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(255,157,28,.08), transparent 30%),
+    linear-gradient(180deg, rgba(12,25,48,.84), rgba(3,10,22,.92));
+  box-shadow: 0 12px 38px #0009;
+}
+
+.equipmentTeaser > div:first-child > small {
+  color: var(--orange);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.equipmentTeaser h3 {
+  margin: 9px 0 10px;
+  font-size: clamp(2rem, 3.5vw, 3.5rem);
+}
+
+.equipmentTeaser p {
+  max-width: 760px;
+  color: #cbd3e2;
+  line-height: 1.65;
+}
+
+.equipmentTeaserChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.equipmentTeaserChips span {
+  padding: 7px 10px;
+  border: 1px solid rgba(114,217,255,.18);
+  border-radius: 999px;
+  background: rgba(114,217,255,.05);
+  color: #d9efff;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.equipmentTeaser > div:first-child > a {
+  display: inline-flex;
+  padding: 11px 15px;
+  border: 1px solid rgba(255,157,28,.38);
+  border-radius: 999px;
+  background: rgba(255,157,28,.08);
+  color: #ffe3ba;
+  font-weight: 850;
+}
+
+.equipmentTeaserSystems {
+  display: grid;
+  gap: 10px;
+}
+
+.equipmentTeaserSystems article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 13px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 17px;
+  background: rgba(0,0,0,.16);
+}
+
+.equipmentTeaserSystems svg {
+  color: var(--cyan);
+}
+
+.equipmentTeaserSystems small {
+  display: block;
+  color: var(--orange);
+  font-size: .66rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.equipmentTeaserSystems strong {
+  display: block;
+  margin-top: 4px;
+}
+
+@media (max-width: 1000px) {
+  .equipmentLockerPage {
+    padding-top: 20px;
+  }
+
+  .equipmentLockerWrap {
+    width: min(100% - 36px, 1500px);
+    padding-top: 20px;
+  }
+
+  .equipmentTeaser {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .equipmentLockerWrap {
+    width: min(100% - 28px, 1500px);
+    padding-bottom: 52px;
+  }
+
+  .equipmentLockerBack {
+    margin-bottom: 20px;
+  }
+
+  .equipmentLockerHero {
+    padding: 30px 24px 34px;
+    border-radius: 28px;
+  }
+
+  .equipmentLockerHero h1 {
+    font-size: clamp(2.25rem, 11.5vw, 3.35rem);
+    line-height: 1;
+  }
+
+  .equipmentLockerHero p {
+    font-size: 1.04rem;
+  }
+
+  .equipmentLockerStatus,
+  .equipmentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .equipmentCategoryHeader {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .equipmentCategoryHeader i {
+    display: none;
+  }
+
+  .equipmentCardHeader {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 11px;
+    padding: 17px;
+  }
+
+  .equipmentStatus {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .equipmentCardToggle {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .equipmentFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .equipmentTeaser {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .equipmentTeaser h3 {
+    font-size: 2.2rem;
+  }
+}
+

@@ -1,0 +1,428 @@
+[
+  {
+    "id": "cpc800",
+    "name": "Celestron CPC 800",
+    "category": "Telescope Systems",
+    "type": "8-inch Schmidt-Cassegrain telescope",
+    "role": "Primary Telescope",
+    "status": "Active",
+    "icon": "telescope",
+    "summary": "The main CuzBro observing and imaging platform for lunar, planetary, double-star, cluster, nebula, and galaxy work.",
+    "facts": [
+      {
+        "label": "Aperture",
+        "value": "203 mm / 8 in"
+      },
+      {
+        "label": "Native Focal Length",
+        "value": "2032 mm"
+      },
+      {
+        "label": "Mount",
+        "value": "Dual-fork alt-azimuth"
+      },
+      {
+        "label": "Base",
+        "value": "Eliot, Maine"
+      }
+    ],
+    "bestFor": [
+      "Compact targets",
+      "Planetary nebulae",
+      "Globular clusters",
+      "Planets"
+    ],
+    "fieldNote": "Excellent scale for compact objects. Large targets such as M31, the Veil, and the North America Nebula are a tight fit at native focal length."
+  },
+  {
+    "id": "iphone16pro",
+    "name": "iPhone 16 Pro",
+    "category": "Imaging",
+    "type": "Smartphone imaging system",
+    "role": "Mobile Capture System",
+    "status": "Active",
+    "icon": "smartphone",
+    "summary": "The original CuzBro imaging workflow and the camera behind the first run of lunar and deep-sky mission archive captures.",
+    "facts": [
+      {
+        "label": "Primary App",
+        "value": "AstroShader"
+      },
+      {
+        "label": "Capture Style",
+        "value": "Short exposures and video"
+      },
+      {
+        "label": "Archive Role",
+        "value": "Early mission imaging"
+      }
+    ],
+    "bestFor": [
+      "Moon",
+      "Double stars",
+      "Bright clusters",
+      "Quick experiments"
+    ],
+    "fieldNote": "Still a useful rapid-capture tool even after adding the ASI294MC. The June archive documents how far the smartphone workflow was pushed."
+  },
+  {
+    "id": "asi294mc",
+    "name": "ZWO ASI294MC",
+    "category": "Imaging",
+    "type": "Dedicated astronomy camera",
+    "role": "Primary Deep-Sky Camera",
+    "status": "Active",
+    "icon": "camera",
+    "summary": "The current dedicated-camera path for stacked deep-sky imaging and the major step beyond smartphone-only capture.",
+    "facts": [
+      {
+        "label": "Workflow",
+        "value": "Multi-frame capture and stacking"
+      },
+      {
+        "label": "Processing",
+        "value": "Siril + AstroShader"
+      },
+      {
+        "label": "First Logged Session",
+        "value": "Stardate 2026.184"
+      }
+    ],
+    "bestFor": [
+      "Galaxies",
+      "Nebulae",
+      "Clusters",
+      "Stacked imaging"
+    ],
+    "fieldNote": "The first M51 and Fireworks Galaxy session showed a major sensitivity improvement. The next gains should come from longer integration, steadier tracking, and calibration frames."
+  },
+  {
+    "id": "eyepiece10",
+    "name": "10 mm Eyepiece",
+    "category": "Optics",
+    "type": "High-power eyepiece",
+    "role": "High-Power Visual",
+    "status": "Active",
+    "icon": "eyepiece",
+    "summary": "The current high-power eyepiece for compact bright targets after the field has been located and centered.",
+    "facts": [
+      {
+        "label": "Focal Length",
+        "value": "10 mm"
+      },
+      {
+        "label": "Primary Role",
+        "value": "High magnification"
+      },
+      {
+        "label": "Best Conditions",
+        "value": "Steady seeing"
+      }
+    ],
+    "bestFor": [
+      "Planets",
+      "Planetary nebulae",
+      "Compact detail"
+    ],
+    "fieldNote": "Use after centering at lower power. Poor seeing can make this view softer rather than more detailed."
+  },
+  {
+    "id": "eyepiece25",
+    "name": "25 mm Eyepiece",
+    "category": "Optics",
+    "type": "Medium-low power eyepiece",
+    "role": "General Visual",
+    "status": "Active",
+    "icon": "eyepiece",
+    "summary": "A middle-ground visual option when the 32 mm view is wider than needed but high power is not yet useful.",
+    "facts": [
+      {
+        "label": "Focal Length",
+        "value": "25 mm"
+      },
+      {
+        "label": "Primary Role",
+        "value": "General observing"
+      },
+      {
+        "label": "Use",
+        "value": "Intermediate magnification"
+      }
+    ],
+    "bestFor": [
+      "General visual",
+      "Target confirmation",
+      "Moderate scale"
+    ],
+    "fieldNote": "Useful as a transition between the 32 mm finder view and the 10 mm high-power view."
+  },
+  {
+    "id": "eyepiece32",
+    "name": "32 mm Eyepiece",
+    "category": "Optics",
+    "type": "Low-power eyepiece",
+    "role": "Finder / Wide Visual",
+    "status": "Active",
+    "icon": "eyepiece",
+    "summary": "The default low-power starting eyepiece for locating targets, centering fields, and keeping the widest practical visual view in the current eyepiece set.",
+    "facts": [
+      {
+        "label": "Focal Length",
+        "value": "32 mm"
+      },
+      {
+        "label": "Primary Role",
+        "value": "Locate and center"
+      },
+      {
+        "label": "Planner Use",
+        "value": "Wide-first setup"
+      }
+    ],
+    "bestFor": [
+      "Finding targets",
+      "Open clusters",
+      "Wide visual views"
+    ],
+    "fieldNote": "SkyMap repeatedly recommends starting here before moving to higher power."
+  },
+  {
+    "id": "astromaniaF63Reducer",
+    "name": "Astromania f/6.3 Focal Reducer",
+    "category": "Optics",
+    "type": "SCT focal reducer / field flattener",
+    "role": "Wide-Field Imaging Optic",
+    "status": "Active",
+    "icon": "aperture",
+    "summary": "A focal reducer used with the CPC 800 to shorten the effective focal length, widen the field of view, and make deep-sky imaging more forgiving.",
+    "facts": [
+      {
+        "label": "Reduction",
+        "value": "f/6.3 nominal"
+      },
+      {
+        "label": "Platform",
+        "value": "SCT / CPC 800"
+      },
+      {
+        "label": "Primary Role",
+        "value": "Wider and faster imaging field"
+      }
+    ],
+    "bestFor": [
+      "Galaxies",
+      "Nebulae",
+      "Larger deep-sky targets",
+      "Easier framing"
+    ],
+    "fieldNote": "A major help for deep-sky imaging with the CPC 800. It widens the field and reduces the imaging scale compared with the native f/10 setup."
+  },
+  {
+    "id": "barlow",
+    "name": "Barlow Lens",
+    "category": "Optics",
+    "type": "Magnification accessory",
+    "role": "High-Power Accessory",
+    "status": "Active",
+    "icon": "aperture",
+    "summary": "An optional magnification step for bright compact targets when seeing supports additional image scale.",
+    "facts": [
+      {
+        "label": "Role",
+        "value": "Increase image scale"
+      },
+      {
+        "label": "Use With",
+        "value": "Eyepiece / planetary work"
+      },
+      {
+        "label": "Condition",
+        "value": "Seeing dependent"
+      }
+    ],
+    "bestFor": [
+      "Planetary viewing",
+      "Compact bright targets"
+    ],
+    "fieldNote": "Only worth adding when the un-Barlowed image is already steady and sharply focused."
+  },
+  {
+    "id": "uhc",
+    "name": "Celestron UHC/LPR Filter",
+    "category": "Filters",
+    "type": "Nebula / light-pollution filter",
+    "role": "Deep-Sky Contrast",
+    "status": "Active",
+    "icon": "filter",
+    "summary": "The current contrast filter for nebula experiments and comparison captures.",
+    "facts": [
+      {
+        "label": "Format",
+        "value": "1.25 inch"
+      },
+      {
+        "label": "Primary Role",
+        "value": "Nebula contrast"
+      },
+      {
+        "label": "Planner Use",
+        "value": "Recommended for selected nebulae"
+      }
+    ],
+    "bestFor": [
+      "Emission nebulae",
+      "Planetary nebulae",
+      "Filter comparisons"
+    ],
+    "fieldNote": "A key planned comparison tool for M27 and the Lagoon Nebula. It is not the default choice for galaxies."
+  },
+  {
+    "id": "polarizer",
+    "name": "Variable Polarizing Filter",
+    "category": "Filters",
+    "type": "Adjustable brightness filter",
+    "role": "Lunar Brightness Control",
+    "status": "Active",
+    "icon": "filter",
+    "summary": "Used to reduce glare on bright visual targets when a more comfortable view is useful.",
+    "facts": [
+      {
+        "label": "Format",
+        "value": "1.25 inch"
+      },
+      {
+        "label": "Primary Role",
+        "value": "Brightness control"
+      },
+      {
+        "label": "Best Use",
+        "value": "Moon / bright visual targets"
+      }
+    ],
+    "bestFor": [
+      "Moon",
+      "Bright visual targets"
+    ],
+    "fieldNote": "A comfort and glare-control tool rather than a deep-sky contrast filter."
+  },
+  {
+    "id": "raci",
+    "name": "Apertura 10x50 RACI Finder",
+    "category": "Control & Tracking",
+    "type": "Right-angle correct-image finder",
+    "role": "Optical Finder",
+    "status": "Active",
+    "icon": "finder",
+    "summary": "An optical finder for target acquisition and star-field orientation without relying only on the main telescope view.",
+    "facts": [
+      {
+        "label": "Magnification",
+        "value": "10x"
+      },
+      {
+        "label": "Aperture",
+        "value": "50 mm"
+      },
+      {
+        "label": "View",
+        "value": "Right-angle correct image"
+      }
+    ],
+    "bestFor": [
+      "Star hopping",
+      "Target acquisition",
+      "Field orientation"
+    ],
+    "fieldNote": "Particularly useful when verifying the field around small targets before committing to higher magnification."
+  },
+  {
+    "id": "starPointerPro",
+    "name": "Celestron StarPointer Pro",
+    "category": "Control & Tracking",
+    "type": "Zero-magnification reflex finder",
+    "role": "Quick Alignment Finder",
+    "status": "Active",
+    "icon": "finder",
+    "summary": "A zero-magnification reflex finder used for coarse pointing, alignment stars, and quickly getting the CPC 800 onto the right part of the sky.",
+    "facts": [
+      {
+        "label": "Role",
+        "value": "Coarse pointing"
+      },
+      {
+        "label": "View",
+        "value": "Zero magnification"
+      },
+      {
+        "label": "Use",
+        "value": "Alignment and initial target acquisition"
+      }
+    ],
+    "bestFor": [
+      "Alignment stars",
+      "Coarse pointing",
+      "Quick target acquisition"
+    ],
+    "fieldNote": "Best used for getting close quickly. The RACI finder and telescope view handle the precise centering."
+  },
+  {
+    "id": "hbg3",
+    "name": "HBG3 Controller",
+    "category": "Control & Tracking",
+    "type": "Telescope control interface",
+    "role": "Wireless Control",
+    "status": "Active",
+    "icon": "controller",
+    "summary": "The current Wi-Fi control bridge used with the CPC 800 and the broader CuzBro telescope-control workflow.",
+    "facts": [
+      {
+        "label": "Role",
+        "value": "Wi-Fi telescope control"
+      },
+      {
+        "label": "Used With",
+        "value": "CPWI / SkySafari workflow"
+      },
+      {
+        "label": "Observatory",
+        "value": "Eliot"
+      }
+    ],
+    "bestFor": [
+      "Wireless control",
+      "Alignment workflow",
+      "Field setup"
+    ],
+    "fieldNote": "Central to the current control workflow, especially while moving between CPWI-based alignment and mobile observing tools."
+  },
+  {
+    "id": "celestronDewHeaterRing",
+    "name": "Celestron Dew Heater Ring",
+    "category": "Field Support",
+    "type": "Corrector-plate dew heater",
+    "role": "Active Dew Control",
+    "status": "Active",
+    "icon": "dew",
+    "summary": "The active dew-control system fitted to the CPC 800 to help keep the corrector plate clear during damp Maine observing sessions.",
+    "facts": [
+      {
+        "label": "Role",
+        "value": "Corrector-plate heating"
+      },
+      {
+        "label": "Platform",
+        "value": "Celestron CPC 800"
+      },
+      {
+        "label": "Environment",
+        "value": "Humid / dew-prone nights"
+      }
+    ],
+    "bestFor": [
+      "Long sessions",
+      "Humid nights",
+      "Corrector protection"
+    ],
+    "fieldNote": "A key part of the current setup after heavy dew became a real observing problem. The heater ring addresses the corrector plate directly rather than relying on a dew shield."
+  }
+]

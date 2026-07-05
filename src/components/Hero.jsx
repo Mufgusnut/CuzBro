@@ -69,7 +69,7 @@ export default function Hero({
             </div>
           </div>
 
-          <a href="/#gear">Gear</a>
+          <a href="/equipment">Gear</a>
           <a href="/#about">About</a>
         </nav>
       </header>

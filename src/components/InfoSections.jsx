@@ -5,27 +5,55 @@ export default function InfoSections() {
     <>
       <section id="gear" className="sectionHeader">
         <h2>⚙ Gear & Setup</h2>
-        <span>The tools behind the images</span>
+        <a href="/equipment">Open Equipment Locker →</a>
       </section>
 
-      <section className="infoGrid">
-        <article className="infoCard">
-          <Telescope />
-          <h3>Celestron CPC 800</h3>
-          <p>8-inch Schmidt-Cassegrain telescope used for lunar, planetary, double star, and deep-sky captures.</p>
-        </article>
+      <section className="equipmentTeaser">
+        <div>
+          <small>MISSION HARDWARE</small>
+          <h3>Equipment Locker</h3>
+          <p>
+            Browse the active telescope system, imaging hardware, eyepieces,
+            filters, controllers, finders, and dew-control gear behind CuzBro missions.
+          </p>
 
-        <article className="infoCard">
-          <Cpu />
-          <h3>iPhone 16 Pro + AstroShader</h3>
-          <p>Smartphone imaging workflow for live captures, quick processing, and experimental astrophotography.</p>
-        </article>
+          <div className="equipmentTeaserChips">
+            <span>CPC 800</span>
+            <span>ASI294MC</span>
+            <span>iPhone 16 Pro</span>
+            <span>Optics</span>
+            <span>Filters</span>
+            <span>Control</span>
+          </div>
 
-        <article className="infoCard">
-          <Telescope />
-          <h3>Filters & Accessories</h3>
-          <p>UHC/LPR filter, variable polarizer, dew control, HBG3 controller, and a growing observatory toolkit.</p>
-        </article>
+          <a href="/equipment">Enter Equipment Locker →</a>
+        </div>
+
+        <div className="equipmentTeaserSystems" aria-label="Featured observatory systems">
+          <article>
+            <Telescope />
+            <span>
+              <small>PRIMARY PLATFORM</small>
+              <strong>Celestron CPC 800</strong>
+            </span>
+          </article>
+
+          <article>
+            <Cpu />
+            <span>
+              <small>DEEP-SKY CAMERA</small>
+              <strong>ASI294MC</strong>
+            </span>
+          </article>
+
+          <article>
+            <Telescope />
+            <span>
+              <small>FIELD TOOLKIT</small>
+              <strong>Filters · Finders · Dew Control</strong>
+            </span>
+          </article>
+        </div>
       </section>
 
       <section id="crew" className="sectionHeader">
