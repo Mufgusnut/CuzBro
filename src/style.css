@@ -7288,3 +7288,91 @@ footer p {
     transform: translateY(0) !important;
   }
 }
+/* =========================================================
+   MOBILE NAV: FREE DROPDOWNS FROM NAV SCROLLER
+========================================================= */
+
+@media (max-width: 700px) {
+
+  /* Header must allow dropdowns to extend outside it */
+  .nav {
+    position: relative !important;
+    overflow: visible !important;
+    z-index: 100 !important;
+  }
+
+  /* Stop treating the menu as a scrolling strip */
+  .nav .mainNavMenu,
+  .nav nav {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    gap: 6px !important;
+
+    width: 100% !important;
+
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+
+    padding: 8px !important;
+  }
+
+  /* Regular links and dropdown triggers stay compact */
+  .nav .mainNavMenu > a,
+  .navDropdownTrigger {
+    flex: 0 0 auto !important;
+    padding: 8px 11px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Dropdown container must not clip its menu */
+  .navDropdown {
+    position: relative !important;
+    overflow: visible !important;
+    flex: 0 0 auto !important;
+  }
+
+  /* Dropdown floats outside the nav */
+  .navDropdownMenu {
+    position: absolute !important;
+
+    top: calc(100% + 6px) !important;
+    left: 50% !important;
+
+    width: max-content !important;
+    min-width: 210px !important;
+    max-width: min(280px, calc(100vw - 28px)) !important;
+
+    margin: 0 !important;
+
+    transform: translate(-50%, -6px) !important;
+
+    z-index: 9999 !important;
+  }
+
+  /* Open state */
+  .navDropdown:hover .navDropdownMenu,
+  .navDropdown:focus-within .navDropdownMenu,
+  .navDropdownMenu:hover {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+
+    transform: translate(-50%, 0) !important;
+  }
+
+  /* Prevent the submenu itself from becoming scrollable */
+  .navDropdownMenu {
+    overflow: visible !important;
+  }
+
+  .navDropdownMenu a {
+    display: block !important;
+    width: 100% !important;
+    padding: 12px 14px !important;
+    white-space: nowrap !important;
+  }
+}
