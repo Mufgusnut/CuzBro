@@ -2483,6 +2483,7 @@ const PLANNER_DETAIL_TABS = [
   { key: 'difficulty', label: 'Difficulty' },
   { key: 'setup', label: 'Setup' },
   { key: 'framing', label: 'Framing' },
+  { key: 'history', label: 'Mission History' },
   { key: 'info', label: 'General Info' }
 ];
 
@@ -2690,7 +2691,176 @@ function buildShareTonightCard(sessionPlan, rankedTargets, rankedVisitors, sessi
   };
 }
 
-export default function SkyMap({ gallery, setSelectedIndex }) {
+function formatMissionStardate(dateString) {
+  if (!dateString) return 'Unknown';
+
+  const missionDate = new Date(`${dateString}T12:00:00`);
+  if (Number.isNaN(missionDate.getTime())) return dateString;
+
+  const year = missionDate.getFullYear();
+  const yearStart = new Date(year, 0, 0);
+  const dayOfYear = Math.floor((missionDate - yearStart) / 86400000);
+
+  return `${year}.${String(dayOfYear).padStart(3, '0')}`;
+}
+
+function getMissionAnchor(entry) {
+  return String(entry?.id || entry?.mission || 'mission')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function normalizeMissionTargetName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[’‘]/g, "'")
+    .replace(/\bthe\b/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function getMissionHistoryForTarget(targetTitle, captainsLog = []) {
+  const normalizedTarget = normalizeMissionTargetName(targetTitle);
+  if (!normalizedTarget) return [];
+
+  return [...captainsLog]
+    .filter((entry) =>
+      (entry.targets || []).some(
+        (target) => normalizeMissionTargetName(target) === normalizedTarget
+      )
+    )
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function getTargetSpecificMissionNote(entry, targetTitle) {
+  const normalizedTarget = normalizeMissionTargetName(targetTitle);
+  if (!normalizedTarget || !entry?.targetNotes) return null;
+
+  const matchingKey = Object.keys(entry.targetNotes).find(
+    (key) => normalizeMissionTargetName(key) === normalizedTarget
+  );
+
+  return matchingKey ? entry.targetNotes[matchingKey] : null;
+}
+
+function MissionHistoryPanel({ targetTitle, entries = [], compact = false }) {
+  if (!entries.length) {
+    return (
+      <div className={compact ? 'targetMissionHistoryCard compact empty' : 'targetMissionHistoryCard empty'}>
+        <div className="targetMissionHistoryHeader">
+          <small>Mission History</small>
+          <h3>No Captain&apos;s Log entries linked</h3>
+        </div>
+        <p>
+          No field report is linked to {targetTitle || 'this target'} yet.
+          Add the target to a Captain&apos;s Log session and its mission history will appear here automatically.
+        </p>
+        <a href="/captains-log">Open Captain&apos;s Log →</a>
+      </div>
+    );
+  }
+
+  return (
+    <div className={compact ? 'targetMissionHistoryCard compact' : 'targetMissionHistoryCard'}>
+      <div className="targetMissionHistoryHeader">
+        <small>Mission History</small>
+        <h3>{entries.length} {entries.length === 1 ? 'mission' : 'missions'} logged</h3>
+      </div>
+
+      <div className="targetMissionHistoryEntries">
+        {entries.map((entry, index) => {
+          const targetNote = getTargetSpecificMissionNote(entry, targetTitle);
+          const result = targetNote?.result || entry.summary;
+          const fieldNotes = targetNote?.notes || entry.notes || entry.summary;
+          const lesson =
+            targetNote?.lesson ||
+            entry.nextMission ||
+            entry.improve?.slice(0, 2).join(' · ');
+
+          return (
+            <article className="targetMissionHistoryEntry" key={`${entry.id}-${entry.date}`}>
+              <div className="targetMissionHistoryEntryTop">
+                <span>
+                  <small>Stardate {formatMissionStardate(entry.date)}</small>
+                  <strong>{entry.id}</strong>
+                </span>
+                {index === 0 && <i>Latest</i>}
+              </div>
+
+              <h4>{entry.mission}</h4>
+
+              <div className="targetMissionObjectReport">
+                <span>
+                  <b>Result</b>
+                  <p>{result}</p>
+                </span>
+                <span>
+                  <b>Field Notes</b>
+                  <p>{fieldNotes}</p>
+                </span>
+              </div>
+
+              <div className="targetMissionHistoryFacts">
+                <span><b>Equipment</b>{(entry.equipment || []).join(', ') || 'Not recorded'}</span>
+                <span><b>Seeing</b>{entry.conditions?.seeing || 'Not recorded'}</span>
+                <span><b>Transparency</b>{entry.conditions?.transparency || 'Not recorded'}</span>
+              </div>
+
+              {lesson && (
+                <div className="targetMissionLesson">
+                  <b>Lesson carried forward</b>
+                  <p>{lesson}</p>
+                </div>
+              )}
+
+              <a href={`/captains-log#${getMissionAnchor(entry)}`}>
+                View Full Captain&apos;s Log →
+              </a>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CuzBroFieldNote({ entry, targetTitle }) {
+  if (!entry) return null;
+
+  const targetNote = getTargetSpecificMissionNote(entry, targetTitle);
+  const generalLessons = (entry.improve || []).slice(0, 3);
+  const targetLesson = targetNote?.lesson || null;
+
+  return (
+    <div className="cuzBroFieldNote">
+      <small>CuzBro Field Note</small>
+      <h4>Lesson carried forward from Stardate {formatMissionStardate(entry.date)}</h4>
+
+      {targetLesson ? (
+        <p>{targetLesson}</p>
+      ) : generalLessons.length > 0 ? (
+        <ul>
+          {generalLessons.map((lesson) => (
+            <li key={lesson}>{lesson}</li>
+          ))}
+        </ul>
+      ) : null}
+
+      {!targetLesson && entry.nextMission && (
+        <p><b>Next planned attempt:</b> {entry.nextMission}</p>
+      )}
+
+      <a href={`/captains-log#${getMissionAnchor(entry)}`}>
+        View Mission Log →
+      </a>
+    </div>
+  );
+}
+
+
+export default function SkyMap({ gallery, captainsLog = [], setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFutureIndex, setActiveFutureIndex] = useState(0);
   const [activeVisitorIndex, setActiveVisitorIndex] = useState(0);
@@ -2961,6 +3131,11 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
   const activeVisitorTarget = rankedVisitorTargets.find((target) => target.actualIndex === activeVisitorIndex) || rankedVisitorTargets[0] || mappedVisitorTargets[0];
   const selectedTarget = selectedPanel === 'future' ? activeFutureTarget : selectedPanel === 'visitor' ? activeVisitorTarget : activeObject;
   const activeConstellation = getMissionConstellation(selectedTarget) || selectedTarget?.constellation;
+  const selectedMissionHistory = useMemo(
+    () => getMissionHistoryForTarget(selectedTarget?.title, captainsLog),
+    [selectedTarget?.title, captainsLog]
+  );
+  const latestSelectedMission = selectedMissionHistory[0] || null;
 
   const visibleObjects = useMemo(() => mappedObjects.filter((photo) => isInsideSky(photo, 12)), [mappedObjects]);
   const visibleFutureTargets = useMemo(() => rankedFutureTargets.filter((target) => isInsideSky(target, 14)), [rankedFutureTargets]);
@@ -4510,25 +4685,29 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   )}
 
                   {activePlannerTab === 'setup' && (
-                    <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
-                      <div className="targetActionHeader">
-                        <small>Recommended Setup</small>
-                        <h3>{actionPlan.headline}</h3>
-                        <i>{actionPlan.difficulty}</i>
+                    <>
+                      <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                        <div className="targetActionHeader">
+                          <small>Recommended Setup</small>
+                          <h3>{actionPlan.headline}</h3>
+                          <i>{actionPlan.difficulty}</i>
+                        </div>
+                        <div className="targetActionGrid">
+                          <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
+                          <span><b>Filter</b>{actionPlan.filter}</span>
+                          <span><b>Capture</b>{actionPlan.capture}</span>
+                          <span><b>Approach</b>{actionPlan.approach}</span>
+                        </div>
+                        <p><b>Why:</b> {actionPlan.why}</p>
+                        <ul>
+                          {actionPlan.checklist.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
                       </div>
-                      <div className="targetActionGrid">
-                        <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
-                        <span><b>Filter</b>{actionPlan.filter}</span>
-                        <span><b>Capture</b>{actionPlan.capture}</span>
-                        <span><b>Approach</b>{actionPlan.approach}</span>
-                      </div>
-                      <p><b>Why:</b> {actionPlan.why}</p>
-                      <ul>
-                        {actionPlan.checklist.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
+
+                      <CuzBroFieldNote entry={latestSelectedMission} targetTitle={selectedTarget?.title} />
+                    </>
                   )}
 
                   {activePlannerTab === 'framing' && (
@@ -4552,6 +4731,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                         ))}
                       </div>
                     </div>
+                  )}
+
+                  {activePlannerTab === 'history' && (
+                    <MissionHistoryPanel
+                      targetTitle={selectedTarget?.title}
+                      entries={selectedMissionHistory}
+                    />
                   )}
 
                   {activePlannerTab === 'info' && (
@@ -4601,6 +4787,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
               <span><b>Map Time</b>{formatCompactTime(date)}</span>
               <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
             </div>
+
+            <MissionHistoryPanel
+              targetTitle={activeObject.title}
+              entries={selectedMissionHistory}
+              compact
+            />
+
             <button type="button" onClick={() => openMission(activeObject)}>Open Mission Report →</button>
           </div>
         </section>
@@ -4699,25 +4892,29 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                   )}
 
                   {activePlannerTab === 'setup' && (
-                    <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
-                      <div className="targetActionHeader">
-                        <small>Recommended Setup</small>
-                        <h3>{actionPlan.headline}</h3>
-                        <i>{actionPlan.difficulty}</i>
+                    <>
+                      <div className={`targetActionCard ${actionPlan.difficulty.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+                        <div className="targetActionHeader">
+                          <small>Recommended Setup</small>
+                          <h3>{actionPlan.headline}</h3>
+                          <i>{actionPlan.difficulty}</i>
+                        </div>
+                        <div className="targetActionGrid">
+                          <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
+                          <span><b>Filter</b>{actionPlan.filter}</span>
+                          <span><b>Capture</b>{actionPlan.capture}</span>
+                          <span><b>Approach</b>{actionPlan.approach}</span>
+                        </div>
+                        <p><b>Why:</b> {actionPlan.why}</p>
+                        <ul>
+                          {actionPlan.checklist.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
                       </div>
-                      <div className="targetActionGrid">
-                        <span><b>Eyepiece</b>{actionPlan.eyepiece}</span>
-                        <span><b>Filter</b>{actionPlan.filter}</span>
-                        <span><b>Capture</b>{actionPlan.capture}</span>
-                        <span><b>Approach</b>{actionPlan.approach}</span>
-                      </div>
-                      <p><b>Why:</b> {actionPlan.why}</p>
-                      <ul>
-                        {actionPlan.checklist.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
+
+                      <CuzBroFieldNote entry={latestSelectedMission} targetTitle={selectedTarget?.title} />
+                    </>
                   )}
 
                   {activePlannerTab === 'framing' && (
@@ -4741,6 +4938,13 @@ export default function SkyMap({ gallery, setSelectedIndex }) {
                         ))}
                       </div>
                     </div>
+                  )}
+
+                  {activePlannerTab === 'history' && (
+                    <MissionHistoryPanel
+                      targetTitle={selectedTarget?.title}
+                      entries={selectedMissionHistory}
+                    />
                   )}
 
                   {activePlannerTab === 'info' && (

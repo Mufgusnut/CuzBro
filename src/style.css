@@ -7557,3 +7557,335 @@ footer p {
     height: 12px !important;
   }
 }
+
+/* =========================================================
+   SKY MAP: CAPTAIN'S LOG / MISSION HISTORY CONNECTION
+========================================================= */
+
+.targetMissionHistoryCard {
+  margin: 18px 0 20px;
+  padding: 20px;
+  border: 1px solid rgba(114,217,255,.20);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(74,140,255,.10), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(255,157,28,.07), transparent 30%),
+    rgba(5,13,28,.68);
+}
+
+.targetMissionHistoryCard.compact {
+  margin-top: 20px;
+}
+
+.targetMissionHistoryHeader {
+  margin-bottom: 15px;
+}
+
+.targetMissionHistoryHeader small,
+.cuzBroFieldNote > small {
+  display: block;
+  color: var(--orange);
+  font-size: .76rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.targetMissionHistoryHeader h3 {
+  margin: 7px 0 0;
+  color: #fff;
+  font-size: clamp(1.35rem, 2vw, 2rem);
+}
+
+.targetMissionHistoryCard.empty p {
+  max-width: 760px;
+  color: #cbd5e6;
+  line-height: 1.6;
+}
+
+.targetMissionHistoryCard > a,
+.targetMissionHistoryEntry > a,
+.cuzBroFieldNote > a {
+  display: inline-flex;
+  margin-top: 12px;
+  color: var(--orange);
+  font-weight: 850;
+}
+
+.targetMissionHistoryEntries {
+  display: grid;
+  gap: 14px;
+}
+
+.targetMissionHistoryEntry {
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 18px;
+  background: rgba(0,0,0,.17);
+}
+
+.targetMissionHistoryEntryTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.targetMissionHistoryEntryTop small {
+  display: block;
+  color: var(--cyan);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.targetMissionHistoryEntryTop strong {
+  display: block;
+  margin-top: 5px;
+  color: #fff;
+}
+
+.targetMissionHistoryEntryTop i {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid rgba(255,157,28,.28);
+  border-radius: 999px;
+  background: rgba(255,157,28,.09);
+  color: #ffd9a2;
+  font-size: .72rem;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.targetMissionHistoryEntry h4 {
+  margin: 14px 0 8px;
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.targetMissionHistoryEntry > p {
+  margin: 0;
+  color: #cbd5e6;
+  line-height: 1.6;
+}
+
+.targetMissionHistoryFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.targetMissionHistoryFacts span {
+  padding: 11px 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  background: rgba(7,16,34,.46);
+  color: #e7eef9;
+  line-height: 1.4;
+}
+
+.targetMissionHistoryFacts b {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--cyan);
+  font-size: .68rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.targetMissionLesson {
+  padding: 14px;
+  border: 1px solid rgba(255,157,28,.18);
+  border-radius: 14px;
+  background: rgba(255,157,28,.055);
+}
+
+.targetMissionLesson b {
+  color: #ffc071;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .72rem;
+}
+
+.targetMissionLesson p {
+  margin: 7px 0 0;
+  color: #e5d7c3;
+  line-height: 1.5;
+}
+
+.cuzBroFieldNote {
+  margin: 14px 0 0;
+  padding: 18px;
+  border: 1px solid rgba(255,157,28,.28);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(255,157,28,.10), transparent 32%),
+    rgba(12,18,31,.66);
+}
+
+.cuzBroFieldNote h4 {
+  margin: 8px 0 12px;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.cuzBroFieldNote ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #d8e0ec;
+}
+
+.cuzBroFieldNote li {
+  margin: 7px 0;
+  line-height: 1.45;
+}
+
+.cuzBroFieldNote p {
+  margin: 14px 0 0;
+  color: #d8e0ec;
+  line-height: 1.55;
+}
+
+.cuzBroFieldNote p b {
+  color: var(--cyan);
+}
+
+.captainsLogEntry {
+  scroll-margin-top: 110px;
+}
+
+@media (max-width: 700px) {
+  .targetMissionHistoryCard,
+  .targetMissionHistoryEntry,
+  .cuzBroFieldNote {
+    padding: 16px;
+  }
+
+  .targetMissionHistoryFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .targetMissionHistoryEntryTop {
+    align-items: center;
+  }
+
+  .captainsLogEntry {
+    scroll-margin-top: 72px;
+  }
+}
+
+/* =========================================================
+   CAPTAIN'S LOG + SKY MAP: TARGET-SPECIFIC FIELD REPORTS
+========================================================= */
+
+.captainsLogTargetReports {
+  margin: 14px 0;
+  padding: 20px;
+  border: 1px solid rgba(114,217,255,.16);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top left, rgba(74,140,255,.09), transparent 34%),
+    rgba(2,7,16,.38);
+}
+
+.captainsLogTargetReports > small {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--cyan);
+  font-size: .75rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.captainsLogTargetReportGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.captainsLogTargetReport {
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 17px;
+  background: rgba(0,0,0,.17);
+}
+
+.captainsLogTargetReport h3 {
+  margin: 0 0 14px;
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.captainsLogTargetReport > div + div {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.captainsLogTargetReport b,
+.targetMissionObjectReport b {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--cyan);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.captainsLogTargetReport p,
+.targetMissionObjectReport p {
+  margin: 0;
+  color: #d0d9e9;
+  line-height: 1.58;
+}
+
+.captainsLogTargetLesson {
+  padding: 13px;
+  border: 1px solid rgba(255,157,28,.20);
+  border-radius: 13px;
+  background: rgba(255,157,28,.06);
+}
+
+.captainsLogTargetLesson b {
+  color: var(--orange);
+}
+
+.targetMissionObjectReport {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.targetMissionObjectReport > span {
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 14px;
+  background: rgba(0,0,0,.15);
+}
+
+.cuzBroFieldNote > p {
+  color: #d0d9e9;
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .captainsLogTargetReportGrid,
+  .targetMissionObjectReport {
+    grid-template-columns: 1fr;
+  }
+
+  .captainsLogTargetReports {
+    padding: 15px;
+  }
+
+  .captainsLogTargetReport {
+    padding: 15px;
+  }
+}
+

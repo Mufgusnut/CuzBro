@@ -10,6 +10,14 @@ function getStardate(dateString) {
   return `${year}.${String(dayOfYear).padStart(3, '0')}`;
 }
 
+function getMissionAnchor(entry) {
+  return String(entry?.id || entry?.mission || 'mission')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function LogList({ title, items, tone = 'good' }) {
   if (!items?.length) return null;
 
@@ -25,12 +33,55 @@ function LogList({ title, items, tone = 'good' }) {
   );
 }
 
+function TargetReports({ targetNotes }) {
+  const reports = Object.entries(targetNotes || {});
+  if (!reports.length) return null;
+
+  return (
+    <div className="captainsLogTargetReports">
+      <small>Target Reports</small>
+
+      <div className="captainsLogTargetReportGrid">
+        {reports.map(([target, report]) => (
+          <article className="captainsLogTargetReport" key={target}>
+            <h3>{target}</h3>
+
+            {report.result && (
+              <div>
+                <b>Result</b>
+                <p>{report.result}</p>
+              </div>
+            )}
+
+            {report.notes && (
+              <div>
+                <b>Field Notes</b>
+                <p>{report.notes}</p>
+              </div>
+            )}
+
+            {report.lesson && (
+              <div className="captainsLogTargetLesson">
+                <b>Lesson Carried Forward</b>
+                <p>{report.lesson}</p>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function LogEntry({ entry, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   const stardate = useMemo(() => getStardate(entry.date), [entry.date]);
 
   return (
-    <article className={open ? 'captainsLogEntry open' : 'captainsLogEntry'}>
+    <article
+      id={getMissionAnchor(entry)}
+      className={open ? 'captainsLogEntry open' : 'captainsLogEntry'}
+    >
       <button
         type="button"
         className="captainsLogEntryHeader"
@@ -84,6 +135,8 @@ function LogEntry({ entry, defaultOpen = false }) {
             </div>
           )}
 
+          <TargetReports targetNotes={entry.targetNotes} />
+
           <div className="captainsLogLessons">
             <LogList title="What Worked" items={entry.worked} tone="good" />
             <LogList title="Needs Improvement" items={entry.improve} tone="caution" />
@@ -101,29 +154,28 @@ function LogEntry({ entry, defaultOpen = false }) {
   );
 }
 
-export default function CaptainsLog() {
-  const [entries, setEntries] = useState([]);
-  const [status, setStatus] = useState('loading');
-
+export default function CaptainsLog({ entries = [], status = 'ready' }) {
   useEffect(() => {
-    fetch(import.meta.env.BASE_URL + 'data/captains-log.json')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Captain's Log request failed: ${response.status}`);
-        }
+    if (status !== 'ready' || !window.location.hash) return;
 
-        return response.json();
-      })
-      .then((data) => {
-        const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
-        setEntries(sorted);
-        setStatus('ready');
-      })
-      .catch((error) => {
-        console.error(error);
-        setStatus('error');
+    const anchor = decodeURIComponent(window.location.hash.slice(1));
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = document.getElementById(anchor);
+        if (!target) return;
+
+        const nav = document.querySelector('.nav');
+        const navHeight = nav?.getBoundingClientRect().height || 0;
+        const targetTop = target.getBoundingClientRect().top + window.scrollY;
+
+        window.scrollTo({
+          top: Math.max(0, targetTop - navHeight - 18),
+          behavior: 'smooth'
+        });
       });
-  }, []);
+    });
+  }, [entries, status]);
 
   return (
     <section className="captainsLogWrap">

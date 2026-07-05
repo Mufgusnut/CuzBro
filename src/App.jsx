@@ -62,6 +62,8 @@ export default function App() {
   const [gallery, setGallery] = useState([]);
   const [activeFilter, setActiveFilter] = useState('All');
   const [weather, setWeather] = useState({});
+  const [captainsLog, setCaptainsLog] = useState([]);
+  const [captainsLogStatus, setCaptainsLogStatus] = useState('loading');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [viewerMode, setViewerMode] = useState('report');
   const [scrolled, setScrolled] = useState(false);
@@ -108,6 +110,30 @@ export default function App() {
     fetch(import.meta.env.BASE_URL + 'data/gallery.json')
       .then((r) => r.json())
       .then(setGallery);
+  }, []);
+
+  useEffect(() => {
+    fetch(import.meta.env.BASE_URL + 'data/captains-log.json')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Captain's Log request failed: ${response.status}`);
+        }
+
+        return response.json();
+      })
+      .then((entries) => {
+        const sortedEntries = [...entries].sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+
+        setCaptainsLog(sortedEntries);
+        setCaptainsLogStatus('ready');
+      })
+      .catch((error) => {
+        console.error(error);
+        setCaptainsLog([]);
+        setCaptainsLogStatus('error');
+      });
   }, []);
 
   useEffect(() => {
@@ -181,12 +207,16 @@ export default function App() {
         {isSkyMapPage ? (
           <SkyMap
             gallery={gallery}
+            captainsLog={captainsLog}
             setSelectedIndex={setSelectedIndex}
           />
         ) : isMissionSupportPage ? (
           <MissionSupport />
         ) : isCaptainsLogPage ? (
-          <CaptainsLog />
+          <CaptainsLog
+            entries={captainsLog}
+            status={captainsLogStatus}
+          />
         ) : (
           <>
             <QuickLinks />
