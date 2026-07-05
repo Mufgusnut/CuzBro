@@ -2194,6 +2194,134 @@ function getTargetFramingPreview(target) {
   return base;
 }
 
+
+const TARGET_EQUIPMENT_PROFILES = {
+  'Cat’s Eye Nebula': {
+    recommended: ['cpc800', 'eyepiece25', 'eyepiece10', 'uhc', 'asi294mc'],
+    missing: [
+      {
+        name: 'OIII filter',
+        note: 'Optional future upgrade for stronger planetary-nebula contrast.'
+      }
+    ]
+  },
+  'North America Nebula': {
+    recommended: ['asi294mc', 'astromaniaF63Reducer', 'uhc', 'cpc800'],
+    missing: [
+      {
+        name: 'Wider-field imaging system',
+        note: 'The target is still much larger than the CPC 800 field, even with the reducer.'
+      }
+    ]
+  },
+  'Veil Nebula': {
+    recommended: ['asi294mc', 'astromaniaF63Reducer', 'uhc', 'cpc800'],
+    missing: [
+      {
+        name: 'OIII filter',
+        note: 'A strong future upgrade for the Veil. Your UHC filter is available now and is still worth trying.'
+      }
+    ]
+  },
+  'M31 Andromeda Galaxy': {
+    recommended: ['asi294mc', 'astromaniaF63Reducer', 'cpc800'],
+    missing: [
+      {
+        name: 'Wider-field imaging system',
+        note: 'The reducer helps, but the full Andromeda Galaxy remains too large for a single CPC 800 frame.'
+      }
+    ]
+  },
+  'Double Cluster': {
+    recommended: ['cpc800', 'eyepiece32', 'asi294mc', 'astromaniaF63Reducer'],
+    missing: []
+  },
+  Saturn: {
+    recommended: ['cpc800', 'eyepiece10', 'barlow', 'iphone16pro'],
+    missing: []
+  },
+  Jupiter: {
+    recommended: ['cpc800', 'eyepiece10', 'barlow', 'iphone16pro'],
+    missing: []
+  },
+  '10P/Tempel 2': {
+    recommended: ['asi294mc', 'astromaniaF63Reducer', 'eyepiece32', 'raci', 'cpc800'],
+    missing: []
+  }
+};
+
+function getTargetEquipmentProfile(target, equipment = []) {
+  if (!target) {
+    return {
+      available: [],
+      missing: []
+    };
+  }
+
+  const profile = TARGET_EQUIPMENT_PROFILES[target.title] || {
+    recommended: ['cpc800'],
+    missing: []
+  };
+
+  const equipmentById = new Map(
+    (equipment || []).map((item) => [item.id, item])
+  );
+
+  return {
+    available: profile.recommended
+      .map((id) => equipmentById.get(id))
+      .filter(Boolean),
+    missing: profile.missing || []
+  };
+}
+
+function EquipmentCheck({ target, equipment = [] }) {
+  const equipmentProfile = getTargetEquipmentProfile(target, equipment);
+
+  return (
+    <div className="targetEquipmentCheck">
+      <div className="targetEquipmentCheckHeader">
+        <span>
+          <small>Equipment Locker Check</small>
+          <h3>Recommended from your actual gear</h3>
+        </span>
+
+        <a href="/equipment">Open Locker →</a>
+      </div>
+
+      <div className="targetEquipmentCheckGrid">
+        {equipmentProfile.available.map((item) => (
+          <article className="targetEquipmentItem available" key={item.id}>
+            <i>✓</i>
+            <span>
+              <b>{item.name}</b>
+              <small>{item.role}</small>
+            </span>
+            <em>Available</em>
+          </article>
+        ))}
+
+        {equipmentProfile.missing.map((item) => (
+          <article className="targetEquipmentItem missing" key={item.name}>
+            <i>△</i>
+            <span>
+              <b>{item.name}</b>
+              <small>{item.note}</small>
+            </span>
+            <em>Not in locker</em>
+          </article>
+        ))}
+      </div>
+
+      {equipmentProfile.available.length === 0 && (
+        <p className="targetEquipmentEmpty">
+          No matching recommended equipment was found in the current Equipment Locker data.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function getTargetActionPlan(target) {
   const type = target?.objectType || 'Target';
   const title = target?.title || '';
@@ -2860,7 +2988,7 @@ function CuzBroFieldNote({ entry, targetTitle }) {
 }
 
 
-export default function SkyMap({ gallery, captainsLog = [], setSelectedIndex }) {
+export default function SkyMap({ gallery, captainsLog = [], equipment = [], setSelectedIndex }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFutureIndex, setActiveFutureIndex] = useState(0);
   const [activeVisitorIndex, setActiveVisitorIndex] = useState(0);
@@ -4706,6 +4834,11 @@ export default function SkyMap({ gallery, captainsLog = [], setSelectedIndex }) 
                         </ul>
                       </div>
 
+                      <EquipmentCheck
+                        target={activeVisitorTarget}
+                        equipment={equipment}
+                      />
+
                       <CuzBroFieldNote entry={latestSelectedMission} targetTitle={selectedTarget?.title} />
                     </>
                   )}
@@ -4912,6 +5045,11 @@ export default function SkyMap({ gallery, captainsLog = [], setSelectedIndex }) 
                           ))}
                         </ul>
                       </div>
+
+                      <EquipmentCheck
+                        target={activeFutureTarget}
+                        equipment={equipment}
+                      />
 
                       <CuzBroFieldNote entry={latestSelectedMission} targetTitle={selectedTarget?.title} />
                     </>

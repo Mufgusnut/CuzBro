@@ -8535,3 +8535,166 @@ footer p {
   }
 }
 
+/* =========================================================
+   SKY MAP: EQUIPMENT LOCKER CHECK
+========================================================= */
+
+.targetEquipmentCheck {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid rgba(114,217,255,.18);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(114,217,255,.08), transparent 34%),
+    rgba(2,7,16,.36);
+}
+
+.targetEquipmentCheckHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 13px;
+}
+
+.targetEquipmentCheckHeader small {
+  display: block;
+  color: var(--orange);
+  font-size: .69rem;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.targetEquipmentCheckHeader h3 {
+  margin: 6px 0 0;
+  color: #fff;
+  font-size: 1.12rem;
+}
+
+.targetEquipmentCheckHeader a {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border: 1px solid rgba(255,157,28,.30);
+  border-radius: 999px;
+  background: rgba(255,157,28,.07);
+  color: #ffe2b8;
+  font-size: .76rem;
+  font-weight: 850;
+}
+
+.targetEquipmentCheckGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.targetEquipmentItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
+  padding: 12px 13px;
+  border-radius: 14px;
+}
+
+.targetEquipmentItem.available {
+  border: 1px solid rgba(143,240,177,.18);
+  background: rgba(143,240,177,.045);
+}
+
+.targetEquipmentItem.missing {
+  border: 1px solid rgba(255,157,28,.20);
+  background: rgba(255,157,28,.045);
+}
+
+.targetEquipmentItem > i {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.targetEquipmentItem.available > i {
+  border: 1px solid rgba(143,240,177,.30);
+  color: var(--green);
+  background: rgba(143,240,177,.08);
+}
+
+.targetEquipmentItem.missing > i {
+  border: 1px solid rgba(255,157,28,.32);
+  color: var(--orange);
+  background: rgba(255,157,28,.08);
+}
+
+.targetEquipmentItem span {
+  min-width: 0;
+}
+
+.targetEquipmentItem b {
+  display: block;
+  color: #fff;
+  font-size: .9rem;
+}
+
+.targetEquipmentItem small {
+  display: block;
+  margin-top: 3px;
+  color: #aebbd4;
+  font-size: .76rem;
+  line-height: 1.4;
+}
+
+.targetEquipmentItem em {
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: .66rem;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.targetEquipmentItem.available em {
+  color: var(--green);
+  border: 1px solid rgba(143,240,177,.20);
+  background: rgba(143,240,177,.055);
+}
+
+.targetEquipmentItem.missing em {
+  color: #ffc46f;
+  border: 1px solid rgba(255,157,28,.20);
+  background: rgba(255,157,28,.055);
+}
+
+.targetEquipmentEmpty {
+  margin: 0;
+  color: #aebbd4;
+}
+
+@media (max-width: 700px) {
+  .targetEquipmentCheck {
+    padding: 15px;
+  }
+
+  .targetEquipmentCheckHeader {
+    flex-direction: column;
+  }
+
+  .targetEquipmentCheckHeader a {
+    align-self: flex-start;
+  }
+
+  .targetEquipmentItem {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .targetEquipmentItem em {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+

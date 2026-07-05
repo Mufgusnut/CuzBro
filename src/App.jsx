@@ -234,6 +234,7 @@ export default function App() {
           <SkyMap
             gallery={gallery}
             captainsLog={captainsLog}
+            equipment={equipment}
             setSelectedIndex={setSelectedIndex}
           />
         ) : isMissionSupportPage ? (
