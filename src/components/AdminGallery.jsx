@@ -11,6 +11,7 @@ import {
   Upload,
   X
 } from 'lucide-react';
+import * as tiff from 'tiff';
 import { supabase } from '../supabase.js';
 
 const GALLERY_API =
@@ -18,6 +19,275 @@ const GALLERY_API =
 
 const MAX_MASTER_UPLOAD_BYTES =
   99 * 1024 * 1024;
+
+const GENERATED_JPEG_QUALITY = 0.98;
+
+function getGeneratedJpegName(filename) {
+  const baseName = String(
+    filename || 'capture'
+  )
+    .replace(/\.(tif|tiff)$/i, '')
+    .trim();
+
+  return `${baseName || 'capture'}-web.jpg`;
+}
+
+function canvasToJpegFile(
+  canvas,
+  fileName
+) {
+  return new Promise(
+    (resolve, reject) => {
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(
+              new Error(
+                'Browser could not create the web JPEG.'
+              )
+            );
+
+            return;
+          }
+
+          resolve(
+            new File(
+              [blob],
+              fileName,
+              {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              }
+            )
+          );
+        },
+        'image/jpeg',
+        GENERATED_JPEG_QUALITY
+      );
+    }
+  );
+}
+
+function getSampleMaximum(
+  data,
+  bitsPerSample
+) {
+  if (data instanceof Uint8Array) {
+    return 255;
+  }
+
+  if (data instanceof Uint16Array) {
+    return 65535;
+  }
+
+  const bitDepth = Array.isArray(
+    bitsPerSample
+  )
+    ? Number(bitsPerSample[0])
+    : Number(bitsPerSample);
+
+  if (
+    Number.isFinite(bitDepth) &&
+    bitDepth > 0 &&
+    bitDepth <= 16
+  ) {
+    return 2 ** bitDepth - 1;
+  }
+
+  let maximum = 0;
+
+  for (
+    let index = 0;
+    index < data.length;
+    index += 1
+  ) {
+    const value = data[index];
+
+    if (
+      Number.isFinite(value) &&
+      value > maximum
+    ) {
+      maximum = value;
+    }
+  }
+
+  return maximum <= 1
+    ? 1
+    : maximum;
+}
+
+function sampleToByte(
+  value,
+  maximum
+) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.round(
+    Math.min(
+      255,
+      Math.max(
+        0,
+        (value / maximum) * 255
+      )
+    )
+  );
+}
+
+async function generateWebJpegFromTiff(
+  file
+) {
+  const arrayBuffer =
+    await file.arrayBuffer();
+
+  const pages = tiff.decode(
+    new Uint8Array(arrayBuffer)
+  );
+
+  const page = pages?.[0];
+
+  if (
+    !page ||
+    !page.data ||
+    !page.width ||
+    !page.height
+  ) {
+    throw new Error(
+      'The TIFF could not be decoded into image pixels.'
+    );
+  }
+
+  const pixelCount =
+    page.width * page.height;
+
+  const channels = Math.round(
+    page.data.length / pixelCount
+  );
+
+  if (
+    channels !== 1 &&
+    channels !== 2 &&
+    channels !== 3 &&
+    channels !== 4
+  ) {
+    throw new Error(
+      `Unsupported TIFF channel layout (${channels} channels).`
+    );
+  }
+
+  const maximum = getSampleMaximum(
+    page.data,
+    page.bitsPerSample
+  );
+
+  const rgba =
+    new Uint8ClampedArray(
+      pixelCount * 4
+    );
+
+  for (
+    let pixel = 0;
+    pixel < pixelCount;
+    pixel += 1
+  ) {
+    const sourceIndex =
+      pixel * channels;
+
+    const targetIndex =
+      pixel * 4;
+
+    if (
+      channels === 1 ||
+      channels === 2
+    ) {
+      const gray = sampleToByte(
+        page.data[sourceIndex],
+        maximum
+      );
+
+      rgba[targetIndex] = gray;
+      rgba[targetIndex + 1] = gray;
+      rgba[targetIndex + 2] = gray;
+
+      rgba[targetIndex + 3] =
+        channels === 2
+          ? sampleToByte(
+              page.data[
+                sourceIndex + 1
+              ],
+              maximum
+            )
+          : 255;
+    } else {
+      rgba[targetIndex] = sampleToByte(
+        page.data[sourceIndex],
+        maximum
+      );
+
+      rgba[targetIndex + 1] =
+        sampleToByte(
+          page.data[sourceIndex + 1],
+          maximum
+        );
+
+      rgba[targetIndex + 2] =
+        sampleToByte(
+          page.data[sourceIndex + 2],
+          maximum
+        );
+
+      rgba[targetIndex + 3] =
+        channels === 4
+          ? sampleToByte(
+              page.data[
+                sourceIndex + 3
+              ],
+              maximum
+            )
+          : 255;
+    }
+  }
+
+  const canvas =
+    document.createElement('canvas');
+
+  canvas.width = page.width;
+  canvas.height = page.height;
+
+  const context = canvas.getContext(
+    '2d'
+  );
+
+  if (!context) {
+    throw new Error(
+      'Browser image canvas is unavailable.'
+    );
+  }
+
+  const imageData = new ImageData(
+    rgba,
+    page.width,
+    page.height
+  );
+
+  context.putImageData(
+    imageData,
+    0,
+    0
+  );
+
+  const generatedFile =
+    await canvasToJpegFile(
+      canvas,
+      getGeneratedJpegName(file.name)
+    );
+
+  canvas.width = 1;
+  canvas.height = 1;
+
+  return generatedFile;
+}
 
 function formatFileSize(bytes) {
   if (
@@ -189,6 +459,11 @@ export default function AdminGallery() {
   const [saving, setSaving] =
     useState(false);
 
+  const [
+    convertingMaster,
+    setConvertingMaster
+  ] = useState(false);
+
   const [message, setMessage] =
     useState('');
 
@@ -338,7 +613,9 @@ export default function AdminGallery() {
     setError('');
   }
 
-  function handleMasterSelection(event) {
+  async function handleMasterSelection(
+    event
+  ) {
     const file =
       event.target.files?.[0];
 
@@ -375,12 +652,53 @@ export default function AdminGallery() {
       return;
     }
 
-    setMasterFile(file);
+    setConvertingMaster(true);
+    setMessage('');
     setError('');
+
+    try {
+      const generatedImage =
+        await generateWebJpegFromTiff(
+          file
+        );
+
+      releasePreviewUrl();
+
+      setMasterFile(file);
+      setImageFile(generatedImage);
+
+      setPreviewUrl(
+        URL.createObjectURL(
+          generatedImage
+        )
+      );
+
+      setMessage(
+        `WEB JPEG GENERATED AUTOMATICALLY · ${generatedImage.name} · ${formatFileSize(
+          generatedImage.size
+        )}`
+      );
+    } catch (conversionError) {
+      console.error(conversionError);
+
+      setMasterFile(null);
+      setImageFile(null);
+
+      setError(
+        conversionError.message ||
+          'TIFF conversion failed.'
+      );
+
+      event.target.value = '';
+    }
+
+    setConvertingMaster(false);
   }
 
-  async function uploadImage() {
-    if (!imageFile) {
+  async function uploadImage(
+    file = imageFile
+  ) {
+    if (!file) {
       return null;
     }
 
@@ -397,13 +715,13 @@ export default function AdminGallery() {
             `Bearer ${accessToken}`,
 
           'Content-Type':
-            imageFile.type,
+            file.type,
 
           'X-Filename':
-            imageFile.name
+            file.name
         },
 
-        body: imageFile
+        body: file
       }
     );
 
@@ -520,12 +838,45 @@ export default function AdminGallery() {
     let uploadedMaster = null;
 
     try {
+      const requiredFields = [
+        ['Title', form.title],
+        ['Subtitle', form.subtitle],
+        ['Category', form.category],
+        ['Object Type', form.objectType],
+        ['Constellation', form.constellation],
+        ['Distance', form.distance],
+        ['Capture Date', form.captureDate],
+        ['Exposure', form.exposure],
+        ['Processing', form.processing],
+        ['Equipment', form.equipment],
+        ['Sort Order', form.sortOrder],
+        ['Capture Notes', form.notes],
+        ['Next Goal', form.nextGoal]
+      ];
+
+      const missingFields =
+        requiredFields
+          .filter(
+            ([, value]) =>
+              String(value || '').trim() === ''
+          )
+          .map(([label]) => label);
+
+      if (missingFields.length > 0) {
+        throw new Error(
+          `Complete these fields: ${missingFields.join(
+            ', '
+          )}.`
+        );
+      }
+
       if (
         editingCaptureId === 'new' &&
-        !imageFile
+        !imageFile &&
+        !masterFile
       ) {
         throw new Error(
-          'Select an image before creating a new capture.'
+          'Select a display image or a TIFF master before creating a new capture.'
         );
       }
 
@@ -538,9 +889,43 @@ export default function AdminGallery() {
                 editingCaptureId
             );
 
-      if (imageFile) {
+      let imageToUpload = imageFile;
+
+      if (
+        masterFile &&
+        !imageToUpload
+      ) {
+        setConvertingMaster(true);
+
+        imageToUpload =
+          await generateWebJpegFromTiff(
+            masterFile
+          );
+
+        releasePreviewUrl();
+
+        setImageFile(imageToUpload);
+
+        setPreviewUrl(
+          URL.createObjectURL(
+            imageToUpload
+          )
+        );
+
+        setMessage(
+          `WEB JPEG GENERATED AUTOMATICALLY · ${imageToUpload.name} · ${formatFileSize(
+            imageToUpload.size
+          )}`
+        );
+
+        setConvertingMaster(false);
+      }
+
+      if (imageToUpload) {
         uploadedImage =
-          await uploadImage();
+          await uploadImage(
+            imageToUpload
+          );
       }
 
       if (masterFile) {
@@ -739,12 +1124,18 @@ export default function AdminGallery() {
       setPreviewUrl('');
 
       setMessage(
-        wasNew
-          ? 'CAPTURE ADDED TO MISSION ARCHIVE · R2 STORAGE ONLINE'
-          : 'CAPTURE RECORD UPDATED'
+        uploadedMaster
+          ? wasNew
+            ? 'CAPTURE ADDED · TIFF MASTER + AUTO-GENERATED WEB JPEG ONLINE'
+            : 'CAPTURE UPDATED · TIFF MASTER + AUTO-GENERATED WEB JPEG ONLINE'
+          : wasNew
+            ? 'CAPTURE ADDED TO MISSION ARCHIVE · R2 STORAGE ONLINE'
+            : 'CAPTURE RECORD UPDATED'
       );
     } catch (saveException) {
       console.error(saveException);
+
+      setConvertingMaster(false);
 
       setError(
         saveException.message ||
@@ -987,7 +1378,10 @@ export default function AdminGallery() {
               </button>
             </div>
 
-            <form onSubmit={handleSave}>
+            <form
+              onSubmit={handleSave}
+              noValidate
+            >
               <section className="admin-image-uploader">
                 <div className="admin-image-preview">
                   {previewUrl ? (
@@ -1016,11 +1410,13 @@ export default function AdminGallery() {
                   </h4>
 
                   <p>
-                    Select the processed image
-                    that should appear in the
-                    public Mission Archive.
-                    New image uploads are stored
-                    in Cloudflare R2.
+                    Optional manual display
+                    image for the public Mission
+                    Archive. Selecting a TIFF
+                    master below automatically
+                    generates a full-dimension,
+                    quality-98 JPEG and places it
+                    here for you.
                   </p>
 
                   <label className="admin-file-button">
@@ -1035,7 +1431,7 @@ export default function AdminGallery() {
 
                     <input
                       type="file"
-                      accept="image/*"
+                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                       onChange={
                         handleImageSelection
                       }
@@ -1046,12 +1442,12 @@ export default function AdminGallery() {
                     <small>
                       {imageFile.name}
                       {' · '}
-                      {(
-                        imageFile.size /
-                        1024 /
-                        1024
-                      ).toFixed(1)}
-                      {' MB'}
+                      {formatFileSize(
+                        imageFile.size
+                      )}
+                      {masterFile
+                        ? ' · AUTO-GENERATED FROM TIFF'
+                        : ''}
                     </small>
                   )}
                 </div>
@@ -1085,18 +1481,22 @@ export default function AdminGallery() {
                   </h4>
 
                   <p>
-                    Optional full-resolution
-                    TIFF stored in Cloudflare R2.
-                    Visitors can download the
-                    original master from the
-                    Mission Report.
+                    Recommended workflow:
+                    select one TIFF here. Capture
+                    Control automatically creates
+                    the full-dimension quality-98
+                    JPEG used by the website, then
+                    stores the original TIFF in R2
+                    for full-size download.
                   </p>
 
                   <label className="admin-file-button">
                     <Upload size={18} />
 
-                    {masterFile
-                      ? 'CHANGE TIFF MASTER'
+                    {convertingMaster
+                      ? 'GENERATING WEB JPEG...'
+                      : masterFile
+                        ? 'CHANGE TIFF MASTER'
                       : editingCaptureId !== 'new' &&
                           captures.find(
                             (capture) =>
@@ -1111,6 +1511,10 @@ export default function AdminGallery() {
                       accept=".tif,.tiff,image/tiff"
                       onChange={
                         handleMasterSelection
+                      }
+                      disabled={
+                        convertingMaster ||
+                        saving
                       }
                     />
                   </label>
@@ -1414,13 +1818,18 @@ export default function AdminGallery() {
                 <button
                   type="submit"
                   className="admin-editor-save"
-                  disabled={saving}
+                  disabled={
+                    saving ||
+                    convertingMaster
+                  }
                 >
                   <Save size={17} />
 
-                  {saving
-                    ? 'UPLOADING TO R2...'
-                    : editingCaptureId ===
+                  {convertingMaster
+                    ? 'GENERATING WEB JPEG...'
+                    : saving
+                      ? 'UPLOADING TO R2...'
+                      : editingCaptureId ===
                         'new'
                       ? 'UPLOAD CAPTURE'
                       : 'SAVE CAPTURE'}
