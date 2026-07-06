@@ -1,3 +1,5 @@
+import AdminDashboard from './components/AdminDashboard.jsx';
+import AdminCaptainsLog from './components/AdminCaptainsLog.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import SkyMap from './components/SkyMap.jsx';
@@ -34,17 +36,23 @@ function PageNav({ scrolled }) {
         <a href="/#observatory">Observatory</a>
 
         <div className="navDropdown">
-          <button type="button" className="navDropdownTrigger">
+          <button
+            type="button"
+            className="navDropdownTrigger"
+          >
             Missions <span>⌄</span>
           </button>
 
           <div className="navDropdownMenu">
-            <a href="/#gallery">Mission Archive</a>
+            <a href="/#gallery">
+              Mission Archive
+            </a>
 
             <a
               href="/captains-log"
               className={
-                window.location.pathname === '/captains-log'
+                window.location.pathname ===
+                '/captains-log'
                   ? 'active'
                   : ''
               }
@@ -66,17 +74,23 @@ function PageNav({ scrolled }) {
         </div>
 
         <div className="navDropdown">
-          <button type="button" className="navDropdownTrigger">
+          <button
+            type="button"
+            className="navDropdownTrigger"
+          >
             Crew <span>⌄</span>
           </button>
 
           <div className="navDropdownMenu">
-            <a href="/#crew">Crew Dossiers</a>
+            <a href="/#crew">
+              Crew Dossiers
+            </a>
 
             <a
               href="/mission-support"
               className={
-                window.location.pathname === '/mission-support'
+                window.location.pathname ===
+                '/mission-support'
                   ? 'active'
                   : ''
               }
@@ -105,42 +119,65 @@ function PageNav({ scrolled }) {
 
 export default function App() {
   const [gallery, setGallery] = useState([]);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeFilter, setActiveFilter] =
+    useState('All');
   const [weather, setWeather] = useState({});
-  const [captainsLog, setCaptainsLog] = useState([]);
-  const [captainsLogStatus, setCaptainsLogStatus] =
-    useState('loading');
+  const [captainsLog, setCaptainsLog] =
+    useState([]);
+  const [
+    captainsLogStatus,
+    setCaptainsLogStatus
+  ] = useState('loading');
   const [equipment, setEquipment] = useState([]);
-  const [equipmentStatus, setEquipmentStatus] =
-    useState('loading');
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const [viewerMode, setViewerMode] = useState('report');
+  const [
+    equipmentStatus,
+    setEquipmentStatus
+  ] = useState('loading');
+  const [selectedIndex, setSelectedIndex] =
+    useState(null);
+  const [viewerMode, setViewerMode] =
+    useState('report');
   const [scrolled, setScrolled] = useState(false);
 
   const [session, setSession] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [isPasswordRecovery, setIsPasswordRecovery] =
-    useState(false);
+  const [authLoading, setAuthLoading] =
+    useState(true);
+  const [
+    isPasswordRecovery,
+    setIsPasswordRecovery
+  ] = useState(false);
 
   const scroller = useRef(null);
 
+  const pathname = window.location.pathname;
+
+  const isAdminCaptainsLogPage =
+    pathname === '/admin/captains-log' ||
+    pathname === '/admin/captains-log/';
+
+  const isAdminPage =
+    pathname === '/admin' ||
+    pathname === '/admin/' ||
+    isAdminCaptainsLogPage;
+
   const isSkyMapPage =
-    window.location.pathname === '/skymap';
+    pathname === '/skymap';
 
   const isMissionSupportPage =
-    window.location.pathname === '/mission-support';
+    pathname === '/mission-support';
 
   const isCaptainsLogPage =
-    window.location.pathname === '/captains-log';
+    pathname === '/captains-log';
 
   const isEquipmentPage =
-    window.location.pathname === '/equipment';
+    pathname === '/equipment';
 
   const filteredGallery =
     activeFilter === 'All'
       ? gallery
       : gallery.filter(
-          (photo) => photo.objectType === activeFilter
+          (photo) =>
+            photo.objectType === activeFilter
         );
 
   const lightboxGallery = isSkyMapPage
@@ -158,24 +195,31 @@ export default function App() {
   };
 
   const showNextPhoto = () => {
-    if (lightboxGallery.length === 0) return;
+    if (lightboxGallery.length === 0) {
+      return;
+    }
 
     setViewerMode('report');
 
     setSelectedIndex(
       (current) =>
-        (current + 1) % lightboxGallery.length
+        (current + 1) %
+        lightboxGallery.length
     );
   };
 
   const showPreviousPhoto = () => {
-    if (lightboxGallery.length === 0) return;
+    if (lightboxGallery.length === 0) {
+      return;
+    }
 
     setViewerMode('report');
 
     setSelectedIndex(
       (current) =>
-        (current - 1 + lightboxGallery.length) %
+        (current -
+          1 +
+          lightboxGallery.length) %
         lightboxGallery.length
     );
   };
@@ -188,11 +232,20 @@ export default function App() {
   };
 
   async function handleLogout() {
-    const { error } = await supabase.auth.signOut();
+    const { error } =
+      await supabase.auth.signOut();
 
     if (error) {
-      console.error('Logout failed:', error);
+      console.error(
+        'Logout failed:',
+        error
+      );
+
+      return;
     }
+
+    setSession(null);
+    setIsPasswordRecovery(false);
   }
 
   useEffect(() => {
@@ -212,6 +265,14 @@ export default function App() {
           return;
         }
 
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setIsPasswordRecovery(false);
+          setAuthLoading(false);
+
+          return;
+        }
+
         if (!recoveryDetected) {
           setSession(newSession);
           setAuthLoading(false);
@@ -219,12 +280,14 @@ export default function App() {
       }
     );
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!recoveryDetected) {
-        setSession(data.session);
-        setAuthLoading(false);
+    supabase.auth.getSession().then(
+      ({ data }) => {
+        if (!recoveryDetected) {
+          setSession(data.session);
+          setAuthLoading(false);
+        }
       }
-    });
+    );
 
     return () => {
       subscription.unsubscribe();
@@ -233,7 +296,8 @@ export default function App() {
 
   useEffect(() => {
     fetch(
-      import.meta.env.BASE_URL + 'data/gallery.json'
+      import.meta.env.BASE_URL +
+        'data/gallery.json'
     )
       .then((response) => response.json())
       .then(setGallery);
@@ -241,7 +305,8 @@ export default function App() {
 
   useEffect(() => {
     fetch(
-      import.meta.env.BASE_URL + 'data/equipment.json'
+      import.meta.env.BASE_URL +
+        'data/equipment.json'
     )
       .then((response) => {
         if (!response.ok) {
@@ -264,33 +329,44 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetch(
-      import.meta.env.BASE_URL +
-        'data/captains-log.json'
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Captain's Log request failed: ${response.status}`
-          );
-        }
+    async function loadCaptainsLog() {
+      setCaptainsLogStatus('loading');
 
-        return response.json();
-      })
-      .then((entries) => {
-        const sortedEntries = [...entries].sort(
-          (a, b) =>
-            new Date(b.date) - new Date(a.date)
-        );
+      const { data, error } = await supabase
+        .from('captains_log')
+        .select('*')
+        .order('date', { ascending: false });
 
-        setCaptainsLog(sortedEntries);
-        setCaptainsLogStatus('ready');
-      })
-      .catch((error) => {
+      if (error) {
         console.error(error);
         setCaptainsLog([]);
         setCaptainsLogStatus('error');
-      });
+        return;
+      }
+
+      const entries = (data || []).map(
+        (entry) => ({
+          id: entry.id,
+          date: entry.date,
+          mission: entry.mission,
+          location: entry.location,
+          targets: entry.targets || [],
+          equipment: entry.equipment || [],
+          conditions: entry.conditions || {},
+          summary: entry.summary || '',
+          notes: entry.notes || '',
+          worked: entry.worked || [],
+          improve: entry.improve || [],
+          nextMission: entry.next_mission || '',
+          targetNotes: entry.target_notes || {}
+        })
+      );
+
+      setCaptainsLog(entries);
+      setCaptainsLogStatus('ready');
+    }
+
+    loadCaptainsLog();
   }, []);
 
   useEffect(() => {
@@ -309,20 +385,24 @@ export default function App() {
           (response) => response.json()
         );
 
-        setWeather((previousWeather) => ({
-          ...previousWeather,
-          [loc.name]: data.current
-        }));
+        setWeather(
+          (previousWeather) => ({
+            ...previousWeather,
+            [loc.name]: data.current
+          })
+        );
       } catch (error) {
         console.error(
           `Weather request failed for ${loc.name}:`,
           error
         );
 
-        setWeather((previousWeather) => ({
-          ...previousWeather,
-          [loc.name]: null
-        }));
+        setWeather(
+          (previousWeather) => ({
+            ...previousWeather,
+            [loc.name]: null
+          })
+        );
       }
     });
   }, []);
@@ -332,10 +412,16 @@ export default function App() {
       setScrolled(window.scrollY > 80);
     };
 
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener(
+      'scroll',
+      onScroll
+    );
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener(
+        'scroll',
+        onScroll
+      );
     };
   }, []);
 
@@ -372,20 +458,47 @@ export default function App() {
         handleKeyDown
       );
     };
-  }, [selectedIndex, lightboxGallery.length]);
+  }, [
+    selectedIndex,
+    lightboxGallery.length
+  ]);
 
-  if (authLoading) {
-    return null;
-  }
-
+  /*
+   * Password recovery takes priority.
+   * Recovery links must be allowed to show the
+   * password reset UI even outside /admin.
+   */
   if (isPasswordRecovery) {
     return <Login forcePasswordReset />;
   }
 
-  if (!session) {
-    return <Login />;
+  /*
+   * Only admin pages require authentication.
+   */
+  if (isAdminPage) {
+    if (authLoading) {
+      return null;
+    }
+
+    if (!session) {
+      return <Login />;
+    }
+
+    if (isAdminCaptainsLogPage) {
+      return <AdminCaptainsLog />;
+    }
+
+    return (
+      <AdminDashboard
+        session={session}
+        onLogout={handleLogout}
+      />
+    );
   }
 
+  /*
+   * Everything below this point is public.
+   */
   return (
     <>
       <SpaceBackground />
@@ -423,7 +536,9 @@ export default function App() {
             gallery={gallery}
             captainsLog={captainsLog}
             equipment={equipment}
-            setSelectedIndex={setSelectedIndex}
+            setSelectedIndex={
+              setSelectedIndex
+            }
           />
         ) : isMissionSupportPage ? (
           <MissionSupport />
@@ -449,17 +564,23 @@ export default function App() {
             <Gallery
               gallery={filteredGallery}
               activeFilter={activeFilter}
-              setActiveFilter={setActiveFilter}
+              setActiveFilter={
+                setActiveFilter
+              }
               scroller={scroller}
               scroll={scroll}
-              setSelectedIndex={setSelectedIndex}
+              setSelectedIndex={
+                setSelectedIndex
+              }
             />
 
             <InfoSections />
 
             <FeaturedCapture
               photo={gallery[0]}
-              setSelectedIndex={setSelectedIndex}
+              setSelectedIndex={
+                setSelectedIndex
+              }
             />
           </>
         )}
@@ -488,14 +609,6 @@ export default function App() {
         />
 
         <p>Look up. Stay curious.</p>
-
-        <button
-          type="button"
-          className="logout-button"
-          onClick={handleLogout}
-        >
-          LOG OUT
-        </button>
       </footer>
     </>
   );

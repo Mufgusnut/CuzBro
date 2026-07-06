@@ -65,8 +65,8 @@ export default function Login({ forcePasswordReset = false }) {
     setLoading(true);
 
     const redirectTo = import.meta.env.DEV
-  ? 'http://localhost:5173/'
-  : 'https://cuzbro.net/';
+  ? 'http://localhost:5173/admin'
+  : 'https://cuzbro.net/admin';
 
     const { error: resetError } =
       await supabase.auth.resetPasswordForEmail(email, {
