@@ -1,3 +1,5 @@
+import Login from './components/Login.jsx';
+import { supabase } from './supabase.js';
 import SkyMap from './components/SkyMap.jsx';
 import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
@@ -35,10 +37,31 @@ function PageNav({ scrolled }) {
           <button type="button" className="navDropdownTrigger">
             Missions <span>⌄</span>
           </button>
+
           <div className="navDropdownMenu">
             <a href="/#gallery">Mission Archive</a>
-            <a href="/captains-log" className={window.location.pathname === '/captains-log' ? 'active' : ''}>Captain&apos;s Log</a>
-            <a href="/skymap" className={window.location.pathname === '/skymap' ? 'active' : ''}>Sky Map</a>
+
+            <a
+              href="/captains-log"
+              className={
+                window.location.pathname === '/captains-log'
+                  ? 'active'
+                  : ''
+              }
+            >
+              Captain&apos;s Log
+            </a>
+
+            <a
+              href="/skymap"
+              className={
+                window.location.pathname === '/skymap'
+                  ? 'active'
+                  : ''
+              }
+            >
+              Sky Map
+            </a>
           </div>
         </div>
 
@@ -46,13 +69,34 @@ function PageNav({ scrolled }) {
           <button type="button" className="navDropdownTrigger">
             Crew <span>⌄</span>
           </button>
+
           <div className="navDropdownMenu">
             <a href="/#crew">Crew Dossiers</a>
-            <a href="/mission-support" className={window.location.pathname === '/mission-support' ? 'active' : ''}>Mission Support</a>
+
+            <a
+              href="/mission-support"
+              className={
+                window.location.pathname === '/mission-support'
+                  ? 'active'
+                  : ''
+              }
+            >
+              Mission Support
+            </a>
           </div>
         </div>
 
-        <a href="/equipment" className={window.location.pathname === '/equipment' ? 'active' : ''}>Gear</a>
+        <a
+          href="/equipment"
+          className={
+            window.location.pathname === '/equipment'
+              ? 'active'
+              : ''
+          }
+        >
+          Gear
+        </a>
+
         <a href="/#about">About</a>
       </nav>
     </header>
@@ -64,28 +108,49 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [weather, setWeather] = useState({});
   const [captainsLog, setCaptainsLog] = useState([]);
-  const [captainsLogStatus, setCaptainsLogStatus] = useState('loading');
+  const [captainsLogStatus, setCaptainsLogStatus] =
+    useState('loading');
   const [equipment, setEquipment] = useState([]);
-  const [equipmentStatus, setEquipmentStatus] = useState('loading');
+  const [equipmentStatus, setEquipmentStatus] =
+    useState('loading');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [viewerMode, setViewerMode] = useState('report');
   const [scrolled, setScrolled] = useState(false);
 
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] =
+    useState(false);
+
   const scroller = useRef(null);
-  const isSkyMapPage = window.location.pathname === '/skymap';
-  const isMissionSupportPage = window.location.pathname === '/mission-support';
-  const isCaptainsLogPage = window.location.pathname === '/captains-log';
-  const isEquipmentPage = window.location.pathname === '/equipment';
+
+  const isSkyMapPage =
+    window.location.pathname === '/skymap';
+
+  const isMissionSupportPage =
+    window.location.pathname === '/mission-support';
+
+  const isCaptainsLogPage =
+    window.location.pathname === '/captains-log';
+
+  const isEquipmentPage =
+    window.location.pathname === '/equipment';
 
   const filteredGallery =
     activeFilter === 'All'
       ? gallery
-      : gallery.filter((photo) => photo.objectType === activeFilter);
+      : gallery.filter(
+          (photo) => photo.objectType === activeFilter
+        );
 
-  const lightboxGallery = isSkyMapPage ? gallery : filteredGallery;
+  const lightboxGallery = isSkyMapPage
+    ? gallery
+    : filteredGallery;
 
   const selectedPhoto =
-    selectedIndex !== null ? lightboxGallery[selectedIndex] : null;
+    selectedIndex !== null
+      ? lightboxGallery[selectedIndex]
+      : null;
 
   const closeLightbox = () => {
     setViewerMode('report');
@@ -94,33 +159,95 @@ export default function App() {
 
   const showNextPhoto = () => {
     if (lightboxGallery.length === 0) return;
+
     setViewerMode('report');
-    setSelectedIndex((current) => (current + 1) % lightboxGallery.length);
+
+    setSelectedIndex(
+      (current) =>
+        (current + 1) % lightboxGallery.length
+    );
   };
 
   const showPreviousPhoto = () => {
     if (lightboxGallery.length === 0) return;
+
     setViewerMode('report');
+
     setSelectedIndex(
-      (current) => (current - 1 + lightboxGallery.length) % lightboxGallery.length
+      (current) =>
+        (current - 1 + lightboxGallery.length) %
+        lightboxGallery.length
     );
   };
 
   const scroll = (dir) => {
-    scroller.current?.scrollBy({ left: dir * 360, behavior: 'smooth' });
+    scroller.current?.scrollBy({
+      left: dir * 360,
+      behavior: 'smooth'
+    });
   };
 
+  async function handleLogout() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error('Logout failed:', error);
+    }
+  }
+
   useEffect(() => {
-    fetch(import.meta.env.BASE_URL + 'data/gallery.json')
-      .then((r) => r.json())
+    let recoveryDetected = false;
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          recoveryDetected = true;
+
+          setIsPasswordRecovery(true);
+          setSession(newSession);
+          setAuthLoading(false);
+
+          return;
+        }
+
+        if (!recoveryDetected) {
+          setSession(newSession);
+          setAuthLoading(false);
+        }
+      }
+    );
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!recoveryDetected) {
+        setSession(data.session);
+        setAuthLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    fetch(
+      import.meta.env.BASE_URL + 'data/gallery.json'
+    )
+      .then((response) => response.json())
       .then(setGallery);
   }, []);
 
   useEffect(() => {
-    fetch(import.meta.env.BASE_URL + 'data/equipment.json')
+    fetch(
+      import.meta.env.BASE_URL + 'data/equipment.json'
+    )
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`Equipment request failed: ${response.status}`);
+          throw new Error(
+            `Equipment request failed: ${response.status}`
+          );
         }
 
         return response.json();
@@ -137,17 +264,23 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetch(import.meta.env.BASE_URL + 'data/captains-log.json')
+    fetch(
+      import.meta.env.BASE_URL +
+        'data/captains-log.json'
+    )
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`Captain's Log request failed: ${response.status}`);
+          throw new Error(
+            `Captain's Log request failed: ${response.status}`
+          );
         }
 
         return response.json();
       })
       .then((entries) => {
         const sortedEntries = [...entries].sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
+          (a, b) =>
+            new Date(b.date) - new Date(a.date)
         );
 
         setCaptainsLog(sortedEntries);
@@ -163,16 +296,31 @@ export default function App() {
   useEffect(() => {
     locations.forEach(async (loc) => {
       try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,cloud_cover,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
-        const data = await fetch(url).then((r) => r.json());
+        const url =
+          `https://api.open-meteo.com/v1/forecast` +
+          `?latitude=${loc.lat}` +
+          `&longitude=${loc.lon}` +
+          `&current=temperature_2m,relative_humidity_2m,cloud_cover,wind_speed_10m` +
+          `&temperature_unit=fahrenheit` +
+          `&wind_speed_unit=mph` +
+          `&timezone=auto`;
 
-        setWeather((prev) => ({
-          ...prev,
+        const data = await fetch(url).then(
+          (response) => response.json()
+        );
+
+        setWeather((previousWeather) => ({
+          ...previousWeather,
           [loc.name]: data.current
         }));
-      } catch (e) {
-        setWeather((prev) => ({
-          ...prev,
+      } catch (error) {
+        console.error(
+          `Weather request failed for ${loc.name}:`,
+          error
+        );
+
+        setWeather((previousWeather) => ({
+          ...previousWeather,
           [loc.name]: null
         }));
       }
@@ -185,27 +333,67 @@ export default function App() {
     };
 
     window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (selectedIndex === null || lightboxGallery.length === 0) return;
+      if (
+        selectedIndex === null ||
+        lightboxGallery.length === 0
+      ) {
+        return;
+      }
 
-      if (event.key === 'Escape') closeLightbox();
-      if (event.key === 'ArrowRight') showNextPhoto();
-      if (event.key === 'ArrowLeft') showPreviousPhoto();
+      if (event.key === 'Escape') {
+        closeLightbox();
+      }
+
+      if (event.key === 'ArrowRight') {
+        showNextPhoto();
+      }
+
+      if (event.key === 'ArrowLeft') {
+        showPreviousPhoto();
+      }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener(
+      'keydown',
+      handleKeyDown
+    );
+
+    return () => {
+      window.removeEventListener(
+        'keydown',
+        handleKeyDown
+      );
+    };
   }, [selectedIndex, lightboxGallery.length]);
+
+  if (authLoading) {
+    return null;
+  }
+
+  if (isPasswordRecovery) {
+    return <Login forcePasswordReset />;
+  }
+
+  if (!session) {
+    return <Login />;
+  }
 
   return (
     <>
       <SpaceBackground />
 
-      {isSkyMapPage || isMissionSupportPage || isCaptainsLogPage || isEquipmentPage ? (
+      {isSkyMapPage ||
+      isMissionSupportPage ||
+      isCaptainsLogPage ||
+      isEquipmentPage ? (
         <PageNav scrolled={scrolled} />
       ) : (
         <Hero
@@ -253,7 +441,10 @@ export default function App() {
           <>
             <QuickLinks />
 
-            <Weather locations={locations} weather={weather} />
+            <Weather
+              locations={locations}
+              weather={weather}
+            />
 
             <Gallery
               gallery={filteredGallery}
@@ -288,8 +479,23 @@ export default function App() {
       />
 
       <footer>
-        <img src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'} />
+        <img
+          src={
+            import.meta.env.BASE_URL +
+            'assets/cuzbro-logo.png'
+          }
+          alt="CuzBro logo"
+        />
+
         <p>Look up. Stay curious.</p>
+
+        <button
+          type="button"
+          className="logout-button"
+          onClick={handleLogout}
+        >
+          LOG OUT
+        </button>
       </footer>
     </>
   );

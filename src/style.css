@@ -8697,4 +8697,292 @@ footer p {
     justify-self: start;
   }
 }
+/* =========================================================
+   CUZBRO OBSERVATORY LOGIN
+   ========================================================= */
 
+.login-page {
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(49, 105, 145, 0.22),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(31, 78, 121, 0.12),
+      transparent 35%
+    ),
+    #020710;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.7) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+
+  background-size:
+    90px 90px,
+    140px 140px;
+
+  background-position:
+    15px 30px,
+    60px 80px;
+
+  opacity: 0.3;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+  max-width: 460px;
+
+  padding: 52px 48px;
+
+  background: rgba(6, 14, 25, 0.88);
+
+  border: 1px solid rgba(115, 187, 214, 0.3);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.55),
+    0 0 50px rgba(68, 150, 190, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  backdrop-filter: blur(16px);
+
+  text-align: center;
+}
+
+.login-card::before {
+  content: 'SECURE CREW TERMINAL';
+  display: block;
+
+  margin-bottom: 22px;
+
+  color: rgba(121, 193, 219, 0.7);
+
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+}
+
+.login-card h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: clamp(3rem, 8vw, 5rem);
+  line-height: 0.9;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+}
+
+.login-card > p {
+  margin: 18px 0 38px;
+
+  color: rgba(212, 229, 240, 0.68);
+
+  font-size: 0.9rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-card input {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 16px 18px;
+
+  color: #eaf7ff;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  border: 1px solid rgba(147, 194, 214, 0.2);
+  border-radius: 8px;
+
+  outline: none;
+
+  font-size: 1rem;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.login-card input::placeholder {
+  color: rgba(205, 225, 235, 0.38);
+}
+
+.login-card input:focus {
+  background: rgba(255, 255, 255, 0.06);
+
+  border-color: rgba(104, 190, 222, 0.75);
+
+  box-shadow:
+    0 0 0 3px rgba(78, 165, 199, 0.12),
+    0 0 24px rgba(78, 165, 199, 0.08);
+}
+
+.login-card button {
+  width: 100%;
+
+  margin-top: 10px;
+
+  padding: 17px 20px;
+
+  color: #031019;
+
+  background: linear-gradient(
+    135deg,
+    #8fd5ec,
+    #5ba9c8
+  );
+
+  border: 0;
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.login-card button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 14px 35px rgba(66, 159, 197, 0.26);
+
+  filter: brightness(1.08);
+}
+
+.login-card button:active {
+  transform: translateY(0);
+}
+
+.login-card button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
+}
+
+.login-error {
+  margin: 20px 0 0 !important;
+
+  color: #ff8b8b !important;
+
+  font-size: 0.85rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: none !important;
+}
+
+@media (max-width: 600px) {
+  .login-card {
+    padding: 42px 26px;
+  }
+
+  .login-card h1 {
+    font-size: 3.6rem;
+  }
+}
+.login-forgot-button {
+  width: auto;
+  margin: 24px auto 0;
+  padding: 8px 12px;
+
+  color: rgba(143, 213, 236, 0.72);
+  background: transparent;
+
+  border: 0;
+
+  box-shadow: none;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+
+  cursor: pointer;
+}
+
+.login-forgot-button:hover {
+  color: #8fd5ec;
+  background: transparent;
+
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+
+.login-forgot-button:disabled {
+  opacity: 0.5;
+}
+
+.login-message {
+  margin: 20px 0 0 !important;
+
+  color: #8fd5ec !important;
+
+  font-size: 0.85rem !important;
+  line-height: 1.6;
+  letter-spacing: 0.04em !important;
+  text-transform: none !important;
+}
+.logout-button {
+  margin-top: 18px;
+  padding: 10px 18px;
+
+  color: rgba(143, 213, 236, 0.72);
+  background: transparent;
+
+  border: 1px solid rgba(143, 213, 236, 0.28);
+  border-radius: 6px;
+
+  cursor: pointer;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.logout-button:hover {
+  color: #ffffff;
+  border-color: rgba(143, 213, 236, 0.7);
+  background: rgba(143, 213, 236, 0.08);
+}
