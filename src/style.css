@@ -10082,3 +10082,227 @@ footer p {
     height: 180px;
   }
 }
+/* =========================================================
+   ADMIN EQUIPMENT LOCKER
+   ========================================================= */
+
+.admin-equipment-facts {
+  margin-top: 38px;
+  padding-top: 38px;
+
+  border-top:
+    1px solid rgba(143, 193, 219, 0.16);
+}
+
+.admin-equipment-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+
+  margin-bottom: 26px;
+}
+
+.admin-equipment-section-heading h3 {
+  margin: 10px 0 9px;
+
+  color: #ffffff;
+
+  font-size: 2rem;
+  letter-spacing: -0.035em;
+}
+
+.admin-equipment-section-heading p {
+  margin: 0;
+
+  color: rgba(205, 221, 235, 0.58);
+
+  font-size: 0.9rem;
+}
+
+.admin-add-fact {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 13px 17px;
+
+  color: #07101a;
+
+  background:
+    linear-gradient(
+      135deg,
+      #9bdaf0,
+      #68abc8
+    );
+
+  border: 0;
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+}
+
+.admin-facts-list {
+  display: grid;
+  gap: 13px;
+}
+
+.admin-fact-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.7fr)
+    minmax(0, 1.3fr)
+    auto;
+
+  align-items: end;
+  gap: 14px;
+
+  padding: 18px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  border:
+    1px solid rgba(143, 193, 219, 0.12);
+  border-radius: 9px;
+}
+
+.admin-fact-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.admin-fact-row label > span {
+  color:
+    rgba(143, 193, 219, 0.72);
+
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+}
+
+.admin-fact-row input {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 14px 16px;
+
+  color: #edf7ff;
+
+  background:
+    rgba(255, 255, 255, 0.035);
+
+  border:
+    1px solid rgba(143, 193, 219, 0.18);
+  border-radius: 8px;
+
+  outline: none;
+
+  font: inherit;
+}
+
+.admin-fact-row input:focus {
+  border-color:
+    rgba(104, 190, 222, 0.7);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(78, 165, 199, 0.1);
+}
+
+.admin-remove-fact {
+  width: 46px;
+  height: 46px;
+
+  display: grid;
+  place-items: center;
+
+  color: #ff9999;
+
+  background:
+    rgba(255, 100, 100, 0.05);
+
+  border:
+    1px solid rgba(255, 100, 100, 0.16);
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+.admin-equipment-bottom-fields {
+  margin-top: 28px;
+}
+
+.admin-equipment-row {
+  display: grid;
+  grid-template-columns:
+    58px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+  gap: 25px;
+
+  padding: 24px 28px;
+
+  border-bottom:
+    1px solid rgba(143, 193, 219, 0.1);
+}
+
+.admin-equipment-row:last-child {
+  border-bottom: 0;
+}
+
+.admin-equipment-record-icon {
+  width: 52px;
+  height: 52px;
+
+  display: grid;
+  place-items: center;
+
+  color: #8fd5ec;
+
+  background:
+    rgba(85, 160, 196, 0.08);
+
+  border:
+    1px solid rgba(143, 213, 236, 0.14);
+  border-radius: 10px;
+}
+
+@media (max-width: 800px) {
+  .admin-equipment-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-fact-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-remove-fact {
+    width: 100%;
+  }
+
+  .admin-equipment-row {
+    grid-template-columns:
+      52px
+      minmax(0, 1fr);
+  }
+
+  .admin-equipment-row
+    .admin-mission-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 550px) {
+  .admin-equipment-row {
+    grid-template-columns: 1fr;
+  }
+}

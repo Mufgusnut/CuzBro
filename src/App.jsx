@@ -1,6 +1,7 @@
 import AdminDashboard from './components/AdminDashboard.jsx';
 import AdminCaptainsLog from './components/AdminCaptainsLog.jsx';
 import AdminGallery from './components/AdminGallery.jsx';
+import AdminEquipment from './components/AdminEquipment.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import SkyMap from './components/SkyMap.jsx';
@@ -120,9 +121,12 @@ function PageNav({ scrolled }) {
 
 export default function App() {
   const [gallery, setGallery] = useState([]);
+
   const [activeFilter, setActiveFilter] =
     useState('All');
+
   const [weather, setWeather] = useState({});
+
   const [captainsLog, setCaptainsLog] =
     useState([]);
 
@@ -168,11 +172,16 @@ export default function App() {
     pathname === '/admin/gallery' ||
     pathname === '/admin/gallery/';
 
+  const isAdminEquipmentPage =
+    pathname === '/admin/equipment' ||
+    pathname === '/admin/equipment/';
+
   const isAdminPage =
     pathname === '/admin' ||
     pathname === '/admin/' ||
     isAdminCaptainsLogPage ||
-    isAdminGalleryPage;
+    isAdminGalleryPage ||
+    isAdminEquipmentPage;
 
   const isSkyMapPage =
     pathname === '/skymap';
@@ -358,28 +367,50 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetch(
-      import.meta.env.BASE_URL +
-        'data/equipment.json'
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Equipment request failed: ${response.status}`
-          );
-        }
+    async function loadEquipment() {
+      setEquipmentStatus('loading');
 
-        return response.json();
-      })
-      .then((items) => {
-        setEquipment(items);
-        setEquipmentStatus('ready');
-      })
-      .catch((error) => {
-        console.error(error);
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*')
+        .order('sort_order', {
+          ascending: true
+        });
+
+      if (error) {
+        console.error(
+          'Equipment request failed:',
+          error
+        );
+
         setEquipment([]);
         setEquipmentStatus('error');
-      });
+
+        return;
+      }
+
+      const items = (data || []).map(
+        (item) => ({
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          type: item.type,
+          role: item.role,
+          status: item.status,
+          icon: item.icon,
+          summary: item.summary,
+          facts: item.facts || [],
+          bestFor: item.best_for || [],
+          fieldNote: item.field_note || '',
+          sortOrder: item.sort_order
+        })
+      );
+
+      setEquipment(items);
+      setEquipmentStatus('ready');
+    }
+
+    loadEquipment();
   }, []);
 
   useEffect(() => {
@@ -395,8 +426,10 @@ export default function App() {
 
       if (error) {
         console.error(error);
+
         setCaptainsLog([]);
         setCaptainsLogStatus('error');
+
         return;
       }
 
@@ -548,6 +581,10 @@ export default function App() {
 
     if (isAdminGalleryPage) {
       return <AdminGallery />;
+    }
+
+    if (isAdminEquipmentPage) {
+      return <AdminEquipment />;
     }
 
     return (
