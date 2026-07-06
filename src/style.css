@@ -548,7 +548,15 @@ main {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(transparent 25%, rgba(2,7,16,.58), rgba(2,7,16,.96));
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 52%,
+      rgba(2, 7, 16, .18) 66%,
+      rgba(2, 7, 16, .72) 82%,
+      rgba(2, 7, 16, .94) 100%
+    );
   pointer-events: none;
 }
 
