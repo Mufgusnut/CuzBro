@@ -392,11 +392,24 @@ const isPasswordResetPage =
           notes: capture.notes,
           nextGoal: capture.next_goal,
           image: capture.image,
-          storagePath: capture.storage_path,
-          ra: capture.ra,
-          dec: capture.dec,
-          sortOrder: capture.sort_order,
-          isFeatured: capture.is_featured
+storagePath: capture.storage_path,
+
+masterFileUrl:
+  capture.master_file_url,
+
+masterStoragePath:
+  capture.master_storage_path,
+
+masterFileName:
+  capture.master_file_name,
+
+masterFileSize:
+  capture.master_file_size,
+
+ra: capture.ra,
+dec: capture.dec,
+sortOrder: capture.sort_order,
+isFeatured: capture.is_featured
         })
       );
 

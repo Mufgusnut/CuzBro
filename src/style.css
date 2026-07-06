@@ -10865,3 +10865,119 @@ footer p {
     height: 22px;
   }
 }
+/* =========================================================
+   MISSION REPORT — FULL-RES MASTER DOWNLOAD
+   ========================================================= */
+
+.missionMasterDownload {
+  margin: 26px 0;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(7, 20, 34, 0.9),
+      rgba(3, 10, 20, 0.94)
+    );
+
+  border:
+    1px solid rgba(143, 213, 236, 0.18);
+
+  border-radius: 12px;
+}
+
+.missionMasterDownload > span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color:
+    rgba(143, 193, 219, 0.62);
+
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.17em;
+}
+
+.missionMasterDownload h4 {
+  margin: 0 0 8px;
+
+  color: #ffffff;
+}
+
+.missionMasterDownload p {
+  margin: 0 0 17px;
+
+  color:
+    rgba(205, 221, 235, 0.65);
+
+  font-size: 0.82rem;
+}
+
+.missionMasterDownload a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-height: 43px;
+
+  padding: 0 16px;
+
+  color: #dff7ff;
+
+  background:
+    rgba(80, 179, 215, 0.08);
+
+  border:
+    1px solid rgba(143, 213, 236, 0.24);
+
+  border-radius: 8px;
+
+  text-decoration: none;
+
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.missionMasterDownload a:hover {
+  color: #ffffff;
+
+  border-color:
+    rgba(255, 157, 28, 0.7);
+
+  background:
+    rgba(255, 157, 28, 0.08);
+}
+
+.admin-master-preview {
+  flex-direction: column;
+
+  gap: 14px;
+
+  color: #8fc9df;
+}
+
+.admin-master-preview span {
+  color:
+    rgba(205, 221, 235, 0.62);
+
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+
+.admin-mission-summary > small {
+  display: block;
+
+  margin-top: 8px;
+
+  color: #8fc9df;
+
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}

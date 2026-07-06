@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Camera,
+  FileArchive,
   ImagePlus,
   Pencil,
   Save,
@@ -14,6 +15,47 @@ import { supabase } from '../supabase.js';
 
 const GALLERY_API =
   'https://cuzbro-gallery-api.dve-hffman.workers.dev';
+
+const MAX_MASTER_UPLOAD_BYTES =
+  99 * 1024 * 1024;
+
+function formatFileSize(bytes) {
+  if (
+    bytes === null ||
+    bytes === undefined ||
+    Number.isNaN(Number(bytes))
+  ) {
+    return '';
+  }
+
+  const size = Number(bytes);
+
+  if (size >= 1024 * 1024 * 1024) {
+    return `${(
+      size /
+      1024 /
+      1024 /
+      1024
+    ).toFixed(1)} GB`;
+  }
+
+  if (size >= 1024 * 1024) {
+    return `${(
+      size /
+      1024 /
+      1024
+    ).toFixed(1)} MB`;
+  }
+
+  if (size >= 1024) {
+    return `${(
+      size /
+      1024
+    ).toFixed(1)} KB`;
+  }
+
+  return `${size} bytes`;
+}
 
 const emptyCapture = {
   title: '',
@@ -138,6 +180,9 @@ export default function AdminGallery() {
   const [imageFile, setImageFile] =
     useState(null);
 
+  const [masterFile, setMasterFile] =
+    useState(null);
+
   const [previewUrl, setPreviewUrl] =
     useState('');
 
@@ -212,6 +257,7 @@ export default function AdminGallery() {
     setEditingCaptureId(null);
     setForm(emptyCapture);
     setImageFile(null);
+    setMasterFile(null);
     setPreviewUrl('');
     setMessage('');
     setError('');
@@ -238,6 +284,7 @@ export default function AdminGallery() {
     });
 
     setImageFile(null);
+    setMasterFile(null);
     setPreviewUrl('');
     setMessage('');
     setError('');
@@ -252,6 +299,7 @@ export default function AdminGallery() {
     );
 
     setImageFile(null);
+    setMasterFile(null);
 
     setPreviewUrl(
       getCaptureImageUrl(capture.image)
@@ -287,6 +335,47 @@ export default function AdminGallery() {
       URL.createObjectURL(file)
     );
 
+    setError('');
+  }
+
+  function handleMasterSelection(event) {
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const lowerName =
+      file.name.toLowerCase();
+
+    if (
+      !lowerName.endsWith('.tif') &&
+      !lowerName.endsWith('.tiff')
+    ) {
+      setError(
+        'Full-resolution master must be a .tif or .tiff file.'
+      );
+
+      event.target.value = '';
+
+      return;
+    }
+
+    if (
+      file.size >
+      MAX_MASTER_UPLOAD_BYTES
+    ) {
+      setError(
+        'TIFF master is too large for the current upload route. Keep the file under 99 MB.'
+      );
+
+      event.target.value = '';
+
+      return;
+    }
+
+    setMasterFile(file);
     setError('');
   }
 
@@ -334,15 +423,61 @@ export default function AdminGallery() {
     };
   }
 
-  async function deleteR2Image(
-    image,
+  async function uploadMaster() {
+    if (!masterFile) {
+      return null;
+    }
+
+    const accessToken =
+      await getCrewAccessToken();
+
+    const response = await fetch(
+      `${GALLERY_API}/upload-master`,
+      {
+        method: 'POST',
+
+        headers: {
+          Authorization:
+            `Bearer ${accessToken}`,
+
+          'Content-Type':
+            masterFile.type ||
+            'image/tiff',
+
+          'X-Filename':
+            masterFile.name
+        },
+
+        body: masterFile
+      }
+    );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+          'R2 TIFF master upload failed.'
+      );
+    }
+
+    return {
+      url: result.url,
+      storagePath: result.key,
+      fileName:
+        result.fileName ||
+        masterFile.name,
+      fileSize:
+        result.fileSize ??
+        masterFile.size
+    };
+  }
+
+  async function deleteR2Object(
     storagePath
   ) {
-    if (
-      !image ||
-      !storagePath ||
-      !isR2ImageUrl(image)
-    ) {
+    if (!storagePath) {
       return;
     }
 
@@ -369,7 +504,7 @@ export default function AdminGallery() {
     if (!response.ok) {
       throw new Error(
         result.error ||
-          'R2 image deletion failed.'
+          'R2 object deletion failed.'
       );
     }
   }
@@ -382,6 +517,7 @@ export default function AdminGallery() {
     setError('');
 
     let uploadedImage = null;
+    let uploadedMaster = null;
 
     try {
       if (
@@ -405,6 +541,11 @@ export default function AdminGallery() {
       if (imageFile) {
         uploadedImage =
           await uploadImage();
+      }
+
+      if (masterFile) {
+        uploadedMaster =
+          await uploadMaster();
       }
 
       const captureRow = {
@@ -452,6 +593,26 @@ export default function AdminGallery() {
         storage_path:
           uploadedImage?.storagePath ||
           existingCapture?.storage_path ||
+          null,
+
+        master_file_url:
+          uploadedMaster?.url ||
+          existingCapture?.master_file_url ||
+          null,
+
+        master_storage_path:
+          uploadedMaster?.storagePath ||
+          existingCapture?.master_storage_path ||
+          null,
+
+        master_file_name:
+          uploadedMaster?.fileName ||
+          existingCapture?.master_file_name ||
+          null,
+
+        master_file_size:
+          uploadedMaster?.fileSize ??
+          existingCapture?.master_file_size ??
           null,
 
         ra:
@@ -519,9 +680,14 @@ export default function AdminGallery() {
 
       if (saveError) {
         if (uploadedImage) {
-          await deleteR2Image(
-            uploadedImage.image,
+          await deleteR2Object(
             uploadedImage.storagePath
+          );
+        }
+
+        if (uploadedMaster) {
+          await deleteR2Object(
+            uploadedMaster.storagePath
           );
         }
 
@@ -536,9 +702,26 @@ export default function AdminGallery() {
         existingCapture.image !==
           uploadedImage.image
       ) {
-        await deleteR2Image(
-          existingCapture.image,
-          existingCapture.storage_path
+        if (
+          isR2ImageUrl(
+            existingCapture.image
+          )
+        ) {
+          await deleteR2Object(
+            existingCapture.storage_path
+          );
+        }
+      }
+
+      if (
+        editingCaptureId !== 'new' &&
+        uploadedMaster &&
+        existingCapture?.master_storage_path &&
+        existingCapture.master_storage_path !==
+          uploadedMaster.storagePath
+      ) {
+        await deleteR2Object(
+          existingCapture.master_storage_path
         );
       }
 
@@ -552,6 +735,7 @@ export default function AdminGallery() {
       setEditingCaptureId(null);
       setForm(emptyCapture);
       setImageFile(null);
+      setMasterFile(null);
       setPreviewUrl('');
 
       setMessage(
@@ -651,9 +835,16 @@ export default function AdminGallery() {
         throw deleteError;
       }
 
-      await deleteR2Image(
-        capture.image,
-        capture.storage_path
+      if (
+        isR2ImageUrl(capture.image)
+      ) {
+        await deleteR2Object(
+          capture.storage_path
+        );
+      }
+
+      await deleteR2Object(
+        capture.master_storage_path
       );
 
       if (
@@ -862,6 +1053,101 @@ export default function AdminGallery() {
                       ).toFixed(1)}
                       {' MB'}
                     </small>
+                  )}
+                </div>
+              </section>
+
+              <section className="admin-image-uploader admin-master-uploader">
+                <div className="admin-image-preview admin-master-preview">
+                  <FileArchive size={42} />
+
+                  <span>
+                    {masterFile
+                      ? 'TIFF MASTER SELECTED'
+                      : editingCaptureId !== 'new' &&
+                          captures.find(
+                            (capture) =>
+                              capture.id ===
+                              editingCaptureId
+                          )?.master_file_name
+                        ? 'TIFF MASTER STORED'
+                        : 'NO TIFF MASTER'}
+                  </span>
+                </div>
+
+                <div className="admin-upload-controls">
+                  <span className="admin-card-eyebrow">
+                    FULL-RES MASTER
+                  </span>
+
+                  <h4>
+                    Original TIFF
+                  </h4>
+
+                  <p>
+                    Optional full-resolution
+                    TIFF stored in Cloudflare R2.
+                    Visitors can download the
+                    original master from the
+                    Mission Report.
+                  </p>
+
+                  <label className="admin-file-button">
+                    <Upload size={18} />
+
+                    {masterFile
+                      ? 'CHANGE TIFF MASTER'
+                      : editingCaptureId !== 'new' &&
+                          captures.find(
+                            (capture) =>
+                              capture.id ===
+                              editingCaptureId
+                          )?.master_storage_path
+                        ? 'REPLACE TIFF MASTER'
+                        : 'SELECT TIFF MASTER'}
+
+                    <input
+                      type="file"
+                      accept=".tif,.tiff,image/tiff"
+                      onChange={
+                        handleMasterSelection
+                      }
+                    />
+                  </label>
+
+                  {masterFile ? (
+                    <small>
+                      {masterFile.name}
+                      {' · '}
+                      {formatFileSize(
+                        masterFile.size
+                      )}
+                    </small>
+                  ) : (
+                    editingCaptureId !== 'new' &&
+                    captures.find(
+                      (capture) =>
+                        capture.id ===
+                        editingCaptureId
+                    )?.master_file_name && (
+                      <small>
+                        {
+                          captures.find(
+                            (capture) =>
+                              capture.id ===
+                              editingCaptureId
+                          ).master_file_name
+                        }
+                        {' · '}
+                        {formatFileSize(
+                          captures.find(
+                            (capture) =>
+                              capture.id ===
+                              editingCaptureId
+                          ).master_file_size
+                        )}
+                      </small>
+                    )
                   )}
                 </div>
               </section>
@@ -1190,6 +1476,15 @@ export default function AdminGallery() {
                     {' · '}
                     {capture.capture_date}
                   </p>
+
+                  {capture.master_file_name && (
+                    <small>
+                      TIFF MASTER ·{' '}
+                      {formatFileSize(
+                        capture.master_file_size
+                      )}
+                    </small>
+                  )}
                 </div>
 
                 <div className="admin-mission-actions">

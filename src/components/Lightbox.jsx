@@ -1,6 +1,7 @@
 import {
   ChevronLeft,
   ChevronRight,
+  Download,
   Search,
   X,
   ZoomIn,
@@ -107,6 +108,44 @@ function getMatchingMissionLogs(
         new Date(b.date) -
         new Date(a.date)
     );
+}
+
+function formatFileSize(bytes) {
+  if (
+    bytes === null ||
+    bytes === undefined ||
+    Number.isNaN(Number(bytes))
+  ) {
+    return '';
+  }
+
+  const size = Number(bytes);
+
+  if (size >= 1024 * 1024 * 1024) {
+    return `${(
+      size /
+      1024 /
+      1024 /
+      1024
+    ).toFixed(1)} GB`;
+  }
+
+  if (size >= 1024 * 1024) {
+    return `${(
+      size /
+      1024 /
+      1024
+    ).toFixed(1)} MB`;
+  }
+
+  if (size >= 1024) {
+    return `${(
+      size /
+      1024
+    ).toFixed(1)} KB`;
+  }
+
+  return `${size} bytes`;
 }
 
 function getCaptureImageUrl(image) {
@@ -533,6 +572,37 @@ export default function Lightbox({
                 </p>
               )}
             </section>
+
+            {selectedPhoto.masterFileUrl && (
+              <section className="missionMasterDownload">
+                <span>
+                  FULL-RES MASTER
+                </span>
+
+                <h4>
+                  Original TIFF
+                </h4>
+
+                <p>
+                  {selectedPhoto.masterFileName ||
+                    'Full-resolution TIFF'}
+                  {selectedPhoto.masterFileSize
+                    ? ` · ${formatFileSize(
+                        selectedPhoto.masterFileSize
+                      )}`
+                    : ''}
+                </p>
+
+                <a
+                  href={
+                    selectedPhoto.masterFileUrl
+                  }
+                >
+                  <Download size={17} />
+                  DOWNLOAD FULL-SIZE IMAGE
+                </a>
+              </section>
+            )}
 
             <h4>Next Goal</h4>
 
