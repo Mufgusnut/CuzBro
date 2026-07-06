@@ -9,6 +9,7 @@ export default function Login({
   );
 
   const [email, setEmail] = useState('');
+
   const [password, setPassword] =
     useState('');
 
@@ -21,6 +22,7 @@ export default function Login({
   ] = useState('');
 
   const [error, setError] = useState('');
+
   const [message, setMessage] =
     useState('');
 
@@ -28,81 +30,177 @@ export default function Login({
     useState(false);
 
   const [
-    recoverySessionReady,
-    setRecoverySessionReady
-  ] = useState(false);
+    recoveryStatus,
+    setRecoveryStatus
+  ] = useState(
+    forcePasswordReset
+      ? 'checking'
+      : 'idle'
+  );
 
   useEffect(() => {
     if (forcePasswordReset) {
       setMode('reset');
+      setRecoveryStatus('checking');
     }
   }, [forcePasswordReset]);
 
   useEffect(() => {
     let mounted = true;
 
-    async function checkRecoverySession() {
-      const {
-        data: { session },
-        error: sessionError
-      } = await supabase.auth.getSession();
-
-      if (!mounted) {
-        return;
-      }
-
-      if (sessionError) {
-        console.error(
-          'Recovery session check failed:',
-          sessionError
+    async function initializeRecovery() {
+      const searchParams =
+        new URLSearchParams(
+          window.location.search
         );
-      }
 
-      setRecoverySessionReady(Boolean(session));
-    }
+      const authCode =
+        searchParams.get('code');
 
-    checkRecoverySession();
+      const hashParams =
+        new URLSearchParams(
+          window.location.hash.replace(
+            /^#/,
+            ''
+          )
+        );
 
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      const accessToken =
+        hashParams.get('access_token');
+
+      const refreshToken =
+        hashParams.get('refresh_token');
+
+      const recoveryType =
+        hashParams.get('type');
+
+      try {
+        /*
+         * PKCE recovery callback:
+         * ?code=...
+         */
+        if (authCode) {
+          const {
+            error: exchangeError
+          } =
+            await supabase.auth
+              .exchangeCodeForSession(
+                authCode
+              );
+
+          if (exchangeError) {
+            throw exchangeError;
+          }
+        }
+
+        /*
+         * Implicit recovery callback:
+         * #access_token=...&refresh_token=...
+         */
+        if (
+          recoveryType === 'recovery' &&
+          accessToken &&
+          refreshToken
+        ) {
+          const {
+            error: sessionError
+          } =
+            await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+
+          if (sessionError) {
+            throw sessionError;
+          }
+        }
+
+        const {
+          data: { session },
+          error: getSessionError
+        } =
+          await supabase.auth.getSession();
+
+        if (getSessionError) {
+          throw getSessionError;
+        }
+
         if (!mounted) {
           return;
         }
 
-        if (event === 'PASSWORD_RECOVERY') {
-          setMode('reset');
-          setRecoverySessionReady(
-            Boolean(session)
-          );
-
+        if (session) {
+          setRecoveryStatus('ready');
           setError('');
-          setMessage('');
 
+          /*
+           * Remove recovery credentials from
+           * the visible browser URL.
+           */
+          window.history.replaceState(
+            {},
+            '',
+            '/admin?reset-password=true'
+          );
+        } else {
+          setRecoveryStatus('invalid');
+
+          setError(
+            'The recovery link could not create an active session. Request a new password reset email and open the newest link.'
+          );
+        }
+      } catch (recoveryError) {
+        console.error(
+          'Password recovery initialization failed:',
+          recoveryError
+        );
+
+        if (!mounted) {
           return;
         }
 
-        if (
-          event === 'SIGNED_IN' ||
-          event === 'TOKEN_REFRESHED'
-        ) {
-          setRecoverySessionReady(
-            Boolean(session)
-          );
-        }
+        setRecoveryStatus('invalid');
 
-        if (event === 'SIGNED_OUT') {
-          setRecoverySessionReady(false);
-        }
+        setError(
+          recoveryError.message ||
+            'The recovery link could not be verified.'
+        );
       }
-    );
+    }
+
+    if (forcePasswordReset) {
+      initializeRecovery();
+    }
+
+    const {
+      data: { subscription }
+    } =
+      supabase.auth.onAuthStateChange(
+        (event, session) => {
+          if (!mounted) {
+            return;
+          }
+
+          if (
+            event === 'PASSWORD_RECOVERY'
+          ) {
+            setMode('reset');
+
+            setRecoveryStatus(
+              session ? 'ready' : 'checking'
+            );
+
+            setError('');
+            setMessage('');
+          }
+        }
+      );
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [forcePasswordReset]);
 
   async function handleLogin(event) {
     event.preventDefault();
@@ -112,10 +210,11 @@ export default function Login({
     setMessage('');
 
     const { error: loginError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      await supabase.auth
+        .signInWithPassword({
+          email,
+          password
+        });
 
     if (loginError) {
       setError(loginError.message);
@@ -124,7 +223,9 @@ export default function Login({
     setLoading(false);
   }
 
-  async function handleForgotPassword(event) {
+  async function handleForgotPassword(
+    event
+  ) {
     event.preventDefault();
 
     setError('');
@@ -145,33 +246,33 @@ export default function Login({
       : 'https://cuzbro.net/admin?reset-password=true';
 
     const { error: resetError } =
-      await supabase.auth.resetPasswordForEmail(
-        email,
-        {
+      await supabase.auth
+        .resetPasswordForEmail(email, {
           redirectTo
-        }
-      );
+        });
 
     if (resetError) {
       setError(resetError.message);
     } else {
       setMessage(
-        'Recovery transmission sent. Check your email for the password reset link.'
+        'Recovery transmission sent. Check your email for the newest password reset link.'
       );
     }
 
     setLoading(false);
   }
 
-  async function handleUpdatePassword(event) {
+  async function handleUpdatePassword(
+    event
+  ) {
     event.preventDefault();
 
     setError('');
     setMessage('');
 
-    if (!recoverySessionReady) {
+    if (recoveryStatus !== 'ready') {
       setError(
-        'The recovery session is not active. Request a new password reset link and open the newest email.'
+        'Recovery authentication is still unavailable. Open the newest password reset email.'
       );
 
       return;
@@ -185,7 +286,9 @@ export default function Login({
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (
+      newPassword !== confirmPassword
+    ) {
       setError(
         'The passwords do not match.'
       );
@@ -210,17 +313,17 @@ export default function Login({
     setNewPassword('');
     setConfirmPassword('');
 
-    window.history.replaceState(
-      {},
-      '',
-      '/admin'
-    );
-
     setMessage(
       'Access credentials updated. Entering Observatory Control...'
     );
 
     setLoading(false);
+
+    window.history.replaceState(
+      {},
+      '',
+      '/admin'
+    );
 
     window.setTimeout(() => {
       window.location.href = '/admin';
@@ -233,10 +336,22 @@ export default function Login({
         <div className="login-card">
           <h1>CuzBro</h1>
 
-          <p>Reset Access Credentials</p>
+          <p>
+            Reset Access Credentials
+          </p>
+
+          {recoveryStatus ===
+            'checking' && (
+            <p className="login-message">
+              VERIFYING RECOVERY
+              TRANSMISSION...
+            </p>
+          )}
 
           <form
-            onSubmit={handleUpdatePassword}
+            onSubmit={
+              handleUpdatePassword
+            }
           >
             <input
               type="password"
@@ -249,6 +364,9 @@ export default function Login({
               }
               autoComplete="new-password"
               required
+              disabled={
+                recoveryStatus !== 'ready'
+              }
             />
 
             <input
@@ -262,15 +380,24 @@ export default function Login({
               }
               autoComplete="new-password"
               required
+              disabled={
+                recoveryStatus !== 'ready'
+              }
             />
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={
+                loading ||
+                recoveryStatus !== 'ready'
+              }
             >
               {loading
                 ? 'UPDATING...'
-                : 'UPDATE ACCESS CREDENTIALS'}
+                : recoveryStatus ===
+                    'checking'
+                  ? 'VERIFYING RECOVERY...'
+                  : 'UPDATE ACCESS CREDENTIALS'}
             </button>
           </form>
 
