@@ -9858,3 +9858,227 @@ footer p {
     padding: 23px;
   }
 }
+/* =========================================================
+   ADMIN CAPTURE CONTROL
+   ========================================================= */
+
+.admin-image-uploader {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.35fr)
+    minmax(280px, 0.65fr);
+
+  gap: 34px;
+
+  margin-bottom: 36px;
+  padding-bottom: 36px;
+
+  border-bottom:
+    1px solid rgba(143, 193, 219, 0.16);
+}
+
+.admin-image-preview {
+  min-height: 380px;
+
+  overflow: hidden;
+
+  display: grid;
+  place-items: center;
+
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(72, 130, 170, 0.1),
+      transparent 55%
+    ),
+    #020710;
+
+  border:
+    1px solid rgba(143, 193, 219, 0.17);
+  border-radius: 12px;
+}
+
+.admin-image-preview img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+  max-height: 600px;
+
+  object-fit: contain;
+}
+
+.admin-image-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 17px;
+
+  color: rgba(143, 193, 219, 0.45);
+}
+
+.admin-image-empty span {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.admin-upload-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.admin-upload-controls h4 {
+  margin: 12px 0 15px;
+
+  color: #ffffff;
+
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+}
+
+.admin-upload-controls p {
+  margin: 0 0 27px;
+
+  color: rgba(205, 221, 235, 0.6);
+
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.admin-file-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 15px 19px;
+
+  color: #06111c;
+
+  background:
+    linear-gradient(
+      135deg,
+      #9bdaf0,
+      #68abc8
+    );
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.admin-file-button input {
+  display: none;
+}
+
+.admin-upload-controls small {
+  display: block;
+
+  max-width: 100%;
+
+  margin-top: 15px;
+
+  color: rgba(205, 221, 235, 0.5);
+
+  font-size: 0.75rem;
+
+  overflow-wrap: anywhere;
+}
+
+.admin-capture-row {
+  display: grid;
+  grid-template-columns:
+    110px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+  gap: 28px;
+
+  padding: 20px 28px;
+
+  border-bottom:
+    1px solid rgba(143, 193, 219, 0.1);
+}
+
+.admin-capture-row:last-child {
+  border-bottom: 0;
+}
+
+.admin-capture-thumbnail {
+  width: 110px;
+  height: 82px;
+
+  overflow: hidden;
+
+  background: #020710;
+
+  border:
+    1px solid rgba(143, 193, 219, 0.14);
+  border-radius: 8px;
+}
+
+.admin-capture-thumbnail img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.admin-capture-row
+  .admin-mission-summary
+  .admin-card-eyebrow {
+  display: block;
+
+  margin-bottom: 7px;
+}
+
+@media (max-width: 900px) {
+  .admin-image-uploader {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-image-preview {
+    min-height: 300px;
+  }
+
+  .admin-capture-row {
+    grid-template-columns:
+      90px
+      minmax(0, 1fr);
+  }
+
+  .admin-capture-thumbnail {
+    width: 90px;
+    height: 70px;
+  }
+
+  .admin-capture-row
+    .admin-mission-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-image-preview {
+    min-height: 230px;
+  }
+
+  .admin-capture-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-capture-thumbnail {
+    width: 100%;
+    height: 180px;
+  }
+}

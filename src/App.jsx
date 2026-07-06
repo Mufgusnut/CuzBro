@@ -1,5 +1,6 @@
 import AdminDashboard from './components/AdminDashboard.jsx';
 import AdminCaptainsLog from './components/AdminCaptainsLog.jsx';
+import AdminGallery from './components/AdminGallery.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import SkyMap from './components/SkyMap.jsx';
@@ -124,24 +125,32 @@ export default function App() {
   const [weather, setWeather] = useState({});
   const [captainsLog, setCaptainsLog] =
     useState([]);
+
   const [
     captainsLogStatus,
     setCaptainsLogStatus
   ] = useState('loading');
+
   const [equipment, setEquipment] = useState([]);
+
   const [
     equipmentStatus,
     setEquipmentStatus
   ] = useState('loading');
+
   const [selectedIndex, setSelectedIndex] =
     useState(null);
+
   const [viewerMode, setViewerMode] =
     useState('report');
+
   const [scrolled, setScrolled] = useState(false);
 
   const [session, setSession] = useState(null);
+
   const [authLoading, setAuthLoading] =
     useState(true);
+
   const [
     isPasswordRecovery,
     setIsPasswordRecovery
@@ -155,10 +164,15 @@ export default function App() {
     pathname === '/admin/captains-log' ||
     pathname === '/admin/captains-log/';
 
+  const isAdminGalleryPage =
+    pathname === '/admin/gallery' ||
+    pathname === '/admin/gallery/';
+
   const isAdminPage =
     pathname === '/admin' ||
     pathname === '/admin/' ||
-    isAdminCaptainsLogPage;
+    isAdminCaptainsLogPage ||
+    isAdminGalleryPage;
 
   const isSkyMapPage =
     pathname === '/skymap';
@@ -295,12 +309,52 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetch(
-      import.meta.env.BASE_URL +
-        'data/gallery.json'
-    )
-      .then((response) => response.json())
-      .then(setGallery);
+    async function loadGallery() {
+      const { data, error } = await supabase
+        .from('gallery')
+        .select('*')
+        .order('sort_order', {
+          ascending: true
+        });
+
+      if (error) {
+        console.error(
+          'Gallery request failed:',
+          error
+        );
+
+        setGallery([]);
+
+        return;
+      }
+
+      const captures = (data || []).map(
+        (capture) => ({
+          id: capture.id,
+          title: capture.title,
+          subtitle: capture.subtitle,
+          category: capture.category,
+          objectType: capture.object_type,
+          constellation: capture.constellation,
+          distance: capture.distance,
+          captureDate: capture.capture_date,
+          exposure: capture.exposure,
+          processing: capture.processing,
+          equipment: capture.equipment,
+          notes: capture.notes,
+          nextGoal: capture.next_goal,
+          image: capture.image,
+          storagePath: capture.storage_path,
+          ra: capture.ra,
+          dec: capture.dec,
+          sortOrder: capture.sort_order
+        })
+      );
+
+      setGallery(captures);
+    }
+
+    loadGallery();
   }, []);
 
   useEffect(() => {
@@ -335,7 +389,9 @@ export default function App() {
       const { data, error } = await supabase
         .from('captains_log')
         .select('*')
-        .order('date', { ascending: false });
+        .order('date', {
+          ascending: false
+        });
 
       if (error) {
         console.error(error);
@@ -357,8 +413,10 @@ export default function App() {
           notes: entry.notes || '',
           worked: entry.worked || [],
           improve: entry.improve || [],
-          nextMission: entry.next_mission || '',
-          targetNotes: entry.target_notes || {}
+          nextMission:
+            entry.next_mission || '',
+          targetNotes:
+            entry.target_notes || {}
         })
       );
 
@@ -486,6 +544,10 @@ export default function App() {
 
     if (isAdminCaptainsLogPage) {
       return <AdminCaptainsLog />;
+    }
+
+    if (isAdminGalleryPage) {
+      return <AdminGallery />;
     }
 
     return (
