@@ -10776,3 +10776,92 @@ footer p {
     grid-column: 2;
   }
 }
+/* =========================================================
+   CINEMA MODE — PERSISTENT EXIT CONTROL
+   ========================================================= */
+
+.cinemaExitButton {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(18px, env(safe-area-inset-right));
+
+  z-index: 10050;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 46px;
+
+  padding: 0 17px;
+
+  color: #ffffff;
+
+  background:
+    rgba(3, 10, 21, 0.82);
+
+  border:
+    1px solid rgba(164, 221, 244, 0.34);
+
+  border-radius: 999px;
+
+  box-shadow:
+    0 10px 34px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(95, 190, 225, 0.08);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  cursor: pointer;
+
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+
+  touch-action: manipulation;
+}
+
+.cinemaExitButton:hover {
+  color: #ffffff;
+
+  border-color:
+    rgba(255, 157, 28, 0.72);
+
+  background:
+    rgba(28, 20, 12, 0.9);
+}
+
+.cinemaExitButton:active {
+  transform: scale(0.96);
+}
+
+@media (max-width: 650px) {
+  .cinemaExitButton {
+    top:
+      max(
+        14px,
+        env(safe-area-inset-top)
+      );
+
+    right:
+      max(
+        14px,
+        env(safe-area-inset-right)
+      );
+
+    min-width: 48px;
+    min-height: 48px;
+
+    padding: 0 14px;
+  }
+
+  .cinemaExitButton span {
+    display: none;
+  }
+
+  .cinemaExitButton svg {
+    width: 22px;
+    height: 22px;
+  }
+}

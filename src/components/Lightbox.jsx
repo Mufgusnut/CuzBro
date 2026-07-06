@@ -179,6 +179,10 @@ export default function Lightbox({
     }
   };
 
+  const exitCinema = () => {
+    setViewerMode('report');
+  };
+
   return (
     <div
       className="lightbox"
@@ -186,6 +190,18 @@ export default function Lightbox({
       aria-modal="true"
     >
       <div className="missionViewer">
+        {isCinema && (
+          <button
+            type="button"
+            className="cinemaExitButton"
+            onClick={exitCinema}
+            aria-label="Exit cinema mode"
+          >
+            <X size={20} />
+            <span>EXIT CINEMA</span>
+          </button>
+        )}
+
         <div className="missionTopbar">
           <div className="missionBrand">
             <span className="crosshair">
@@ -208,23 +224,29 @@ export default function Lightbox({
           </div>
 
           <button
+            type="button"
             className="lightboxClose"
             onClick={closeLightbox}
+            aria-label="Close mission report"
           >
             <X />
           </button>
         </div>
 
         <button
+          type="button"
           className="lightboxArrow left"
           onClick={showPreviousPhoto}
+          aria-label="Previous capture"
         >
           <ChevronLeft />
         </button>
 
         <button
+          type="button"
           className="lightboxArrow right"
           onClick={showNextPhoto}
+          aria-label="Next capture"
         >
           <ChevronRight />
         </button>
@@ -240,6 +262,7 @@ export default function Lightbox({
             {viewerMode === 'report' ? (
               <>
                 <button
+                  type="button"
                   className="zoomHint"
                   onClick={handleImageClick}
                 >
@@ -310,18 +333,6 @@ export default function Lightbox({
                       >
                         <RotateCcw size={16} />
                         Reset
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setViewerMode(
-                            'report'
-                          )
-                        }
-                      >
-                        <X size={16} />
-                        Exit
                       </button>
                     </div>
 
@@ -540,8 +551,10 @@ export default function Lightbox({
           }
         >
           <button
+            type="button"
             className="filmNav"
             onClick={showPreviousPhoto}
+            aria-label="Previous capture"
           >
             <ChevronLeft />
           </button>
@@ -582,8 +595,10 @@ export default function Lightbox({
           </div>
 
           <button
+            type="button"
             className="filmNav"
             onClick={showNextPhoto}
+            aria-label="Next capture"
           >
             <ChevronRight />
           </button>
