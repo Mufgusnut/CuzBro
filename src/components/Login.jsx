@@ -1,32 +1,105 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 
-export default function Login({ forcePasswordReset = false }) {
+export default function Login({
+  forcePasswordReset = false
+}) {
   const [mode, setMode] = useState(
-  forcePasswordReset ? 'reset' : 'login'
-);
+    forcePasswordReset ? 'reset' : 'login'
+  );
 
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] =
+    useState('');
+
+  const [newPassword, setNewPassword] =
+    useState('');
+
+  const [
+    confirmPassword,
+    setConfirmPassword
+  ] = useState('');
 
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [message, setMessage] =
+    useState('');
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [
+    recoverySessionReady,
+    setRecoverySessionReady
+  ] = useState(false);
 
   useEffect(() => {
+    if (forcePasswordReset) {
+      setMode('reset');
+    }
+  }, [forcePasswordReset]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function checkRecoverySession() {
+      const {
+        data: { session },
+        error: sessionError
+      } = await supabase.auth.getSession();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (sessionError) {
+        console.error(
+          'Recovery session check failed:',
+          sessionError
+        );
+      }
+
+      setRecoverySessionReady(Boolean(session));
+    }
+
+    checkRecoverySession();
+
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setMode('reset');
-        setError('');
-        setMessage('');
+    } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) {
+          return;
+        }
+
+        if (event === 'PASSWORD_RECOVERY') {
+          setMode('reset');
+          setRecoverySessionReady(
+            Boolean(session)
+          );
+
+          setError('');
+          setMessage('');
+
+          return;
+        }
+
+        if (
+          event === 'SIGNED_IN' ||
+          event === 'TOKEN_REFRESHED'
+        ) {
+          setRecoverySessionReady(
+            Boolean(session)
+          );
+        }
+
+        if (event === 'SIGNED_OUT') {
+          setRecoverySessionReady(false);
+        }
       }
-    });
+    );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -58,20 +131,26 @@ export default function Login({ forcePasswordReset = false }) {
     setMessage('');
 
     if (!email) {
-      setError('Enter your email address first.');
+      setError(
+        'Enter your email address first.'
+      );
+
       return;
     }
 
     setLoading(true);
 
     const redirectTo = import.meta.env.DEV
-  ? 'http://localhost:5173/admin'
-  : 'https://cuzbro.net/admin';
+      ? 'http://localhost:5173/admin?reset-password=true'
+      : 'https://cuzbro.net/admin?reset-password=true';
 
     const { error: resetError } =
-      await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo
-      });
+      await supabase.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo
+        }
+      );
 
     if (resetError) {
       setError(resetError.message);
@@ -90,13 +169,27 @@ export default function Login({ forcePasswordReset = false }) {
     setError('');
     setMessage('');
 
+    if (!recoverySessionReady) {
+      setError(
+        'The recovery session is not active. Request a new password reset link and open the newest email.'
+      );
+
+      return;
+    }
+
     if (newPassword.length < 8) {
-      setError('Your new password must be at least 8 characters.');
+      setError(
+        'Your new password must be at least 8 characters.'
+      );
+
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('The passwords do not match.');
+      setError(
+        'The passwords do not match.'
+      );
+
       return;
     }
 
@@ -110,15 +203,28 @@ export default function Login({ forcePasswordReset = false }) {
     if (updateError) {
       setError(updateError.message);
       setLoading(false);
+
       return;
     }
-
-    setMessage('Access credentials updated.');
 
     setNewPassword('');
     setConfirmPassword('');
 
+    window.history.replaceState(
+      {},
+      '',
+      '/admin'
+    );
+
+    setMessage(
+      'Access credentials updated. Entering Observatory Control...'
+    );
+
     setLoading(false);
+
+    window.setTimeout(() => {
+      window.location.href = '/admin';
+    }, 1200);
   }
 
   if (mode === 'reset') {
@@ -126,15 +232,20 @@ export default function Login({ forcePasswordReset = false }) {
       <div className="login-page">
         <div className="login-card">
           <h1>CuzBro</h1>
+
           <p>Reset Access Credentials</p>
 
-          <form onSubmit={handleUpdatePassword}>
+          <form
+            onSubmit={handleUpdatePassword}
+          >
             <input
               type="password"
               placeholder="New Password"
               value={newPassword}
               onChange={(event) =>
-                setNewPassword(event.target.value)
+                setNewPassword(
+                  event.target.value
+                )
               }
               autoComplete="new-password"
               required
@@ -145,13 +256,18 @@ export default function Login({ forcePasswordReset = false }) {
               placeholder="Confirm New Password"
               value={confirmPassword}
               onChange={(event) =>
-                setConfirmPassword(event.target.value)
+                setConfirmPassword(
+                  event.target.value
+                )
               }
               autoComplete="new-password"
               required
             />
 
-            <button type="submit" disabled={loading}>
+            <button
+              type="submit"
+              disabled={loading}
+            >
               {loading
                 ? 'UPDATING...'
                 : 'UPDATE ACCESS CREDENTIALS'}
@@ -159,11 +275,15 @@ export default function Login({ forcePasswordReset = false }) {
           </form>
 
           {error && (
-            <p className="login-error">{error}</p>
+            <p className="login-error">
+              {error}
+            </p>
           )}
 
           {message && (
-            <p className="login-message">{message}</p>
+            <p className="login-message">
+              {message}
+            </p>
           )}
         </div>
       </div>
@@ -174,6 +294,7 @@ export default function Login({ forcePasswordReset = false }) {
     <div className="login-page">
       <div className="login-card">
         <h1>CuzBro</h1>
+
         <p>Observatory Access</p>
 
         <form onSubmit={handleLogin}>
@@ -199,7 +320,10 @@ export default function Login({ forcePasswordReset = false }) {
             required
           />
 
-          <button type="submit" disabled={loading}>
+          <button
+            type="submit"
+            disabled={loading}
+          >
             {loading
               ? 'ACCESSING...'
               : 'ENTER OBSERVATORY'}
@@ -216,11 +340,15 @@ export default function Login({ forcePasswordReset = false }) {
         </button>
 
         {error && (
-          <p className="login-error">{error}</p>
+          <p className="login-error">
+            {error}
+          </p>
         )}
 
         {message && (
-          <p className="login-message">{message}</p>
+          <p className="login-message">
+            {message}
+          </p>
         )}
       </div>
     </div>

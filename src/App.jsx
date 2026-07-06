@@ -173,6 +173,14 @@ export default function App() {
 
   const pathname = window.location.pathname;
 
+const searchParams = new URLSearchParams(
+  window.location.search
+);
+
+const isPasswordResetPage =
+  searchParams.get('reset-password') ===
+  'true';
+
   const isAdminCaptainsLogPage =
     pathname === '/admin/captains-log' ||
     pathname === '/admin/captains-log/';
@@ -591,9 +599,12 @@ export default function App() {
    * Recovery links must be allowed to show the
    * password reset UI even outside /admin.
    */
-  if (isPasswordRecovery) {
-    return <Login forcePasswordReset />;
-  }
+  if (
+  isPasswordRecovery ||
+  isPasswordResetPage
+) {
+  return <Login forcePasswordReset />;
+}
 
   /*
    * Only admin pages require authentication.
