@@ -10981,3 +10981,542 @@ footer p {
   font-weight: 900;
   letter-spacing: 0.12em;
 }
+/* =========================================================
+   ADMIN — CREW TRANSFER
+   ========================================================= */
+
+.admin-transfer-page .admin-main {
+  max-width: 1440px;
+}
+
+.admin-transfer-uploader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 0.8fr) minmax(420px, 1.2fr);
+  gap: 26px;
+  align-items: start;
+
+  margin: 30px 0 42px;
+  padding: 28px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(7, 20, 34, 0.92),
+      rgba(3, 10, 20, 0.96)
+    );
+
+  border:
+    1px solid rgba(143, 213, 236, 0.16);
+
+  border-radius: 16px;
+}
+
+.admin-transfer-uploader-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 72px;
+  height: 72px;
+
+  color: #8fc9df;
+
+  background:
+    rgba(80, 179, 215, 0.08);
+
+  border:
+    1px solid rgba(143, 213, 236, 0.18);
+
+  border-radius: 15px;
+}
+
+.admin-transfer-uploader-copy h3 {
+  margin: 8px 0 10px;
+
+  color: #ffffff;
+
+  font-size: 1.35rem;
+}
+
+.admin-transfer-uploader-copy p {
+  max-width: 520px;
+  margin: 0;
+
+  color:
+    rgba(205, 221, 235, 0.64);
+
+  line-height: 1.65;
+}
+
+.admin-transfer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-transfer-form > label:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-transfer-form > label:first-child span {
+  color:
+    rgba(143, 193, 219, 0.68);
+
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+
+.admin-transfer-form input[type="text"] {
+  min-height: 46px;
+
+  padding: 0 14px;
+
+  color: #ffffff;
+
+  background:
+    rgba(3, 10, 21, 0.76);
+
+  border:
+    1px solid rgba(143, 213, 236, 0.16);
+
+  border-radius: 9px;
+
+  outline: none;
+}
+
+.admin-transfer-form input[type="text"]:focus {
+  border-color:
+    rgba(143, 213, 236, 0.48);
+}
+
+.admin-transfer-file-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  min-height: 52px;
+
+  color: #dff7ff;
+
+  background:
+    rgba(80, 179, 215, 0.07);
+
+  border:
+    1px dashed rgba(143, 213, 236, 0.32);
+
+  border-radius: 10px;
+
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+
+  cursor: pointer;
+}
+
+.admin-transfer-file-picker input {
+  display: none;
+}
+
+.admin-transfer-selection {
+  padding: 15px;
+
+  background:
+    rgba(1, 8, 17, 0.6);
+
+  border:
+    1px solid rgba(143, 213, 236, 0.11);
+
+  border-radius: 10px;
+}
+
+.admin-transfer-selection > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-transfer-selection > div span {
+  color:
+    rgba(205, 221, 235, 0.58);
+
+  font-size: 0.76rem;
+}
+
+.admin-transfer-selection > button {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-transfer-selection ul {
+  max-height: 230px;
+  overflow: auto;
+
+  margin: 13px 0 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.admin-transfer-selection li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+
+  padding: 9px 0;
+
+  color:
+    rgba(225, 238, 247, 0.76);
+
+  border-top:
+    1px solid rgba(143, 213, 236, 0.08);
+}
+
+.admin-transfer-selection li span {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-transfer-selection li small {
+  color:
+    rgba(143, 193, 219, 0.6);
+}
+
+.admin-transfer-progress {
+  padding: 15px;
+
+  background:
+    rgba(255, 157, 28, 0.05);
+
+  border:
+    1px solid rgba(255, 157, 28, 0.16);
+
+  border-radius: 10px;
+}
+
+.admin-transfer-progress > span {
+  display: block;
+
+  color: #ffb85c;
+
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.admin-transfer-progress > strong {
+  display: block;
+
+  overflow: hidden;
+
+  margin-top: 7px;
+
+  color: #ffffff;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-transfer-progress > div {
+  height: 7px;
+
+  margin-top: 13px;
+
+  overflow: hidden;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  border-radius: 999px;
+}
+
+.admin-transfer-progress > div i {
+  display: block;
+
+  height: 100%;
+
+  background: currentColor;
+
+  transition: width 0.2s ease;
+}
+
+.admin-transfer-upload-button {
+  align-self: stretch;
+  justify-content: center;
+}
+
+.admin-transfer-list {
+  margin-top: 28px;
+}
+
+.admin-transfer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 230px;
+
+  color:
+    rgba(143, 193, 219, 0.5);
+
+  border:
+    1px dashed rgba(143, 213, 236, 0.16);
+
+  border-radius: 14px;
+}
+
+.admin-transfer-empty strong {
+  margin-top: 14px;
+
+  color:
+    rgba(225, 238, 247, 0.76);
+
+  letter-spacing: 0.12em;
+}
+
+.admin-transfer-empty span {
+  margin-top: 8px;
+
+  color:
+    rgba(205, 221, 235, 0.5);
+}
+
+.admin-transfer-group {
+  margin-top: 18px;
+
+  overflow: hidden;
+
+  background:
+    rgba(4, 13, 25, 0.82);
+
+  border:
+    1px solid rgba(143, 213, 236, 0.14);
+
+  border-radius: 14px;
+}
+
+.admin-transfer-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding: 22px 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(80, 179, 215, 0.055),
+      rgba(255, 157, 28, 0.025)
+    );
+}
+
+.admin-transfer-group-header h3 {
+  margin: 7px 0 6px;
+
+  color: #ffffff;
+
+  font-size: 1.2rem;
+}
+
+.admin-transfer-group-header p {
+  margin: 0;
+
+  color:
+    rgba(205, 221, 235, 0.55);
+
+  font-size: 0.78rem;
+}
+
+.admin-transfer-group-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-transfer-group-stats > div {
+  min-width: 92px;
+}
+
+.admin-transfer-group-stats span {
+  display: block;
+
+  color:
+    rgba(143, 193, 219, 0.52);
+
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+}
+
+.admin-transfer-group-stats strong {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #ffffff;
+}
+
+.admin-transfer-files {
+  padding: 0 20px 16px;
+}
+
+.admin-transfer-file {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 13px;
+  align-items: center;
+
+  padding: 14px 4px;
+
+  border-top:
+    1px solid rgba(143, 213, 236, 0.08);
+}
+
+.admin-transfer-file-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+
+  color: #8fc9df;
+
+  background:
+    rgba(80, 179, 215, 0.07);
+
+  border-radius: 9px;
+}
+
+.admin-transfer-file-name {
+  min-width: 0;
+}
+
+.admin-transfer-file-name strong {
+  display: block;
+
+  overflow: hidden;
+
+  color:
+    rgba(237, 247, 252, 0.9);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-transfer-file-name span {
+  display: block;
+
+  margin-top: 5px;
+
+  color:
+    rgba(205, 221, 235, 0.48);
+
+  font-size: 0.73rem;
+}
+
+.admin-transfer-file-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-transfer-file-actions button,
+.admin-transfer-group-stats button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 38px;
+
+  padding: 0 12px;
+
+  color:
+    rgba(225, 238, 247, 0.82);
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  border:
+    1px solid rgba(143, 213, 236, 0.13);
+
+  border-radius: 8px;
+
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .admin-transfer-uploader {
+    grid-template-columns: auto 1fr;
+  }
+
+  .admin-transfer-form {
+    grid-column: 1 / -1;
+  }
+
+  .admin-transfer-group-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-transfer-group-stats {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-transfer-uploader {
+    grid-template-columns: 1fr;
+
+    padding: 20px;
+  }
+
+  .admin-transfer-uploader-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .admin-transfer-group-header {
+    padding: 18px;
+  }
+
+  .admin-transfer-group-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-transfer-group-stats button {
+    grid-column: 1 / -1;
+  }
+
+  .admin-transfer-files {
+    padding: 0 14px 12px;
+  }
+
+  .admin-transfer-file {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .admin-transfer-file-actions {
+    grid-column: 1 / -1;
+  }
+
+  .admin-transfer-file-actions button {
+    flex: 1;
+  }
+}

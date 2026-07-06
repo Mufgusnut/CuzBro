@@ -2,6 +2,7 @@ import AdminDashboard from './components/AdminDashboard.jsx';
 import AdminCaptainsLog from './components/AdminCaptainsLog.jsx';
 import AdminGallery from './components/AdminGallery.jsx';
 import AdminEquipment from './components/AdminEquipment.jsx';
+import CrewTransfer from './components/CrewTransfer.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import SkyMap from './components/SkyMap.jsx';
@@ -193,12 +194,17 @@ const isPasswordResetPage =
     pathname === '/admin/equipment' ||
     pathname === '/admin/equipment/';
 
+  const isAdminTransfersPage =
+    pathname === '/admin/transfers' ||
+    pathname === '/admin/transfers/';
+
   const isAdminPage =
     pathname === '/admin' ||
     pathname === '/admin/' ||
     isAdminCaptainsLogPage ||
     isAdminGalleryPage ||
-    isAdminEquipmentPage;
+    isAdminEquipmentPage ||
+    isAdminTransfersPage;
 
   const isSkyMapPage =
     pathname === '/skymap';
@@ -641,6 +647,10 @@ isFeatured: capture.is_featured
 
     if (isAdminEquipmentPage) {
       return <AdminEquipment />;
+    }
+
+    if (isAdminTransfersPage) {
+      return <CrewTransfer />;
     }
 
     return (

@@ -3,6 +3,7 @@ import {
   BookOpen,
   Camera,
   Clock3,
+  FolderUp,
   LogOut,
   Settings,
   Star,
@@ -232,6 +233,25 @@ export default function AdminDashboard({
           value: activeEquipmentCount
         }
       ]
+    },
+    {
+      id: 'transfers',
+      icon: FolderUp,
+      eyebrow: 'PRIVATE CREW EXCHANGE',
+      title: 'Crew Transfer',
+      description:
+        'Securely exchange raw captures, processing files, and mission data with the CuzBro crew.',
+      action: 'OPEN TRANSFER BAY',
+      stats: [
+        {
+          label: 'ACCESS',
+          value: 'CREW ONLY'
+        },
+        {
+          label: 'STORAGE',
+          value: 'R2'
+        }
+      ]
     }
   ];
 
@@ -239,13 +259,18 @@ export default function AdminDashboard({
     <div className="admin-page">
       <header className="admin-header">
         <div className="admin-brand">
-          <img
-            src={
-              import.meta.env.BASE_URL +
-              'assets/cuzbro-logo.png'
-            }
-            alt="CuzBro logo"
-          />
+          <a
+            href="/"
+            aria-label="CuzBro homepage"
+          >
+            <img
+              src={
+                import.meta.env.BASE_URL +
+                'assets/cuzbro-logo.png'
+              }
+              alt="CuzBro logo"
+            />
+          </a>
 
           <div>
             <span>
