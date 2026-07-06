@@ -27,11 +27,19 @@ const locations = [
 function PageNav({ scrolled }) {
   return (
     <header className={scrolled ? 'nav navSmall' : 'nav'}>
-      <img
-        src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'}
-        className="logo"
-        alt="CuzBro logo"
-      />
+      <a
+        href="/"
+        aria-label="CuzBro homepage"
+      >
+        <img
+          src={
+            import.meta.env.BASE_URL +
+            'assets/cuzbro-logo.png'
+          }
+          className="logo"
+          alt="CuzBro logo"
+        />
+      </a>
 
       <nav className="mainNavMenu">
         <a href="/#home">Home</a>
@@ -65,7 +73,8 @@ function PageNav({ scrolled }) {
             <a
               href="/skymap"
               className={
-                window.location.pathname === '/skymap'
+                window.location.pathname ===
+                '/skymap'
                   ? 'active'
                   : ''
               }
@@ -196,26 +205,26 @@ export default function App() {
     pathname === '/equipment';
 
   const featuredPhoto =
-  gallery.find(
-    (photo) => photo.isFeatured
-  ) || gallery[0];
+    gallery.find(
+      (photo) => photo.isFeatured
+    ) || gallery[0];
 
-const featuredPhotoIndex =
-  featuredPhoto
-    ? gallery.findIndex(
-        (photo) =>
-          photo.id === featuredPhoto.id
-      )
-    : -1;
+  const featuredPhotoIndex =
+    featuredPhoto
+      ? gallery.findIndex(
+          (photo) =>
+            photo.id === featuredPhoto.id
+        )
+      : -1;
 
-const openFeaturedPhoto = () => {
-  if (featuredPhotoIndex < 0) {
-    return;
-  }
+  const openFeaturedPhoto = () => {
+    if (featuredPhotoIndex < 0) {
+      return;
+    }
 
-  setViewerMode('report');
-  setSelectedIndex(featuredPhotoIndex);
-};
+    setViewerMode('report');
+    setSelectedIndex(featuredPhotoIndex);
+  };
 
   const filteredGallery =
     activeFilter === 'All'
@@ -632,12 +641,12 @@ const openFeaturedPhoto = () => {
         <PageNav scrolled={scrolled} />
       ) : (
         <Hero
-  imageCount={gallery.length}
-  scrolled={scrolled}
-  featuredPhoto={featuredPhoto}
-  setSelectedIndex={openFeaturedPhoto}
-  weather={weather['Eliot, ME']}
-/>
+          imageCount={gallery.length}
+          scrolled={scrolled}
+          featuredPhoto={featuredPhoto}
+          setSelectedIndex={openFeaturedPhoto}
+          weather={weather['Eliot, ME']}
+        />
       )}
 
       <main
@@ -699,11 +708,11 @@ const openFeaturedPhoto = () => {
             <InfoSections />
 
             <FeaturedCapture
-  photo={featuredPhoto}
-  setSelectedIndex={
-    openFeaturedPhoto
-  }
-/>
+              photo={featuredPhoto}
+              setSelectedIndex={
+                openFeaturedPhoto
+              }
+            />
           </>
         )}
       </main>
@@ -722,13 +731,18 @@ const openFeaturedPhoto = () => {
       />
 
       <footer>
-        <img
-          src={
-            import.meta.env.BASE_URL +
-            'assets/cuzbro-logo.png'
-          }
-          alt="CuzBro logo"
-        />
+        <a
+          href="/"
+          aria-label="CuzBro homepage"
+        >
+          <img
+            src={
+              import.meta.env.BASE_URL +
+              'assets/cuzbro-logo.png'
+            }
+            alt="CuzBro logo"
+          />
+        </a>
 
         <p>Look up. Stay curious.</p>
       </footer>

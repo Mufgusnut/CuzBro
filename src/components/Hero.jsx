@@ -38,11 +38,19 @@ export default function Hero({
   return (
     <>
       <header className={scrolled ? 'nav navSmall' : 'nav'}>
-        <img
-          src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'}
-          className="logo"
-          alt="CuzBro logo"
-        />
+        <a
+  href="/"
+  aria-label="CuzBro homepage"
+>
+  <img
+    src={
+      import.meta.env.BASE_URL +
+      'assets/cuzbro-logo.png'
+    }
+    className="logo"
+    alt="CuzBro logo"
+  />
+</a>
 
         <nav className="mainNavMenu">
           <a href="/#home" className="active">Home</a>
