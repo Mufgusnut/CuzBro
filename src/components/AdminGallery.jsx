@@ -12,6 +12,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
 
+const GALLERY_API =
+  'https://cuzbro-gallery-api.dve-hffman.workers.dev';
+
 const emptyCapture = {
   title: '',
   subtitle: '',
@@ -35,13 +38,18 @@ function databaseRowToForm(capture) {
     title: capture.title || '',
     subtitle: capture.subtitle || '',
     category:
-      capture.category || 'Astrophotography',
-    objectType: capture.object_type || '',
-    constellation: capture.constellation || '',
+      capture.category ||
+      'Astrophotography',
+    objectType:
+      capture.object_type || '',
+    constellation:
+      capture.constellation || '',
     distance: capture.distance || '',
-    captureDate: capture.capture_date || '',
+    captureDate:
+      capture.capture_date || '',
     exposure: capture.exposure || '',
-    processing: capture.processing || '',
+    processing:
+      capture.processing || '',
     equipment: capture.equipment || '',
     notes: capture.notes || '',
     nextGoal: capture.next_goal || '',
@@ -76,37 +84,56 @@ function getCaptureImageUrl(image) {
     return image;
   }
 
-  const cleanPath = image.replace(/^\/+/, '');
+  const cleanPath = image.replace(
+    /^\/+/,
+    ''
+  );
 
-  return import.meta.env.BASE_URL + cleanPath;
+  return (
+    import.meta.env.BASE_URL +
+    cleanPath
+  );
 }
 
-function sanitizeFileName(fileName) {
-  const extension = fileName.includes('.')
-    ? fileName.split('.').pop().toLowerCase()
-    : 'jpg';
+function isR2ImageUrl(image) {
+  return String(image || '').startsWith(
+    `${GALLERY_API}/media/`
+  );
+}
 
-  const baseName = fileName
-    .replace(/\.[^/.]+$/, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+async function getCrewAccessToken() {
+  const {
+    data: { session },
+    error
+  } = await supabase.auth.getSession();
 
-  return `${
-    baseName || 'capture'
-  }-${Date.now()}.${extension}`;
+  if (error) {
+    throw error;
+  }
+
+  if (!session?.access_token) {
+    throw new Error(
+      'Crew authentication expired. Log in again.'
+    );
+  }
+
+  return session.access_token;
 }
 
 export default function AdminGallery() {
-  const [captures, setCaptures] = useState([]);
-  const [status, setStatus] = useState('loading');
+  const [captures, setCaptures] =
+    useState([]);
+
+  const [status, setStatus] =
+    useState('loading');
 
   const [
     editingCaptureId,
     setEditingCaptureId
   ] = useState(null);
 
-  const [form, setForm] = useState(emptyCapture);
+  const [form, setForm] =
+    useState(emptyCapture);
 
   const [imageFile, setImageFile] =
     useState(null);
@@ -114,27 +141,28 @@ export default function AdminGallery() {
   const [previewUrl, setPreviewUrl] =
     useState('');
 
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] =
+    useState(false);
 
-  const [
-    settingFeaturedId,
-    setSettingFeaturedId
-  ] = useState(null);
+  const [message, setMessage] =
+    useState('');
 
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] =
+    useState('');
 
   async function loadCaptures() {
     setStatus('loading');
     setError('');
 
-    const { data, error: loadError } =
-      await supabase
-        .from('gallery')
-        .select('*')
-        .order('sort_order', {
-          ascending: true
-        });
+    const {
+      data,
+      error: loadError
+    } = await supabase
+      .from('gallery')
+      .select('*')
+      .order('sort_order', {
+        ascending: true
+      });
 
     if (loadError) {
       console.error(loadError);
@@ -156,7 +184,6 @@ export default function AdminGallery() {
   useEffect(() => {
     return () => {
       if (
-        previewUrl &&
         previewUrl.startsWith('blob:')
       ) {
         URL.revokeObjectURL(previewUrl);
@@ -171,13 +198,16 @@ export default function AdminGallery() {
     }));
   }
 
-  function resetEditor() {
+  function releasePreviewUrl() {
     if (
-      previewUrl &&
       previewUrl.startsWith('blob:')
     ) {
       URL.revokeObjectURL(previewUrl);
     }
+  }
+
+  function resetEditor() {
+    releasePreviewUrl();
 
     setEditingCaptureId(null);
     setForm(emptyCapture);
@@ -188,12 +218,7 @@ export default function AdminGallery() {
   }
 
   function startNewCapture() {
-    if (
-      previewUrl &&
-      previewUrl.startsWith('blob:')
-    ) {
-      URL.revokeObjectURL(previewUrl);
-    }
+    releasePreviewUrl();
 
     const nextSortOrder =
       captures.reduce(
@@ -219,15 +244,9 @@ export default function AdminGallery() {
   }
 
   function startEditingCapture(capture) {
-    if (
-      previewUrl &&
-      previewUrl.startsWith('blob:')
-    ) {
-      URL.revokeObjectURL(previewUrl);
-    }
+    releasePreviewUrl();
 
     setEditingCaptureId(capture.id);
-
     setForm(
       databaseRowToForm(capture)
     );
@@ -243,26 +262,24 @@ export default function AdminGallery() {
   }
 
   function handleImageSelection(event) {
-    const file = event.target.files?.[0];
+    const file =
+      event.target.files?.[0];
 
     if (!file) {
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      setError('Select a valid image file.');
+      setError(
+        'Select a valid image file.'
+      );
 
       event.target.value = '';
 
       return;
     }
 
-    if (
-      previewUrl &&
-      previewUrl.startsWith('blob:')
-    ) {
-      URL.revokeObjectURL(previewUrl);
-    }
+    releasePreviewUrl();
 
     setImageFile(file);
 
@@ -278,109 +295,83 @@ export default function AdminGallery() {
       return null;
     }
 
-    const fileName =
-      sanitizeFileName(imageFile.name);
+    const accessToken =
+      await getCrewAccessToken();
 
-    const storagePath =
-      `captures/${fileName}`;
+    const response = await fetch(
+      `${GALLERY_API}/upload`,
+      {
+        method: 'POST',
 
-    const { error: uploadError } =
-      await supabase.storage
-        .from('gallery')
-        .upload(
-          storagePath,
-          imageFile,
-          {
-            cacheControl: '3600',
-            contentType: imageFile.type,
-            upsert: false
-          }
-        );
+        headers: {
+          Authorization:
+            `Bearer ${accessToken}`,
 
-    if (uploadError) {
-      throw uploadError;
+          'Content-Type':
+            imageFile.type,
+
+          'X-Filename':
+            imageFile.name
+        },
+
+        body: imageFile
+      }
+    );
+
+    const result =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+          'R2 image upload failed.'
+      );
     }
 
-    const { data } = supabase.storage
-      .from('gallery')
-      .getPublicUrl(storagePath);
-
     return {
-      image: data.publicUrl,
-      storagePath
+      image: result.url,
+      storagePath: result.key
     };
   }
 
-  async function deleteStorageImage(
+  async function deleteR2Image(
+    image,
     storagePath
   ) {
-    if (!storagePath) {
+    if (
+      !image ||
+      !storagePath ||
+      !isR2ImageUrl(image)
+    ) {
       return;
     }
 
-    const { error: storageError } =
-      await supabase.storage
-        .from('gallery')
-        .remove([storagePath]);
+    const accessToken =
+      await getCrewAccessToken();
 
-    if (storageError) {
-      throw storageError;
-    }
-  }
+    const response = await fetch(
+      `${GALLERY_API}/media/${encodeURIComponent(
+        storagePath
+      )}`,
+      {
+        method: 'DELETE',
 
-  async function handleSetFeatured(capture) {
-    if (capture.is_featured) {
-      return;
-    }
-
-    setSettingFeaturedId(capture.id);
-    setMessage('');
-    setError('');
-
-    try {
-      const { error: clearError } =
-        await supabase
-          .from('gallery')
-          .update({
-            is_featured: false,
-            updated_at:
-              new Date().toISOString()
-          })
-          .eq('is_featured', true);
-
-      if (clearError) {
-        throw clearError;
+        headers: {
+          Authorization:
+            `Bearer ${accessToken}`
+        }
       }
+    );
 
-      const { error: featureError } =
-        await supabase
-          .from('gallery')
-          .update({
-            is_featured: true,
-            updated_at:
-              new Date().toISOString()
-          })
-          .eq('id', capture.id);
+    const result =
+      await response.json();
 
-      if (featureError) {
-        throw featureError;
-      }
-
-      await loadCaptures();
-
-      setMessage(
-        `${capture.title} SET AS FEATURED CAPTURE`
-      );
-    } catch (featuredException) {
-      console.error(featuredException);
-
-      setError(
-        featuredException.message ||
-          'Featured capture update failed.'
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+          'R2 image deletion failed.'
       );
     }
-
-    setSettingFeaturedId(null);
   }
 
   async function handleSave(event) {
@@ -402,10 +393,6 @@ export default function AdminGallery() {
         );
       }
 
-      if (imageFile) {
-        uploadedImage = await uploadImage();
-      }
-
       const existingCapture =
         editingCaptureId === 'new'
           ? null
@@ -415,9 +402,16 @@ export default function AdminGallery() {
                 editingCaptureId
             );
 
+      if (imageFile) {
+        uploadedImage =
+          await uploadImage();
+      }
+
       const captureRow = {
         title: form.title.trim(),
-        subtitle: form.subtitle.trim(),
+
+        subtitle:
+          form.subtitle.trim(),
 
         category:
           form.category.trim() ||
@@ -429,12 +423,14 @@ export default function AdminGallery() {
         constellation:
           form.constellation.trim(),
 
-        distance: form.distance.trim(),
+        distance:
+          form.distance.trim(),
 
         capture_date:
           form.captureDate.trim(),
 
-        exposure: form.exposure.trim(),
+        exposure:
+          form.exposure.trim(),
 
         processing:
           form.processing.trim(),
@@ -442,7 +438,8 @@ export default function AdminGallery() {
         equipment:
           form.equipment.trim(),
 
-        notes: form.notes.trim(),
+        notes:
+          form.notes.trim(),
 
         next_goal:
           form.nextGoal.trim(),
@@ -494,39 +491,36 @@ export default function AdminGallery() {
         );
       }
 
-      if (
-        Number.isNaN(captureRow.sort_order)
-      ) {
-        throw new Error(
-          'Sort order must be a number.'
-        );
-      }
-
       let saveError;
 
-      if (editingCaptureId === 'new') {
-        const { error: insertError } =
-          await supabase
-            .from('gallery')
-            .insert(captureRow);
+      if (
+        editingCaptureId === 'new'
+      ) {
+        const {
+          error: insertError
+        } = await supabase
+          .from('gallery')
+          .insert(captureRow);
 
         saveError = insertError;
       } else {
-        const { error: updateError } =
-          await supabase
-            .from('gallery')
-            .update(captureRow)
-            .eq(
-              'id',
-              editingCaptureId
-            );
+        const {
+          error: updateError
+        } = await supabase
+          .from('gallery')
+          .update(captureRow)
+          .eq(
+            'id',
+            editingCaptureId
+          );
 
         saveError = updateError;
       }
 
       if (saveError) {
-        if (uploadedImage?.storagePath) {
-          await deleteStorageImage(
+        if (uploadedImage) {
+          await deleteR2Image(
+            uploadedImage.image,
             uploadedImage.storagePath
           );
         }
@@ -536,12 +530,14 @@ export default function AdminGallery() {
 
       if (
         editingCaptureId !== 'new' &&
-        uploadedImage?.storagePath &&
+        uploadedImage &&
+        existingCapture?.image &&
         existingCapture?.storage_path &&
-        existingCapture.storage_path !==
-          uploadedImage.storagePath
+        existingCapture.image !==
+          uploadedImage.image
       ) {
-        await deleteStorageImage(
+        await deleteR2Image(
+          existingCapture.image,
           existingCapture.storage_path
         );
       }
@@ -551,22 +547,16 @@ export default function AdminGallery() {
 
       await loadCaptures();
 
+      releasePreviewUrl();
+
       setEditingCaptureId(null);
       setForm(emptyCapture);
       setImageFile(null);
-
-      if (
-        previewUrl &&
-        previewUrl.startsWith('blob:')
-      ) {
-        URL.revokeObjectURL(previewUrl);
-      }
-
       setPreviewUrl('');
 
       setMessage(
         wasNew
-          ? 'CAPTURE ADDED TO MISSION ARCHIVE'
+          ? 'CAPTURE ADDED TO MISSION ARCHIVE · R2 STORAGE ONLINE'
           : 'CAPTURE RECORD UPDATED'
       );
     } catch (saveException) {
@@ -579,6 +569,56 @@ export default function AdminGallery() {
     }
 
     setSaving(false);
+  }
+
+  async function handleSetFeatured(
+    capture
+  ) {
+    setMessage('');
+    setError('');
+
+    try {
+      const {
+        error: clearError
+      } = await supabase
+        .from('gallery')
+        .update({
+          is_featured: false
+        })
+        .eq('is_featured', true);
+
+      if (clearError) {
+        throw clearError;
+      }
+
+      const {
+        error: featureError
+      } = await supabase
+        .from('gallery')
+        .update({
+          is_featured: true,
+          updated_at:
+            new Date().toISOString()
+        })
+        .eq('id', capture.id);
+
+      if (featureError) {
+        throw featureError;
+      }
+
+      setMessage(
+        `${capture.title} SET AS FEATURED`
+      );
+
+      await loadCaptures();
+    } catch (featureException) {
+      console.error(featureException);
+
+      setError(
+        featureException.message ||
+          'Featured capture update failed.'
+      );
+    }
   }
 
   async function handleDelete(capture) {
@@ -594,52 +634,48 @@ export default function AdminGallery() {
     setError('');
 
     try {
-      const wasFeatured =
-        capture.is_featured;
+      const remainingCaptures =
+        captures.filter(
+          (item) =>
+            item.id !== capture.id
+        );
 
-      const { error: deleteError } =
-        await supabase
-          .from('gallery')
-          .delete()
-          .eq('id', capture.id);
+      const {
+        error: deleteError
+      } = await supabase
+        .from('gallery')
+        .delete()
+        .eq('id', capture.id);
 
       if (deleteError) {
         throw deleteError;
       }
 
-      if (capture.storage_path) {
-        await deleteStorageImage(
-          capture.storage_path
-        );
-      }
+      await deleteR2Image(
+        capture.image,
+        capture.storage_path
+      );
 
-      if (wasFeatured) {
-        const remainingCaptures =
-          captures.filter(
-            (item) =>
-              item.id !== capture.id
+      if (
+        capture.is_featured &&
+        remainingCaptures.length > 0
+      ) {
+        const {
+          error: featureError
+        } = await supabase
+          .from('gallery')
+          .update({
+            is_featured: true,
+            updated_at:
+              new Date().toISOString()
+          })
+          .eq(
+            'id',
+            remainingCaptures[0].id
           );
 
-        const nextFeatured =
-          remainingCaptures[0];
-
-        if (nextFeatured) {
-          const { error: featureError } =
-            await supabase
-              .from('gallery')
-              .update({
-                is_featured: true,
-                updated_at:
-                  new Date().toISOString()
-              })
-              .eq(
-                'id',
-                nextFeatured.id
-              );
-
-          if (featureError) {
-            throw featureError;
-          }
+        if (featureError) {
+          throw featureError;
         }
       }
 
@@ -662,16 +698,23 @@ export default function AdminGallery() {
     <div className="admin-page admin-gallery-page">
       <header className="admin-header">
         <div className="admin-brand">
-          <img
-            src={
-              import.meta.env.BASE_URL +
-              'assets/cuzbro-logo.png'
-            }
-            alt="CuzBro logo"
-          />
+          <a
+            href="/"
+            aria-label="CuzBro homepage"
+          >
+            <img
+              src={
+                import.meta.env.BASE_URL +
+                'assets/cuzbro-logo.png'
+              }
+              alt="CuzBro logo"
+            />
+          </a>
 
           <div>
-            <span>SECURE CREW TERMINAL</span>
+            <span>
+              SECURE CREW TERMINAL
+            </span>
 
             <h1>Capture Control</h1>
           </div>
@@ -700,10 +743,9 @@ export default function AdminGallery() {
             <h2>Capture Control</h2>
 
             <p>
-              Upload astrophotography captures,
-              maintain the public Mission Archive,
-              and select the featured homepage
-              capture.
+              Upload astrophotography
+              captures and maintain the
+              public CuzBro Mission Archive.
             </p>
           </div>
 
@@ -738,7 +780,8 @@ export default function AdminGallery() {
                 </span>
 
                 <h3>
-                  {editingCaptureId === 'new'
+                  {editingCaptureId ===
+                  'new'
                     ? 'New Mission Capture'
                     : `Edit ${form.title}`}
                 </h3>
@@ -777,12 +820,16 @@ export default function AdminGallery() {
                     IMAGE FILE
                   </span>
 
-                  <h4>Mission Capture</h4>
+                  <h4>
+                    Mission Capture
+                  </h4>
 
                   <p>
                     Select the processed image
                     that should appear in the
                     public Mission Archive.
+                    New image uploads are stored
+                    in Cloudflare R2.
                   </p>
 
                   <label className="admin-file-button">
@@ -807,6 +854,13 @@ export default function AdminGallery() {
                   {imageFile && (
                     <small>
                       {imageFile.name}
+                      {' · '}
+                      {(
+                        imageFile.size /
+                        1024 /
+                        1024
+                      ).toFixed(1)}
+                      {' MB'}
                     </small>
                   )}
                 </div>
@@ -885,7 +939,9 @@ export default function AdminGallery() {
 
                   <input
                     type="text"
-                    value={form.constellation}
+                    value={
+                      form.constellation
+                    }
                     onChange={(event) =>
                       updateForm(
                         'constellation',
@@ -917,7 +973,9 @@ export default function AdminGallery() {
 
                   <input
                     type="text"
-                    value={form.captureDate}
+                    value={
+                      form.captureDate
+                    }
                     onChange={(event) =>
                       updateForm(
                         'captureDate',
@@ -1075,7 +1133,7 @@ export default function AdminGallery() {
                   <Save size={17} />
 
                   {saving
-                    ? 'UPLOADING...'
+                    ? 'UPLOADING TO R2...'
                     : editingCaptureId ===
                         'new'
                       ? 'UPLOAD CAPTURE'
@@ -1091,7 +1149,9 @@ export default function AdminGallery() {
             <Camera size={20} />
 
             <span>
-              {captures.length} ARCHIVED CAPTURES
+              {captures.length}
+              {' '}
+              ARCHIVED CAPTURES
             </span>
           </div>
 
@@ -1104,11 +1164,7 @@ export default function AdminGallery() {
           {status === 'ready' &&
             captures.map((capture) => (
               <article
-                className={
-                  capture.is_featured
-                    ? 'admin-capture-row admin-capture-featured'
-                    : 'admin-capture-row'
-                }
+                className="admin-capture-row"
                 key={capture.id}
               >
                 <div className="admin-capture-thumbnail">
@@ -1121,23 +1177,13 @@ export default function AdminGallery() {
                 </div>
 
                 <div className="admin-mission-summary">
-                  <div className="admin-capture-meta-line">
-                    <span className="admin-card-eyebrow">
-                      {capture.object_type}
-                    </span>
+                  <span className="admin-card-eyebrow">
+                    {capture.object_type}
+                  </span>
 
-                    {capture.is_featured && (
-                      <span className="admin-featured-badge">
-                        <Star
-                          size={12}
-                          fill="currentColor"
-                        />
-                        FEATURED
-                      </span>
-                    )}
-                  </div>
-
-                  <h3>{capture.title}</h3>
+                  <h3>
+                    {capture.title}
+                  </h3>
 
                   <p>
                     {capture.subtitle}
@@ -1146,23 +1192,21 @@ export default function AdminGallery() {
                   </p>
                 </div>
 
-                <div className="admin-mission-actions admin-capture-actions">
+                <div className="admin-mission-actions">
                   {capture.is_featured ? (
-                    <div className="admin-current-featured">
+                    <button
+                      type="button"
+                      disabled
+                    >
                       <Star
                         size={16}
                         fill="currentColor"
                       />
                       CURRENT FEATURE
-                    </div>
+                    </button>
                   ) : (
                     <button
                       type="button"
-                      className="admin-feature-button"
-                      disabled={
-                        settingFeaturedId !==
-                        null
-                      }
                       onClick={() =>
                         handleSetFeatured(
                           capture
@@ -1170,11 +1214,7 @@ export default function AdminGallery() {
                       }
                     >
                       <Star size={16} />
-
-                      {settingFeaturedId ===
-                      capture.id
-                        ? 'SETTING...'
-                        : 'SET AS FEATURED'}
+                      SET AS FEATURED
                     </button>
                   )}
 

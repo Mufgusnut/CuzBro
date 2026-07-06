@@ -24,6 +24,30 @@ const RADIUS = 430;
 const DESKTOP_DEFAULT_ZOOM = 0.68;
 const MOBILE_DEFAULT_ZOOM = 1.0;
 
+function getCaptureImageUrl(image) {
+  if (!image) {
+    return '';
+  }
+
+  if (
+    image.startsWith('http://') ||
+    image.startsWith('https://') ||
+    image.startsWith('blob:')
+  ) {
+    return image;
+  }
+
+  const cleanPath = image.replace(
+    /^\/+/, 
+    ''
+  );
+
+  return (
+    import.meta.env.BASE_URL +
+    cleanPath
+  );
+}
+
 function isMobileViewport() {
   return typeof window !== 'undefined' && window.innerWidth <= 700;
 }
@@ -4903,7 +4927,12 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
 
       {selectedPanel === 'captured' && activeObject && (
         <section ref={plannerDetailRef} className="atlasDetail">
-          <img src={import.meta.env.BASE_URL + activeObject.image} alt={activeObject.title} />
+          <img
+            src={getCaptureImageUrl(
+              activeObject.image
+            )}
+            alt={activeObject.title}
+          />
           <div>
             <small>Selected Mission</small>
             <h2><span>{activeIndex + 1}</span>{activeObject.title}</h2>
