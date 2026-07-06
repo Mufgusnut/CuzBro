@@ -195,6 +195,28 @@ export default function App() {
   const isEquipmentPage =
     pathname === '/equipment';
 
+  const featuredPhoto =
+  gallery.find(
+    (photo) => photo.isFeatured
+  ) || gallery[0];
+
+const featuredPhotoIndex =
+  featuredPhoto
+    ? gallery.findIndex(
+        (photo) =>
+          photo.id === featuredPhoto.id
+      )
+    : -1;
+
+const openFeaturedPhoto = () => {
+  if (featuredPhotoIndex < 0) {
+    return;
+  }
+
+  setViewerMode('report');
+  setSelectedIndex(featuredPhotoIndex);
+};
+
   const filteredGallery =
     activeFilter === 'All'
       ? gallery
@@ -356,7 +378,8 @@ export default function App() {
           storagePath: capture.storage_path,
           ra: capture.ra,
           dec: capture.dec,
-          sortOrder: capture.sort_order
+          sortOrder: capture.sort_order,
+          isFeatured: capture.is_featured
         })
       );
 
@@ -609,12 +632,12 @@ export default function App() {
         <PageNav scrolled={scrolled} />
       ) : (
         <Hero
-          imageCount={gallery.length}
-          scrolled={scrolled}
-          featuredPhoto={gallery[0]}
-          setSelectedIndex={setSelectedIndex}
-          weather={weather['Eliot, ME']}
-        />
+  imageCount={gallery.length}
+  scrolled={scrolled}
+  featuredPhoto={featuredPhoto}
+  setSelectedIndex={openFeaturedPhoto}
+  weather={weather['Eliot, ME']}
+/>
       )}
 
       <main
@@ -676,11 +699,11 @@ export default function App() {
             <InfoSections />
 
             <FeaturedCapture
-              photo={gallery[0]}
-              setSelectedIndex={
-                setSelectedIndex
-              }
-            />
+  photo={featuredPhoto}
+  setSelectedIndex={
+    openFeaturedPhoto
+  }
+/>
           </>
         )}
       </main>

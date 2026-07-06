@@ -5,6 +5,7 @@ import {
   ImagePlus,
   Pencil,
   Save,
+  Star,
   Trash2,
   Upload,
   X
@@ -33,7 +34,8 @@ function databaseRowToForm(capture) {
   return {
     title: capture.title || '',
     subtitle: capture.subtitle || '',
-    category: capture.category || 'Astrophotography',
+    category:
+      capture.category || 'Astrophotography',
     objectType: capture.object_type || '',
     constellation: capture.constellation || '',
     distance: capture.distance || '',
@@ -44,11 +46,13 @@ function databaseRowToForm(capture) {
     notes: capture.notes || '',
     nextGoal: capture.next_goal || '',
     ra:
-      capture.ra === null || capture.ra === undefined
+      capture.ra === null ||
+      capture.ra === undefined
         ? ''
         : String(capture.ra),
     dec:
-      capture.dec === null || capture.dec === undefined
+      capture.dec === null ||
+      capture.dec === undefined
         ? ''
         : String(capture.dec),
     sortOrder:
@@ -58,6 +62,7 @@ function databaseRowToForm(capture) {
         : String(capture.sort_order)
   };
 }
+
 function getCaptureImageUrl(image) {
   if (!image) {
     return '';
@@ -75,6 +80,7 @@ function getCaptureImageUrl(image) {
 
   return import.meta.env.BASE_URL + cleanPath;
 }
+
 function sanitizeFileName(fileName) {
   const extension = fileName.includes('.')
     ? fileName.split('.').pop().toLowerCase()
@@ -86,21 +92,35 @@ function sanitizeFileName(fileName) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-  return `${baseName || 'capture'}-${Date.now()}.${extension}`;
+  return `${
+    baseName || 'capture'
+  }-${Date.now()}.${extension}`;
 }
 
 export default function AdminGallery() {
   const [captures, setCaptures] = useState([]);
   const [status, setStatus] = useState('loading');
 
-  const [editingCaptureId, setEditingCaptureId] =
-    useState(null);
+  const [
+    editingCaptureId,
+    setEditingCaptureId
+  ] = useState(null);
 
   const [form, setForm] = useState(emptyCapture);
-  const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
+
+  const [imageFile, setImageFile] =
+    useState(null);
+
+  const [previewUrl, setPreviewUrl] =
+    useState('');
 
   const [saving, setSaving] = useState(false);
+
+  const [
+    settingFeaturedId,
+    setSettingFeaturedId
+  ] = useState(null);
+
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -108,15 +128,20 @@ export default function AdminGallery() {
     setStatus('loading');
     setError('');
 
-    const { data, error: loadError } = await supabase
-      .from('gallery')
-      .select('*')
-      .order('sort_order', { ascending: true });
+    const { data, error: loadError } =
+      await supabase
+        .from('gallery')
+        .select('*')
+        .order('sort_order', {
+          ascending: true
+        });
 
     if (loadError) {
       console.error(loadError);
+
       setError(loadError.message);
       setStatus('error');
+
       return;
     }
 
@@ -130,7 +155,10 @@ export default function AdminGallery() {
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
+      if (
+        previewUrl &&
+        previewUrl.startsWith('blob:')
+      ) {
         URL.revokeObjectURL(previewUrl);
       }
     };
@@ -144,7 +172,10 @@ export default function AdminGallery() {
   }
 
   function resetEditor() {
-    if (previewUrl) {
+    if (
+      previewUrl &&
+      previewUrl.startsWith('blob:')
+    ) {
       URL.revokeObjectURL(previewUrl);
     }
 
@@ -157,14 +188,20 @@ export default function AdminGallery() {
   }
 
   function startNewCapture() {
-    if (previewUrl) {
+    if (
+      previewUrl &&
+      previewUrl.startsWith('blob:')
+    ) {
       URL.revokeObjectURL(previewUrl);
     }
 
     const nextSortOrder =
       captures.reduce(
         (highest, capture) =>
-          Math.max(highest, capture.sort_order || 0),
+          Math.max(
+            highest,
+            capture.sort_order || 0
+          ),
         0
       ) + 1;
 
@@ -182,16 +219,25 @@ export default function AdminGallery() {
   }
 
   function startEditingCapture(capture) {
-    if (previewUrl) {
+    if (
+      previewUrl &&
+      previewUrl.startsWith('blob:')
+    ) {
       URL.revokeObjectURL(previewUrl);
     }
 
     setEditingCaptureId(capture.id);
-    setForm(databaseRowToForm(capture));
+
+    setForm(
+      databaseRowToForm(capture)
+    );
+
     setImageFile(null);
+
     setPreviewUrl(
-  getCaptureImageUrl(capture.image)
-);
+      getCaptureImageUrl(capture.image)
+    );
+
     setMessage('');
     setError('');
   }
@@ -205,16 +251,25 @@ export default function AdminGallery() {
 
     if (!file.type.startsWith('image/')) {
       setError('Select a valid image file.');
+
       event.target.value = '';
+
       return;
     }
 
-    if (previewUrl && imageFile) {
+    if (
+      previewUrl &&
+      previewUrl.startsWith('blob:')
+    ) {
       URL.revokeObjectURL(previewUrl);
     }
 
     setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+
+    setPreviewUrl(
+      URL.createObjectURL(file)
+    );
+
     setError('');
   }
 
@@ -223,17 +278,24 @@ export default function AdminGallery() {
       return null;
     }
 
-    const fileName = sanitizeFileName(imageFile.name);
+    const fileName =
+      sanitizeFileName(imageFile.name);
 
-    const storagePath = `captures/${fileName}`;
+    const storagePath =
+      `captures/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('gallery')
-      .upload(storagePath, imageFile, {
-        cacheControl: '3600',
-        contentType: imageFile.type,
-        upsert: false
-      });
+    const { error: uploadError } =
+      await supabase.storage
+        .from('gallery')
+        .upload(
+          storagePath,
+          imageFile,
+          {
+            cacheControl: '3600',
+            contentType: imageFile.type,
+            upsert: false
+          }
+        );
 
     if (uploadError) {
       throw uploadError;
@@ -249,18 +311,76 @@ export default function AdminGallery() {
     };
   }
 
-  async function deleteStorageImage(storagePath) {
+  async function deleteStorageImage(
+    storagePath
+  ) {
     if (!storagePath) {
       return;
     }
 
-    const { error: storageError } = await supabase.storage
-      .from('gallery')
-      .remove([storagePath]);
+    const { error: storageError } =
+      await supabase.storage
+        .from('gallery')
+        .remove([storagePath]);
 
     if (storageError) {
       throw storageError;
     }
+  }
+
+  async function handleSetFeatured(capture) {
+    if (capture.is_featured) {
+      return;
+    }
+
+    setSettingFeaturedId(capture.id);
+    setMessage('');
+    setError('');
+
+    try {
+      const { error: clearError } =
+        await supabase
+          .from('gallery')
+          .update({
+            is_featured: false,
+            updated_at:
+              new Date().toISOString()
+          })
+          .eq('is_featured', true);
+
+      if (clearError) {
+        throw clearError;
+      }
+
+      const { error: featureError } =
+        await supabase
+          .from('gallery')
+          .update({
+            is_featured: true,
+            updated_at:
+              new Date().toISOString()
+          })
+          .eq('id', capture.id);
+
+      if (featureError) {
+        throw featureError;
+      }
+
+      await loadCaptures();
+
+      setMessage(
+        `${capture.title} SET AS FEATURED CAPTURE`
+      );
+    } catch (featuredException) {
+      console.error(featuredException);
+
+      setError(
+        featuredException.message ||
+          'Featured capture update failed.'
+      );
+    }
+
+    setSettingFeaturedId(null);
   }
 
   async function handleSave(event) {
@@ -273,7 +393,10 @@ export default function AdminGallery() {
     let uploadedImage = null;
 
     try {
-      if (editingCaptureId === 'new' && !imageFile) {
+      if (
+        editingCaptureId === 'new' &&
+        !imageFile
+      ) {
         throw new Error(
           'Select an image before creating a new capture.'
         );
@@ -288,23 +411,41 @@ export default function AdminGallery() {
           ? null
           : captures.find(
               (capture) =>
-                capture.id === editingCaptureId
+                capture.id ===
+                editingCaptureId
             );
 
       const captureRow = {
         title: form.title.trim(),
         subtitle: form.subtitle.trim(),
+
         category:
-          form.category.trim() || 'Astrophotography',
-        object_type: form.objectType.trim(),
-        constellation: form.constellation.trim(),
+          form.category.trim() ||
+          'Astrophotography',
+
+        object_type:
+          form.objectType.trim(),
+
+        constellation:
+          form.constellation.trim(),
+
         distance: form.distance.trim(),
-        capture_date: form.captureDate.trim(),
+
+        capture_date:
+          form.captureDate.trim(),
+
         exposure: form.exposure.trim(),
-        processing: form.processing.trim(),
-        equipment: form.equipment.trim(),
+
+        processing:
+          form.processing.trim(),
+
+        equipment:
+          form.equipment.trim(),
+
         notes: form.notes.trim(),
-        next_goal: form.nextGoal.trim(),
+
+        next_goal:
+          form.nextGoal.trim(),
 
         image:
           uploadedImage?.image ||
@@ -331,7 +472,8 @@ export default function AdminGallery() {
             ? 0
             : Number(form.sortOrder),
 
-        updated_at: new Date().toISOString()
+        updated_at:
+          new Date().toISOString()
       };
 
       if (
@@ -352,19 +494,32 @@ export default function AdminGallery() {
         );
       }
 
+      if (
+        Number.isNaN(captureRow.sort_order)
+      ) {
+        throw new Error(
+          'Sort order must be a number.'
+        );
+      }
+
       let saveError;
 
       if (editingCaptureId === 'new') {
-        const { error: insertError } = await supabase
-          .from('gallery')
-          .insert(captureRow);
+        const { error: insertError } =
+          await supabase
+            .from('gallery')
+            .insert(captureRow);
 
         saveError = insertError;
       } else {
-        const { error: updateError } = await supabase
-          .from('gallery')
-          .update(captureRow)
-          .eq('id', editingCaptureId);
+        const { error: updateError } =
+          await supabase
+            .from('gallery')
+            .update(captureRow)
+            .eq(
+              'id',
+              editingCaptureId
+            );
 
         saveError = updateError;
       }
@@ -391,7 +546,8 @@ export default function AdminGallery() {
         );
       }
 
-      const wasNew = editingCaptureId === 'new';
+      const wasNew =
+        editingCaptureId === 'new';
 
       await loadCaptures();
 
@@ -399,7 +555,10 @@ export default function AdminGallery() {
       setForm(emptyCapture);
       setImageFile(null);
 
-      if (previewUrl && imageFile) {
+      if (
+        previewUrl &&
+        previewUrl.startsWith('blob:')
+      ) {
         URL.revokeObjectURL(previewUrl);
       }
 
@@ -435,10 +594,14 @@ export default function AdminGallery() {
     setError('');
 
     try {
-      const { error: deleteError } = await supabase
-        .from('gallery')
-        .delete()
-        .eq('id', capture.id);
+      const wasFeatured =
+        capture.is_featured;
+
+      const { error: deleteError } =
+        await supabase
+          .from('gallery')
+          .delete()
+          .eq('id', capture.id);
 
       if (deleteError) {
         throw deleteError;
@@ -450,7 +613,39 @@ export default function AdminGallery() {
         );
       }
 
-      setMessage(`${capture.title} DELETED`);
+      if (wasFeatured) {
+        const remainingCaptures =
+          captures.filter(
+            (item) =>
+              item.id !== capture.id
+          );
+
+        const nextFeatured =
+          remainingCaptures[0];
+
+        if (nextFeatured) {
+          const { error: featureError } =
+            await supabase
+              .from('gallery')
+              .update({
+                is_featured: true,
+                updated_at:
+                  new Date().toISOString()
+              })
+              .eq(
+                'id',
+                nextFeatured.id
+              );
+
+          if (featureError) {
+            throw featureError;
+          }
+        }
+      }
+
+      setMessage(
+        `${capture.title} DELETED`
+      );
 
       await loadCaptures();
     } catch (deleteException) {
@@ -477,6 +672,7 @@ export default function AdminGallery() {
 
           <div>
             <span>SECURE CREW TERMINAL</span>
+
             <h1>Capture Control</h1>
           </div>
         </div>
@@ -485,7 +681,8 @@ export default function AdminGallery() {
           type="button"
           className="admin-logout"
           onClick={() => {
-            window.location.href = '/admin';
+            window.location.href =
+              '/admin';
           }}
         >
           <ArrowLeft size={17} />
@@ -503,9 +700,10 @@ export default function AdminGallery() {
             <h2>Capture Control</h2>
 
             <p>
-              Upload astrophotography captures and
-              maintain the public CuzBro Mission
-              Archive.
+              Upload astrophotography captures,
+              maintain the public Mission Archive,
+              and select the featured homepage
+              capture.
             </p>
           </div>
 
@@ -579,14 +777,12 @@ export default function AdminGallery() {
                     IMAGE FILE
                   </span>
 
-                  <h4>
-                    Mission Capture
-                  </h4>
+                  <h4>Mission Capture</h4>
 
                   <p>
-                    Select the processed image that
-                    should appear in the public Mission
-                    Archive.
+                    Select the processed image
+                    that should appear in the
+                    public Mission Archive.
                   </p>
 
                   <label className="admin-file-button">
@@ -594,14 +790,17 @@ export default function AdminGallery() {
 
                     {imageFile
                       ? 'CHANGE IMAGE'
-                      : editingCaptureId === 'new'
+                      : editingCaptureId ===
+                          'new'
                         ? 'SELECT IMAGE'
                         : 'REPLACE IMAGE'}
 
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageSelection}
+                      onChange={
+                        handleImageSelection
+                      }
                     />
                   </label>
 
@@ -877,7 +1076,8 @@ export default function AdminGallery() {
 
                   {saving
                     ? 'UPLOADING...'
-                    : editingCaptureId === 'new'
+                    : editingCaptureId ===
+                        'new'
                       ? 'UPLOAD CAPTURE'
                       : 'SAVE CAPTURE'}
                 </button>
@@ -904,20 +1104,38 @@ export default function AdminGallery() {
           {status === 'ready' &&
             captures.map((capture) => (
               <article
-                className="admin-capture-row"
+                className={
+                  capture.is_featured
+                    ? 'admin-capture-row admin-capture-featured'
+                    : 'admin-capture-row'
+                }
                 key={capture.id}
               >
                 <div className="admin-capture-thumbnail">
                   <img
-  src={getCaptureImageUrl(capture.image)}
-  alt={capture.title}
-/>
+                    src={getCaptureImageUrl(
+                      capture.image
+                    )}
+                    alt={capture.title}
+                  />
                 </div>
 
                 <div className="admin-mission-summary">
-                  <span className="admin-card-eyebrow">
-                    {capture.object_type}
-                  </span>
+                  <div className="admin-capture-meta-line">
+                    <span className="admin-card-eyebrow">
+                      {capture.object_type}
+                    </span>
+
+                    {capture.is_featured && (
+                      <span className="admin-featured-badge">
+                        <Star
+                          size={12}
+                          fill="currentColor"
+                        />
+                        FEATURED
+                      </span>
+                    )}
+                  </div>
 
                   <h3>{capture.title}</h3>
 
@@ -928,11 +1146,44 @@ export default function AdminGallery() {
                   </p>
                 </div>
 
-                <div className="admin-mission-actions">
+                <div className="admin-mission-actions admin-capture-actions">
+                  {capture.is_featured ? (
+                    <div className="admin-current-featured">
+                      <Star
+                        size={16}
+                        fill="currentColor"
+                      />
+                      CURRENT FEATURE
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="admin-feature-button"
+                      disabled={
+                        settingFeaturedId !==
+                        null
+                      }
+                      onClick={() =>
+                        handleSetFeatured(
+                          capture
+                        )
+                      }
+                    >
+                      <Star size={16} />
+
+                      {settingFeaturedId ===
+                      capture.id
+                        ? 'SETTING...'
+                        : 'SET AS FEATURED'}
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() =>
-                      startEditingCapture(capture)
+                      startEditingCapture(
+                        capture
+                      )
                     }
                   >
                     <Pencil size={16} />
