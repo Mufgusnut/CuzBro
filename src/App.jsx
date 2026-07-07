@@ -5,6 +5,7 @@ import AdminEquipment from './components/AdminEquipment.jsx';
 import CrewTransfer from './components/CrewTransfer.jsx';
 import SystemStatus from './components/SystemStatus.jsx';
 import StorageControl from './components/StorageControl.jsx';
+import BlackBox from './components/BlackBox.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import {
@@ -265,6 +266,10 @@ export default function App() {
     pathname === '/admin/storage' ||
     pathname === '/admin/storage/';
 
+  const isAdminBlackBoxPage =
+    pathname === '/admin/black-box' ||
+    pathname === '/admin/black-box/';
+
   const isAdminPage =
     pathname === '/admin' ||
     pathname === '/admin/' ||
@@ -273,7 +278,8 @@ export default function App() {
     isAdminEquipmentPage ||
     isAdminTransfersPage ||
     isAdminSystemPage ||
-    isAdminStoragePage;
+    isAdminStoragePage ||
+    isAdminBlackBoxPage;
 
   useCrewPresence({
     session,
@@ -855,6 +861,14 @@ export default function App() {
     if (isAdminStoragePage) {
       return (
         <StorageControl
+          session={session}
+        />
+      );
+    }
+
+    if (isAdminBlackBoxPage) {
+      return (
+        <BlackBox
           session={session}
         />
       );

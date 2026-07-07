@@ -13128,3 +13128,425 @@ footer p {
     grid-column: 2;
   }
 }
+/* =========================================================
+   CUZBRO BLACK BOX — FULL FLIGHT RECORDER
+   ========================================================= */
+
+.black-box-command {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.black-box-command h2 {
+  margin: 8px 0 12px;
+}
+
+.black-box-command p {
+  max-width: 650px;
+  margin: 0;
+  color: rgba(208, 218, 248, 0.58);
+}
+
+.black-box-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border: 1px solid rgba(76, 224, 139, 0.22);
+  border-radius: 999px;
+  color: #aef5c6;
+  background: rgba(8, 24, 20, 0.52);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.black-box-live-badge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ce08b;
+  box-shadow: 0 0 16px rgba(76, 224, 139, 0.9);
+  animation: admin-black-box-pulse 1.7s ease-in-out infinite;
+}
+
+.black-box-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 255, 0.16);
+  border-radius: 20px;
+  background: rgba(120, 155, 255, 0.1);
+}
+
+.black-box-overview > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 25px;
+  background: rgba(5, 10, 24, 0.97);
+}
+
+.black-box-overview svg {
+  margin-bottom: 18px;
+  color: #8fa6ff;
+}
+
+.black-box-overview span {
+  color: rgba(194, 207, 249, 0.42);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.black-box-overview strong {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+  color: #f0f4ff;
+  font-size: 1rem;
+}
+
+.black-box-filter-panel {
+  margin-top: 22px;
+  padding: 22px;
+  border: 1px solid rgba(120, 155, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(5, 10, 23, 0.9);
+}
+
+.black-box-search {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 15px;
+  border: 1px solid rgba(120, 155, 255, 0.17);
+  border-radius: 12px;
+  background: rgba(3, 7, 17, 0.82);
+}
+
+.black-box-search svg {
+  flex: 0 0 auto;
+  color: #8198f2;
+}
+
+.black-box-search input {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  outline: 0;
+  color: #eef3ff;
+  background: transparent;
+  font: inherit;
+}
+
+.black-box-search input::placeholder {
+  color: rgba(203, 214, 252, 0.35);
+}
+
+.black-box-filter-group {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  margin-top: 17px;
+}
+
+.black-box-filter-group > span {
+  color: rgba(193, 205, 246, 0.42);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.black-box-filter-group > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.black-box-filter-group button {
+  padding: 8px 11px;
+  border: 1px solid rgba(120, 155, 255, 0.14);
+  border-radius: 9px;
+  color: rgba(214, 223, 255, 0.55);
+  background: rgba(25, 38, 82, 0.09);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.black-box-filter-group button:hover,
+.black-box-filter-active {
+  color: #eef3ff !important;
+  border-color: rgba(121, 151, 255, 0.36) !important;
+  background: rgba(65, 91, 181, 0.2) !important;
+}
+
+.black-box-archive {
+  margin-top: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 255, 0.15);
+  border-radius: 20px;
+  background: rgba(4, 8, 19, 0.96);
+}
+
+.black-box-archive-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 23px 26px;
+  border-bottom: 1px solid rgba(120, 155, 255, 0.11);
+}
+
+.black-box-archive-heading h2 {
+  margin: 6px 0 0;
+  font-size: 1.15rem;
+}
+
+.black-box-archive-heading > strong {
+  color: #91a7ff;
+  font-size: 0.67rem;
+  letter-spacing: 0.11em;
+}
+
+.black-box-empty {
+  padding: 50px 24px;
+  text-align: center;
+  color: rgba(205, 216, 255, 0.47);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.black-box-record + .black-box-record {
+  border-top: 1px solid rgba(120, 155, 255, 0.08);
+}
+
+.black-box-record-main {
+  display: grid;
+  grid-template-columns: 120px 22px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+  padding: 0 24px;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.black-box-record-main:hover {
+  background: rgba(69, 92, 171, 0.055);
+}
+
+.black-box-record-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 22px 0;
+}
+
+.black-box-record-time strong {
+  color: #dbe4ff;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.black-box-record-time span {
+  margin-top: 5px;
+  color: rgba(195, 207, 248, 0.38);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.black-box-record-signal {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.black-box-record-signal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(88, 127, 255, 0.16);
+}
+
+.black-box-record-signal i {
+  position: relative;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  margin-top: 31px;
+  border: 2px solid #080d1d;
+  border-radius: 50%;
+  background: #6687ff;
+  box-shadow: 0 0 14px rgba(102, 135, 255, 0.75);
+}
+
+.black-box-record-copy {
+  min-width: 0;
+  padding: 18px 0 20px;
+}
+
+.black-box-record-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.black-box-record-meta strong {
+  color: #aebeff;
+  font-size: 0.65rem;
+  letter-spacing: 0.13em;
+}
+
+.black-box-record-meta span {
+  padding: 4px 7px;
+  border: 1px solid rgba(115, 149, 255, 0.16);
+  border-radius: 6px;
+  color: rgba(195, 207, 248, 0.48);
+  font-size: 0.57rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.black-box-record-copy h3 {
+  margin: 8px 0 4px;
+  color: #f3f6ff;
+  font-size: 0.96rem;
+  letter-spacing: 0.045em;
+}
+
+.black-box-record-copy p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: rgba(215, 224, 255, 0.58);
+  font-size: 0.82rem;
+}
+
+.black-box-record-toggle {
+  display: grid;
+  place-items: center;
+  color: rgba(174, 190, 255, 0.7);
+}
+
+.black-box-record-details {
+  padding: 0 26px 26px 182px;
+  background: rgba(2, 6, 16, 0.58);
+}
+
+.black-box-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 255, 0.12);
+  border-radius: 13px;
+  background: rgba(120, 155, 255, 0.08);
+}
+
+.black-box-detail-grid > div {
+  min-width: 0;
+  padding: 16px;
+  background: rgba(5, 10, 23, 0.98);
+}
+
+.black-box-detail-grid span {
+  display: block;
+  color: rgba(193, 205, 246, 0.4);
+  font-size: 0.57rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.black-box-detail-grid strong {
+  display: block;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+  color: #dfe6ff;
+  font-size: 0.7rem;
+}
+
+.black-box-json-panel {
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 255, 0.12);
+  border-radius: 13px;
+  background: rgba(1, 4, 12, 0.95);
+}
+
+.black-box-json-heading {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(120, 155, 255, 0.1);
+  color: #9db1ff;
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.black-box-json-panel pre {
+  margin: 0;
+  padding: 18px;
+  overflow-x: auto;
+  color: #b8c7ff;
+  font-size: 0.72rem;
+  line-height: 1.65;
+  white-space: pre;
+}
+
+@media (max-width: 900px) {
+  .black-box-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .black-box-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .black-box-record-details {
+    padding-left: 26px;
+  }
+}
+
+@media (max-width: 700px) {
+  .black-box-command {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .black-box-overview,
+  .black-box-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .black-box-filter-group {
+    grid-template-columns: 1fr;
+  }
+
+  .black-box-record-main {
+    grid-template-columns: 75px 16px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 0 14px;
+  }
+
+  .black-box-record-time strong {
+    font-size: 0.69rem;
+  }
+
+  .black-box-record-details {
+    padding: 0 14px 18px;
+  }
+}

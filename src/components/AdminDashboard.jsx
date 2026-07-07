@@ -863,6 +863,38 @@ export default function AdminDashboard({
               <strong>→</strong>
             </div>
           </a>
+
+          <a
+            className="admin-system-command-link"
+            href="/admin/black-box"
+          >
+            <div className="admin-system-command-link-icon">
+              <Radio size={22} />
+            </div>
+
+            <div className="admin-system-command-link-copy">
+              <span className="admin-card-eyebrow">
+                FLIGHT RECORDER
+              </span>
+
+              <strong>
+                Black Box
+              </strong>
+
+              <p>
+                Search, filter, and inspect the
+                full authenticated event archive.
+              </p>
+            </div>
+
+            <div className="admin-system-command-link-action">
+              <span>
+                OPEN EVENT ARCHIVE
+              </span>
+
+              <strong>→</strong>
+            </div>
+          </a>
         </section>
 
         <section className="admin-black-box-panel">
