@@ -601,59 +601,6 @@ export default function AdminDashboard({
           </div>
         )}
 
-        <section className="admin-grid">
-          {adminSections.map((section) => {
-            const Icon = section.icon;
-
-            return (
-              <article
-                className="admin-control-card"
-                key={section.id}
-              >
-                <div className="admin-control-icon">
-                  <Icon size={27} />
-                </div>
-
-                <span className="admin-card-eyebrow">
-                  {section.eyebrow}
-                </span>
-
-                <h3>{section.title}</h3>
-
-                <p>{section.description}</p>
-
-                <div className="admin-dashboard-card-stats">
-                  {section.stats.map((stat) => (
-                    <div key={stat.label}>
-                      <span>
-                        {stat.label}
-                      </span>
-
-                      <strong>
-                        {dashboardStatus ===
-                        'loading'
-                          ? '—'
-                          : stat.value}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.location.href =
-                      `/admin/${section.id}`;
-                  }}
-                >
-                  {section.action}
-                  <span>→</span>
-                </button>
-              </article>
-            );
-          })}
-        </section>
-
         <section className="admin-black-box-panel">
           <div className="admin-black-box-heading">
             <div>
@@ -781,6 +728,60 @@ export default function AdminDashboard({
                 </div>
               )}
           </div>
+        </section>
+
+
+        <section className="admin-grid">
+          {adminSections.map((section) => {
+            const Icon = section.icon;
+
+            return (
+              <article
+                className="admin-control-card"
+                key={section.id}
+              >
+                <div className="admin-control-icon">
+                  <Icon size={27} />
+                </div>
+
+                <span className="admin-card-eyebrow">
+                  {section.eyebrow}
+                </span>
+
+                <h3>{section.title}</h3>
+
+                <p>{section.description}</p>
+
+                <div className="admin-dashboard-card-stats">
+                  {section.stats.map((stat) => (
+                    <div key={stat.label}>
+                      <span>
+                        {stat.label}
+                      </span>
+
+                      <strong>
+                        {dashboardStatus ===
+                        'loading'
+                          ? '—'
+                          : stat.value}
+                      </strong>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href =
+                      `/admin/${section.id}`;
+                  }}
+                >
+                  {section.action}
+                  <span>→</span>
+                </button>
+              </article>
+            );
+          })}
         </section>
 
         <section className="admin-system-summary">
