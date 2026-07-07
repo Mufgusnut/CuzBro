@@ -31,11 +31,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Stamp deployment metadata
+        shell: bash
+        run: |
+          echo "VITE_BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+          echo "VITE_APP_VERSION=$(node -p \"require('./package.json').version\")" >> "$GITHUB_ENV"
+
       - name: Build CuzBro
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_DEPLOY_SHA: ${{ github.sha }}
+          VITE_DEPLOY_BRANCH: ${{ github.ref_name }}
+          VITE_BUILD_TIME: ${{ env.VITE_BUILD_TIME }}
+          VITE_APP_VERSION: ${{ env.VITE_APP_VERSION }}
+          VITE_GITHUB_OWNER: mufgusnut
+          VITE_GITHUB_REPO: CuzBro
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

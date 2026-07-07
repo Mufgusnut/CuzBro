@@ -10,6 +10,7 @@ import {
   FolderUp,
   LogOut,
   Radio,
+  Rocket,
   Settings,
   Telescope
 } from 'lucide-react';
@@ -875,6 +876,40 @@ export default function AdminDashboard({
             <div className="admin-system-command-link-action">
               <span>
                 OPEN EVENT ARCHIVE
+              </span>
+
+              <strong>→</strong>
+            </div>
+          </a>
+
+          <a
+            className="admin-system-command-link admin-system-command-link-deployments"
+            href="/admin/deployments"
+          >
+            <div className="admin-system-command-link-icon">
+              <Rocket size={22} />
+            </div>
+
+            <div className="admin-system-command-link-copy">
+              <span className="admin-card-eyebrow">
+                RELEASE CONTROL
+              </span>
+
+              <strong>
+                Deployments
+              </strong>
+
+              <p>
+                Inspect the live build,
+                deployed Git SHA, branch,
+                and recent repository
+                commits.
+              </p>
+            </div>
+
+            <div className="admin-system-command-link-action">
+              <span>
+                OPEN DEPLOYMENT CONSOLE
               </span>
 
               <strong>→</strong>

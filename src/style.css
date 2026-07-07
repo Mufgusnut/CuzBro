@@ -12509,6 +12509,7 @@ footer p {
   display: grid;
   gap: 12px;
   margin-top: 24px;
+  margin-bottom: 24px;
 }
 
 .admin-system-command-link {
@@ -13638,3 +13639,441 @@ footer p {
     gap: 7px;
   }
 }
+
+/* =========================
+   Deployment Control
+========================= */
+
+.deployment-main {
+  display: grid;
+  gap: 24px;
+}
+
+.deployment-command {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.deployment-command h2 {
+  margin: 12px 0 14px;
+  font-size: clamp(2.7rem, 6vw, 5.5rem);
+  line-height: .9;
+  letter-spacing: -.045em;
+}
+
+.deployment-command p {
+  max-width: 560px;
+  margin: 0;
+  color: rgba(214, 228, 246, .72);
+  line-height: 1.7;
+}
+
+.deployment-command-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.deployment-command-actions button,
+.deployment-command-actions a {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 16px;
+  color: #edf7ff;
+  background: rgba(255, 255, 255, .035);
+  border: 1px solid rgba(143, 193, 219, .18);
+  border-radius: 8px;
+  font-size: .67rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  cursor: pointer;
+}
+
+.deployment-command-actions button:hover,
+.deployment-command-actions a:hover {
+  border-color: rgba(104, 190, 222, .65);
+  background: rgba(104, 190, 222, .08);
+}
+
+.deployment-command-actions button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.deployment-spin {
+  animation: deployment-spin .8s linear infinite;
+}
+
+@keyframes deployment-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.deployment-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, .75fr);
+  gap: 18px;
+}
+
+.deployment-primary-card,
+.deployment-state-card,
+.deployment-commits-panel {
+  border: 1px solid rgba(143, 193, 219, .17);
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(93, 132, 255, .10),
+      transparent 34%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(13, 23, 44, .88),
+      rgba(5, 11, 25, .94)
+    );
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .30);
+}
+
+.deployment-primary-card,
+.deployment-state-card {
+  padding: 28px;
+  border-radius: 16px;
+}
+
+.deployment-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.deployment-card-icon,
+.deployment-state-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  color: #a8b6ff;
+  background: rgba(95, 112, 255, .08);
+  border: 1px solid rgba(139, 155, 255, .20);
+  border-radius: 13px;
+}
+
+.deployment-card-heading span,
+.deployment-state-card > span,
+.deployment-sha-block > span,
+.deployment-facts span,
+.deployment-state-card > div:last-of-type span {
+  color: rgba(143, 193, 219, .70);
+  font-size: .64rem;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+
+.deployment-card-heading h3 {
+  margin: 5px 0 0;
+  font-size: 2rem;
+}
+
+.deployment-sha-block {
+  margin-top: 28px;
+  padding: 20px;
+  background: rgba(0, 0, 0, .20);
+  border: 1px solid rgba(143, 193, 219, .12);
+  border-radius: 10px;
+}
+
+.deployment-sha-block strong {
+  display: block;
+  margin-top: 10px;
+  color: #f5f8ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: clamp(.76rem, 1.7vw, 1rem);
+  overflow-wrap: anywhere;
+}
+
+.deployment-sha-block small {
+  display: inline-block;
+  margin-top: 10px;
+  color: #f0c06c;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 800;
+}
+
+.deployment-facts {
+  display: grid;
+  grid-template-columns: .65fr .9fr 1.5fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.deployment-facts > div {
+  min-width: 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, .025);
+  border: 1px solid rgba(143, 193, 219, .10);
+  border-radius: 9px;
+}
+
+.deployment-facts strong {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+  color: #edf7ff;
+  font-size: .83rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.deployment-state-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.deployment-state-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: rgba(143, 193, 219, .30);
+}
+
+.deployment-state-current::after {
+  background: #7be39f;
+}
+
+.deployment-state-behind::after,
+.deployment-state-different::after {
+  background: #f0c06c;
+}
+
+.deployment-state-unknown::after {
+  background: #8f9ab5;
+}
+
+.deployment-state-card > span {
+  display: block;
+  margin-top: 24px;
+}
+
+.deployment-state-card > strong {
+  display: block;
+  margin-top: 9px;
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  letter-spacing: -.03em;
+}
+
+.deployment-state-current > strong {
+  color: #8ff0b1;
+}
+
+.deployment-state-behind > strong,
+.deployment-state-different > strong {
+  color: #f2c56f;
+}
+
+.deployment-state-card p {
+  min-height: 74px;
+  margin: 13px 0 22px;
+  color: rgba(214, 228, 246, .72);
+  line-height: 1.55;
+}
+
+.deployment-state-card > div:last-of-type {
+  padding-top: 18px;
+  border-top: 1px solid rgba(143, 193, 219, .12);
+}
+
+.deployment-state-card > div:last-of-type strong {
+  display: block;
+  margin-top: 8px;
+  color: #edf7ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.deployment-state-card > small {
+  display: block;
+  margin-top: 16px;
+  color: rgba(143, 193, 219, .55);
+  font-size: .59rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+
+.deployment-commits-panel {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.deployment-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 26px;
+  border-bottom: 1px solid rgba(143, 193, 219, .12);
+}
+
+.deployment-section-heading h3 {
+  margin: 7px 0 0;
+  font-size: 1.7rem;
+}
+
+.deployment-repo-label {
+  color: rgba(181, 200, 229, .65);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .78rem;
+}
+
+.deployment-commit-list {
+  display: grid;
+}
+
+.deployment-commit-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 90px 72px;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 17px 26px;
+  border-top: 1px solid rgba(143, 193, 219, .08);
+}
+
+.deployment-commit-row:first-child {
+  border-top: 0;
+}
+
+.deployment-commit-row-live {
+  background: rgba(113, 214, 151, .045);
+  box-shadow:
+    inset 3px 0 0 rgba(113, 214, 151, .72);
+}
+
+.deployment-commit-index {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: #a8b6ff;
+  background: rgba(95, 112, 255, .06);
+  border: 1px solid rgba(139, 155, 255, .14);
+  border-radius: 9px;
+}
+
+.deployment-commit-copy {
+  min-width: 0;
+}
+
+.deployment-commit-copy strong {
+  display: block;
+  overflow: hidden;
+  color: #edf7ff;
+  font-size: .9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deployment-commit-copy span {
+  display: block;
+  margin-top: 5px;
+  color: rgba(169, 188, 216, .60);
+  font-size: .72rem;
+}
+
+.deployment-commit-row code {
+  color: #f0c06c;
+  font-size: .76rem;
+}
+
+.deployment-commit-state {
+  text-align: right;
+}
+
+.deployment-commit-state span,
+.deployment-commit-state strong {
+  display: inline-flex;
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: .59rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.deployment-commit-state span {
+  color: #8ff0b1;
+  background: rgba(113, 214, 151, .08);
+  border: 1px solid rgba(113, 214, 151, .20);
+}
+
+.deployment-commit-state strong {
+  color: #b9c6ff;
+  background: rgba(139, 155, 255, .07);
+  border: 1px solid rgba(139, 155, 255, .16);
+}
+
+.deployment-empty {
+  padding: 34px 26px;
+  color: rgba(143, 193, 219, .60);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+@media (max-width: 900px) {
+  .deployment-command,
+  .deployment-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .deployment-command-actions {
+    justify-content: flex-start;
+  }
+
+  .deployment-overview,
+  .deployment-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .deployment-commit-row {
+    grid-template-columns: 38px minmax(0, 1fr) 70px;
+    padding: 15px 18px;
+  }
+
+  .deployment-commit-state {
+    grid-column: 2 / -1;
+    text-align: left;
+  }
+}
+
+@media (max-width: 600px) {
+  .deployment-primary-card,
+  .deployment-state-card {
+    padding: 20px;
+  }
+
+  .deployment-command-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .deployment-commit-row {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .deployment-commit-row code {
+    grid-column: 2;
+  }
+
+  .deployment-commit-state {
+    grid-column: 2;
+  }
+}
+
