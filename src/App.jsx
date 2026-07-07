@@ -50,7 +50,17 @@ const locations = [
   }
 ];
 
-function playPrioritySignal(kind = 'PING') {
+function isPrioritySoundEnabled(userId) {
+  return localStorage.getItem(
+    `cuzbro-comms-sound-${userId || 'crew'}`
+  ) !== 'off';
+}
+
+function playPrioritySignal(kind = 'PING', userId) {
+  if (!isPrioritySoundEnabled(userId)) {
+    return;
+  }
+
   try {
     const AudioContextClass =
       window.AudioContext || window.webkitAudioContext;
@@ -259,6 +269,9 @@ export default function App() {
 
   const [prioritySignal, setPrioritySignal] =
     useState(null);
+
+  const [tabCommsPulse, setTabCommsPulse] =
+    useState(false);
 
   const [
     authLoading,
@@ -474,7 +487,6 @@ export default function App() {
       .toLowerCase();
 
     let active = true;
-    const originalTitle = document.title;
 
     async function loadPendingSignals() {
       const { data, error: signalError } = await supabase
@@ -495,10 +507,6 @@ export default function App() {
 
       if (active && data) {
         setPrioritySignal(data);
-        document.title =
-          data.kind === 'RED_ALERT'
-            ? '⚠ RED ALERT · CUZBRO'
-            : `⚡ PING FROM ${data.sender_name} · CUZBRO`;
       }
     }
 
@@ -524,11 +532,10 @@ export default function App() {
 
           setPrioritySignal(signal);
           setHasUnreadComms(true);
-          document.title =
-            signal.kind === 'RED_ALERT'
-              ? '⚠ RED ALERT · CUZBRO'
-              : `⚡ PING FROM ${signal.sender_name} · CUZBRO`;
-          playPrioritySignal(signal.kind);
+          playPrioritySignal(
+            signal.kind,
+            session.user.id
+          );
         }
       )
       .on(
@@ -553,7 +560,6 @@ export default function App() {
               return current;
             }
 
-            document.title = originalTitle;
             return null;
           });
         }
@@ -562,13 +568,93 @@ export default function App() {
 
     return () => {
       active = false;
-      document.title = originalTitle;
       supabase.removeChannel(signalChannel);
     };
   }, [
     isAdminPage,
     session?.user?.id,
     session?.user?.email
+  ]);
+
+  useEffect(() => {
+    if (!isAdminPage || !session?.user?.id) {
+      setTabCommsPulse(false);
+      return undefined;
+    }
+
+    let pulseTimer = null;
+
+    const handleIncomingComms = () => {
+      setTabCommsPulse(true);
+
+      if (pulseTimer) {
+        window.clearTimeout(pulseTimer);
+      }
+
+      pulseTimer = window.setTimeout(() => {
+        setTabCommsPulse(false);
+      }, 7000);
+    };
+
+    window.addEventListener(
+      'cuzbro:incoming-comms',
+      handleIncomingComms
+    );
+
+    return () => {
+      if (pulseTimer) {
+        window.clearTimeout(pulseTimer);
+      }
+
+      window.removeEventListener(
+        'cuzbro:incoming-comms',
+        handleIncomingComms
+      );
+    };
+  }, [isAdminPage, session?.user?.id]);
+
+  useEffect(() => {
+    if (!isAdminPage) {
+      return undefined;
+    }
+
+    const normalTitle = 'CuzBro';
+    const hasCommsAlert =
+      hasUnreadComms || tabCommsPulse;
+
+    if (!prioritySignal && !hasCommsAlert) {
+      document.title = normalTitle;
+      return undefined;
+    }
+
+    const alertTitle = prioritySignal
+      ? prioritySignal.kind === 'RED_ALERT'
+        ? '⚠ RED ALERT · CUZBRO'
+        : `⚡ PING FROM ${prioritySignal.sender_name} · CUZBRO`
+      : '● NEW COMMS · CUZBRO';
+
+    let showAlert = true;
+    document.title = alertTitle;
+
+    const intervalId = window.setInterval(
+      () => {
+        showAlert = !showAlert;
+        document.title = showAlert
+          ? alertTitle
+          : normalTitle;
+      },
+      prioritySignal ? 350 : 650
+    );
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.title = normalTitle;
+    };
+  }, [
+    hasUnreadComms,
+    isAdminPage,
+    prioritySignal,
+    tabCommsPulse
   ]);
 
   async function acknowledgePrioritySignals() {
@@ -594,7 +680,6 @@ export default function App() {
     }
 
     setPrioritySignal(null);
-    document.title = 'CuzBro';
   }
 
   const isSkyMapPage =

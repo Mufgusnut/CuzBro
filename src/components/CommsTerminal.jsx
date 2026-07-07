@@ -34,6 +34,23 @@ const NAVIGATION_COMMANDS = {
   '/deploy': '/admin/deployments'
 };
 
+function getSoundPreferenceKey(userId) {
+  return `cuzbro-comms-sound-${userId || 'crew'}`;
+}
+
+function isCommsSoundEnabled(userId) {
+  return localStorage.getItem(
+    getSoundPreferenceKey(userId)
+  ) !== 'off';
+}
+
+function setCommsSoundEnabled(userId, enabled) {
+  localStorage.setItem(
+    getSoundPreferenceKey(userId),
+    enabled ? 'on' : 'off'
+  );
+}
+
 function formatTimestamp(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -107,6 +124,7 @@ export default function CommsTerminal({ session }) {
   const [onlineCrew, setOnlineCrew] = useState([]);
   const [redAlert, setRedAlert] = useState(false);
   const feedRef = useRef(null);
+  const composerRef = useRef(null);
   const redAlertTimerRef = useRef(null);
 
   const visibleRows = useMemo(
@@ -123,6 +141,21 @@ export default function CommsTerminal({ session }) {
       feed.scrollTop = feed.scrollHeight;
     }
   }, [visibleRows.length]);
+
+
+  useEffect(() => {
+    if (sending || status !== 'ready') {
+      return undefined;
+    }
+
+    const focusTimer = window.setTimeout(() => {
+      composerRef.current?.focus();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+    };
+  }, [sending, status, visibleRows.length]);
 
   useEffect(() => {
     if (!session?.user?.id) {
@@ -238,6 +271,20 @@ export default function CommsTerminal({ session }) {
               ),
               incoming
             ].slice(-MAX_HISTORY_ROWS));
+
+            if (
+              incoming?.user_id !== session?.user?.id
+            ) {
+              window.dispatchEvent(
+                new CustomEvent('cuzbro:incoming-comms', {
+                  detail: {
+                    senderName: normalizeCrewName(
+                      incoming?.crew_name
+                    )
+                  }
+                })
+              );
+            }
           }
         )
         .subscribe((channelStatus) => {
@@ -557,6 +604,8 @@ export default function CommsTerminal({ session }) {
             '  /me [action]         Transmit crew action',
             '  /status [text]       Set crew status',
             '  /status clear        Clear crew status',
+            '  /sound on            Enable priority audio',
+            '  /sound off           Disable priority audio',
             '  /who                 Crew telemetry',
             '',
             'COMMAND',
@@ -590,6 +639,20 @@ export default function CommsTerminal({ session }) {
             'LOCAL TERMINAL BUFFER CLEARED · HISTORY REMAINS STORED'
           )
         ]);
+      } else if (lowerCommand === '/sound on') {
+        setCommsSoundEnabled(session?.user?.id, true);
+        addLocalEvent('PRIORITY AUDIO ENABLED · PING AND RED ALERT TONES ACTIVE');
+      } else if (lowerCommand === '/sound off') {
+        setCommsSoundEnabled(session?.user?.id, false);
+        addLocalEvent('PRIORITY AUDIO MUTED · VISUAL ALERTS REMAIN ACTIVE');
+      } else if (lowerCommand === '/sound') {
+        addLocalEvent(
+          `PRIORITY AUDIO · ${
+            isCommsSoundEnabled(session?.user?.id)
+              ? 'ENABLED'
+              : 'MUTED'
+          }`
+        );
       } else if (lowerCommand === '/who') {
         await handleWhoCommand();
       } else if (lowerCommand.startsWith('/ping')) {
@@ -840,6 +903,7 @@ export default function CommsTerminal({ session }) {
           <form className="comms-composer" onSubmit={handleSubmit}>
             <span>&gt;</span>
             <input
+              ref={composerRef}
               type="text"
               value={composer}
               onChange={(event) => {
@@ -848,6 +912,7 @@ export default function CommsTerminal({ session }) {
               maxLength={MAX_MESSAGE_LENGTH}
               placeholder="ENTER TRANSMISSION..."
               autoComplete="off"
+              autoFocus
               disabled={sending}
               aria-label="Comms transmission"
             />

@@ -1,6 +1,6 @@
 {
   "name": "cuzbro-observatory",
-  "version": "9.0.1",
+  "version": "9.0.3",
   "private": true,
   "scripts": {
     "dev": "vite --host 0.0.0.0",
