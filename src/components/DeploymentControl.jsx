@@ -1,3 +1,4 @@
+import packageInfo from '../../package.json';
 import {
   useEffect,
   useMemo,
@@ -35,6 +36,7 @@ const BUILD_TIME =
 
 const APP_VERSION =
   import.meta.env.VITE_APP_VERSION ||
+  packageInfo.version ||
   '0.0.0';
 
 function shortSha(value) {
