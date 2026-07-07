@@ -1,4 +1,7 @@
 import {
+  logCrewActivity
+} from '../lib/audit.js';
+import {
   ArrowLeft,
   Download,
   File,
@@ -14,6 +17,9 @@ import {
   useState
 } from 'react';
 import { supabase } from '../supabase.js';
+import {
+  getCrewName
+} from '../lib/crew.js';
 
 const GALLERY_API =
   'https://cuzbro-gallery-api.dve-hffman.workers.dev';
@@ -72,35 +78,6 @@ function formatDate(dateValue) {
       minute: '2-digit'
     }
   );
-}
-
-function getTransferDisplayName(email) {
-  const value = String(
-    email || 'Unknown crew member'
-  ).toLowerCase();
-
-  if (
-    value ===
-    'dve.hffman@gmail.com'
-  ) {
-    return 'Dave';
-  }
-
-  if (
-    value ===
-    'jhoff33@gmail.com'
-  ) {
-    return 'Justin';
-  }
-
-  if (
-    value ===
-    'gregg@computerav.com'
-  ) {
-    return 'Chappy';
-  }
-
-  return email || 'Unknown crew member';
 }
 
 async function getCrewAccessToken() {
@@ -358,18 +335,45 @@ export default function CrewTransfer() {
         }
       }
 
-      setMessage(
-        `${selectedFiles.length} ${
-          selectedFiles.length === 1
-            ? 'FILE'
-            : 'FILES'
-        } UPLOADED TO PRIVATE CREW TRANSFER`
-      );
+      const totalBytes =
+  selectedFiles.reduce(
+    (total, file) =>
+      total + Number(file.size || 0),
+    0
+  );
 
-      setTransferName('');
-      setSelectedFiles([]);
+await logCrewActivity({
+  action: 'TRANSFER_UPLOAD',
+  category: 'TRANSFER',
+  resourceType: 'crew_transfer',
+  resourceName: cleanTransferName,
+  details: {
+    fileCount: selectedFiles.length,
+    totalBytes,
+    files: selectedFiles.map(
+      (file) => ({
+        name: file.name,
+        size: file.size,
+        type:
+          file.type ||
+          'application/octet-stream'
+      })
+    )
+  }
+});
 
-      await loadTransfers();
+setMessage(
+  `${selectedFiles.length} ${
+    selectedFiles.length === 1
+      ? 'FILE'
+      : 'FILES'
+  } UPLOADED TO PRIVATE CREW TRANSFER`
+);
+
+setTransferName('');
+setSelectedFiles([]);
+
+await loadTransfers();
     } catch (uploadError) {
       console.error(uploadError);
 
@@ -447,6 +451,20 @@ export default function CrewTransfer() {
       setTimeout(() => {
         URL.revokeObjectURL(objectUrl);
       }, 1000);
+      await logCrewActivity({
+  action: 'TRANSFER_DOWNLOAD',
+  category: 'TRANSFER',
+  resourceType: 'crew_transfer_file',
+  resourceId: file.key,
+  resourceName: file.fileName,
+  details: {
+    transferName:
+      file.transferName ||
+      'Crew Transfer',
+    fileSize:
+      Number(file.size || 0)
+  }
+});
     } catch (downloadError) {
       console.error(downloadError);
 
@@ -497,11 +515,26 @@ export default function CrewTransfer() {
         );
       }
 
-      setMessage(
-        `${file.fileName} DELETED`
-      );
+      await logCrewActivity({
+  action: 'TRANSFER_FILE_DELETE',
+  category: 'TRANSFER',
+  resourceType: 'crew_transfer_file',
+  resourceId: file.key,
+  resourceName: file.fileName,
+  details: {
+    transferName:
+      file.transferName ||
+      'Crew Transfer',
+    fileSize:
+      Number(file.size || 0)
+  }
+});
 
-      await loadTransfers();
+setMessage(
+  `${file.fileName} DELETED`
+);
+
+await loadTransfers();
     } catch (deleteError) {
       console.error(deleteError);
 
@@ -554,11 +587,26 @@ export default function CrewTransfer() {
         }
       }
 
-      setMessage(
-        `${group.name} TRANSFER DELETED`
-      );
+      await logCrewActivity({
+  action: 'TRANSFER_DELETE',
+  category: 'TRANSFER',
+  resourceType: 'crew_transfer',
+  resourceName: group.name,
+  details: {
+    fileCount: group.files.length,
+    totalBytes:
+      Number(group.totalSize || 0),
+    files: group.files.map(
+      (file) => file.fileName
+    )
+  }
+});
 
-      await loadTransfers();
+setMessage(
+  `${group.name} TRANSFER DELETED`
+);
+
+await loadTransfers();
     } catch (deleteError) {
       console.error(deleteError);
 
@@ -857,9 +905,9 @@ export default function CrewTransfer() {
 
                       <p>
                         Uploaded by{' '}
-                        {getTransferDisplayName(
-                          group.uploadedBy
-                        )}
+                        {getCrewName(
+  group.uploadedBy
+)}
                         {' · '}
                         {formatDate(
                           group.uploaded
