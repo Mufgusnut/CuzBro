@@ -6,7 +6,8 @@ import {
   Radio,
   Square,
   Telescope,
-  Users
+  Users,
+  ClipboardList
 } from 'lucide-react';
 import {
   useEffect,
@@ -27,6 +28,9 @@ import {
 import {
   logCrewActivity
 } from '../lib/audit.js';
+import {
+  formatIncidentCode
+} from '../lib/incidents.js';
 
 const ONLINE_WINDOW_MS = 45_000;
 
@@ -112,6 +116,27 @@ function getOperationEventDescription(event) {
         event.resource_name || 'Mission capture'
       }`;
 
+    case 'TASK_CREATED':
+      return `Task created · ${
+        event.resource_name || 'Crew task'
+      } · ${
+        details.title || 'Follow-up task'
+      }`;
+
+    case 'INCIDENT_DECLARED':
+      return `Incident declared · ${
+        event.resource_name || 'Incident'
+      } · ${
+        details.title || 'Anomaly'
+      }`;
+
+    case 'INCIDENT_RESOLVED':
+      return `Incident resolved · ${
+        event.resource_name || 'Incident'
+      } · ${
+        details.duration || 'duration unavailable'
+      }`;
+
     default:
       return (
         event.event_label ||
@@ -155,6 +180,8 @@ export default function OperationControl({
       bytesTransferred: 0,
       capturesCreated: 0,
       blackBoxEvents: 0,
+      incidents: [],
+      tasks: [],
       participants: []
     });
 
@@ -211,6 +238,8 @@ export default function OperationControl({
         bytesTransferred: 0,
         capturesCreated: 0,
         blackBoxEvents: 0,
+        incidents: [],
+        tasks: [],
         participants: []
       });
 
@@ -231,7 +260,9 @@ export default function OperationControl({
         eventResponse,
         presenceResponse,
         commsResponse,
-        blackBoxResponse
+        blackBoxResponse,
+        incidentResponse,
+        taskResponse
       ] = await Promise.all([
         supabase
           .from('crew_operation_events')
@@ -279,14 +310,42 @@ export default function OperationControl({
           .lte(
             'created_at',
             endedAt
+          ),
+
+        supabase
+          .from('crew_incidents')
+          .select(
+            'id, incident_number, title, severity, status, declared_at, resolved_at'
           )
+          .eq(
+            'operation_id',
+            activeOperation.id
+          )
+          .order('declared_at', {
+            ascending: true
+          }),
+
+        supabase
+          .from('crew_tasks')
+          .select(
+            'id, task_code, title, priority, status, assigned_name, created_at, completed_at'
+          )
+          .eq(
+            'operation_id',
+            activeOperation.id
+          )
+          .order('created_at', {
+            ascending: true
+          })
       ]);
 
       const loadError =
         eventResponse.error ||
         presenceResponse.error ||
         commsResponse.error ||
-        blackBoxResponse.error;
+        blackBoxResponse.error ||
+        incidentResponse.error ||
+        taskResponse.error;
 
       if (loadError) {
         console.error(
@@ -383,6 +442,12 @@ export default function OperationControl({
           (blackBoxResponse.data || [])
             .length,
 
+        incidents:
+          incidentResponse.data || [],
+
+        tasks:
+          taskResponse.data || [],
+
         participants:
           getAllCrewMembers()
             .filter((member) =>
@@ -429,6 +494,26 @@ export default function OperationControl({
           event: 'INSERT',
           schema: 'public',
           table: 'crew_comms'
+        },
+        loadOperationData
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'crew_incidents'
+        },
+        loadOperationData
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'crew_tasks',
+          filter:
+            `operation_id=eq.${activeOperation.id}`
         },
         loadOperationData
       )
@@ -1037,6 +1122,22 @@ export default function OperationControl({
               </article>
 
               <article>
+                <Activity size={19} />
+                <span>INCIDENTS</span>
+                <strong>
+                  {summary.incidents.length}
+                </strong>
+              </article>
+
+              <article>
+                <ClipboardList size={19} />
+                <span>TASKS</span>
+                <strong>
+                  {summary.tasks.length}
+                </strong>
+              </article>
+
+              <article>
                 <Users size={19} />
                 <span>CREW PARTICIPATION</span>
                 <strong>
@@ -1326,6 +1427,63 @@ export default function OperationControl({
                       completedDebrief.summary
                         .capturesCreated
                     }
+                  </strong>
+                </p>
+
+                <p>
+                  <span>INCIDENTS</span>
+                  <strong>
+                    {completedDebrief.summary
+                      .incidents.length
+                      ? completedDebrief.summary
+                          .incidents.map(
+                            (incident) =>
+                              `${formatIncidentCode(
+                                incident
+                              )} · ${incident.status}`
+                          )
+                          .join(' · ')
+                      : 'NONE'}
+                  </strong>
+                </p>
+
+                <p>
+                  <span>TASKS</span>
+                  <strong>
+                    {completedDebrief.summary
+                      .tasks.length
+                      ? `${completedDebrief.summary.tasks.length} CREATED · ${completedDebrief.summary.tasks.filter(
+                          (task) =>
+                            task.status === 'COMPLETE'
+                        ).length} COMPLETE · ${completedDebrief.summary.tasks.filter(
+                          (task) =>
+                            task.status !== 'COMPLETE'
+                        ).length} OPEN`
+                      : 'NONE'}
+                  </strong>
+                </p>
+
+                <p>
+                  <span>OPEN FOLLOW-UP</span>
+                  <strong>
+                    {completedDebrief.summary
+                      .tasks.filter(
+                        (task) =>
+                          task.status !== 'COMPLETE'
+                      ).length
+                      ? completedDebrief.summary.tasks
+                          .filter(
+                            (task) =>
+                              task.status !== 'COMPLETE'
+                          )
+                          .map(
+                            (task) =>
+                              `${task.task_code} · ${task.title} · ${String(
+                                task.assigned_name || 'UNASSIGNED'
+                              ).toUpperCase()}`
+                          )
+                          .join(' · ')
+                      : 'NONE'}
                   </strong>
                 </p>
 

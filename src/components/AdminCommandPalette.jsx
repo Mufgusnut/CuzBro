@@ -8,6 +8,7 @@ import {
   Activity,
   BookOpen,
   Camera,
+  ClipboardList,
   Command,
   FolderUp,
   Globe2,
@@ -16,7 +17,8 @@ import {
   Rocket,
   Search,
   Telescope,
-  X
+  X,
+  ShieldAlert
 } from 'lucide-react';
 
 const COMMANDS = [
@@ -29,6 +31,26 @@ const COMMANDS = [
       'admin dashboard home control command',
     icon: Command,
     href: '/admin'
+  },
+  {
+    id: 'incidents',
+    group: 'COMMAND',
+    title: 'Incident Command',
+    subtitle: 'Declare and resolve crew anomalies',
+    keywords:
+      'incident anomaly response telescope power fault issue troubleshooting',
+    icon: ShieldAlert,
+    href: '/admin/incidents'
+  },
+  {
+    id: 'tasks',
+    group: 'COMMAND',
+    title: 'Crew Tasking',
+    subtitle: 'Open the shared crew action queue',
+    keywords:
+      'tasks tasking action queue assignments follow up todo work crew',
+    icon: ClipboardList,
+    href: '/admin/tasks'
   },
   {
     id: 'system',

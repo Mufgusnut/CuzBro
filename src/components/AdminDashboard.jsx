@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useState
 } from 'react';
 import {
@@ -12,7 +13,10 @@ import {
   Radio,
   Rocket,
   Settings,
-  Telescope
+  Telescope,
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardList
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
 import CrewPresencePanel from './CrewPresencePanel.jsx';
@@ -23,6 +27,15 @@ import {
   formatOperationElapsed,
   useActiveOperation
 } from '../lib/operations.js';
+import {
+  formatIncidentCode,
+  useActiveIncidents
+} from '../lib/incidents.js';
+import {
+  formatTaskCode,
+  formatTaskStatus,
+  useCrewTasks
+} from '../lib/tasks.js';
 
 const initialDashboardData = {
   captures: [],
@@ -119,6 +132,37 @@ export default function AdminDashboard({
     activeOperation,
     operationStatus
   } = useActiveOperation();
+
+  const {
+    activeIncidents,
+    primaryIncident,
+    incidentStatus
+  } = useActiveIncidents();
+
+  const {
+    tasks,
+    activeTasks,
+    taskStatus
+  } = useCrewTasks();
+
+  const ownActiveTasks = useMemo(
+    () =>
+      activeTasks
+        .filter(
+          (task) =>
+            String(
+              task.assigned_email || ''
+            ).toLowerCase() ===
+            String(
+              session?.user?.email || ''
+            ).toLowerCase()
+        )
+        .slice(0, 2),
+    [
+      activeTasks,
+      session?.user?.email
+    ]
+  );
 
   const [
     dashboardData,
@@ -851,6 +895,110 @@ export default function AdminDashboard({
             <strong>→</strong>
           </a>
         </section>
+
+        <a
+          className={`admin-incident-status-strip${
+            activeIncidents.length
+              ? ' admin-incident-status-strip-active'
+              : ''
+          }`}
+          href="/admin/incidents"
+        >
+          <div className="admin-incident-status-icon">
+            {activeIncidents.length ? (
+              <AlertTriangle size={22} />
+            ) : (
+              <CheckCircle2 size={22} />
+            )}
+          </div>
+
+          <div className="admin-incident-status-copy">
+            <span className="admin-card-eyebrow">
+              INCIDENT STATUS
+            </span>
+
+            <strong>
+              {incidentStatus === 'loading'
+                ? 'Synchronizing Incident Link'
+                : activeIncidents.length
+                  ? `${activeIncidents.length} ACTIVE ${
+                      activeIncidents.length === 1
+                        ? 'INCIDENT'
+                        : 'INCIDENTS'
+                    }`
+                  : 'All Systems Nominal'}
+            </strong>
+
+            <p>
+              {primaryIncident
+                ? `${formatIncidentCode(
+                    primaryIncident
+                  )} · ${primaryIncident.title} · ${primaryIncident.severity}`
+                : 'No active incidents are currently registered.'}
+            </p>
+          </div>
+
+          <div className="admin-incident-status-action">
+            <span>
+              {activeIncidents.length
+                ? 'OPEN INCIDENT COMMAND'
+                : 'VIEW INCIDENT ARCHIVE'}
+            </span>
+
+            <strong>→</strong>
+          </div>
+        </a>
+
+        <a
+          className="admin-tasking-status-strip"
+          href="/admin/tasks"
+        >
+          <div className="admin-tasking-status-icon">
+            <ClipboardList size={22} />
+          </div>
+
+          <div className="admin-tasking-status-copy">
+            <span className="admin-card-eyebrow">
+              CREW TASKING
+            </span>
+
+            <strong>
+              {taskStatus === 'loading'
+                ? 'Synchronizing Action Queue'
+                : `${activeTasks.length} ACTIVE ${
+                    activeTasks.length === 1
+                      ? 'TASK'
+                      : 'TASKS'
+                  }`}
+            </strong>
+
+            {ownActiveTasks.length ? (
+              <div className="admin-tasking-own-list">
+                {ownActiveTasks.map((task) => (
+                  <span key={task.id}>
+                    <b>{formatTaskCode(task)}</b>
+                    {task.title}
+                    <small>
+                      {task.priority} ·{' '}
+                      {formatTaskStatus(task.status)}
+                    </small>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p>
+                {activeTasks.length
+                  ? 'No active tasks are currently assigned to you.'
+                  : 'Shared crew action queue is clear.'}
+              </p>
+            )}
+          </div>
+
+          <div className="admin-tasking-status-action">
+            <span>OPEN CREW TASKING</span>
+            <strong>→</strong>
+          </div>
+        </a>
 
         <section className="admin-system-command-stack">
           <a

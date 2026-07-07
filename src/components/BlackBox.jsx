@@ -30,6 +30,8 @@ const CATEGORY_FILTERS = [
   'CAPTURE',
   'MISSION',
   'OPERATION',
+  'INCIDENT',
+  'TASK',
   'GEAR'
 ];
 
@@ -240,6 +242,73 @@ function getEventDescription(event) {
       return `${name} · operation complete · ${String(
         details.duration || 'duration unavailable'
       )}`;
+
+    case 'INCIDENT_DECLARED':
+      return `${name} · ${String(
+        details.title || 'Incident'
+      )} · ${String(
+        details.severity || 'UNKNOWN'
+      )} · ${String(
+        details.affectedSystem || 'SYSTEM'
+      )}`;
+
+    case 'INCIDENT_UPDATE':
+      return `${name} · ${String(
+        details.updateType || 'UPDATE'
+      )} · ${String(
+        details.body || 'Incident update logged'
+      )}`;
+
+    case 'INCIDENT_RESOLVED':
+      return `${name} · ${String(
+        details.title || 'Incident'
+      )} · ${String(
+        details.duration || 'duration unavailable'
+      )} · ${String(
+        details.rootCause || 'root cause recorded'
+      )}`;
+
+    case 'INCIDENT_CONTEXT_JOINED':
+      return `${name} · incident comms context joined`;
+
+    case 'INCIDENT_CONTEXT_LEFT':
+      return `${name} · incident comms context left`;
+
+    case 'TASK_CREATED':
+      return `${name} · ${String(
+        details.title || 'Crew task'
+      )} · ${String(
+        details.priority || 'NORMAL'
+      )} · ${String(
+        details.assignedTo || 'UNASSIGNED'
+      )}`;
+
+    case 'TASK_ASSIGNED':
+      return `${name} · ${String(
+        details.title || 'Crew task'
+      )} · assigned ${String(
+        details.assignedTo || 'UNASSIGNED'
+      )}`;
+
+    case 'TASK_STARTED':
+      return `${name} · ${String(
+        details.title || 'Crew task'
+      )} · in progress`;
+
+    case 'TASK_BLOCKED':
+      return `${name} · ${String(
+        details.title || 'Crew task'
+      )} · blocked`;
+
+    case 'TASK_COMPLETED':
+      return `${name} · ${String(
+        details.title || 'Crew task'
+      )} · complete`;
+
+    case 'TASK_REOPENED':
+      return `${name} · ${String(
+        details.title || 'Crew task'
+      )} · reopened`;
 
     default:
       return name;

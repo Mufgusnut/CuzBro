@@ -30,6 +30,8 @@ function getAdminPageName(pathname) {
       return 'STORAGE CONTROL';
     case '/admin/incidents':
       return 'INCIDENT COMMAND';
+    case '/admin/tasks':
+      return 'CREW TASKING';
     case '/admin/deployments':
       return 'DEPLOYMENTS';
     default:

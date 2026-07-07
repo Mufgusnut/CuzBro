@@ -5,6 +5,8 @@ import AdminEquipment from './components/AdminEquipment.jsx';
 import CrewTransfer from './components/CrewTransfer.jsx';
 import CommsTerminal from './components/CommsTerminal.jsx';
 import OperationControl from './components/OperationControl.jsx';
+import IncidentCommand from './components/IncidentCommand.jsx';
+import CrewTasking from './components/CrewTasking.jsx';
 import SystemStatus from './components/SystemStatus.jsx';
 import StorageControl from './components/StorageControl.jsx';
 import BlackBox from './components/BlackBox.jsx';
@@ -15,6 +17,10 @@ import { supabase } from './supabase.js';
 import {
   useCrewPresence
 } from './lib/presence.js';
+import {
+  formatIncidentCode,
+  useActiveIncidents
+} from './lib/incidents.js';
 import SkyMap from './components/SkyMap.jsx';
 import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
@@ -327,6 +333,14 @@ export default function App() {
     pathname === '/admin/operation' ||
     pathname === '/admin/operation/';
 
+  const isAdminIncidentsPage =
+    pathname === '/admin/incidents' ||
+    pathname === '/admin/incidents/';
+
+  const isAdminTasksPage =
+    pathname === '/admin/tasks' ||
+    pathname === '/admin/tasks/';
+
   const isAdminSystemPage =
     pathname === '/admin/system' ||
     pathname === '/admin/system/';
@@ -352,6 +366,8 @@ export default function App() {
     isAdminTransfersPage ||
     isAdminCommsPage ||
     isAdminOperationPage ||
+    isAdminIncidentsPage ||
+    isAdminTasksPage ||
     isAdminSystemPage ||
     isAdminStoragePage ||
     isAdminBlackBoxPage ||
@@ -366,6 +382,12 @@ export default function App() {
 
     pathname
   });
+
+  const {
+    activeIncidents
+  } = useActiveIncidents(
+    Boolean(session) && isAdminPage
+  );
 
   useEffect(() => {
     if (
@@ -1367,6 +1389,22 @@ export default function App() {
         />
       );
     } else if (
+      isAdminIncidentsPage
+    ) {
+      adminContent = (
+        <IncidentCommand
+          session={session}
+        />
+      );
+    } else if (
+      isAdminTasksPage
+    ) {
+      adminContent = (
+        <CrewTasking
+          session={session}
+        />
+      );
+    } else if (
       isAdminSystemPage
     ) {
       adminContent = (
@@ -1410,6 +1448,33 @@ export default function App() {
     return (
       <>
         {adminContent}
+
+        {!isAdminIncidentsPage &&
+          activeIncidents.length > 0 && (
+          <a
+            className={`admin-incident-global-banner admin-incident-global-banner-${String(
+              activeIncidents[0].severity ||
+                'elevated'
+            ).toLowerCase()}`}
+            href="/admin/incidents"
+          >
+            <strong>
+              ⚠ ACTIVE INCIDENT
+            </strong>
+
+            <span>
+              {formatIncidentCode(
+                activeIncidents[0]
+              )} ·{' '}
+              {activeIncidents[0].title}
+            </span>
+
+            <small>
+              {activeIncidents[0].severity} ·
+              OPEN INCIDENT COMMAND →
+            </small>
+          </a>
+        )}
 
         {!isAdminCommsPage && prioritySignal && (
           <a

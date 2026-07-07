@@ -25,6 +25,22 @@ import {
   formatOperationElapsed,
   useActiveOperation
 } from '../lib/operations.js';
+import {
+  formatIncidentCode,
+  getIncidentContext,
+  setIncidentContext,
+  useActiveIncidents
+} from '../lib/incidents.js';
+import {
+  logCrewActivity
+} from '../lib/audit.js';
+import {
+  announceTaskChange,
+  formatTaskCode,
+  formatTaskStatus,
+  recordTaskEvent,
+  useCrewTasks
+} from '../lib/tasks.js';
 
 const MAX_MESSAGE_LENGTH = 1000;
 const MAX_HISTORY_ROWS = 200;
@@ -35,7 +51,8 @@ const NAVIGATION_COMMANDS = {
   '/storage': '/admin/storage',
   '/blackbox': '/admin/black-box',
   '/system': '/admin/system',
-  '/deploy': '/admin/deployments'
+  '/deploy': '/admin/deployments',
+  '/tasks': '/admin/tasks'
 };
 
 function getSoundPreferenceKey(userId) {
@@ -121,6 +138,31 @@ export default function CommsTerminal({ session }) {
   const {
     activeOperation
   } = useActiveOperation();
+
+  const {
+    activeIncidents,
+    primaryIncident
+  } = useActiveIncidents();
+
+  const [
+    incidentContextId,
+    setIncidentContextId
+  ] = useState(() =>
+    getIncidentContext(
+      session?.user?.id
+    )
+  );
+
+  const incidentContext =
+    activeIncidents.find(
+      (incident) =>
+        incident.id ===
+        incidentContextId
+    ) || null;
+
+  const {
+    tasks
+  } = useCrewTasks(true);
   const [messages, setMessages] = useState([]);
   const [localEvents, setLocalEvents] = useState([]);
   const [composer, setComposer] = useState('');
@@ -235,7 +277,7 @@ export default function CommsTerminal({ session }) {
       const { data, error: loadError } = await supabase
         .from('crew_comms')
         .select(
-          'id, user_id, crew_email, crew_name, sender_status, operation_id, operation_designation, body, created_at'
+          'id, user_id, crew_email, crew_name, sender_status, operation_id, operation_designation, incident_id, incident_code, incident_title, body, created_at'
         )
         .order('created_at', { ascending: false })
         .limit(MAX_HISTORY_ROWS);
@@ -488,6 +530,16 @@ export default function CommsTerminal({ session }) {
           activeOperation?.id || null,
         operation_designation:
           activeOperation?.designation || null,
+        incident_id:
+          incidentContext?.id || null,
+        incident_code:
+          incidentContext
+            ? formatIncidentCode(
+                incidentContext
+              )
+            : null,
+        incident_title:
+          incidentContext?.title || null,
         body
       });
 
@@ -605,6 +657,155 @@ export default function CommsTerminal({ session }) {
     addLocalEvent(lines.join('\n'), 'TELEMETRY');
   }
 
+  function findTaskByCode(value) {
+    const code = String(value || '')
+      .trim()
+      .toUpperCase();
+
+    return tasks.find(
+      (task) =>
+        formatTaskCode(task) === code
+    ) || null;
+  }
+
+  function buildTaskTelemetry(taskRows) {
+    if (!taskRows.length) {
+      return 'CREW TASKING\n\nNO TASKS MATCH THIS REQUEST';
+    }
+
+    const lines = ['CREW TASKING'];
+
+    taskRows.slice(0, 12).forEach((task) => {
+      lines.push('');
+      lines.push(
+        `${formatTaskCode(task)} · ${task.title.toUpperCase()}`
+      );
+      lines.push(
+        `STATUS       ${formatTaskStatus(task.status)}`
+      );
+      lines.push(
+        `PRIORITY     ${task.priority}`
+      );
+      lines.push(
+        `ASSIGNED     ${String(
+          task.assigned_name || 'UNASSIGNED'
+        ).toUpperCase()}`
+      );
+    });
+
+    if (taskRows.length > 12) {
+      lines.push('');
+      lines.push(
+        `+ ${taskRows.length - 12} MORE TASKS · /TASK OPEN`
+      );
+    }
+
+    return lines.join('\n');
+  }
+
+  async function updateTaskFromComms(
+    task,
+    nextStatus
+  ) {
+    const completing =
+      nextStatus === 'COMPLETE';
+
+    const {
+      data: updatedTask,
+      error: updateError
+    } = await supabase
+      .from('crew_tasks')
+      .update({
+        status: nextStatus,
+        completed_at:
+          completing
+            ? new Date().toISOString()
+            : null,
+        completed_by_user_id:
+          completing
+            ? session?.user?.id
+            : null,
+        completed_by_email:
+          completing
+            ? session?.user?.email
+            : null,
+        completed_by_name:
+          completing
+            ? crew.name
+            : null,
+        updated_at:
+          new Date().toISOString()
+      })
+      .eq('id', task.id)
+      .select('*')
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    const actionMap = {
+      OPEN: 'TASK_REOPENED',
+      IN_PROGRESS: 'TASK_STARTED',
+      BLOCKED: 'TASK_BLOCKED',
+      COMPLETE: 'TASK_COMPLETED'
+    };
+
+    const action =
+      actionMap[nextStatus] ||
+      'TASK_UPDATED';
+
+    await recordTaskEvent({
+      task: updatedTask,
+      eventType: action,
+      eventLabel:
+        `Task ${formatTaskStatus(
+          nextStatus
+        ).toLowerCase()}`,
+      details: {
+        previousStatus: task.status,
+        status: nextStatus,
+        source: 'COMMS'
+      },
+      session
+    });
+
+    await logCrewActivity({
+      action,
+      category: 'TASK',
+      resourceType: 'crew_task',
+      resourceId: updatedTask.id,
+      resourceName:
+        formatTaskCode(updatedTask),
+      details: {
+        title: updatedTask.title,
+        previousStatus: task.status,
+        status: nextStatus,
+        assignedTo:
+          updatedTask.assigned_name,
+        source: 'COMMS'
+      }
+    });
+
+    announceTaskChange(updatedTask);
+
+    await insertCommsMessage(
+      `${
+        nextStatus === 'COMPLETE'
+          ? '✓'
+          : nextStatus === 'BLOCKED'
+            ? '⚠'
+            : '●'
+      } TASK ${formatTaskCode(
+        updatedTask
+      )} · ${formatTaskStatus(
+        nextStatus
+      )} · ${crew.callSign}\n${updatedTask.title}`
+    );
+
+    return updatedTask;
+  }
+
   async function sendMessage(rawMessage) {
     const cleanMessage = String(rawMessage || '').trim();
 
@@ -642,6 +843,22 @@ export default function CommsTerminal({ session }) {
             '  /operation             Active operation status',
             '  /operation open        Open Operation Command',
             '  /operation start       Initiate an operation',
+            '',
+            'INCIDENT',
+            '  /incident              Active incident status',
+            '  /incident open         Open Incident Command',
+            '  /incident start        Declare an incident',
+            '  /incident join         Tag comms with active incident',
+            '  /incident leave        Leave incident comms context',
+            '',
+            'TASKING',
+            '  /task                  Active task summary',
+            '  /task mine             My active tasks',
+            '  /task open             Open Crew Tasking',
+            '  /task add              Create a task',
+            '  /task start [CB-###]   Start task',
+            '  /task block [CB-###]   Block task',
+            '  /task done [CB-###]    Complete task',
             '',
             'COMMAND',
             '  /captures            Capture Control',
@@ -724,6 +941,214 @@ export default function CommsTerminal({ session }) {
             newStatus
           );
           addLocalEvent(`CREW STATUS SET · ${savedStatus.toUpperCase()}`);
+        }
+      } else if (
+        lowerCommand === '/incident'
+      ) {
+        if (!activeIncidents.length) {
+          addLocalEvent(
+            'ACTIVE INCIDENT\n\nSTATUS       NOMINAL\nNO ACTIVE INCIDENTS REGISTERED',
+            'TELEMETRY'
+          );
+        } else {
+          addLocalEvent(
+            [
+              'ACTIVE INCIDENT',
+              '',
+              formatIncidentCode(
+                primaryIncident
+              ),
+              primaryIncident.title.toUpperCase(),
+              `SEVERITY     ${primaryIncident.severity}`,
+              `SYSTEM       ${String(
+                primaryIncident.affected_system ||
+                  '—'
+              ).toUpperCase()}`,
+              `DECLARED BY  ${String(
+                primaryIncident.declared_by_name ||
+                  'CREW'
+              ).toUpperCase()}`,
+              `CONTEXT      ${
+                incidentContext?.id ===
+                primaryIncident.id
+                  ? 'JOINED'
+                  : 'NOT JOINED'
+              }`,
+              `STATUS       ${primaryIncident.status}`
+            ].join('\n'),
+            'TELEMETRY'
+          );
+        }
+      } else if (
+        lowerCommand === '/incident open' ||
+        lowerCommand === '/incident start'
+      ) {
+        addLocalEvent(
+          lowerCommand === '/incident start'
+            ? 'ROUTING TO INCIDENT DECLARATION...'
+            : 'ROUTING TO INCIDENT COMMAND...'
+        );
+
+        window.setTimeout(() => {
+          window.location.href =
+            lowerCommand === '/incident start'
+              ? '/admin/incidents?declare=true'
+              : '/admin/incidents';
+        }, 350);
+      } else if (
+        lowerCommand === '/incident join'
+      ) {
+        if (!primaryIncident) {
+          addLocalEvent(
+            'NO ACTIVE INCIDENT AVAILABLE FOR COMMS CONTEXT'
+          );
+        } else {
+          setIncidentContext(
+            session?.user?.id,
+            primaryIncident.id
+          );
+
+          setIncidentContextId(
+            primaryIncident.id
+          );
+
+          await logCrewActivity({
+            action:
+              'INCIDENT_CONTEXT_JOINED',
+            category: 'INCIDENT',
+            resourceType: 'incident',
+            resourceId:
+              primaryIncident.id,
+            resourceName:
+              formatIncidentCode(
+                primaryIncident
+              ),
+            details: {
+              title:
+                primaryIncident.title
+            }
+          });
+
+          addLocalEvent(
+            `INCIDENT CONTEXT JOINED · ${formatIncidentCode(
+              primaryIncident
+            )} · ${primaryIncident.title.toUpperCase()}`
+          );
+        }
+      } else if (
+        lowerCommand === '/incident leave'
+      ) {
+        const leavingIncident =
+          incidentContext;
+
+        setIncidentContext(
+          session?.user?.id,
+          null
+        );
+
+        setIncidentContextId(null);
+
+        if (leavingIncident) {
+          await logCrewActivity({
+            action:
+              'INCIDENT_CONTEXT_LEFT',
+            category: 'INCIDENT',
+            resourceType: 'incident',
+            resourceId:
+              leavingIncident.id,
+            resourceName:
+              formatIncidentCode(
+                leavingIncident
+              ),
+            details: {
+              title:
+                leavingIncident.title
+            }
+          });
+        }
+
+        addLocalEvent(
+          'INCIDENT COMMS CONTEXT CLEARED'
+        );
+      } else if (
+        lowerCommand === '/task'
+      ) {
+        const activeTaskRows = tasks.filter(
+          (task) =>
+            task.status !== 'COMPLETE'
+        );
+
+        addLocalEvent(
+          buildTaskTelemetry(
+            activeTaskRows
+          ),
+          'TELEMETRY'
+        );
+      } else if (
+        lowerCommand === '/task mine'
+      ) {
+        const ownEmail = String(
+          session?.user?.email || ''
+        ).toLowerCase();
+
+        const mine = tasks.filter(
+          (task) =>
+            task.status !== 'COMPLETE' &&
+            String(
+              task.assigned_email || ''
+            ).toLowerCase() === ownEmail
+        );
+
+        addLocalEvent(
+          buildTaskTelemetry(mine),
+          'TELEMETRY'
+        );
+      } else if (
+        lowerCommand === '/task open' ||
+        lowerCommand === '/task add'
+      ) {
+        addLocalEvent(
+          lowerCommand === '/task add'
+            ? 'ROUTING TO NEW CREW TASK...'
+            : 'ROUTING TO CREW TASKING...'
+        );
+
+        window.setTimeout(() => {
+          window.location.href =
+            lowerCommand === '/task add'
+              ? '/admin/tasks?create=true'
+              : '/admin/tasks';
+        }, 350);
+      } else if (
+        lowerCommand.startsWith('/task start ') ||
+        lowerCommand.startsWith('/task block ') ||
+        lowerCommand.startsWith('/task done ')
+      ) {
+        const parts = cleanMessage
+          .trim()
+          .split(/\s+/);
+        const action = parts[1]?.toLowerCase();
+        const code = parts[2];
+        const task = findTaskByCode(code);
+
+        if (!task) {
+          addLocalEvent(
+            `TASK NOT FOUND: ${String(
+              code || 'NO CODE'
+            ).toUpperCase()} · USE /TASK`
+          );
+        } else {
+          const nextStatus =
+            action === 'start'
+              ? 'IN_PROGRESS'
+              : action === 'block'
+                ? 'BLOCKED'
+                : 'COMPLETE';
+
+          await updateTaskFromComms(
+            task,
+            nextStatus
+          );
         }
       } else if (
         lowerCommand === '/operation'
@@ -918,6 +1343,32 @@ export default function CommsTerminal({ session }) {
           <div className="admin-error-message">{error}</div>
         )}
 
+        {incidentContext && (
+          <a
+            className="comms-incident-context-link"
+            href="/admin/incidents"
+          >
+            <div>
+              <span>
+                <i />
+                INCIDENT CONTEXT ACTIVE
+              </span>
+
+              <strong>
+                {formatIncidentCode(
+                  incidentContext
+                )} · {incidentContext.title}
+              </strong>
+            </div>
+
+            <small>
+              {incidentContext.severity}
+              {' · '}
+              /INCIDENT LEAVE TO CLEAR →
+            </small>
+          </a>
+        )}
+
         {activeOperation && (
           <a
             className="comms-operation-link"
@@ -1009,6 +1460,15 @@ export default function CommsTerminal({ session }) {
                   <strong>{senderLabel}</strong>
 
                   <div className="comms-message-copy">
+                    {message.incident_code && (
+                      <span className="comms-message-incident">
+                        {message.incident_code}
+                        {message.incident_title
+                          ? ` · ${message.incident_title}`
+                          : ''}
+                      </span>
+                    )}
+
                     {message.operation_designation && (
                       <span className="comms-message-operation">
                         {message.operation_designation}
