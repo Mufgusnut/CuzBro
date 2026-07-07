@@ -18972,7 +18972,7 @@ footer p {
 
 #live-systems,
 #observatory-tools {
-  scroll-margin-top: 30px;
+  scroll-margin-top: 35px;
 }
 
 
@@ -19028,7 +19028,8 @@ footer p {
 @media (max-width: 760px) {
   .admin-top-nav {
     align-items: stretch;
-    padding: 12px 22px;
+    padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 14px;
+    gap: 12px;
   }
 
   .admin-top-brand,
@@ -19036,26 +19037,130 @@ footer p {
     min-width: 0;
   }
 
+  .admin-top-brand {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .admin-top-brand img {
+    width: 92px;
+  }
+
+  .admin-top-nav-small .admin-top-brand img {
+    width: 82px;
+  }
+
+  .admin-top-brand strong {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+  }
+
+  .admin-top-brand em {
+    font-size: 0.56rem;
+    letter-spacing: 0.17em;
+  }
+
   .admin-top-user {
+    order: 2;
     width: 100%;
     margin-left: 0;
     justify-content: space-between;
+    gap: 12px;
   }
 
   .admin-top-auth {
     text-align: left;
   }
 
-  .admin-top-menu > a,
-  .admin-top-dropdown > button,
+  .admin-top-auth span {
+    font-size: 0.48rem;
+    letter-spacing: 0.16em;
+  }
+
+  .admin-top-auth strong {
+    font-size: 0.66rem;
+  }
+
+  .admin-top-auth em {
+    font-size: 0.54rem;
+    letter-spacing: 0.08em;
+  }
+
   .admin-top-user button {
-    min-height: 38px;
-    padding: 0 14px;
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 0.58rem;
+    letter-spacing: 0.13em;
+  }
+
+  .admin-top-menu {
+    order: 3;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    flex-basis: 100%;
+    gap: 8px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .admin-top-menu > a,
+  .admin-top-dropdown > button {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 10px;
     font-size: 0.56rem;
+    letter-spacing: 0.12em;
+    border-radius: 999px;
+  }
+
+  .admin-top-dropdown {
+    width: 100%;
+  }
+
+  .admin-top-dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: min(220px, 100%);
   }
 
   .admin-shell .admin-main {
-    width: calc(100% - 40px);
+    width: calc(100% - 32px);
+    padding-top: 30px;
+  }
+}
+
+@media (max-width: 430px) {
+  .admin-top-nav {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .admin-top-brand img {
+    width: 84px;
+  }
+
+  .admin-top-brand strong {
+    font-size: 0.66rem;
+  }
+
+  .admin-top-brand em {
+    font-size: 0.52rem;
+  }
+
+  .admin-top-user button {
+    padding: 0 14px;
+  }
+
+  .admin-top-menu {
+    gap: 7px;
+  }
+
+  .admin-top-menu > a,
+  .admin-top-dropdown > button {
+    min-height: 40px;
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
   }
 }
 
