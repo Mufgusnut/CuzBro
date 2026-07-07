@@ -117,6 +117,20 @@ export default function CommsTerminal({
   }, [visibleRows.length]);
 
   useEffect(() => {
+    if (!session?.user?.id) {
+      return;
+    }
+
+    localStorage.setItem(
+      `cuzbro-comms-last-seen-${session.user.id}`,
+      new Date().toISOString()
+    );
+  }, [
+    session?.user?.id,
+    messages.length
+  ]);
+
+  useEffect(() => {
     let active = true;
     let messageChannel = null;
     let presenceChannel = null;

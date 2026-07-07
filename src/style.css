@@ -14570,6 +14570,37 @@ footer p {
     0 0 10px #8ff0b1;
 }
 
+.admin-comms-global-launch-unread span {
+  animation:
+    adminCommsUnreadPulse .9s ease-in-out infinite;
+}
+
+.admin-comms-global-launch-unread {
+  border-color:
+    rgba(143, 240, 177, .52);
+  box-shadow:
+    0 14px 38px rgba(0, 0, 0, .44),
+    0 0 28px
+      rgba(143, 240, 177, .13);
+}
+
+@keyframes adminCommsUnreadPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    text-shadow:
+      0 0 10px #8ff0b1,
+      0 0 18px rgba(143, 240, 177, .72);
+  }
+
+  50% {
+    opacity: .16;
+    transform: scale(.78);
+    text-shadow:
+      0 0 2px rgba(143, 240, 177, .22);
+  }
+}
+
 .admin-comms-global-launch:hover {
   color: #fff;
   border-color:

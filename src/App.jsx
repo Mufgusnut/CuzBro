@@ -214,6 +214,9 @@ export default function App() {
   const [session, setSession] =
     useState(null);
 
+  const [hasUnreadComms, setHasUnreadComms] =
+    useState(false);
+
   const [
     authLoading,
     setAuthLoading
@@ -303,6 +306,116 @@ export default function App() {
 
     pathname
   });
+
+  useEffect(() => {
+    if (
+      !isAdminPage ||
+      !session?.user?.id
+    ) {
+      setHasUnreadComms(false);
+      return undefined;
+    }
+
+    const storageKey =
+      `cuzbro-comms-last-seen-${session.user.id}`;
+
+    if (isAdminCommsPage) {
+      localStorage.setItem(
+        storageKey,
+        new Date().toISOString()
+      );
+
+      setHasUnreadComms(false);
+      return undefined;
+    }
+
+    let active = true;
+
+    async function checkUnreadComms() {
+      const lastSeen =
+        localStorage.getItem(storageKey);
+
+      const {
+        data,
+        error: unreadError
+      } = await supabase
+        .from('crew_comms')
+        .select('id, user_id, created_at')
+        .neq(
+          'user_id',
+          session.user.id
+        )
+        .order('created_at', {
+          ascending: false
+        })
+        .limit(1)
+        .maybeSingle();
+
+      if (unreadError) {
+        console.error(
+          'Comms unread check failed:',
+          unreadError
+        );
+
+        return;
+      }
+
+      if (!active || !data) {
+        return;
+      }
+
+      if (!lastSeen) {
+        localStorage.setItem(
+          storageKey,
+          data.created_at
+        );
+
+        setHasUnreadComms(false);
+        return;
+      }
+
+      setHasUnreadComms(
+        new Date(data.created_at) >
+          new Date(lastSeen)
+      );
+    }
+
+    checkUnreadComms();
+
+    const unreadChannel = supabase
+      .channel(
+        `cuzbro-comms-unread-${session.user.id}`
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'crew_comms'
+        },
+        (payload) => {
+          if (
+            payload.new?.user_id !==
+            session.user.id
+          ) {
+            setHasUnreadComms(true);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+
+      supabase.removeChannel(
+        unreadChannel
+      );
+    };
+  }, [
+    isAdminPage,
+    isAdminCommsPage,
+    session?.user?.id
+  ]);
 
   const isSkyMapPage =
     pathname === '/skymap';
@@ -926,9 +1039,25 @@ export default function App() {
 
         {!isAdminCommsPage && (
           <a
-            className="admin-comms-global-launch"
+            className={`admin-comms-global-launch${
+              hasUnreadComms
+                ? ' admin-comms-global-launch-unread'
+                : ''
+            }`}
             href="/admin/comms"
-            aria-label="Open CuzBro Comms Terminal"
+            aria-label={
+              hasUnreadComms
+                ? 'Open CuzBro Comms Terminal — unread communication'
+                : 'Open CuzBro Comms Terminal'
+            }
+            onClick={() => {
+              localStorage.setItem(
+                `cuzbro-comms-last-seen-${session.user.id}`,
+                new Date().toISOString()
+              );
+
+              setHasUnreadComms(false);
+            }}
           >
             <span>●</span>
             COMMS
