@@ -20,50 +20,62 @@ export async function logCrewActivity({
 
   try {
     const {
-      data: userData,
-      error: userError
-    } = await supabase.auth.getUser();
+      data: { session },
+      error: sessionError
+    } = await supabase.auth.getSession();
 
-    if (userError) {
+    if (sessionError) {
       console.error(
-        '[BLACK BOX] Auth lookup failed:',
-        userError
+        '[BLACK BOX] Session lookup failed:',
+        sessionError
       );
 
       return {
         success: false,
-        error: userError,
-        stage: 'AUTH_LOOKUP'
+        error: sessionError,
+        stage: 'SESSION_LOOKUP'
       };
     }
 
-    const user = userData?.user;
-
-    if (!user?.id) {
+    if (
+      !session?.access_token ||
+      !session?.user?.id
+    ) {
       const error = new Error(
-        'Black Box could not identify the authenticated Supabase user.'
+        'Black Box could not find an authenticated crew session.'
       );
 
       console.error(
-        '[BLACK BOX] No authenticated user:',
+        '[BLACK BOX] No authenticated session:',
         error
       );
 
       return {
         success: false,
         error,
-        stage: 'NO_USER'
+        stage: 'NO_SESSION'
       };
     }
 
-    const crew = getCrewMember(user.email);
+    const user = session.user;
+    const accessToken =
+      session.access_token;
+
+    const crew =
+      getCrewMember(user.email);
 
     const payload = {
       user_id: user.id,
       crew_email: user.email || null,
       crew_name: crew.name,
-      action: String(action || 'UNKNOWN'),
-      category: String(category || 'SYSTEM'),
+
+      action: String(
+        action || 'UNKNOWN'
+      ),
+
+      category: String(
+        category || 'SYSTEM'
+      ),
 
       resource_type:
         resourceType === null ||
@@ -91,62 +103,116 @@ export async function logCrewActivity({
           : {}
     };
 
+    const supabaseUrl =
+      import.meta.env.VITE_SUPABASE_URL;
+
+    const supabasePublishableKey =
+      import.meta.env
+        .VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    if (
+      !supabaseUrl ||
+      !supabasePublishableKey
+    ) {
+      const error = new Error(
+        'Supabase environment variables are unavailable.'
+      );
+
+      console.error(
+        '[BLACK BOX] Environment failure:',
+        error
+      );
+
+      return {
+        success: false,
+        error,
+        stage: 'ENVIRONMENT'
+      };
+    }
+
+    console.log(
+      '[BLACK BOX] Authenticated crew:',
+      {
+        email: user.email,
+        userId: user.id,
+        hasAccessToken:
+          Boolean(accessToken)
+      }
+    );
+
     console.log(
       '[BLACK BOX] Inserting payload:',
       payload
     );
 
-    const {
-      data: insertedRows,
-      error: insertError
-    } = await supabase
-      .from('crew_activity')
-      .insert(payload)
-      .select('*');
+    const response = await fetch(
+      `${supabaseUrl}/rest/v1/crew_activity`,
+      {
+        method: 'POST',
 
-    if (insertError) {
+        headers: {
+          apikey:
+            supabasePublishableKey,
+
+          Authorization:
+            `Bearer ${accessToken}`,
+
+          'Content-Type':
+            'application/json',
+
+          Prefer:
+            'return=representation'
+        },
+
+        body:
+          JSON.stringify(payload)
+      }
+    );
+
+    const responseText =
+      await response.text();
+
+    let responseBody = null;
+
+    if (responseText) {
+      try {
+        responseBody =
+          JSON.parse(responseText);
+      } catch {
+        responseBody =
+          responseText;
+      }
+    }
+
+    if (!response.ok) {
+      const error = {
+        status:
+          response.status,
+
+        statusText:
+          response.statusText,
+
+        body:
+          responseBody
+      };
+
       console.error(
         '[BLACK BOX] INSERT FAILED:',
-        {
-          message: insertError.message,
-          details: insertError.details,
-          hint: insertError.hint,
-          code: insertError.code,
-          fullError: insertError
-        }
+        error
       );
 
       return {
         success: false,
-        error: insertError,
+        error,
         stage: 'INSERT',
         payload
       };
     }
 
     const insertedRow =
-      insertedRows?.[0] || null;
-
-    if (!insertedRow) {
-      const error = new Error(
-        'Supabase returned no inserted Black Box row.'
-      );
-
-      console.error(
-        '[BLACK BOX] Insert returned no row:',
-        {
-          insertedRows,
-          payload
-        }
-      );
-
-      return {
-        success: false,
-        error,
-        stage: 'VERIFY_INSERT',
-        payload
-      };
-    }
+      Array.isArray(responseBody)
+        ? responseBody[0]
+        : responseBody;
 
     console.log(
       '[BLACK BOX] EVENT RECORDED:',
