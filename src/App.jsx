@@ -7,6 +7,7 @@ import SystemStatus from './components/SystemStatus.jsx';
 import StorageControl from './components/StorageControl.jsx';
 import BlackBox from './components/BlackBox.jsx';
 import DeploymentControl from './components/DeploymentControl.jsx';
+import AdminCommandPalette from './components/AdminCommandPalette.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import {
@@ -838,61 +839,81 @@ export default function App() {
       return <Login />;
     }
 
+    let adminContent = null;
+
     if (
       isAdminCaptainsLogPage
     ) {
-      return <AdminCaptainsLog />;
-    }
-
-    if (isAdminGalleryPage) {
-      return <AdminGallery />;
-    }
-
-    if (isAdminEquipmentPage) {
-      return <AdminEquipment />;
-    }
-
-    if (isAdminTransfersPage) {
-      return <CrewTransfer />;
-    }
-
-    if (isAdminSystemPage) {
-      return (
+      adminContent = (
+        <AdminCaptainsLog />
+      );
+    } else if (
+      isAdminGalleryPage
+    ) {
+      adminContent = (
+        <AdminGallery />
+      );
+    } else if (
+      isAdminEquipmentPage
+    ) {
+      adminContent = (
+        <AdminEquipment />
+      );
+    } else if (
+      isAdminTransfersPage
+    ) {
+      adminContent = (
+        <CrewTransfer />
+      );
+    } else if (
+      isAdminSystemPage
+    ) {
+      adminContent = (
         <SystemStatus
           session={session}
         />
       );
-    }
-
-    if (isAdminStoragePage) {
-      return (
+    } else if (
+      isAdminStoragePage
+    ) {
+      adminContent = (
         <StorageControl
           session={session}
         />
       );
-    }
-
-    if (isAdminBlackBoxPage) {
-      return (
+    } else if (
+      isAdminBlackBoxPage
+    ) {
+      adminContent = (
         <BlackBox
           session={session}
         />
       );
-    }
-
-    if (isAdminDeploymentsPage) {
-      return (
+    } else if (
+      isAdminDeploymentsPage
+    ) {
+      adminContent = (
         <DeploymentControl
           session={session}
+        />
+      );
+    } else {
+      adminContent = (
+        <AdminDashboard
+          session={session}
+          onLogout={handleLogout}
         />
       );
     }
 
     return (
-      <AdminDashboard
-        session={session}
-        onLogout={handleLogout}
-      />
+      <>
+        {adminContent}
+
+        <AdminCommandPalette
+          onLogout={handleLogout}
+        />
+      </>
     );
   }
 
