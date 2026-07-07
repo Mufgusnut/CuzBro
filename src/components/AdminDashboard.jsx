@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import {
+  useEffect,
+  useState
+} from 'react';
 import {
   Activity,
   BookOpen,
@@ -29,9 +32,14 @@ function formatEventTime(dateValue) {
     return '--:--:--';
   }
 
-  const date = new Date(dateValue);
+  const date =
+    new Date(dateValue);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return '--:--:--';
   }
 
@@ -50,9 +58,14 @@ function formatEventDate(dateValue) {
     return 'UNKNOWN DATE';
   }
 
-  const date = new Date(dateValue);
+  const date =
+    new Date(dateValue);
 
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return 'UNKNOWN DATE';
   }
 
@@ -68,8 +81,34 @@ function formatEventDate(dateValue) {
 }
 
 function getActionLabel(action) {
-  return String(action || 'SYSTEM_EVENT')
-    .replaceAll('_', ' ');
+  return String(
+    action || 'SYSTEM_EVENT'
+  ).replaceAll('_', ' ');
+}
+
+function formatStorageBytes(bytes) {
+  const size =
+    Number(bytes || 0);
+
+  if (size >= 1024 ** 3) {
+    return `${(
+      size / 1024 ** 3
+    ).toFixed(2)} GB`;
+  }
+
+  if (size >= 1024 ** 2) {
+    return `${(
+      size / 1024 ** 2
+    ).toFixed(1)} MB`;
+  }
+
+  if (size >= 1024) {
+    return `${(
+      size / 1024
+    ).toFixed(1)} KB`;
+  }
+
+  return `${size} B`;
 }
 
 function getEventDescription(event) {
@@ -89,7 +128,9 @@ function getEventDescription(event) {
       return `${name} · ${Number(
         details.fileCount || 0
       )} ${
-        Number(details.fileCount || 0) === 1
+        Number(
+          details.fileCount || 0
+        ) === 1
           ? 'file'
           : 'files'
       }`;
@@ -110,25 +151,28 @@ function getEventDescription(event) {
       return `${name} · ${Number(
         details.fileCount || 0
       )} ${
-        Number(details.fileCount || 0) === 1
+        Number(
+          details.fileCount || 0
+        ) === 1
           ? 'file removed'
           : 'files removed'
       }`;
 
     case 'SYSTEM_CHECK':
-      return `${name} · ${
-        Number(
-          details.operationalCount || 0
-        )
-      } / ${
-        Number(
-          details.totalServices || 0
-        )
-      } services operational · ${
-        Number(
-          details.durationMs || 0
-        )
-      } ms`;
+      return `${name} · ${Number(
+        details.operationalCount || 0
+      )} / ${Number(
+        details.totalServices || 0
+      )} services operational · ${Number(
+        details.durationMs || 0
+      )} ms`;
+
+    case 'STORAGE_INVENTORY_CHECK':
+      return `${name} · ${Number(
+        details.objectCount || 0
+      )} objects · ${formatStorageBytes(
+        details.totalBytes
+      )}`;
 
     default:
       return name;
@@ -144,20 +188,30 @@ export default function AdminDashboard({
       session?.user?.email
     );
 
-  const [dashboardData, setDashboardData] =
-    useState(initialDashboardData);
+  const [
+    dashboardData,
+    setDashboardData
+  ] = useState(
+    initialDashboardData
+  );
 
-  const [dashboardStatus, setDashboardStatus] =
-    useState('loading');
+  const [
+    dashboardStatus,
+    setDashboardStatus
+  ] = useState('loading');
 
-  const [dashboardError, setDashboardError] =
-    useState('');
+  const [
+    dashboardError,
+    setDashboardError
+  ] = useState('');
 
   const [activity, setActivity] =
     useState([]);
 
-  const [activityStatus, setActivityStatus] =
-    useState('loading');
+  const [
+    activityStatus,
+    setActivityStatus
+  ] = useState('loading');
 
   const [
     realtimeStatus,
@@ -218,7 +272,9 @@ export default function AdminDashboard({
             'Dashboard data could not be loaded.'
         );
 
-        setDashboardStatus('error');
+        setDashboardStatus(
+          'error'
+        );
 
         return;
       }
@@ -226,8 +282,10 @@ export default function AdminDashboard({
       setDashboardData({
         captures:
           galleryResponse.data || [],
+
         missions:
           missionsResponse.data || [],
+
         equipment:
           equipmentResponse.data || []
       });
@@ -244,13 +302,17 @@ export default function AdminDashboard({
 
     async function startBlackBoxFeed() {
       setActivityStatus('loading');
-      setRealtimeStatus('connecting');
+
+      setRealtimeStatus(
+        'connecting'
+      );
 
       const accessToken =
         session?.access_token;
 
       const supabaseUrl =
-        import.meta.env.VITE_SUPABASE_URL;
+        import.meta.env
+          .VITE_SUPABASE_URL;
 
       const supabasePublishableKey =
         import.meta.env
@@ -295,7 +357,9 @@ export default function AdminDashboard({
         if (responseText) {
           try {
             responseBody =
-              JSON.parse(responseText);
+              JSON.parse(
+                responseText
+              );
           } catch {
             responseBody = [];
           }
@@ -310,12 +374,16 @@ export default function AdminDashboard({
 
         if (active) {
           setActivity(
-            Array.isArray(responseBody)
+            Array.isArray(
+              responseBody
+            )
               ? responseBody
               : []
           );
 
-          setActivityStatus('ready');
+          setActivityStatus(
+            'ready'
+          );
         }
 
         await supabase.realtime.setAuth(
@@ -335,17 +403,23 @@ export default function AdminDashboard({
             {
               event: 'INSERT',
               schema: 'public',
-              table: 'crew_activity'
+              table:
+                'crew_activity'
             },
             (payload) => {
-              const newEvent = payload.new;
+              const newEvent =
+                payload.new;
 
               setActivity(
-                (currentActivity) => [
+                (
+                  currentActivity
+                ) => [
                   newEvent,
+
                   ...currentActivity.filter(
                     (event) =>
-                      event.id !== newEvent.id
+                      event.id !==
+                      newEvent.id
                   )
                 ].slice(
                   0,
@@ -354,46 +428,63 @@ export default function AdminDashboard({
               );
             }
           )
-          .subscribe((status, error) => {
-            console.log(
-              '[BLACK BOX] Realtime status:',
-              status
-            );
+          .subscribe(
+            (status, error) => {
+              console.log(
+                '[BLACK BOX] Realtime status:',
+                status
+              );
 
-            if (error) {
-              console.error(
-                '[BLACK BOX] Realtime error:',
-                error
+              if (error) {
+                console.error(
+                  '[BLACK BOX] Realtime error:',
+                  error
+                );
+              }
+
+              if (!active) {
+                return;
+              }
+
+              if (
+                status ===
+                'SUBSCRIBED'
+              ) {
+                setRealtimeStatus(
+                  'live'
+                );
+
+                return;
+              }
+
+              if (
+                status ===
+                  'CHANNEL_ERROR' ||
+                status ===
+                  'TIMED_OUT'
+              ) {
+                setRealtimeStatus(
+                  'error'
+                );
+
+                return;
+              }
+
+              if (
+                status === 'CLOSED'
+              ) {
+                setRealtimeStatus(
+                  'offline'
+                );
+
+                return;
+              }
+
+              setRealtimeStatus(
+                'connecting'
               );
             }
-
-            if (!active) {
-              return;
-            }
-
-            if (status === 'SUBSCRIBED') {
-              setRealtimeStatus('live');
-
-              return;
-            }
-
-            if (
-              status === 'CHANNEL_ERROR' ||
-              status === 'TIMED_OUT'
-            ) {
-              setRealtimeStatus('error');
-
-              return;
-            }
-
-            if (status === 'CLOSED') {
-              setRealtimeStatus('offline');
-
-              return;
-            }
-
-            setRealtimeStatus('connecting');
-          });
+          );
       } catch (error) {
         console.error(
           'Black Box feed failed:',
@@ -413,7 +504,9 @@ export default function AdminDashboard({
       active = false;
 
       if (channel) {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(
+          channel
+        );
       }
     };
   }, [
@@ -428,7 +521,8 @@ export default function AdminDashboard({
 
   const featuredCapture =
     captures.find(
-      (capture) => capture.is_featured
+      (capture) =>
+        capture.is_featured
     ) || captures[0];
 
   const latestMission =
@@ -437,55 +531,86 @@ export default function AdminDashboard({
   const activeEquipmentCount =
     equipment.filter(
       (item) =>
-        String(item.status || '')
+        String(
+          item.status || ''
+        )
           .trim()
-          .toLowerCase() === 'active'
+          .toLowerCase() ===
+        'active'
     ).length;
 
   const equipmentCategoryCount =
     new Set(
       equipment
-        .map((item) => item.category)
+        .map(
+          (item) =>
+            item.category
+        )
         .filter(Boolean)
     ).size;
 
   const adminSections = [
     {
       id: 'gallery',
+
       icon: Camera,
-      eyebrow: 'MISSION ARCHIVE',
-      title: 'Capture Control',
+
+      eyebrow:
+        'MISSION ARCHIVE',
+
+      title:
+        'Capture Control',
+
       description:
         'Upload new astrophotography captures and manage the public mission archive.',
-      action: 'MANAGE CAPTURES',
+
+      action:
+        'MANAGE CAPTURES',
+
       stats: [
         {
           label: 'CAPTURES',
-          value: captures.length
+
+          value:
+            captures.length
         },
         {
           label: 'FEATURED',
+
           value:
-            featuredCapture?.title ||
+            featuredCapture
+              ?.title ||
             'None'
         }
       ]
     },
     {
       id: 'captains-log',
+
       icon: BookOpen,
-      eyebrow: "CAPTAIN'S LOG",
-      title: 'Mission Reports',
+
+      eyebrow:
+        "CAPTAIN'S LOG",
+
+      title:
+        'Mission Reports',
+
       description:
         'Create and manage observing reports, mission notes, and field updates.',
-      action: 'MANAGE LOGS',
+
+      action:
+        'MANAGE LOGS',
+
       stats: [
         {
           label: 'MISSIONS',
-          value: missions.length
+
+          value:
+            missions.length
         },
         {
           label: 'LATEST',
+
           value:
             latestMission?.id ||
             'None'
@@ -494,38 +619,63 @@ export default function AdminDashboard({
     },
     {
       id: 'equipment',
+
       icon: Telescope,
-      eyebrow: 'EQUIPMENT LOCKER',
-      title: 'Gear Inventory',
+
+      eyebrow:
+        'EQUIPMENT LOCKER',
+
+      title:
+        'Gear Inventory',
+
       description:
         'Add equipment and maintain the public CuzBro gear inventory.',
-      action: 'MANAGE GEAR',
+
+      action:
+        'MANAGE GEAR',
+
       stats: [
         {
           label: 'GEAR',
-          value: equipment.length
+
+          value:
+            equipment.length
         },
         {
           label: 'ACTIVE',
-          value: activeEquipmentCount
+
+          value:
+            activeEquipmentCount
         }
       ]
     },
     {
       id: 'transfers',
+
       icon: FolderUp,
-      eyebrow: 'PRIVATE CREW EXCHANGE',
-      title: 'Crew Transfer',
+
+      eyebrow:
+        'PRIVATE CREW EXCHANGE',
+
+      title:
+        'Crew Transfer',
+
       description:
         'Securely exchange raw captures, processing files, and mission data with the CuzBro crew.',
-      action: 'OPEN TRANSFER BAY',
+
+      action:
+        'OPEN TRANSFER BAY',
+
       stats: [
         {
           label: 'ACCESS',
-          value: 'CREW ONLY'
+
+          value:
+            'CREW ONLY'
         },
         {
           label: 'STORAGE',
+
           value: 'R2'
         }
       ]
@@ -542,7 +692,8 @@ export default function AdminDashboard({
           >
             <img
               src={
-                import.meta.env.BASE_URL +
+                import.meta.env
+                  .BASE_URL +
                 'assets/cuzbro-logo.png'
               }
               alt="CuzBro logo"
@@ -554,7 +705,9 @@ export default function AdminDashboard({
               SECURE CREW TERMINAL
             </span>
 
-            <h1>Admin Control</h1>
+            <h1>
+              Admin Control
+            </h1>
           </div>
         </div>
 
@@ -579,6 +732,7 @@ export default function AdminDashboard({
             onClick={onLogout}
           >
             <LogOut size={17} />
+
             LOG OUT
           </button>
         </div>
@@ -598,8 +752,9 @@ export default function AdminDashboard({
             </h2>
 
             <p>
-              Authorized crew access for
-              managing CuzBro mission data and
+              Authorized crew access
+              for managing CuzBro
+              mission data and
               observatory content.
             </p>
           </div>
@@ -610,14 +765,19 @@ export default function AdminDashboard({
             </div>
 
             <div>
-              <span>SYSTEM STATUS</span>
+              <span>
+                SYSTEM STATUS
+              </span>
 
               <strong>
-                {dashboardStatus === 'loading'
+                {dashboardStatus ===
+                'loading'
                   ? 'SYNCING'
-                  : dashboardStatus === 'error'
+                  : dashboardStatus ===
+                      'error'
                     ? 'DATA ALERT'
-                    : realtimeStatus === 'error'
+                    : realtimeStatus ===
+                        'error'
                       ? 'BLACK BOX ALERT'
                       : 'ADMIN ONLINE'}
               </strong>
@@ -633,35 +793,77 @@ export default function AdminDashboard({
           </div>
         )}
 
-        <CrewPresencePanel session={session} />
+        <CrewPresencePanel
+          session={session}
+        />
 
-        <a
-          className="admin-system-command-link"
-          href="/admin/system"
-        >
-          <div className="admin-system-command-link-icon">
-            <Activity size={22} />
-          </div>
+        <section className="admin-system-command-stack">
+          <a
+            className="admin-system-command-link"
+            href="/admin/system"
+          >
+            <div className="admin-system-command-link-icon">
+              <Activity size={22} />
+            </div>
 
-          <div className="admin-system-command-link-copy">
-            <span className="admin-card-eyebrow">
-              SYSTEM COMMAND
-            </span>
+            <div className="admin-system-command-link-copy">
+              <span className="admin-card-eyebrow">
+                SYSTEM COMMAND
+              </span>
 
-            <strong>System Status</strong>
+              <strong>
+                System Status
+              </strong>
 
-            <p>
-              Run live infrastructure diagnostics
-              across CuzBro services.
-            </p>
-          </div>
+              <p>
+                Run live infrastructure
+                diagnostics across CuzBro
+                services.
+              </p>
+            </div>
 
-          <div className="admin-system-command-link-action">
-            <span>OPEN HEALTH CONSOLE</span>
+            <div className="admin-system-command-link-action">
+              <span>
+                OPEN HEALTH CONSOLE
+              </span>
 
-            <strong>→</strong>
-          </div>
-        </a>
+              <strong>→</strong>
+            </div>
+          </a>
+
+          <a
+            className="admin-system-command-link"
+            href="/admin/storage"
+          >
+            <div className="admin-system-command-link-icon">
+              <FolderUp size={22} />
+            </div>
+
+            <div className="admin-system-command-link-copy">
+              <span className="admin-card-eyebrow">
+                STORAGE COMMAND
+              </span>
+
+              <strong>
+                Storage Control
+              </strong>
+
+              <p>
+                Inspect R2 usage,
+                largest objects, file
+                types, and crew storage.
+              </p>
+            </div>
+
+            <div className="admin-system-command-link-action">
+              <span>
+                OPEN STORAGE CONSOLE
+              </span>
+
+              <strong>→</strong>
+            </div>
+          </a>
+        </section>
 
         <section className="admin-black-box-panel">
           <div className="admin-black-box-heading">
@@ -670,11 +872,14 @@ export default function AdminDashboard({
                 CUZBRO FLIGHT DATA RECORDER
               </span>
 
-              <h2>Live Crew Operations</h2>
+              <h2>
+                Live Crew Operations
+              </h2>
 
               <p>
-                Authenticated administrative
-                events recorded by Black Box.
+                Authenticated
+                administrative events
+                recorded by Black Box.
               </p>
             </div>
 
@@ -685,11 +890,14 @@ export default function AdminDashboard({
 
               <i />
 
-              {realtimeStatus === 'live'
+              {realtimeStatus ===
+              'live'
                 ? 'LIVE LINK'
-                : realtimeStatus === 'error'
+                : realtimeStatus ===
+                    'error'
                   ? 'LINK ERROR'
-                  : realtimeStatus === 'offline'
+                  : realtimeStatus ===
+                      'offline'
                     ? 'LINK CLOSED'
                     : 'CONNECTING'}
             </div>
@@ -699,6 +907,7 @@ export default function AdminDashboard({
             <div className="admin-black-box-terminal-bar">
               <div>
                 <Activity size={17} />
+
                 BLACK BOX
               </div>
 
@@ -711,146 +920,170 @@ export default function AdminDashboard({
               </span>
             </div>
 
-            {activityStatus === 'loading' && (
+            {activityStatus ===
+              'loading' && (
               <div className="admin-black-box-state">
-                ESTABLISHING SECURE DATA LINK...
+                ESTABLISHING SECURE
+                DATA LINK...
               </div>
             )}
 
-            {activityStatus === 'error' && (
+            {activityStatus ===
+              'error' && (
               <div className="admin-black-box-state admin-black-box-state-error">
-                BLACK BOX DATA LINK UNAVAILABLE
+                BLACK BOX DATA LINK
+                UNAVAILABLE
               </div>
             )}
 
-            {activityStatus === 'ready' &&
+            {activityStatus ===
+              'ready' &&
               activity.length === 0 && (
                 <div className="admin-black-box-state">
-                  NO FLIGHT RECORDER EVENTS
+                  NO FLIGHT RECORDER
+                  EVENTS
                 </div>
               )}
 
-            {activityStatus === 'ready' &&
+            {activityStatus ===
+              'ready' &&
               activity.length > 0 && (
                 <div className="admin-black-box-feed">
-                  {activity.map((event) => (
-                    <article
-                      className="admin-black-box-event"
-                      key={event.id}
-                    >
-                      <div className="admin-black-box-time">
-                        <strong>
-                          {formatEventTime(
-                            event.created_at
-                          )}
-                        </strong>
-
-                        <span>
-                          {formatEventDate(
-                            event.created_at
-                          )}
-                        </span>
-                      </div>
-
-                      <div className="admin-black-box-pulse">
-                        <i />
-                      </div>
-
-                      <div className="admin-black-box-event-copy">
-                        <div className="admin-black-box-event-meta">
+                  {activity.map(
+                    (event) => (
+                      <article
+                        className="admin-black-box-event"
+                        key={event.id}
+                      >
+                        <div className="admin-black-box-time">
                           <strong>
-                            {String(
-                              event.crew_name ||
-                                'UNKNOWN'
-                            ).toUpperCase()}
+                            {formatEventTime(
+                              event.created_at
+                            )}
                           </strong>
 
                           <span>
-                            {String(
-                              event.category ||
-                                'SYSTEM'
-                            ).toUpperCase()}
+                            {formatEventDate(
+                              event.created_at
+                            )}
                           </span>
                         </div>
 
-                        <h3>
-                          {getActionLabel(
-                            event.action
-                          )}
-                        </h3>
+                        <div className="admin-black-box-pulse">
+                          <i />
+                        </div>
 
-                        <p>
-                          {getEventDescription(
-                            event
-                          )}
-                        </p>
-                      </div>
-                    </article>
-                  ))}
+                        <div className="admin-black-box-event-copy">
+                          <div className="admin-black-box-event-meta">
+                            <strong>
+                              {String(
+                                event.crew_name ||
+                                  'UNKNOWN'
+                              ).toUpperCase()}
+                            </strong>
+
+                            <span>
+                              {String(
+                                event.category ||
+                                  'SYSTEM'
+                              ).toUpperCase()}
+                            </span>
+                          </div>
+
+                          <h3>
+                            {getActionLabel(
+                              event.action
+                            )}
+                          </h3>
+
+                          <p>
+                            {getEventDescription(
+                              event
+                            )}
+                          </p>
+                        </div>
+                      </article>
+                    )
+                  )}
                 </div>
               )}
           </div>
         </section>
 
         <section className="admin-grid">
-          {adminSections.map((section) => {
-            const Icon = section.icon;
+          {adminSections.map(
+            (section) => {
+              const Icon =
+                section.icon;
 
-            return (
-              <article
-                className="admin-control-card"
-                key={section.id}
-              >
-                <div className="admin-control-icon">
-                  <Icon size={27} />
-                </div>
-
-                <span className="admin-card-eyebrow">
-                  {section.eyebrow}
-                </span>
-
-                <h3>{section.title}</h3>
-
-                <p>{section.description}</p>
-
-                <div className="admin-dashboard-card-stats">
-                  {section.stats.map((stat) => (
-                    <div key={stat.label}>
-                      <span>
-                        {stat.label}
-                      </span>
-
-                      <strong>
-                        {dashboardStatus ===
-                        'loading'
-                          ? '—'
-                          : stat.value}
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    window.location.href =
-                      `/admin/${section.id}`;
-                  }}
+              return (
+                <article
+                  className="admin-control-card"
+                  key={section.id}
                 >
-                  {section.action}
+                  <div className="admin-control-icon">
+                    <Icon size={27} />
+                  </div>
 
-                  <span>→</span>
-                </button>
-              </article>
-            );
-          })}
+                  <span className="admin-card-eyebrow">
+                    {section.eyebrow}
+                  </span>
+
+                  <h3>
+                    {section.title}
+                  </h3>
+
+                  <p>
+                    {section.description}
+                  </p>
+
+                  <div className="admin-dashboard-card-stats">
+                    {section.stats.map(
+                      (stat) => (
+                        <div
+                          key={
+                            stat.label
+                          }
+                        >
+                          <span>
+                            {stat.label}
+                          </span>
+
+                          <strong>
+                            {dashboardStatus ===
+                            'loading'
+                              ? '—'
+                              : stat.value}
+                          </strong>
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.location.href =
+                        `/admin/${section.id}`;
+                    }}
+                  >
+                    {section.action}
+
+                    <span>→</span>
+                  </button>
+                </article>
+              );
+            }
+          )}
         </section>
 
         <section className="admin-system-summary">
           <div>
             <Clock3 size={19} />
 
-            <span>MISSION DATABASE</span>
+            <span>
+              MISSION DATABASE
+            </span>
 
             <strong>
               {missions.length} REPORTS
@@ -860,7 +1093,9 @@ export default function AdminDashboard({
           <div>
             <Camera size={19} />
 
-            <span>IMAGE ARCHIVE</span>
+            <span>
+              IMAGE ARCHIVE
+            </span>
 
             <strong>
               {captures.length} CAPTURES
@@ -870,10 +1105,13 @@ export default function AdminDashboard({
           <div>
             <Telescope size={19} />
 
-            <span>EQUIPMENT CATEGORIES</span>
+            <span>
+              EQUIPMENT CATEGORIES
+            </span>
 
             <strong>
-              {equipmentCategoryCount} CATEGORIES
+              {equipmentCategoryCount}{' '}
+              CATEGORIES
             </strong>
           </div>
         </section>
@@ -882,7 +1120,8 @@ export default function AdminDashboard({
           type="button"
           className="admin-open-site"
           onClick={() => {
-            window.location.href = '/';
+            window.location.href =
+              '/';
           }}
         >
           OPEN PUBLIC OBSERVATORY

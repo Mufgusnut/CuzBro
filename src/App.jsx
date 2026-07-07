@@ -4,6 +4,7 @@ import AdminGallery from './components/AdminGallery.jsx';
 import AdminEquipment from './components/AdminEquipment.jsx';
 import CrewTransfer from './components/CrewTransfer.jsx';
 import SystemStatus from './components/SystemStatus.jsx';
+import StorageControl from './components/StorageControl.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import {
@@ -16,7 +17,11 @@ import MissionSupport from './components/MissionSupport.jsx';
 import CaptainsLog from './components/CaptainsLog.jsx';
 import EquipmentLocker from './components/EquipmentLocker.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState
+} from 'react';
 import Hero from './components/Hero.jsx';
 import QuickLinks from './components/QuickLinks.jsx';
 import Gallery from './components/Gallery.jsx';
@@ -24,14 +29,32 @@ import Weather from './components/Weather.jsx';
 import Lightbox from './components/Lightbox.jsx';
 
 const locations = [
-  { name: 'Eliot, ME', lat: 43.1531, lon: -70.7828 },
-  { name: 'Congers, NY', lat: 41.1507, lon: -73.9454 },
-  { name: 'New York City, NY', lat: 40.7128, lon: -74.0060 }
+  {
+    name: 'Eliot, ME',
+    lat: 43.1531,
+    lon: -70.7828
+  },
+  {
+    name: 'Congers, NY',
+    lat: 41.1507,
+    lon: -73.9454
+  },
+  {
+    name: 'New York City, NY',
+    lat: 40.7128,
+    lon: -74.0060
+  }
 ];
 
 function PageNav({ scrolled }) {
   return (
-    <header className={scrolled ? 'nav navSmall' : 'nav'}>
+    <header
+      className={
+        scrolled
+          ? 'nav navSmall'
+          : 'nav'
+      }
+    >
       <a
         href="/"
         aria-label="CuzBro homepage"
@@ -47,8 +70,13 @@ function PageNav({ scrolled }) {
       </a>
 
       <nav className="mainNavMenu">
-        <a href="/#home">Home</a>
-        <a href="/#observatory">Observatory</a>
+        <a href="/#home">
+          Home
+        </a>
+
+        <a href="/#observatory">
+          Observatory
+        </a>
 
         <div className="navDropdown">
           <button
@@ -119,7 +147,8 @@ function PageNav({ scrolled }) {
         <a
           href="/equipment"
           className={
-            window.location.pathname === '/equipment'
+            window.location.pathname ===
+            '/equipment'
               ? 'active'
               : ''
           }
@@ -127,47 +156,64 @@ function PageNav({ scrolled }) {
           Gear
         </a>
 
-        <a href="/#about">About</a>
+        <a href="/#about">
+          About
+        </a>
       </nav>
     </header>
   );
 }
 
 export default function App() {
-  const [gallery, setGallery] = useState([]);
-
-  const [activeFilter, setActiveFilter] =
-    useState('All');
-
-  const [weather, setWeather] = useState({});
-
-  const [captainsLog, setCaptainsLog] =
+  const [gallery, setGallery] =
     useState([]);
+
+  const [
+    activeFilter,
+    setActiveFilter
+  ] = useState('All');
+
+  const [weather, setWeather] =
+    useState({});
+
+  const [
+    captainsLog,
+    setCaptainsLog
+  ] = useState([]);
 
   const [
     captainsLogStatus,
     setCaptainsLogStatus
   ] = useState('loading');
 
-  const [equipment, setEquipment] = useState([]);
+  const [equipment, setEquipment] =
+    useState([]);
 
   const [
     equipmentStatus,
     setEquipmentStatus
   ] = useState('loading');
 
-  const [selectedIndex, setSelectedIndex] =
+  const [
+    selectedIndex,
+    setSelectedIndex
+  ] = useState(null);
+
+  const [
+    viewerMode,
+    setViewerMode
+  ] = useState('report');
+
+  const [scrolled, setScrolled] =
+    useState(false);
+
+  const [session, setSession] =
     useState(null);
 
-  const [viewerMode, setViewerMode] =
-    useState('report');
-
-  const [scrolled, setScrolled] = useState(false);
-
-  const [session, setSession] = useState(null);
-
-  const [authLoading, setAuthLoading] =
-    useState(true);
+  const [
+    authLoading,
+    setAuthLoading
+  ] = useState(true);
 
   const [
     isPasswordRecovery,
@@ -176,35 +222,48 @@ export default function App() {
 
   const scroller = useRef(null);
 
-  const pathname = window.location.pathname;
+  const pathname =
+    window.location.pathname;
 
-const searchParams = new URLSearchParams(
-  window.location.search
-);
+  const searchParams =
+    new URLSearchParams(
+      window.location.search
+    );
 
-const isPasswordResetPage =
-  searchParams.get('reset-password') ===
-  'true';
+  const isPasswordResetPage =
+    searchParams.get(
+      'reset-password'
+    ) === 'true';
 
   const isAdminCaptainsLogPage =
-    pathname === '/admin/captains-log' ||
-    pathname === '/admin/captains-log/';
+    pathname ===
+      '/admin/captains-log' ||
+    pathname ===
+      '/admin/captains-log/';
 
   const isAdminGalleryPage =
     pathname === '/admin/gallery' ||
     pathname === '/admin/gallery/';
 
   const isAdminEquipmentPage =
-    pathname === '/admin/equipment' ||
-    pathname === '/admin/equipment/';
+    pathname ===
+      '/admin/equipment' ||
+    pathname ===
+      '/admin/equipment/';
 
   const isAdminTransfersPage =
-    pathname === '/admin/transfers' ||
-    pathname === '/admin/transfers/';
+    pathname ===
+      '/admin/transfers' ||
+    pathname ===
+      '/admin/transfers/';
 
   const isAdminSystemPage =
     pathname === '/admin/system' ||
     pathname === '/admin/system/';
+
+  const isAdminStoragePage =
+    pathname === '/admin/storage' ||
+    pathname === '/admin/storage/';
 
   const isAdminPage =
     pathname === '/admin' ||
@@ -213,14 +272,19 @@ const isPasswordResetPage =
     isAdminGalleryPage ||
     isAdminEquipmentPage ||
     isAdminTransfersPage ||
-    isAdminSystemPage;
-useCrewPresence({
-  session,
-  enabled:
-    isAdminPage &&
-    Boolean(session),
-  pathname
-});
+    isAdminSystemPage ||
+    isAdminStoragePage;
+
+  useCrewPresence({
+    session,
+
+    enabled:
+      isAdminPage &&
+      Boolean(session),
+
+    pathname
+  });
+
   const isSkyMapPage =
     pathname === '/skymap';
 
@@ -242,7 +306,8 @@ useCrewPresence({
     featuredPhoto
       ? gallery.findIndex(
           (photo) =>
-            photo.id === featuredPhoto.id
+            photo.id ===
+            featuredPhoto.id
         )
       : -1;
 
@@ -252,7 +317,10 @@ useCrewPresence({
     }
 
     setViewerMode('report');
-    setSelectedIndex(featuredPhotoIndex);
+
+    setSelectedIndex(
+      featuredPhotoIndex
+    );
   };
 
   const filteredGallery =
@@ -260,16 +328,20 @@ useCrewPresence({
       ? gallery
       : gallery.filter(
           (photo) =>
-            photo.objectType === activeFilter
+            photo.objectType ===
+            activeFilter
         );
 
-  const lightboxGallery = isSkyMapPage
-    ? gallery
-    : filteredGallery;
+  const lightboxGallery =
+    isSkyMapPage
+      ? gallery
+      : filteredGallery;
 
   const selectedPhoto =
     selectedIndex !== null
-      ? lightboxGallery[selectedIndex]
+      ? lightboxGallery[
+          selectedIndex
+        ]
       : null;
 
   const closeLightbox = () => {
@@ -278,7 +350,9 @@ useCrewPresence({
   };
 
   const showNextPhoto = () => {
-    if (lightboxGallery.length === 0) {
+    if (
+      lightboxGallery.length === 0
+    ) {
       return;
     }
 
@@ -292,7 +366,9 @@ useCrewPresence({
   };
 
   const showPreviousPhoto = () => {
-    if (lightboxGallery.length === 0) {
+    if (
+      lightboxGallery.length === 0
+    ) {
       return;
     }
 
@@ -300,9 +376,11 @@ useCrewPresence({
 
     setSelectedIndex(
       (current) =>
-        (current -
+        (
+          current -
           1 +
-          lightboxGallery.length) %
+          lightboxGallery.length
+        ) %
         lightboxGallery.length
     );
   };
@@ -338,7 +416,10 @@ useCrewPresence({
       data: { subscription }
     } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        if (event === 'PASSWORD_RECOVERY') {
+        if (
+          event ===
+          'PASSWORD_RECOVERY'
+        ) {
           recoveryDetected = true;
 
           setIsPasswordRecovery(true);
@@ -363,14 +444,14 @@ useCrewPresence({
       }
     );
 
-    supabase.auth.getSession().then(
-      ({ data }) => {
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
         if (!recoveryDetected) {
           setSession(data.session);
           setAuthLoading(false);
         }
-      }
-    );
+      });
 
     return () => {
       subscription.unsubscribe();
@@ -379,7 +460,10 @@ useCrewPresence({
 
   useEffect(() => {
     async function loadGallery() {
-      const { data, error } = await supabase
+      const {
+        data,
+        error
+      } = await supabase
         .from('gallery')
         .select('*')
         .order('sort_order', {
@@ -397,42 +481,76 @@ useCrewPresence({
         return;
       }
 
-      const captures = (data || []).map(
-        (capture) => ({
-          id: capture.id,
-          title: capture.title,
-          subtitle: capture.subtitle,
-          category: capture.category,
-          objectType: capture.object_type,
-          constellation: capture.constellation,
-          distance: capture.distance,
-          captureDate: capture.capture_date,
-          exposure: capture.exposure,
-          processing: capture.processing,
-          equipment: capture.equipment,
-          notes: capture.notes,
-          nextGoal: capture.next_goal,
-          image: capture.image,
-storagePath: capture.storage_path,
+      const captures =
+        (data || []).map(
+          (capture) => ({
+            id: capture.id,
 
-masterFileUrl:
-  capture.master_file_url,
+            title:
+              capture.title,
 
-masterStoragePath:
-  capture.master_storage_path,
+            subtitle:
+              capture.subtitle,
 
-masterFileName:
-  capture.master_file_name,
+            category:
+              capture.category,
 
-masterFileSize:
-  capture.master_file_size,
+            objectType:
+              capture.object_type,
 
-ra: capture.ra,
-dec: capture.dec,
-sortOrder: capture.sort_order,
-isFeatured: capture.is_featured
-        })
-      );
+            constellation:
+              capture.constellation,
+
+            distance:
+              capture.distance,
+
+            captureDate:
+              capture.capture_date,
+
+            exposure:
+              capture.exposure,
+
+            processing:
+              capture.processing,
+
+            equipment:
+              capture.equipment,
+
+            notes:
+              capture.notes,
+
+            nextGoal:
+              capture.next_goal,
+
+            image:
+              capture.image,
+
+            storagePath:
+              capture.storage_path,
+
+            masterFileUrl:
+              capture.master_file_url,
+
+            masterStoragePath:
+              capture.master_storage_path,
+
+            masterFileName:
+              capture.master_file_name,
+
+            masterFileSize:
+              capture.master_file_size,
+
+            ra: capture.ra,
+
+            dec: capture.dec,
+
+            sortOrder:
+              capture.sort_order,
+
+            isFeatured:
+              capture.is_featured
+          })
+        );
 
       setGallery(captures);
     }
@@ -444,7 +562,10 @@ isFeatured: capture.is_featured
     async function loadEquipment() {
       setEquipmentStatus('loading');
 
-      const { data, error } = await supabase
+      const {
+        data,
+        error
+      } = await supabase
         .from('equipment')
         .select('*')
         .order('sort_order', {
@@ -463,22 +584,40 @@ isFeatured: capture.is_featured
         return;
       }
 
-      const items = (data || []).map(
-        (item) => ({
-          id: item.id,
-          name: item.name,
-          category: item.category,
-          type: item.type,
-          role: item.role,
-          status: item.status,
-          icon: item.icon,
-          summary: item.summary,
-          facts: item.facts || [],
-          bestFor: item.best_for || [],
-          fieldNote: item.field_note || '',
-          sortOrder: item.sort_order
-        })
-      );
+      const items =
+        (data || []).map(
+          (item) => ({
+            id: item.id,
+
+            name: item.name,
+
+            category:
+              item.category,
+
+            type: item.type,
+
+            role: item.role,
+
+            status: item.status,
+
+            icon: item.icon,
+
+            summary:
+              item.summary,
+
+            facts:
+              item.facts || [],
+
+            bestFor:
+              item.best_for || [],
+
+            fieldNote:
+              item.field_note || '',
+
+            sortOrder:
+              item.sort_order
+          })
+        );
 
       setEquipment(items);
       setEquipmentStatus('ready');
@@ -489,9 +628,14 @@ isFeatured: capture.is_featured
 
   useEffect(() => {
     async function loadCaptainsLog() {
-      setCaptainsLogStatus('loading');
+      setCaptainsLogStatus(
+        'loading'
+      );
 
-      const { data, error } = await supabase
+      const {
+        data,
+        error
+      } = await supabase
         .from('captains_log')
         .select('*')
         .order('date', {
@@ -502,30 +646,55 @@ isFeatured: capture.is_featured
         console.error(error);
 
         setCaptainsLog([]);
-        setCaptainsLogStatus('error');
+
+        setCaptainsLogStatus(
+          'error'
+        );
 
         return;
       }
 
-      const entries = (data || []).map(
-        (entry) => ({
-          id: entry.id,
-          date: entry.date,
-          mission: entry.mission,
-          location: entry.location,
-          targets: entry.targets || [],
-          equipment: entry.equipment || [],
-          conditions: entry.conditions || {},
-          summary: entry.summary || '',
-          notes: entry.notes || '',
-          worked: entry.worked || [],
-          improve: entry.improve || [],
-          nextMission:
-            entry.next_mission || '',
-          targetNotes:
-            entry.target_notes || {}
-        })
-      );
+      const entries =
+        (data || []).map(
+          (entry) => ({
+            id: entry.id,
+
+            date: entry.date,
+
+            mission:
+              entry.mission,
+
+            location:
+              entry.location,
+
+            targets:
+              entry.targets || [],
+
+            equipment:
+              entry.equipment || [],
+
+            conditions:
+              entry.conditions || {},
+
+            summary:
+              entry.summary || '',
+
+            notes:
+              entry.notes || '',
+
+            worked:
+              entry.worked || [],
+
+            improve:
+              entry.improve || [],
+
+            nextMission:
+              entry.next_mission || '',
+
+            targetNotes:
+              entry.target_notes || {}
+          })
+        );
 
       setCaptainsLog(entries);
       setCaptainsLogStatus('ready');
@@ -546,14 +715,18 @@ isFeatured: capture.is_featured
           `&wind_speed_unit=mph` +
           `&timezone=auto`;
 
-        const data = await fetch(url).then(
-          (response) => response.json()
-        );
+        const data =
+          await fetch(url).then(
+            (response) =>
+              response.json()
+          );
 
         setWeather(
           (previousWeather) => ({
             ...previousWeather,
-            [loc.name]: data.current
+
+            [loc.name]:
+              data.current
           })
         );
       } catch (error) {
@@ -565,6 +738,7 @@ isFeatured: capture.is_featured
         setWeather(
           (previousWeather) => ({
             ...previousWeather,
+
             [loc.name]: null
           })
         );
@@ -574,7 +748,9 @@ isFeatured: capture.is_featured
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 80);
+      setScrolled(
+        window.scrollY > 80
+      );
     };
 
     window.addEventListener(
@@ -603,11 +779,15 @@ isFeatured: capture.is_featured
         closeLightbox();
       }
 
-      if (event.key === 'ArrowRight') {
+      if (
+        event.key === 'ArrowRight'
+      ) {
         showNextPhoto();
       }
 
-      if (event.key === 'ArrowLeft') {
+      if (
+        event.key === 'ArrowLeft'
+      ) {
         showPreviousPhoto();
       }
     };
@@ -628,21 +808,15 @@ isFeatured: capture.is_featured
     lightboxGallery.length
   ]);
 
-  /*
-   * Password recovery takes priority.
-   * Recovery links must be allowed to show the
-   * password reset UI even outside /admin.
-   */
   if (
-  isPasswordRecovery ||
-  isPasswordResetPage
-) {
-  return <Login forcePasswordReset />;
-}
+    isPasswordRecovery ||
+    isPasswordResetPage
+  ) {
+    return (
+      <Login forcePasswordReset />
+    );
+  }
 
-  /*
-   * Only admin pages require authentication.
-   */
   if (isAdminPage) {
     if (authLoading) {
       return null;
@@ -652,7 +826,9 @@ isFeatured: capture.is_featured
       return <Login />;
     }
 
-    if (isAdminCaptainsLogPage) {
+    if (
+      isAdminCaptainsLogPage
+    ) {
       return <AdminCaptainsLog />;
     }
 
@@ -676,6 +852,14 @@ isFeatured: capture.is_featured
       );
     }
 
+    if (isAdminStoragePage) {
+      return (
+        <StorageControl
+          session={session}
+        />
+      );
+    }
+
     return (
       <AdminDashboard
         session={session}
@@ -684,9 +868,6 @@ isFeatured: capture.is_featured
     );
   }
 
-  /*
-   * Everything below this point is public.
-   */
   return (
     <>
       <SpaceBackground />
@@ -695,14 +876,22 @@ isFeatured: capture.is_featured
       isMissionSupportPage ||
       isCaptainsLogPage ||
       isEquipmentPage ? (
-        <PageNav scrolled={scrolled} />
+        <PageNav
+          scrolled={scrolled}
+        />
       ) : (
         <Hero
           imageCount={gallery.length}
           scrolled={scrolled}
-          featuredPhoto={featuredPhoto}
-          setSelectedIndex={openFeaturedPhoto}
-          weather={weather['Eliot, ME']}
+          featuredPhoto={
+            featuredPhoto
+          }
+          setSelectedIndex={
+            openFeaturedPhoto
+          }
+          weather={
+            weather['Eliot, ME']
+          }
         />
       )}
 
@@ -722,7 +911,9 @@ isFeatured: capture.is_featured
         {isSkyMapPage ? (
           <SkyMap
             gallery={gallery}
-            captainsLog={captainsLog}
+            captainsLog={
+              captainsLog
+            }
             equipment={equipment}
             setSelectedIndex={
               setSelectedIndex
@@ -733,12 +924,16 @@ isFeatured: capture.is_featured
         ) : isCaptainsLogPage ? (
           <CaptainsLog
             entries={captainsLog}
-            status={captainsLogStatus}
+            status={
+              captainsLogStatus
+            }
           />
         ) : isEquipmentPage ? (
           <EquipmentLocker
             equipment={equipment}
-            status={equipmentStatus}
+            status={
+              equipmentStatus
+            }
           />
         ) : (
           <>
@@ -750,8 +945,12 @@ isFeatured: capture.is_featured
             />
 
             <Gallery
-              gallery={filteredGallery}
-              activeFilter={activeFilter}
+              gallery={
+                filteredGallery
+              }
+              activeFilter={
+                activeFilter
+              }
               setActiveFilter={
                 setActiveFilter
               }
@@ -779,12 +978,22 @@ isFeatured: capture.is_featured
         gallery={lightboxGallery}
         captainsLog={captainsLog}
         selectedIndex={selectedIndex}
-        setSelectedIndex={setSelectedIndex}
+        setSelectedIndex={
+          setSelectedIndex
+        }
         viewerMode={viewerMode}
-        setViewerMode={setViewerMode}
-        closeLightbox={closeLightbox}
-        showPreviousPhoto={showPreviousPhoto}
-        showNextPhoto={showNextPhoto}
+        setViewerMode={
+          setViewerMode
+        }
+        closeLightbox={
+          closeLightbox
+        }
+        showPreviousPhoto={
+          showPreviousPhoto
+        }
+        showNextPhoto={
+          showNextPhoto
+        }
       />
 
       <footer>
@@ -801,7 +1010,9 @@ isFeatured: capture.is_featured
           />
         </a>
 
-        <p>Look up. Stay curious.</p>
+        <p>
+          Look up. Stay curious.
+        </p>
       </footer>
     </>
   );

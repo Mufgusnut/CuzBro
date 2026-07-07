@@ -12501,3 +12501,630 @@ footer p {
       rgba(120, 155, 255, 0.09);
   }
 }
+/* =========================================================
+   CUZBRO SYSTEM COMMAND LINKS
+   ========================================================= */
+
+.admin-system-command-stack {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.admin-system-command-link {
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 20px;
+  padding: 21px 24px;
+  border:
+    1px solid
+    rgba(120, 155, 255, 0.18);
+  border-radius: 17px;
+  color: inherit;
+  text-decoration: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(25, 43, 98, 0.23),
+      rgba(6, 11, 26, 0.94)
+    );
+  box-shadow:
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.035);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.admin-system-command-link:hover {
+  transform: translateY(-2px);
+  border-color:
+    rgba(126, 157, 255, 0.36);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(37, 61, 138, 0.29),
+      rgba(7, 13, 31, 0.97)
+    );
+}
+
+.admin-system-command-link-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border:
+    1px solid
+    rgba(113, 145, 255, 0.22);
+  border-radius: 14px;
+  color: #9db1ff;
+  background:
+    rgba(63, 92, 178, 0.13);
+}
+
+.admin-system-command-link-copy {
+  min-width: 0;
+}
+
+.admin-system-command-link-copy strong {
+  display: block;
+  margin-top: 5px;
+  color: #f3f6ff;
+  font-size: 1rem;
+  letter-spacing: 0.045em;
+}
+
+.admin-system-command-link-copy p {
+  margin: 5px 0 0;
+  color:
+    rgba(210, 220, 255, 0.52);
+  font-size: 0.78rem;
+}
+
+.admin-system-command-link-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #9eb1ff;
+}
+
+.admin-system-command-link-action span {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.admin-system-command-link-action strong {
+  font-size: 1.25rem;
+  transition:
+    transform 160ms ease;
+}
+
+.admin-system-command-link:hover
+.admin-system-command-link-action strong {
+  transform: translateX(4px);
+}
+
+/* =========================================================
+   CUZBRO STORAGE CONTROL
+   ========================================================= */
+
+.storage-control-command {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 30px;
+}
+
+.storage-control-command h2 {
+  margin: 8px 0 12px;
+}
+
+.storage-control-command p {
+  max-width: 620px;
+  margin: 0;
+  color:
+    rgba(208, 218, 248, 0.58);
+}
+
+.storage-control-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 18px;
+  border:
+    1px solid
+    rgba(106, 140, 255, 0.28);
+  border-radius: 12px;
+  color: #dfe6ff;
+  background:
+    rgba(45, 72, 156, 0.16);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.storage-control-refresh:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.storage-control-spin {
+  animation:
+    storage-control-spin
+    0.9s
+    linear
+    infinite;
+}
+
+.storage-control-overview {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.25fr)
+    minmax(480px, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  border:
+    1px solid
+    rgba(120, 155, 255, 0.18);
+  border-radius: 24px;
+  background:
+    rgba(120, 155, 255, 0.12);
+  box-shadow:
+    0 28px 80px
+    rgba(0, 0, 0, 0.24);
+}
+
+.storage-control-total {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 34px;
+  background:
+    radial-gradient(
+      circle at 15% 0%,
+      rgba(72, 109, 218, 0.14),
+      transparent 38%
+    ),
+    rgba(5, 10, 24, 0.98);
+}
+
+.storage-control-total-icon {
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  flex: 0 0 auto;
+  border:
+    1px solid
+    rgba(113, 145, 255, 0.22);
+  border-radius: 20px;
+  color: #8ff0b4;
+  background:
+    rgba(24, 114, 70, 0.14);
+  box-shadow:
+    0 0 34px
+    rgba(76, 224, 139, 0.08);
+}
+
+.storage-control-total span,
+.storage-control-overview-stats span {
+  color:
+    rgba(194, 207, 249, 0.42);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.storage-control-total h3 {
+  margin: 8px 0 5px;
+  color: #f4f7ff;
+  font-size:
+    clamp(
+      1.7rem,
+      3vw,
+      2.55rem
+    );
+  letter-spacing: 0.035em;
+}
+
+.storage-control-total p {
+  margin: 0;
+  color:
+    rgba(213, 223, 255, 0.58);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.storage-control-overview-stats {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  background:
+    rgba(120, 155, 255, 0.1);
+}
+
+.storage-control-overview-stats > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 28px 24px;
+  background:
+    rgba(5, 10, 24, 0.98);
+}
+
+.storage-control-overview-stats svg {
+  margin-bottom: 18px;
+  color: #849cff;
+}
+
+.storage-control-overview-stats strong {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+  color: #eff3ff;
+  font-size: 0.92rem;
+}
+
+.storage-control-section {
+  margin-top: 24px;
+  overflow: hidden;
+  border:
+    1px solid
+    rgba(120, 155, 255, 0.15);
+  border-radius: 20px;
+  background:
+    rgba(5, 10, 23, 0.93);
+}
+
+.storage-control-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 23px 26px;
+  border-bottom:
+    1px solid
+    rgba(120, 155, 255, 0.11);
+}
+
+.storage-control-section-heading h2 {
+  margin: 6px 0 0;
+  font-size: 1.15rem;
+}
+
+.storage-control-category-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 1px;
+  background:
+    rgba(120, 155, 255, 0.09);
+}
+
+.storage-control-category {
+  min-width: 0;
+  padding: 25px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 14, 31, 0.98),
+      rgba(4, 8, 18, 0.98)
+    );
+}
+
+.storage-control-category-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border:
+    1px solid
+    rgba(113, 145, 255, 0.18);
+  border-radius: 13px;
+  color: #96aaff;
+  background:
+    rgba(63, 92, 178, 0.11);
+}
+
+.storage-control-category > span {
+  display: block;
+  margin-top: 21px;
+  color:
+    rgba(193, 205, 246, 0.42);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.storage-control-category > strong {
+  display: block;
+  margin-top: 7px;
+  color: #f1f5ff;
+  font-size: 1.22rem;
+}
+
+.storage-control-category p {
+  margin: 7px 0 18px;
+  color:
+    rgba(210, 220, 255, 0.48);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.storage-control-meter {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    rgba(119, 143, 212, 0.11);
+}
+
+.storage-control-meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #6f8cff;
+  box-shadow:
+    0 0 12px
+    rgba(111, 140, 255, 0.5);
+}
+
+.storage-control-category small {
+  display: block;
+  margin-top: 9px;
+  color:
+    rgba(198, 210, 250, 0.4);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.storage-control-columns {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.6fr)
+    minmax(330px, 0.8fr);
+  gap: 24px;
+}
+
+.storage-control-stack {
+  min-width: 0;
+}
+
+.storage-control-table-panel,
+.storage-control-mini-panel {
+  min-width: 0;
+}
+
+.storage-control-object-list {
+  padding: 0 24px;
+}
+
+.storage-control-object {
+  display: grid;
+  grid-template-columns:
+    42px
+    minmax(0, 1fr)
+    auto;
+  gap: 15px;
+  align-items: center;
+  min-width: 0;
+  padding: 18px 0;
+}
+
+.storage-control-object +
+.storage-control-object {
+  border-top:
+    1px solid
+    rgba(120, 155, 255, 0.08);
+}
+
+.storage-control-object-rank {
+  color: #738cff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.storage-control-object-copy {
+  min-width: 0;
+}
+
+.storage-control-object-copy strong {
+  display: block;
+  overflow: hidden;
+  color: #edf2ff;
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.storage-control-object-copy span {
+  display: block;
+  margin-top: 5px;
+  overflow: hidden;
+  color:
+    rgba(204, 215, 253, 0.43);
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.storage-control-object-size {
+  color: #a9baff;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.storage-control-breakdown-list {
+  padding: 7px 22px 15px;
+}
+
+.storage-control-breakdown-list > div {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    38px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0;
+}
+
+.storage-control-breakdown-list > div +
+.storage-control-breakdown-list > div {
+  border-top:
+    1px solid
+    rgba(120, 155, 255, 0.08);
+}
+
+.storage-control-breakdown-list span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: #dfe6ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.storage-control-breakdown-list strong {
+  color: #9eb1ff;
+  font-size: 0.69rem;
+  white-space: nowrap;
+}
+
+.storage-control-breakdown-list small {
+  color:
+    rgba(196, 208, 250, 0.4);
+  font-size: 0.65rem;
+  text-align: right;
+}
+
+.storage-control-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 20px 22px;
+  border:
+    1px solid
+    rgba(120, 155, 255, 0.13);
+  border-radius: 15px;
+  color: #9eb1ff;
+  background:
+    rgba(6, 11, 25, 0.76);
+}
+
+.storage-control-footer div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.storage-control-footer strong {
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+}
+
+.storage-control-footer span {
+  color:
+    rgba(203, 214, 252, 0.45);
+  font-size: 0.68rem;
+}
+
+@keyframes storage-control-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1050px) {
+  .storage-control-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .storage-control-category-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .storage-control-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-system-command-link {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
+    padding: 19px;
+  }
+
+  .admin-system-command-link-action {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    padding-top: 14px;
+    border-top:
+      1px solid
+      rgba(120, 155, 255, 0.09);
+  }
+
+  .storage-control-command {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .storage-control-refresh {
+    width: 100%;
+  }
+
+  .storage-control-total {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 26px 22px;
+  }
+
+  .storage-control-overview-stats,
+  .storage-control-category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .storage-control-overview-stats > div {
+    padding: 22px;
+  }
+
+  .storage-control-object {
+    grid-template-columns:
+      32px
+      minmax(0, 1fr);
+  }
+
+  .storage-control-object-size {
+    grid-column: 2;
+  }
+}
