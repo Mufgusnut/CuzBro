@@ -11801,3 +11801,703 @@ footer p {
     font-size: 0.88rem;
   }
 }
+/* =========================================================
+   CUZBRO CREW LINK — LIVE PRESENCE
+   ========================================================= */
+
+.admin-crew-link-panel {
+  margin-top: 26px;
+  border: 1px solid rgba(120, 155, 255, 0.18);
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(11, 18, 38, 0.95),
+      rgba(5, 9, 21, 0.98)
+    );
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.admin-crew-link-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(120, 155, 255, 0.12);
+}
+
+.admin-crew-link-heading h2 {
+  margin: 6px 0 0;
+}
+
+.admin-crew-link-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 13px;
+  border: 1px solid rgba(76, 224, 139, 0.22);
+  border-radius: 999px;
+  color: #aef5c6;
+  background: rgba(8, 24, 20, 0.52);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.admin-crew-link-summary i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ce08b;
+  box-shadow:
+    0 0 16px rgba(76, 224, 139, 0.9);
+}
+
+.admin-crew-link-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background:
+    rgba(120, 155, 255, 0.1);
+}
+
+.admin-crew-link-card {
+  min-width: 0;
+  padding: 24px 26px 26px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7, 12, 28, 0.98),
+      rgba(4, 8, 18, 0.98)
+    );
+}
+
+.admin-crew-link-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.admin-crew-link-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-crew-link-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(113, 145, 255, 0.2);
+  border-radius: 13px;
+  color: #9db1ff;
+  background:
+    rgba(63, 92, 178, 0.12);
+}
+
+.admin-crew-link-identity div {
+  min-width: 0;
+}
+
+.admin-crew-link-identity strong {
+  display: block;
+  color: #f2f5ff;
+  font-size: 0.92rem;
+  letter-spacing: 0.09em;
+}
+
+.admin-crew-link-identity span {
+  display: block;
+  margin-top: 4px;
+  color:
+    rgba(207, 218, 255, 0.44);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.admin-crew-link-signal {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #667089;
+  box-shadow:
+    0 0 10px rgba(102, 112, 137, 0.45);
+}
+
+.admin-crew-link-card-online
+.admin-crew-link-signal {
+  background: #4ce08b;
+  box-shadow:
+    0 0 17px rgba(76, 224, 139, 0.95);
+  animation:
+    admin-crew-link-pulse
+    1.7s
+    ease-in-out
+    infinite;
+}
+
+.admin-crew-link-status {
+  margin-top: 22px;
+}
+
+.admin-crew-link-status > span {
+  display: block;
+  color:
+    rgba(193, 205, 246, 0.38);
+  font-size: 0.59rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.admin-crew-link-status strong {
+  display: block;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+  color: #dfe6ff;
+  font-size: 0.82rem;
+  letter-spacing: 0.055em;
+}
+
+.admin-crew-link-card-online
+.admin-crew-link-status strong {
+  color: #aef5c6;
+}
+
+.admin-crew-link-last-seen {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top:
+    1px solid rgba(120, 155, 255, 0.09);
+  color:
+    rgba(196, 208, 250, 0.42);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+@keyframes admin-crew-link-pulse {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.23);
+  }
+}
+
+@media (max-width: 850px) {
+  .admin-crew-link-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-crew-link-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 22px;
+  }
+
+  .admin-crew-link-card {
+    padding: 22px;
+  }
+}
+.admin-user small {
+  display: block;
+  margin-top: 5px;
+  color: rgba(185, 200, 225, 0.5);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+/* =========================================================
+   CUZBRO SYSTEM STATUS
+   ========================================================= */
+
+.system-status-command {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 30px;
+}
+
+.system-status-command h2 {
+  margin: 8px 0 12px;
+}
+
+.system-status-command p {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(208, 218, 248, 0.58);
+}
+
+.system-status-run {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid rgba(106, 140, 255, 0.28);
+  border-radius: 12px;
+  color: #dfe6ff;
+  background: rgba(45, 72, 156, 0.16);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.system-status-run:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.system-status-spin {
+  animation: system-status-spin 0.9s linear infinite;
+}
+
+.system-status-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(420px, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 255, 0.18);
+  border-radius: 24px;
+  background: rgba(120, 155, 255, 0.12);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.24);
+}
+
+.system-status-overview-main {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+  padding: 34px;
+  background:
+    radial-gradient(
+      circle at 15% 0%,
+      rgba(72, 109, 218, 0.14),
+      transparent 38%
+    ),
+    rgba(5, 10, 24, 0.98);
+}
+
+.system-status-overview-icon {
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(113, 145, 255, 0.22);
+  border-radius: 20px;
+  color: #9eb1ff;
+  background: rgba(63, 92, 178, 0.13);
+}
+
+.system-status-overview-main span,
+.system-status-overview-stats span {
+  color: rgba(194, 207, 249, 0.42);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.system-status-overview-main h3 {
+  margin: 8px 0 5px;
+  color: #f4f7ff;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  letter-spacing: 0.035em;
+}
+
+.system-status-overview-main p {
+  margin: 0;
+  color: rgba(213, 223, 255, 0.58);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.system-status-overview-operational
+.system-status-overview-icon {
+  color: #61e798;
+  border-color: rgba(76, 224, 139, 0.24);
+  background: rgba(24, 114, 70, 0.14);
+  box-shadow: 0 0 34px rgba(76, 224, 139, 0.08);
+}
+
+.system-status-overview-degraded
+.system-status-overview-icon,
+.system-status-overview-offline
+.system-status-overview-icon {
+  color: #ff8585;
+  border-color: rgba(255, 96, 96, 0.25);
+  background: rgba(132, 37, 37, 0.14);
+}
+
+.system-status-overview-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(120, 155, 255, 0.1);
+}
+
+.system-status-overview-stats > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 28px 24px;
+  background: rgba(5, 10, 24, 0.98);
+}
+
+.system-status-overview-stats svg {
+  margin-bottom: 18px;
+  color: #849cff;
+}
+
+.system-status-overview-stats strong {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+  color: #eff3ff;
+  font-size: 0.92rem;
+}
+
+.system-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.system-status-service {
+  position: relative;
+  min-width: 0;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 255, 0.16);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(10, 17, 36, 0.96),
+      rgba(4, 8, 19, 0.98)
+    );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.system-status-service::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #667089;
+  opacity: 0.45;
+}
+
+.system-status-service-operational::before {
+  background: #4ce08b;
+  opacity: 0.9;
+}
+
+.system-status-service-offline::before {
+  background: #ff6060;
+  opacity: 0.95;
+}
+
+.system-status-service-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.system-status-service-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(113, 145, 255, 0.18);
+  border-radius: 14px;
+  color: #92a8ff;
+  background: rgba(63, 92, 178, 0.11);
+}
+
+.system-status-service-head > i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #667089;
+  box-shadow: 0 0 11px rgba(102, 112, 137, 0.5);
+}
+
+.system-status-service-operational
+.system-status-service-head > i {
+  background: #4ce08b;
+  box-shadow: 0 0 17px rgba(76, 224, 139, 0.95);
+}
+
+.system-status-service-offline
+.system-status-service-head > i {
+  background: #ff6060;
+  box-shadow: 0 0 17px rgba(255, 96, 96, 0.88);
+}
+
+.system-status-service > span {
+  display: block;
+  margin-top: 22px;
+  color: rgba(193, 205, 246, 0.4);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.system-status-service h3 {
+  margin: 7px 0 13px;
+  color: #f1f5ff;
+  font-size: 1rem;
+  letter-spacing: 0.045em;
+}
+
+.system-status-service > strong {
+  color: #aebeff;
+  font-size: 0.69rem;
+  letter-spacing: 0.13em;
+}
+
+.system-status-service-operational > strong {
+  color: #8ff0b4;
+}
+
+.system-status-service-offline > strong {
+  color: #ff9999;
+}
+
+.system-status-service p {
+  min-height: 42px;
+  margin: 12px 0 18px;
+  overflow-wrap: anywhere;
+  color: rgba(214, 223, 255, 0.56);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.system-status-service small {
+  display: inline-flex;
+  padding: 6px 9px;
+  border: 1px solid rgba(116, 148, 255, 0.14);
+  border-radius: 7px;
+  color: rgba(197, 210, 255, 0.48);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.system-status-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 24px;
+  padding: 22px 24px;
+  border: 1px solid rgba(120, 155, 255, 0.13);
+  border-radius: 16px;
+  background: rgba(6, 11, 25, 0.76);
+}
+
+.system-status-footer div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #aabaff;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.system-status-footer p {
+  margin: 0;
+  color: rgba(203, 214, 252, 0.48);
+  font-size: 0.76rem;
+}
+
+@keyframes system-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1000px) {
+  .system-status-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .system-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .system-status-command,
+  .system-status-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .system-status-run {
+    width: 100%;
+  }
+
+  .system-status-overview-main {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 26px 22px;
+  }
+
+  .system-status-overview-stats,
+  .system-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .system-status-overview-stats > div {
+    padding: 22px;
+  }
+}
+/* =========================================================
+   CUZBRO SYSTEM COMMAND DASHBOARD LINK
+   ========================================================= */
+
+.admin-system-command-link {
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 20px;
+  margin-top: 24px;
+  padding: 21px 24px;
+  border:
+    1px solid
+    rgba(120, 155, 255, 0.18);
+  border-radius: 17px;
+  color: inherit;
+  text-decoration: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(25, 43, 98, 0.23),
+      rgba(6, 11, 26, 0.94)
+    );
+  box-shadow:
+    inset 0 1px 0
+    rgba(255, 255, 255, 0.035);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.admin-system-command-link:hover {
+  transform: translateY(-2px);
+  border-color:
+    rgba(126, 157, 255, 0.36);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(37, 61, 138, 0.29),
+      rgba(7, 13, 31, 0.97)
+    );
+}
+
+.admin-system-command-link-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border:
+    1px solid
+    rgba(113, 145, 255, 0.22);
+  border-radius: 14px;
+  color: #9db1ff;
+  background:
+    rgba(63, 92, 178, 0.13);
+}
+
+.admin-system-command-link-copy {
+  min-width: 0;
+}
+
+.admin-system-command-link-copy strong {
+  display: block;
+  margin-top: 5px;
+  color: #f3f6ff;
+  font-size: 1rem;
+  letter-spacing: 0.045em;
+}
+
+.admin-system-command-link-copy p {
+  margin: 5px 0 0;
+  color:
+    rgba(210, 220, 255, 0.52);
+  font-size: 0.78rem;
+}
+
+.admin-system-command-link-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #9eb1ff;
+}
+
+.admin-system-command-link-action span {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.admin-system-command-link-action strong {
+  font-size: 1.25rem;
+  transition:
+    transform 160ms ease;
+}
+
+.admin-system-command-link:hover
+.admin-system-command-link-action strong {
+  transform: translateX(4px);
+}
+
+@media (max-width: 700px) {
+  .admin-system-command-link {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
+    padding: 19px;
+  }
+
+  .admin-system-command-link-action {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    padding-top: 14px;
+    border-top:
+      1px solid
+      rgba(120, 155, 255, 0.09);
+  }
+}

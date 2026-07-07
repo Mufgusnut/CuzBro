@@ -11,6 +11,10 @@ import {
   Telescope
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
+import CrewPresencePanel from './CrewPresencePanel.jsx';
+import {
+  getCrewMember
+} from '../lib/crew.js';
 
 const initialDashboardData = {
   captures: [],
@@ -111,6 +115,21 @@ function getEventDescription(event) {
           : 'files removed'
       }`;
 
+    case 'SYSTEM_CHECK':
+      return `${name} · ${
+        Number(
+          details.operationalCount || 0
+        )
+      } / ${
+        Number(
+          details.totalServices || 0
+        )
+      } services operational · ${
+        Number(
+          details.durationMs || 0
+        )
+      } ms`;
+
     default:
       return name;
   }
@@ -120,8 +139,10 @@ export default function AdminDashboard({
   session,
   onLogout
 }) {
-  const email =
-    session?.user?.email || 'Unknown Crew';
+  const crew =
+    getCrewMember(
+      session?.user?.email
+    );
 
   const [dashboardData, setDashboardData] =
     useState(initialDashboardData);
@@ -306,7 +327,9 @@ export default function AdminDashboard({
         }
 
         channel = supabase
-          .channel('cuzbro-black-box-dashboard')
+          .channel(
+            'cuzbro-black-box-dashboard'
+          )
           .on(
             'postgres_changes',
             {
@@ -350,6 +373,7 @@ export default function AdminDashboard({
 
             if (status === 'SUBSCRIBED') {
               setRealtimeStatus('live');
+
               return;
             }
 
@@ -358,11 +382,13 @@ export default function AdminDashboard({
               status === 'TIMED_OUT'
             ) {
               setRealtimeStatus('error');
+
               return;
             }
 
             if (status === 'CLOSED') {
               setRealtimeStatus('offline');
+
               return;
             }
 
@@ -538,7 +564,13 @@ export default function AdminDashboard({
               CREW AUTHENTICATED
             </span>
 
-            <strong>{email}</strong>
+            <strong>
+              {crew.callSign}
+            </strong>
+
+            <small>
+              {crew.role}
+            </small>
           </div>
 
           <button
@@ -600,6 +632,36 @@ export default function AdminDashboard({
             {dashboardError}
           </div>
         )}
+
+        <CrewPresencePanel session={session} />
+
+        <a
+          className="admin-system-command-link"
+          href="/admin/system"
+        >
+          <div className="admin-system-command-link-icon">
+            <Activity size={22} />
+          </div>
+
+          <div className="admin-system-command-link-copy">
+            <span className="admin-card-eyebrow">
+              SYSTEM COMMAND
+            </span>
+
+            <strong>System Status</strong>
+
+            <p>
+              Run live infrastructure diagnostics
+              across CuzBro services.
+            </p>
+          </div>
+
+          <div className="admin-system-command-link-action">
+            <span>OPEN HEALTH CONSOLE</span>
+
+            <strong>→</strong>
+          </div>
+        </a>
 
         <section className="admin-black-box-panel">
           <div className="admin-black-box-heading">
@@ -730,7 +792,6 @@ export default function AdminDashboard({
           </div>
         </section>
 
-
         <section className="admin-grid">
           {adminSections.map((section) => {
             const Icon = section.icon;
@@ -777,6 +838,7 @@ export default function AdminDashboard({
                   }}
                 >
                   {section.action}
+
                   <span>→</span>
                 </button>
               </article>
@@ -824,6 +886,7 @@ export default function AdminDashboard({
           }}
         >
           OPEN PUBLIC OBSERVATORY
+
           <span>↗</span>
         </button>
       </main>

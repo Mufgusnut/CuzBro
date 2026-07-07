@@ -3,8 +3,12 @@ import AdminCaptainsLog from './components/AdminCaptainsLog.jsx';
 import AdminGallery from './components/AdminGallery.jsx';
 import AdminEquipment from './components/AdminEquipment.jsx';
 import CrewTransfer from './components/CrewTransfer.jsx';
+import SystemStatus from './components/SystemStatus.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
+import {
+  useCrewPresence
+} from './lib/presence.js';
 import SkyMap from './components/SkyMap.jsx';
 import SpaceBackground from './components/SpaceBackground.jsx';
 import InfoSections from './components/InfoSections.jsx';
@@ -198,14 +202,25 @@ const isPasswordResetPage =
     pathname === '/admin/transfers' ||
     pathname === '/admin/transfers/';
 
+  const isAdminSystemPage =
+    pathname === '/admin/system' ||
+    pathname === '/admin/system/';
+
   const isAdminPage =
     pathname === '/admin' ||
     pathname === '/admin/' ||
     isAdminCaptainsLogPage ||
     isAdminGalleryPage ||
     isAdminEquipmentPage ||
-    isAdminTransfersPage;
-
+    isAdminTransfersPage ||
+    isAdminSystemPage;
+useCrewPresence({
+  session,
+  enabled:
+    isAdminPage &&
+    Boolean(session),
+  pathname
+});
   const isSkyMapPage =
     pathname === '/skymap';
 
@@ -651,6 +666,14 @@ isFeatured: capture.is_featured
 
     if (isAdminTransfersPage) {
       return <CrewTransfer />;
+    }
+
+    if (isAdminSystemPage) {
+      return (
+        <SystemStatus
+          session={session}
+        />
+      );
     }
 
     return (
