@@ -25,158 +25,80 @@ const initialDashboardData = {
   equipment: []
 };
 
-const MAX_ACTIVITY_ROWS = 8;
-
-function formatEventTime(dateValue) {
+function formatElapsed(dateValue, now) {
   if (!dateValue) {
-    return '--:--:--';
+    return 'NO EVENTS';
   }
 
-  const date =
-    new Date(dateValue);
+  const timestamp =
+    new Date(dateValue).getTime();
 
   if (
-    Number.isNaN(
-      date.getTime()
-    )
+    Number.isNaN(timestamp)
   ) {
-    return '--:--:--';
+    return 'UNKNOWN';
   }
 
-  return date.toLocaleTimeString(
-    'en-US',
-    {
-      hour: 'numeric',
-      minute: '2-digit',
-      second: '2-digit'
-    }
+  const seconds =
+    Math.max(
+      0,
+      Math.floor(
+        (now - timestamp) / 1000
+      )
+    );
+
+  if (seconds < 5) {
+    return 'JUST NOW';
+  }
+
+  if (seconds < 60) {
+    return `${seconds} SEC AGO`;
+  }
+
+  const minutes =
+    Math.floor(seconds / 60);
+
+  if (minutes < 60) {
+    return `${minutes} MIN AGO`;
+  }
+
+  const hours =
+    Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return `${hours} HR AGO`;
+  }
+
+  const days =
+    Math.floor(hours / 24);
+
+  return `${days} DAY${
+    days === 1 ? '' : 'S'
+  } AGO`;
+}
+
+function parseTotalCount(
+  contentRange
+) {
+  if (!contentRange) {
+    return 0;
+  }
+
+  const match =
+    contentRange.match(
+      /\/(\d+|\*)$/
+    );
+
+  if (
+    !match ||
+    match[1] === '*'
+  ) {
+    return 0;
+  }
+
+  return Number(
+    match[1]
   );
-}
-
-function formatEventDate(dateValue) {
-  if (!dateValue) {
-    return 'UNKNOWN DATE';
-  }
-
-  const date =
-    new Date(dateValue);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-    return 'UNKNOWN DATE';
-  }
-
-  return date
-    .toLocaleDateString(
-      'en-US',
-      {
-        month: 'short',
-        day: 'numeric'
-      }
-    )
-    .toUpperCase();
-}
-
-function getActionLabel(action) {
-  return String(
-    action || 'SYSTEM_EVENT'
-  ).replaceAll('_', ' ');
-}
-
-function formatStorageBytes(bytes) {
-  const size =
-    Number(bytes || 0);
-
-  if (size >= 1024 ** 3) {
-    return `${(
-      size / 1024 ** 3
-    ).toFixed(2)} GB`;
-  }
-
-  if (size >= 1024 ** 2) {
-    return `${(
-      size / 1024 ** 2
-    ).toFixed(1)} MB`;
-  }
-
-  if (size >= 1024) {
-    return `${(
-      size / 1024
-    ).toFixed(1)} KB`;
-  }
-
-  return `${size} B`;
-}
-
-function getEventDescription(event) {
-  const name =
-    event.resource_name ||
-    event.resource_type ||
-    'CuzBro system';
-
-  const details =
-    event.details &&
-    typeof event.details === 'object'
-      ? event.details
-      : {};
-
-  switch (event.action) {
-    case 'TRANSFER_UPLOAD':
-      return `${name} · ${Number(
-        details.fileCount || 0
-      )} ${
-        Number(
-          details.fileCount || 0
-        ) === 1
-          ? 'file'
-          : 'files'
-      }`;
-
-    case 'TRANSFER_DOWNLOAD':
-      return `${
-        details.transferName ||
-        'Crew Transfer'
-      } · downloaded ${name}`;
-
-    case 'TRANSFER_FILE_DELETE':
-      return `${
-        details.transferName ||
-        'Crew Transfer'
-      } · deleted ${name}`;
-
-    case 'TRANSFER_DELETE':
-      return `${name} · ${Number(
-        details.fileCount || 0
-      )} ${
-        Number(
-          details.fileCount || 0
-        ) === 1
-          ? 'file removed'
-          : 'files removed'
-      }`;
-
-    case 'SYSTEM_CHECK':
-      return `${name} · ${Number(
-        details.operationalCount || 0
-      )} / ${Number(
-        details.totalServices || 0
-      )} services operational · ${Number(
-        details.durationMs || 0
-      )} ms`;
-
-    case 'STORAGE_INVENTORY_CHECK':
-      return `${name} · ${Number(
-        details.objectCount || 0
-      )} objects · ${formatStorageBytes(
-        details.totalBytes
-      )}`;
-
-    default:
-      return name;
-  }
 }
 
 export default function AdminDashboard({
@@ -205,18 +127,36 @@ export default function AdminDashboard({
     setDashboardError
   ] = useState('');
 
-  const [activity, setActivity] =
-    useState([]);
+  const [
+    blackBoxEventCount,
+    setBlackBoxEventCount
+  ] = useState(0);
 
   const [
-    activityStatus,
-    setActivityStatus
-  ] = useState('loading');
+    blackBoxLastEventAt,
+    setBlackBoxLastEventAt
+  ] = useState(null);
 
   const [
-    realtimeStatus,
-    setRealtimeStatus
+    blackBoxLinkStatus,
+    setBlackBoxLinkStatus
   ] = useState('connecting');
+
+  const [now, setNow] =
+    useState(Date.now());
+
+  useEffect(() => {
+    const timerId =
+      window.setInterval(() => {
+        setNow(Date.now());
+      }, 10_000);
+
+    return () => {
+      window.clearInterval(
+        timerId
+      );
+    };
+  }, []);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -300,10 +240,8 @@ export default function AdminDashboard({
     let active = true;
     let channel = null;
 
-    async function startBlackBoxFeed() {
-      setActivityStatus('loading');
-
-      setRealtimeStatus(
+    async function startBlackBoxSummary() {
+      setBlackBoxLinkStatus(
         'connecting'
       );
 
@@ -324,12 +262,13 @@ export default function AdminDashboard({
         !supabasePublishableKey
       ) {
         if (active) {
-          setActivityStatus('error');
-          setRealtimeStatus('error');
+          setBlackBoxLinkStatus(
+            'error'
+          );
         }
 
         console.error(
-          'Black Box feed could not start: authenticated Supabase configuration is unavailable.'
+          'Black Box summary could not start: authenticated Supabase configuration is unavailable.'
         );
 
         return;
@@ -337,14 +276,17 @@ export default function AdminDashboard({
 
       try {
         const response = await fetch(
-          `${supabaseUrl}/rest/v1/crew_activity?select=*&order=created_at.desc&limit=${MAX_ACTIVITY_ROWS}`,
+          `${supabaseUrl}/rest/v1/crew_activity?select=id,created_at&order=created_at.desc&limit=1`,
           {
             headers: {
               apikey:
                 supabasePublishableKey,
 
               Authorization:
-                `Bearer ${accessToken}`
+                `Bearer ${accessToken}`,
+
+              Prefer:
+                'count=exact'
             }
           }
         );
@@ -368,21 +310,36 @@ export default function AdminDashboard({
         if (!response.ok) {
           throw new Error(
             responseBody?.message ||
-              `Black Box request failed with status ${response.status}.`
+              `Black Box summary failed with status ${response.status}.`
           );
         }
 
-        if (active) {
-          setActivity(
-            Array.isArray(
-              responseBody
+        const totalCount =
+          parseTotalCount(
+            response.headers.get(
+              'Content-Range'
             )
-              ? responseBody
-              : []
           );
 
-          setActivityStatus(
-            'ready'
+        const latestEvent =
+          Array.isArray(
+            responseBody
+          )
+            ? responseBody[0]
+            : null;
+
+        if (active) {
+          setBlackBoxEventCount(
+            totalCount
+          );
+
+          setBlackBoxLastEventAt(
+            latestEvent?.created_at ||
+              null
+          );
+
+          setBlackBoxLinkStatus(
+            'connecting'
           );
         }
 
@@ -396,7 +353,7 @@ export default function AdminDashboard({
 
         channel = supabase
           .channel(
-            'cuzbro-black-box-dashboard'
+            'cuzbro-black-box-dashboard-summary'
           )
           .on(
             'postgres_changes',
@@ -410,34 +367,31 @@ export default function AdminDashboard({
               const newEvent =
                 payload.new;
 
-              setActivity(
-                (
-                  currentActivity
-                ) => [
-                  newEvent,
+              setBlackBoxEventCount(
+                (currentCount) =>
+                  currentCount + 1
+              );
 
-                  ...currentActivity.filter(
-                    (event) =>
-                      event.id !==
-                      newEvent.id
-                  )
-                ].slice(
-                  0,
-                  MAX_ACTIVITY_ROWS
-                )
+              setBlackBoxLastEventAt(
+                newEvent.created_at ||
+                  new Date().toISOString()
+              );
+
+              setNow(
+                Date.now()
               );
             }
           )
           .subscribe(
             (status, error) => {
               console.log(
-                '[BLACK BOX] Realtime status:',
+                '[BLACK BOX SUMMARY] Realtime status:',
                 status
               );
 
               if (error) {
                 console.error(
-                  '[BLACK BOX] Realtime error:',
+                  '[BLACK BOX SUMMARY] Realtime error:',
                   error
                 );
               }
@@ -450,7 +404,7 @@ export default function AdminDashboard({
                 status ===
                 'SUBSCRIBED'
               ) {
-                setRealtimeStatus(
+                setBlackBoxLinkStatus(
                   'live'
                 );
 
@@ -463,7 +417,7 @@ export default function AdminDashboard({
                 status ===
                   'TIMED_OUT'
               ) {
-                setRealtimeStatus(
+                setBlackBoxLinkStatus(
                   'error'
                 );
 
@@ -473,32 +427,33 @@ export default function AdminDashboard({
               if (
                 status === 'CLOSED'
               ) {
-                setRealtimeStatus(
+                setBlackBoxLinkStatus(
                   'offline'
                 );
 
                 return;
               }
 
-              setRealtimeStatus(
+              setBlackBoxLinkStatus(
                 'connecting'
               );
             }
           );
       } catch (error) {
         console.error(
-          'Black Box feed failed:',
+          'Black Box summary failed:',
           error
         );
 
         if (active) {
-          setActivityStatus('error');
-          setRealtimeStatus('error');
+          setBlackBoxLinkStatus(
+            'error'
+          );
         }
       }
     }
 
-    startBlackBoxFeed();
+    startBlackBoxSummary();
 
     return () => {
       active = false;
@@ -776,7 +731,7 @@ export default function AdminDashboard({
                   : dashboardStatus ===
                       'error'
                     ? 'DATA ALERT'
-                    : realtimeStatus ===
+                    : blackBoxLinkStatus ===
                         'error'
                       ? 'BLACK BOX ALERT'
                       : 'ADMIN ONLINE'}
@@ -865,7 +820,7 @@ export default function AdminDashboard({
           </a>
 
           <a
-            className="admin-system-command-link"
+            className="admin-system-command-link admin-system-command-link-black-box"
             href="/admin/black-box"
           >
             <div className="admin-system-command-link-icon">
@@ -881,10 +836,40 @@ export default function AdminDashboard({
                 Black Box
               </strong>
 
-              <p>
-                Search, filter, and inspect the
-                full authenticated event archive.
-              </p>
+              <div className="admin-black-box-command-telemetry">
+                <span
+                  className={`admin-black-box-command-live admin-black-box-command-live-${blackBoxLinkStatus}`}
+                >
+                  <i />
+
+                  {blackBoxLinkStatus ===
+                  'live'
+                    ? 'LIVE'
+                    : blackBoxLinkStatus ===
+                        'error'
+                      ? 'LINK ERROR'
+                      : blackBoxLinkStatus ===
+                          'offline'
+                        ? 'OFFLINE'
+                        : 'CONNECTING'}
+                </span>
+
+                <span>
+                  {blackBoxEventCount}{' '}
+                  {blackBoxEventCount === 1
+                    ? 'EVENT'
+                    : 'EVENTS'}{' '}
+                  RECORDED
+                </span>
+
+                <span>
+                  LAST EVENT{' '}
+                  {formatElapsed(
+                    blackBoxLastEventAt,
+                    now
+                  )}
+                </span>
+              </div>
             </div>
 
             <div className="admin-system-command-link-action">
@@ -895,151 +880,6 @@ export default function AdminDashboard({
               <strong>→</strong>
             </div>
           </a>
-        </section>
-
-        <section className="admin-black-box-panel">
-          <div className="admin-black-box-heading">
-            <div>
-              <span className="admin-eyebrow">
-                CUZBRO FLIGHT DATA RECORDER
-              </span>
-
-              <h2>
-                Live Crew Operations
-              </h2>
-
-              <p>
-                Authenticated
-                administrative events
-                recorded by Black Box.
-              </p>
-            </div>
-
-            <div
-              className={`admin-black-box-live admin-black-box-live-${realtimeStatus}`}
-            >
-              <Radio size={15} />
-
-              <i />
-
-              {realtimeStatus ===
-              'live'
-                ? 'LIVE LINK'
-                : realtimeStatus ===
-                    'error'
-                  ? 'LINK ERROR'
-                  : realtimeStatus ===
-                      'offline'
-                    ? 'LINK CLOSED'
-                    : 'CONNECTING'}
-            </div>
-          </div>
-
-          <div className="admin-black-box-terminal">
-            <div className="admin-black-box-terminal-bar">
-              <div>
-                <Activity size={17} />
-
-                BLACK BOX
-              </div>
-
-              <span>
-                {activity.length} EVENT
-                {activity.length === 1
-                  ? ''
-                  : 'S'}{' '}
-                BUFFERED
-              </span>
-            </div>
-
-            {activityStatus ===
-              'loading' && (
-              <div className="admin-black-box-state">
-                ESTABLISHING SECURE
-                DATA LINK...
-              </div>
-            )}
-
-            {activityStatus ===
-              'error' && (
-              <div className="admin-black-box-state admin-black-box-state-error">
-                BLACK BOX DATA LINK
-                UNAVAILABLE
-              </div>
-            )}
-
-            {activityStatus ===
-              'ready' &&
-              activity.length === 0 && (
-                <div className="admin-black-box-state">
-                  NO FLIGHT RECORDER
-                  EVENTS
-                </div>
-              )}
-
-            {activityStatus ===
-              'ready' &&
-              activity.length > 0 && (
-                <div className="admin-black-box-feed">
-                  {activity.map(
-                    (event) => (
-                      <article
-                        className="admin-black-box-event"
-                        key={event.id}
-                      >
-                        <div className="admin-black-box-time">
-                          <strong>
-                            {formatEventTime(
-                              event.created_at
-                            )}
-                          </strong>
-
-                          <span>
-                            {formatEventDate(
-                              event.created_at
-                            )}
-                          </span>
-                        </div>
-
-                        <div className="admin-black-box-pulse">
-                          <i />
-                        </div>
-
-                        <div className="admin-black-box-event-copy">
-                          <div className="admin-black-box-event-meta">
-                            <strong>
-                              {String(
-                                event.crew_name ||
-                                  'UNKNOWN'
-                              ).toUpperCase()}
-                            </strong>
-
-                            <span>
-                              {String(
-                                event.category ||
-                                  'SYSTEM'
-                              ).toUpperCase()}
-                            </span>
-                          </div>
-
-                          <h3>
-                            {getActionLabel(
-                              event.action
-                            )}
-                          </h3>
-
-                          <p>
-                            {getEventDescription(
-                              event
-                            )}
-                          </p>
-                        </div>
-                      </article>
-                    )
-                  )}
-                </div>
-              )}
-          </div>
         </section>
 
         <section className="admin-grid">

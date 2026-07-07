@@ -13550,3 +13550,91 @@ footer p {
     padding: 0 14px 18px;
   }
 }
+/* =========================================================
+   BLACK BOX COMMAND TELEMETRY
+   ========================================================= */
+
+.admin-system-command-link-black-box {
+  border-color:
+    rgba(92, 140, 255, 0.23);
+  background:
+    radial-gradient(
+      circle at 8% 50%,
+      rgba(77, 105, 205, 0.12),
+      transparent 28%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(25, 43, 98, 0.23),
+      rgba(6, 11, 26, 0.94)
+    );
+}
+
+.admin-black-box-command-telemetry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px 15px;
+  margin-top: 9px;
+}
+
+.admin-black-box-command-telemetry > span {
+  color:
+    rgba(200, 212, 252, 0.48);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.admin-black-box-command-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.admin-black-box-command-live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e3bd5a;
+  box-shadow:
+    0 0 12px
+    rgba(227, 189, 90, 0.7);
+}
+
+.admin-black-box-command-live-live {
+  color: #aef5c6 !important;
+}
+
+.admin-black-box-command-live-live i {
+  background: #4ce08b;
+  box-shadow:
+    0 0 15px
+    rgba(76, 224, 139, 0.9);
+  animation:
+    admin-black-box-pulse
+    1.7s
+    ease-in-out
+    infinite;
+}
+
+.admin-black-box-command-live-error,
+.admin-black-box-command-live-offline {
+  color: #ff9292 !important;
+}
+
+.admin-black-box-command-live-error i,
+.admin-black-box-command-live-offline i {
+  background: #ff6060;
+  box-shadow:
+    0 0 14px
+    rgba(255, 96, 96, 0.72);
+}
+
+@media (max-width: 700px) {
+  .admin-black-box-command-telemetry {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+}
