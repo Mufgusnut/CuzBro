@@ -15,6 +15,8 @@ import DeploymentControl from './components/DeploymentControl.jsx';
 import AdminCommandPalette from './components/AdminCommandPalette.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
+import { LogOut } from 'lucide-react';
+import { getCrewMember } from './lib/crew.js';
 import {
   useCrewPresence
 } from './lib/presence.js';
@@ -222,6 +224,137 @@ function PageNav({ scrolled }) {
           About
         </a>
       </nav>
+    </header>
+  );
+}
+
+function AdminTopNav({
+  scrolled,
+  session,
+  onLogout
+}) {
+  const crew = getCrewMember(
+    session?.user?.email
+  );
+
+  const pathname =
+    window.location.pathname;
+
+  const isActive = (paths) =>
+    paths.some(
+      (path) =>
+        pathname === path ||
+        pathname === `${path}/`
+    );
+
+  return (
+    <header
+      className={
+        scrolled
+          ? 'admin-top-nav admin-top-nav-small'
+          : 'admin-top-nav'
+      }
+    >
+      <a
+        href="/admin"
+        className="admin-top-brand"
+        aria-label="CuzBro admin home"
+      >
+        <img
+          src={
+            import.meta.env.BASE_URL +
+            'assets/cuzbro-logo.png'
+          }
+          alt="CuzBro logo"
+        />
+
+        <span>
+          <strong>Admin</strong>
+          <em>Mission Control</em>
+        </span>
+      </a>
+
+      <nav className="admin-top-menu">
+        <a
+          href="/admin"
+          className={
+            isActive(['/admin'])
+              ? 'active'
+              : ''
+          }
+        >
+          Admin Home
+        </a>
+
+        <a
+          href="/admin#live-systems"
+          className={
+            isActive([
+              '/admin/system',
+              '/admin/comms',
+              '/admin/watch',
+              '/admin/black-box',
+              '/admin/deployments'
+            ])
+              ? 'active'
+              : ''
+          }
+        >
+          Live Systems
+        </a>
+
+        <a
+          href="/admin#observatory-tools"
+          className={
+            isActive([
+              '/admin/gallery',
+              '/admin/captains-log',
+              '/admin/equipment',
+              '/admin/storage',
+              '/admin/transfers',
+              '/admin/operation',
+              '/admin/incidents',
+              '/admin/tasks'
+            ])
+              ? 'active'
+              : ''
+          }
+        >
+          Observatory Tools
+        </a>
+
+        <div className="admin-top-dropdown">
+          <button type="button">
+            Admin Links <span>⌄</span>
+          </button>
+
+          <div className="admin-top-dropdown-menu">
+            <a
+              href="https://dns.cuzbro.net"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              DNS Portal
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div className="admin-top-user">
+        <div className="admin-top-auth">
+          <span>CREW AUTHENTICATED</span>
+          <strong>{crew.callSign}</strong>
+          <em>{crew.role}</em>
+        </div>
+
+        <button
+          type="button"
+          onClick={onLogout}
+        >
+          <LogOut size={16} />
+          Log Out
+        </button>
+      </div>
     </header>
   );
 }
@@ -1461,7 +1594,15 @@ export default function App() {
 
     return (
       <>
-        {adminContent}
+        <AdminTopNav
+          scrolled={scrolled}
+          session={session}
+          onLogout={handleLogout}
+        />
+
+        <div className="admin-shell">
+          {adminContent}
+        </div>
 
         {!isAdminIncidentsPage &&
           !isAdminWatchPage &&

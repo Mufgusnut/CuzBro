@@ -9,7 +9,6 @@ import {
   Camera,
   Clock3,
   FolderUp,
-  LogOut,
   Monitor,
   Radio,
   Rocket,
@@ -694,60 +693,6 @@ export default function AdminDashboard({
 
   return (
     <div className="admin-page">
-      <header className="admin-header">
-        <div className="admin-brand">
-          <a
-            href="/"
-            aria-label="CuzBro homepage"
-          >
-            <img
-              src={
-                import.meta.env
-                  .BASE_URL +
-                'assets/cuzbro-logo.png'
-              }
-              alt="CuzBro logo"
-            />
-          </a>
-
-          <div>
-            <span>
-              SECURE CREW TERMINAL
-            </span>
-
-            <h1>
-              Admin Control
-            </h1>
-          </div>
-        </div>
-
-        <div className="admin-user-controls">
-          <div className="admin-user">
-            <span>
-              CREW AUTHENTICATED
-            </span>
-
-            <strong>
-              {crew.callSign}
-            </strong>
-
-            <small>
-              {crew.role}
-            </small>
-          </div>
-
-          <button
-            type="button"
-            className="admin-logout"
-            onClick={onLogout}
-          >
-            <LogOut size={17} />
-
-            LOG OUT
-          </button>
-        </div>
-      </header>
-
       <main className="admin-main">
         <section className="admin-command-header">
           <div>
@@ -1003,7 +948,7 @@ export default function AdminDashboard({
         </a>
         </section>
 
-        <section className="admin-dashboard-nav-section">
+        <section id="live-systems" className="admin-dashboard-nav-section">
           <div className="admin-dashboard-section-heading">
             <span className="admin-card-eyebrow">
               COMMAND CONSOLES
@@ -1145,7 +1090,7 @@ export default function AdminDashboard({
           </a>
         </section>
 
-        <section className="admin-dashboard-nav-section">
+        <section id="observatory-tools" className="admin-dashboard-nav-section">
           <div className="admin-dashboard-section-heading">
             <span className="admin-card-eyebrow">
               MISSION DATA

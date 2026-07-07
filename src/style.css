@@ -107,8 +107,8 @@ section[id] {
 
 .navSmall {
   min-height: 66px;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-top: 7px;
+  padding-bottom: 7px;
   background: rgba(2, 7, 16, .74);
   border-bottom: 1px solid rgba(255,255,255,.10);
 }
@@ -505,7 +505,7 @@ main {
 .galleryFilters {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   margin: -8px 0 20px;
 }
 
@@ -2073,7 +2073,7 @@ footer p {
 .atlasFacts {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
   margin: 18px 0;
 }
 
@@ -3532,7 +3532,7 @@ footer p {
 
 .skyControlSplit {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin-top: 10px;
 }
 
@@ -6293,7 +6293,7 @@ footer p {
   display: none;
   place-items: center;
   align-content: center;
-  gap: 10px;
+  gap: 8px;
   color: rgba(226,236,255,.72);
   text-transform: uppercase;
   letter-spacing: .16em;
@@ -6923,7 +6923,7 @@ footer p {
 .captainsLogFacts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 
@@ -7866,7 +7866,7 @@ footer p {
 .targetMissionObjectReport {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   margin: 14px 0;
 }
 
@@ -7953,7 +7953,7 @@ footer p {
 
 .missionLogLatest {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   margin-bottom: 12px;
   padding: 12px 13px;
   border: 1px solid rgba(255,255,255,.09);
@@ -8430,7 +8430,7 @@ footer p {
 
 .equipmentTeaserSystems {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .equipmentTeaserSystems article {
@@ -8939,7 +8939,7 @@ footer p {
 
   font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.145em;
 
   cursor: pointer;
 }
@@ -8981,7 +8981,7 @@ footer p {
 
   font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.145em;
 
   transition:
     color 0.2s ease,
@@ -9121,7 +9121,7 @@ footer p {
 
   cursor: pointer;
 
-  font-size: 0.65rem;
+  font-size: 0.52rem;
   font-weight: 800;
   letter-spacing: 0.14em;
 }
@@ -9303,7 +9303,7 @@ footer p {
 .admin-card-eyebrow {
   color: #e6a44c;
 
-  font-size: 0.65rem;
+  font-size: 0.52rem;
   font-weight: 800;
   letter-spacing: 0.25em;
 }
@@ -9482,7 +9482,7 @@ footer p {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   padding: 16px 20px;
   color: #06111c;
   background: linear-gradient(
@@ -9686,7 +9686,7 @@ footer p {
 
 .admin-mission-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-mission-actions button {
@@ -9960,7 +9960,7 @@ footer p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 
   padding: 15px 19px;
 
@@ -10149,7 +10149,7 @@ footer p {
 
   cursor: pointer;
 
-  font-size: 0.65rem;
+  font-size: 0.52rem;
   font-weight: 900;
   letter-spacing: 0.13em;
 }
@@ -10476,7 +10476,7 @@ footer p {
   grid-template-columns:
     repeat(2, minmax(0, 1fr));
 
-  gap: 10px;
+  gap: 8px;
 
   margin: 24px 0 22px;
   padding: 16px 0;
@@ -10500,9 +10500,9 @@ footer p {
   color:
     rgba(143, 193, 219, 0.58);
 
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.145em;
 }
 
 .admin-dashboard-card-stats strong {
@@ -10722,7 +10722,7 @@ footer p {
   color:
     rgba(143, 193, 219, 0.6);
 
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 900;
   letter-spacing: 0.13em;
 }
@@ -10895,7 +10895,7 @@ footer p {
   color:
     rgba(143, 193, 219, 0.62);
 
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 900;
   letter-spacing: 0.17em;
 }
@@ -10977,7 +10977,7 @@ footer p {
 
   color: #8fc9df;
 
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 900;
   letter-spacing: 0.12em;
 }
@@ -11096,7 +11096,7 @@ footer p {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 
   min-height: 52px;
 
@@ -11166,7 +11166,7 @@ footer p {
 .admin-transfer-selection li {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 
   padding: 9px 0;
@@ -11452,7 +11452,7 @@ footer p {
 
   border-radius: 8px;
 
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 900;
   letter-spacing: 0.09em;
 
@@ -11739,7 +11739,7 @@ footer p {
   border: 1px solid rgba(115, 149, 255, 0.16);
   border-radius: 6px;
   color: rgba(195, 207, 248, 0.48);
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 800;
   letter-spacing: 0.11em;
 }
@@ -12050,7 +12050,7 @@ footer p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 48px;
   padding: 0 18px;
   border: 1px solid rgba(106, 140, 255, 0.28);
@@ -12325,7 +12325,7 @@ footer p {
 .system-status-footer div {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: #aabaff;
   font-size: 0.67rem;
   font-weight: 800;
@@ -12468,7 +12468,7 @@ footer p {
 }
 
 .admin-system-command-link-action span {
-  font-size: 0.65rem;
+  font-size: 0.52rem;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
@@ -12595,7 +12595,7 @@ footer p {
 }
 
 .admin-system-command-link-action span {
-  font-size: 0.65rem;
+  font-size: 0.52rem;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
@@ -12638,7 +12638,7 @@ footer p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 48px;
   padding: 0 18px;
   border:
@@ -12866,7 +12866,7 @@ footer p {
   margin: 7px 0 18px;
   color:
     rgba(210, 220, 255, 0.48);
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -12894,7 +12894,7 @@ footer p {
   margin-top: 9px;
   color:
     rgba(198, 210, 250, 0.4);
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
@@ -12965,7 +12965,7 @@ footer p {
   overflow: hidden;
   color:
     rgba(204, 215, 253, 0.43);
-  font-size: 0.65rem;
+  font-size: 0.52rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -13004,7 +13004,7 @@ footer p {
   gap: 7px;
   min-width: 0;
   color: #dfe6ff;
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.06em;
 }
@@ -13018,7 +13018,7 @@ footer p {
 .storage-control-breakdown-list small {
   color:
     rgba(196, 208, 250, 0.4);
-  font-size: 0.65rem;
+  font-size: 0.52rem;
   text-align: right;
 }
 
@@ -13040,7 +13040,7 @@ footer p {
 .storage-control-footer div {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .storage-control-footer strong {
@@ -13320,7 +13320,7 @@ footer p {
   padding: 50px 24px;
   text-align: center;
   color: rgba(205, 216, 255, 0.47);
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
@@ -13410,7 +13410,7 @@ footer p {
 
 .black-box-record-meta strong {
   color: #aebeff;
-  font-size: 0.65rem;
+  font-size: 0.52rem;
   letter-spacing: 0.13em;
 }
 
@@ -13503,7 +13503,7 @@ footer p {
   padding: 18px;
   overflow-x: auto;
   color: #b8c7ff;
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   line-height: 1.65;
   white-space: pre;
 }
@@ -13674,7 +13674,7 @@ footer p {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
 
 .deployment-command-actions button,
@@ -14415,7 +14415,7 @@ footer p {
   }
 
   .admin-command-palette-search {
-    min-height: 64px;
+    min-height: 58px;
     grid-template-columns: auto minmax(0, 1fr) auto;
     padding: 0 12px 0 16px;
   }
@@ -14431,7 +14431,7 @@ footer p {
   }
 
   .admin-command-palette-footer {
-    gap: 10px;
+    gap: 8px;
     overflow-x: auto;
     white-space: nowrap;
   }
@@ -14629,7 +14629,7 @@ footer p {
   align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .comms-link-status,
@@ -14778,7 +14778,7 @@ footer p {
 
 .comms-system-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin: 9px 0;
   color:
     rgba(143, 240, 177, .62);
@@ -14926,7 +14926,7 @@ footer p {
   display: grid;
   grid-template-columns:
     repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   margin-top: 14px;
 }
 
@@ -15454,7 +15454,7 @@ footer p {
 
 .comms-operation-link > div {
   display: grid;
-  gap: 4px;
+  gap: 3px;
 }
 
 .comms-message-copy {
@@ -15698,7 +15698,7 @@ footer p {
 .operation-clock-block {
   display: grid;
   place-content: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 170px;
   padding: 22px;
   border: 1px solid rgba(114, 217, 255, .14);
@@ -15733,7 +15733,7 @@ footer p {
 .operation-command-facts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .operation-command-facts div,
@@ -15855,7 +15855,7 @@ footer p {
 
 .operation-crew-row > div {
   display: grid;
-  gap: 4px;
+  gap: 3px;
 }
 
 .operation-crew-row > div:last-child {
@@ -15887,7 +15887,7 @@ footer p {
 .operation-event-row {
   display: grid;
   grid-template-columns: 88px 92px minmax(0, 1fr);
-  gap: 10px;
+  gap: 8px;
   padding: 10px 0;
   border-top: 1px solid rgba(255, 255, 255, .04);
   font-family:
@@ -15925,7 +15925,7 @@ footer p {
 .operation-complete-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   margin-top: 12px;
 }
 
@@ -16838,7 +16838,7 @@ footer p {
 .admin-tasking-own-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   margin-top: 10px;
 }
 
@@ -17025,7 +17025,7 @@ footer p {
 
 .tasking-filter-panel {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 18px;
   padding: 14px;
   border: 1px solid rgba(255,255,255,.10);
@@ -17174,7 +17174,7 @@ footer p {
 
 .tasking-card-meta {
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   margin: 14px 0;
   color: #76859f;
   font-size: 10px;
@@ -17388,7 +17388,7 @@ footer p {
 .watch-panel-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 54px;
   padding: 14px 18px;
   border-bottom: 1px solid rgba(255,255,255,.09);
@@ -17520,7 +17520,7 @@ footer p {
 
 .watch-incident-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   padding: 16px;
 }
 
@@ -17628,7 +17628,7 @@ footer p {
 .watch-task-metrics span {
   display: grid;
   place-items: center;
-  gap: 4px;
+  gap: 3px;
   padding: 14px 8px;
   color: #7082a2;
   font-size: 9px;
@@ -17823,7 +17823,7 @@ footer p {
 
 .watch-black-box-latest div {
   display: grid;
-  gap: 4px;
+  gap: 3px;
 }
 
 .watch-black-box-latest small {
@@ -18143,7 +18143,7 @@ footer p {
 .admin-dashboard-compact-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   margin-top: 18px;
   padding-top: 16px;
   border-top: 1px solid rgba(143, 193, 219, 0.10);
@@ -18264,7 +18264,7 @@ footer p {
 .admin-live-state-grid .admin-active-operation-clock {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 4px;
+  gap: 3px;
   padding: 12px 0 0;
   border: 0;
   border-top: 1px solid rgba(255, 255, 255, .08);
@@ -18475,7 +18475,7 @@ footer p {
   max-height: 235px;
   padding: 18px 20px;
   grid-template-rows: auto auto auto;
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-live-state-grid .admin-active-operation-status {
@@ -18712,3 +18712,350 @@ footer p {
     grid-template-columns: 8px auto;
   }
 }
+
+/* =========================================================
+   ADMIN MISSION CONTROL NAV
+   ========================================================= */
+.admin-top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1200;
+
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(14px, 2vw, 30px);
+
+  padding: 11px clamp(24px, 3vw, 58px);
+
+  color: #f4f7fb;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(3, 8, 19, 0.97),
+      rgba(3, 8, 19, 0.9)
+    );
+  border-bottom: 1px solid rgba(141, 174, 211, 0.15);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
+
+  transition:
+    min-height 0.22s ease,
+    padding 0.22s ease,
+    background 0.22s ease;
+}
+
+.admin-top-nav-small {
+  min-height: 58px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  background: rgba(3, 8, 19, 0.96);
+}
+
+.admin-top-brand {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 195px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-top-brand img {
+  width: 92px;
+  height: auto;
+  transition: width 0.22s ease;
+}
+
+.admin-top-nav-small .admin-top-brand img {
+  width: 78px;
+}
+
+.admin-top-brand span {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-top-brand strong {
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.admin-top-brand em {
+  color: rgba(143, 193, 219, 0.68);
+  font-size: 0.6rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.admin-top-menu {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-top-menu > a,
+.admin-top-dropdown > button,
+.admin-top-user button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+
+  color: rgba(229, 239, 247, 0.83);
+  background: rgba(255, 255, 255, 0.026);
+  border: 1px solid rgba(143, 193, 219, 0.18);
+  border-radius: 999px;
+
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+
+  font-size: 0.52rem;
+  font-weight: 900;
+  letter-spacing: 0.145em;
+  text-transform: uppercase;
+
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-top-menu > a:hover,
+.admin-top-menu > a.active,
+.admin-top-dropdown > button:hover,
+.admin-top-dropdown:focus-within > button,
+.admin-top-dropdown:hover > button,
+.admin-top-user button:hover {
+  color: #ffffff;
+  transform: translateY(-2px);
+  border-color: rgba(143, 213, 236, 0.52);
+  background: rgba(143, 213, 236, 0.08);
+  box-shadow: 0 0 24px rgba(98, 177, 222, 0.16);
+}
+
+.admin-top-dropdown {
+  position: relative;
+}
+
+.admin-top-dropdown::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 18px;
+}
+
+.admin-top-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+
+  background: rgba(5, 12, 25, 0.98);
+  border: 1px solid rgba(143, 193, 219, 0.24);
+  border-radius: 14px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.42);
+
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.admin-top-dropdown:hover .admin-top-dropdown-menu,
+.admin-top-dropdown:focus-within .admin-top-dropdown-menu,
+.admin-top-dropdown-menu:hover {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.admin-top-dropdown-menu a {
+  display: block;
+  padding: 11px 12px;
+  color: rgba(229, 239, 247, 0.86);
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.admin-top-dropdown-menu a:hover {
+  color: #ffffff;
+  background: rgba(143, 213, 236, 0.08);
+}
+
+.admin-top-user {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 245px;
+}
+
+.admin-top-auth {
+  display: grid;
+  gap: 3px;
+  text-align: right;
+}
+
+.admin-top-auth span {
+  color: rgba(143, 193, 219, 0.68);
+  font-size: 0.48rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.admin-top-auth strong {
+  color: rgba(235, 244, 250, 0.9);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-top-auth em {
+  color: rgba(205, 221, 235, 0.56);
+  font-size: 0.52rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.admin-shell .admin-page {
+  min-height: calc(100vh - 74px);
+}
+
+.admin-shell .admin-header {
+  display: none;
+}
+
+.admin-shell .admin-brand img {
+  display: none;
+}
+
+.admin-shell .admin-main {
+  padding-top: clamp(34px, 4vw, 56px);
+}
+
+.admin-shell .admin-command-header {
+  margin-bottom: 48px;
+}
+
+#live-systems,
+#observatory-tools {
+  scroll-margin-top: 30px;
+}
+
+
+@media (max-width: 1400px) {
+  .admin-top-nav {
+    gap: 16px;
+  }
+
+  .admin-top-brand {
+    min-width: 185px;
+  }
+
+  .admin-top-brand img {
+    width: 92px;
+  }
+
+  .admin-top-menu > a,
+  .admin-top-dropdown > button,
+  .admin-top-user button {
+    padding: 0 14px;
+    font-size: 0.52rem;
+  }
+
+  .admin-top-user {
+    min-width: 245px;
+  }
+}
+
+@media (max-width: 1120px) {
+  .admin-top-nav {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .admin-top-brand {
+    order: 1;
+  }
+
+  .admin-top-user {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .admin-top-menu {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-top-nav {
+    align-items: stretch;
+    padding: 12px 22px;
+  }
+
+  .admin-top-brand,
+  .admin-top-user {
+    min-width: 0;
+  }
+
+  .admin-top-user {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+
+  .admin-top-auth {
+    text-align: left;
+  }
+
+  .admin-top-menu > a,
+  .admin-top-dropdown > button,
+  .admin-top-user button {
+    min-height: 38px;
+    padding: 0 14px;
+    font-size: 0.56rem;
+  }
+
+  .admin-shell .admin-main {
+    width: calc(100% - 40px);
+  }
+}
+
