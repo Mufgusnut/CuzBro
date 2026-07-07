@@ -7,6 +7,7 @@ import CommsTerminal from './components/CommsTerminal.jsx';
 import OperationControl from './components/OperationControl.jsx';
 import IncidentCommand from './components/IncidentCommand.jsx';
 import CrewTasking from './components/CrewTasking.jsx';
+import WatchFloor from './components/WatchFloor.jsx';
 import SystemStatus from './components/SystemStatus.jsx';
 import StorageControl from './components/StorageControl.jsx';
 import BlackBox from './components/BlackBox.jsx';
@@ -341,6 +342,10 @@ export default function App() {
     pathname === '/admin/tasks' ||
     pathname === '/admin/tasks/';
 
+  const isAdminWatchPage =
+    pathname === '/admin/watch' ||
+    pathname === '/admin/watch/';
+
   const isAdminSystemPage =
     pathname === '/admin/system' ||
     pathname === '/admin/system/';
@@ -368,6 +373,7 @@ export default function App() {
     isAdminOperationPage ||
     isAdminIncidentsPage ||
     isAdminTasksPage ||
+    isAdminWatchPage ||
     isAdminSystemPage ||
     isAdminStoragePage ||
     isAdminBlackBoxPage ||
@@ -1405,6 +1411,14 @@ export default function App() {
         />
       );
     } else if (
+      isAdminWatchPage
+    ) {
+      adminContent = (
+        <WatchFloor
+          session={session}
+        />
+      );
+    } else if (
       isAdminSystemPage
     ) {
       adminContent = (
@@ -1450,6 +1464,7 @@ export default function App() {
         {adminContent}
 
         {!isAdminIncidentsPage &&
+          !isAdminWatchPage &&
           activeIncidents.length > 0 && (
           <a
             className={`admin-incident-global-banner admin-incident-global-banner-${String(
@@ -1502,7 +1517,8 @@ export default function App() {
           </a>
         )}
 
-        {!isAdminCommsPage && (
+        {!isAdminCommsPage &&
+          !isAdminWatchPage && (
           <a
             className={`admin-comms-global-launch${
               hasUnreadComms

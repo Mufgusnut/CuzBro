@@ -10,6 +10,7 @@ import {
   Camera,
   ClipboardList,
   Command,
+  Monitor,
   FolderUp,
   Globe2,
   LogOut,
@@ -31,6 +32,16 @@ const COMMANDS = [
       'admin dashboard home control command',
     icon: Command,
     href: '/admin'
+  },
+  {
+    id: 'watch-floor',
+    group: 'COMMAND',
+    title: 'Watch Floor',
+    subtitle: 'Open the live telemetry wall',
+    keywords:
+      'watch floor monitor telemetry fullscreen live status norad dashboard wall',
+    icon: Monitor,
+    href: '/admin/watch'
   },
   {
     id: 'incidents',

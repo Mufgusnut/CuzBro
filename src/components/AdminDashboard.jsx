@@ -10,6 +10,7 @@ import {
   Clock3,
   FolderUp,
   LogOut,
+  Monitor,
   Radio,
   Rocket,
   Settings,
@@ -811,8 +812,9 @@ export default function AdminDashboard({
           session={session}
         />
 
-        <section
-          className={`admin-active-operation${
+        <section className="admin-live-state-grid">
+          <section
+            className={`admin-active-operation${
             activeOperation
               ? ' admin-active-operation-live'
               : ''
@@ -999,236 +1001,223 @@ export default function AdminDashboard({
             <strong>→</strong>
           </div>
         </a>
+        </section>
 
-        <section className="admin-system-command-stack">
-          <a
-            className="admin-system-command-link"
-            href="/admin/system"
-          >
-            <div className="admin-system-command-link-icon">
-              <Activity size={22} />
-            </div>
+        <section className="admin-dashboard-nav-section">
+          <div className="admin-dashboard-section-heading">
+            <span className="admin-card-eyebrow">
+              COMMAND CONSOLES
+            </span>
 
-            <div className="admin-system-command-link-copy">
-              <span className="admin-card-eyebrow">
-                SYSTEM COMMAND
-              </span>
+            <h3>
+              Live Systems
+            </h3>
 
-              <strong>
-                System Status
-              </strong>
+            <p>
+              Monitoring, diagnostics, storage,
+              and event telemetry.
+            </p>
+          </div>
 
-              <p>
-                Run live infrastructure
-                diagnostics across CuzBro
-                services.
-              </p>
-            </div>
-
-            <div className="admin-system-command-link-action">
-              <span>
-                OPEN HEALTH CONSOLE
-              </span>
-
-              <strong>→</strong>
-            </div>
-          </a>
-
-          <a
-            className="admin-system-command-link"
-            href="/admin/storage"
-          >
-            <div className="admin-system-command-link-icon">
-              <FolderUp size={22} />
-            </div>
-
-            <div className="admin-system-command-link-copy">
-              <span className="admin-card-eyebrow">
-                STORAGE COMMAND
-              </span>
-
-              <strong>
-                Storage Control
-              </strong>
-
-              <p>
-                Inspect R2 usage,
-                largest objects, file
-                types, and crew storage.
-              </p>
-            </div>
-
-            <div className="admin-system-command-link-action">
-              <span>
-                OPEN STORAGE CONSOLE
-              </span>
-
-              <strong>→</strong>
-            </div>
-          </a>
-
-          <a
-            className="admin-system-command-link admin-system-command-link-black-box"
-            href="/admin/black-box"
-          >
-            <div className="admin-system-command-link-icon">
-              <Radio size={22} />
-            </div>
-
-            <div className="admin-system-command-link-copy">
-              <span className="admin-card-eyebrow">
-                FLIGHT RECORDER
-              </span>
-
-              <strong>
-                Black Box
-              </strong>
-
-              <div className="admin-black-box-command-telemetry">
-                <span
-                  className={`admin-black-box-command-live admin-black-box-command-live-${blackBoxLinkStatus}`}
-                >
-                  <i />
-
-                  {blackBoxLinkStatus ===
-                  'live'
-                    ? 'LIVE'
-                    : blackBoxLinkStatus ===
-                        'error'
-                      ? 'LINK ERROR'
-                      : blackBoxLinkStatus ===
-                          'offline'
-                        ? 'OFFLINE'
-                        : 'CONNECTING'}
-                </span>
-
-                <span>
-                  {blackBoxEventCount}{' '}
-                  {blackBoxEventCount === 1
-                    ? 'EVENT'
-                    : 'EVENTS'}{' '}
-                  RECORDED
-                </span>
-
-                <span>
-                  LAST EVENT{' '}
-                  {formatElapsed(
-                    blackBoxLastEventAt,
-                    now
-                  )}
-                </span>
+          <div className="admin-dashboard-console-grid">
+            <a
+              className="admin-dashboard-nav-card admin-dashboard-nav-card-watch"
+              href="/admin/watch"
+            >
+              <div className="admin-dashboard-nav-icon">
+                <Monitor size={22} />
               </div>
-            </div>
 
-            <div className="admin-system-command-link-action">
-              <span>
-                OPEN EVENT ARCHIVE
-              </span>
+              <div className="admin-dashboard-nav-copy">
+                <span>LIVE TELEMETRY WALL</span>
+                <strong>Watch Floor</strong>
+                <p>
+                  Passive live operations display.
+                </p>
+              </div>
 
-              <strong>→</strong>
-            </div>
-          </a>
+              <b>→</b>
+            </a>
+
+            <a
+              className="admin-dashboard-nav-card"
+              href="/admin/system"
+            >
+              <div className="admin-dashboard-nav-icon">
+                <Activity size={22} />
+              </div>
+
+              <div className="admin-dashboard-nav-copy">
+                <span>SYSTEM COMMAND</span>
+                <strong>System Status</strong>
+                <p>
+                  Run live infrastructure diagnostics.
+                </p>
+              </div>
+
+              <b>→</b>
+            </a>
+
+            <a
+              className="admin-dashboard-nav-card"
+              href="/admin/storage"
+            >
+              <div className="admin-dashboard-nav-icon">
+                <FolderUp size={22} />
+              </div>
+
+              <div className="admin-dashboard-nav-copy">
+                <span>STORAGE COMMAND</span>
+                <strong>Storage Control</strong>
+                <p>
+                  Inspect R2 usage and crew storage.
+                </p>
+              </div>
+
+              <b>→</b>
+            </a>
+
+            <a
+              className="admin-dashboard-nav-card admin-dashboard-nav-card-blackbox"
+              href="/admin/black-box"
+            >
+              <div className="admin-dashboard-nav-icon">
+                <Radio size={22} />
+              </div>
+
+              <div className="admin-dashboard-nav-copy">
+                <span>FLIGHT RECORDER</span>
+                <strong>Black Box</strong>
+
+                <div className="admin-dashboard-nav-telemetry">
+                  <em
+                    className={`admin-black-box-command-live admin-black-box-command-live-${blackBoxLinkStatus}`}
+                  >
+                    <i />
+
+                    {blackBoxLinkStatus ===
+                    'live'
+                      ? 'LIVE'
+                      : blackBoxLinkStatus ===
+                          'error'
+                        ? 'LINK ERROR'
+                        : blackBoxLinkStatus ===
+                            'offline'
+                          ? 'OFFLINE'
+                          : 'CONNECTING'}
+                  </em>
+
+                  <small>
+                    {blackBoxEventCount} EVENTS · LAST{' '}
+                    {formatElapsed(
+                      blackBoxLastEventAt,
+                      now
+                    )}
+                  </small>
+                </div>
+              </div>
+
+              <b>→</b>
+            </a>
+          </div>
 
           <a
-            className="admin-system-command-link admin-system-command-link-deployments"
+            className="admin-dashboard-deployment-row"
             href="/admin/deployments"
           >
-            <div className="admin-system-command-link-icon">
+            <div className="admin-dashboard-nav-icon">
               <Rocket size={22} />
             </div>
 
-            <div className="admin-system-command-link-copy">
-              <span className="admin-card-eyebrow">
-                RELEASE CONTROL
-              </span>
-
-              <strong>
-                Deployments
-              </strong>
-
+            <div className="admin-dashboard-nav-copy">
+              <span>RELEASE CONTROL</span>
+              <strong>Deployments</strong>
               <p>
-                Inspect the live build,
-                deployed Git SHA, branch,
-                and recent repository
-                commits.
+                Live build, deployed Git SHA, branch,
+                and recent commits.
               </p>
             </div>
 
-            <div className="admin-system-command-link-action">
-              <span>
-                OPEN DEPLOYMENT CONSOLE
-              </span>
-
-              <strong>→</strong>
+            <div className="admin-dashboard-deployment-action">
+              OPEN DEPLOYMENT CONSOLE
+              <b>→</b>
             </div>
           </a>
         </section>
 
-        <section className="admin-grid">
-          {adminSections.map(
-            (section) => {
-              const Icon =
-                section.icon;
+        <section className="admin-dashboard-nav-section">
+          <div className="admin-dashboard-section-heading">
+            <span className="admin-card-eyebrow">
+              MISSION DATA
+            </span>
 
-              return (
-                <article
-                  className="admin-control-card"
-                  key={section.id}
-                >
-                  <div className="admin-control-icon">
-                    <Icon size={27} />
-                  </div>
+            <h3>
+              Observatory Tools
+            </h3>
 
-                  <span className="admin-card-eyebrow">
-                    {section.eyebrow}
-                  </span>
+            <p>
+              Captures, reports, equipment,
+              and private crew exchange.
+            </p>
+          </div>
 
-                  <h3>
-                    {section.title}
-                  </h3>
+          <div className="admin-dashboard-mission-grid">
+            {adminSections.map(
+              (section) => {
+                const Icon =
+                  section.icon;
 
-                  <p>
-                    {section.description}
-                  </p>
-
-                  <div className="admin-dashboard-card-stats">
-                    {section.stats.map(
-                      (stat) => (
-                        <div
-                          key={
-                            stat.label
-                          }
-                        >
-                          <span>
-                            {stat.label}
-                          </span>
-
-                          <strong>
-                            {dashboardStatus ===
-                            'loading'
-                              ? '—'
-                              : stat.value}
-                          </strong>
-                        </div>
-                      )
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      window.location.href =
-                        `/admin/${section.id}`;
-                    }}
+                return (
+                  <a
+                    className="admin-dashboard-mission-card"
+                    key={section.id}
+                    href={`/admin/${section.id}`}
                   >
-                    {section.action}
+                    <div className="admin-dashboard-nav-icon">
+                      <Icon size={23} />
+                    </div>
 
-                    <span>→</span>
-                  </button>
-                </article>
-              );
-            }
-          )}
+                    <div className="admin-dashboard-nav-copy">
+                      <span>
+                        {section.eyebrow}
+                      </span>
+
+                      <strong>
+                        {section.title}
+                      </strong>
+
+                      <p>
+                        {section.description}
+                      </p>
+
+                      <div className="admin-dashboard-compact-stats">
+                        {section.stats.map(
+                          (stat) => (
+                            <div
+                              key={stat.label}
+                            >
+                              <span>
+                                {stat.label}
+                              </span>
+
+                              <strong>
+                                {dashboardStatus ===
+                                'loading'
+                                  ? '—'
+                                  : stat.value}
+                              </strong>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    <b>→</b>
+                  </a>
+                );
+              }
+            )}
+          </div>
         </section>
 
         <section className="admin-system-summary">

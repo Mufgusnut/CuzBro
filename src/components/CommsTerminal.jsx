@@ -52,7 +52,8 @@ const NAVIGATION_COMMANDS = {
   '/blackbox': '/admin/black-box',
   '/system': '/admin/system',
   '/deploy': '/admin/deployments',
-  '/tasks': '/admin/tasks'
+  '/tasks': '/admin/tasks',
+  '/watch': '/admin/watch'
 };
 
 function getSoundPreferenceKey(userId) {
@@ -867,6 +868,7 @@ export default function CommsTerminal({ session }) {
             '  /blackbox            Black Box',
             '  /system              System Status',
             '  /deploy              Deployment Control',
+            '  /watch               Watch Floor',
             '',
             'UTILITY',
             '  /roll [dice]         Dice protocol',

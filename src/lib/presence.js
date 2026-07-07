@@ -32,6 +32,8 @@ function getAdminPageName(pathname) {
       return 'INCIDENT COMMAND';
     case '/admin/tasks':
       return 'CREW TASKING';
+    case '/admin/watch':
+      return 'WATCH FLOOR';
     case '/admin/deployments':
       return 'DEPLOYMENTS';
     default:

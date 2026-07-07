@@ -1,5 +1,5 @@
 {
-  "name": "CuzBro Observatory",
+  "name": "CuzBro",
   "short_name": "CuzBro",
   "icons": [
     {
@@ -13,7 +13,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#020710",
-  "background_color": "#020710",
+  "theme_color": "#050914",
+  "background_color": "#050914",
   "display": "standalone"
 }
