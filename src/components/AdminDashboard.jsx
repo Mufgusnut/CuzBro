@@ -713,6 +713,11 @@ export default function AdminDashboard({
               mission data and
               observatory content.
             </p>
+
+            <div className="admin-command-palette-hint">
+              Press <kbd>CTRL + K</kbd> for the
+              Command Palette
+            </div>
           </div>
 
           <div className="admin-status-card">
