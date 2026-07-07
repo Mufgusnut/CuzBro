@@ -1,7 +1,4 @@
 import {
-  logCrewActivity
-} from '../lib/audit.js';
-import {
   ArrowLeft,
   Download,
   File,
@@ -20,6 +17,9 @@ import { supabase } from '../supabase.js';
 import {
   getCrewName
 } from '../lib/crew.js';
+import {
+  logCrewActivity
+} from '../lib/audit.js';
 
 const GALLERY_API =
   'https://cuzbro-gallery-api.dve-hffman.workers.dev';
@@ -336,44 +336,55 @@ export default function CrewTransfer() {
       }
 
       const totalBytes =
-  selectedFiles.reduce(
-    (total, file) =>
-      total + Number(file.size || 0),
-    0
-  );
+        selectedFiles.reduce(
+          (total, file) =>
+            total +
+            Number(file.size || 0),
+          0
+        );
 
-await logCrewActivity({
-  action: 'TRANSFER_UPLOAD',
-  category: 'TRANSFER',
-  resourceType: 'crew_transfer',
-  resourceName: cleanTransferName,
-  details: {
-    fileCount: selectedFiles.length,
-    totalBytes,
-    files: selectedFiles.map(
-      (file) => ({
-        name: file.name,
-        size: file.size,
-        type:
-          file.type ||
-          'application/octet-stream'
-      })
-    )
-  }
-});
+      const auditResult =
+        await logCrewActivity({
+          action: 'TRANSFER_UPLOAD',
+          category: 'TRANSFER',
+          resourceType: 'crew_transfer',
+          resourceName: cleanTransferName,
+          details: {
+            fileCount:
+              selectedFiles.length,
+            totalBytes,
+            files:
+              selectedFiles.map(
+                (file) => ({
+                  name: file.name,
+                  size: file.size,
+                  type:
+                    file.type ||
+                    'application/octet-stream'
+                })
+              )
+          }
+        });
 
-setMessage(
-  `${selectedFiles.length} ${
-    selectedFiles.length === 1
-      ? 'FILE'
-      : 'FILES'
-  } UPLOADED TO PRIVATE CREW TRANSFER`
-);
+      if (!auditResult.success) {
+        console.error(
+          'Transfer uploaded, but Black Box logging failed:',
+          auditResult.error
+        );
+      }
 
-setTransferName('');
-setSelectedFiles([]);
+      setMessage(
+        `${selectedFiles.length} ${
+          selectedFiles.length === 1
+            ? 'FILE'
+            : 'FILES'
+        } UPLOADED TO PRIVATE CREW TRANSFER`
+      );
 
-await loadTransfers();
+      setTransferName('');
+      setSelectedFiles([]);
+
+      await loadTransfers();
     } catch (uploadError) {
       console.error(uploadError);
 
@@ -451,20 +462,31 @@ await loadTransfers();
       setTimeout(() => {
         URL.revokeObjectURL(objectUrl);
       }, 1000);
-      await logCrewActivity({
-  action: 'TRANSFER_DOWNLOAD',
-  category: 'TRANSFER',
-  resourceType: 'crew_transfer_file',
-  resourceId: file.key,
-  resourceName: file.fileName,
-  details: {
-    transferName:
-      file.transferName ||
-      'Crew Transfer',
-    fileSize:
-      Number(file.size || 0)
-  }
-});
+
+      const auditResult =
+        await logCrewActivity({
+          action: 'TRANSFER_DOWNLOAD',
+          category: 'TRANSFER',
+          resourceType:
+            'crew_transfer_file',
+          resourceId: file.key,
+          resourceName:
+            file.fileName,
+          details: {
+            transferName:
+              file.transferName ||
+              'Crew Transfer',
+            fileSize:
+              Number(file.size || 0)
+          }
+        });
+
+      if (!auditResult.success) {
+        console.error(
+          'Download completed, but Black Box logging failed:',
+          auditResult.error
+        );
+      }
     } catch (downloadError) {
       console.error(downloadError);
 
@@ -515,26 +537,37 @@ await loadTransfers();
         );
       }
 
-      await logCrewActivity({
-  action: 'TRANSFER_FILE_DELETE',
-  category: 'TRANSFER',
-  resourceType: 'crew_transfer_file',
-  resourceId: file.key,
-  resourceName: file.fileName,
-  details: {
-    transferName:
-      file.transferName ||
-      'Crew Transfer',
-    fileSize:
-      Number(file.size || 0)
-  }
-});
+      const auditResult =
+        await logCrewActivity({
+          action:
+            'TRANSFER_FILE_DELETE',
+          category: 'TRANSFER',
+          resourceType:
+            'crew_transfer_file',
+          resourceId: file.key,
+          resourceName:
+            file.fileName,
+          details: {
+            transferName:
+              file.transferName ||
+              'Crew Transfer',
+            fileSize:
+              Number(file.size || 0)
+          }
+        });
 
-setMessage(
-  `${file.fileName} DELETED`
-);
+      if (!auditResult.success) {
+        console.error(
+          'File deleted, but Black Box logging failed:',
+          auditResult.error
+        );
+      }
 
-await loadTransfers();
+      setMessage(
+        `${file.fileName} DELETED`
+      );
+
+      await loadTransfers();
     } catch (deleteError) {
       console.error(deleteError);
 
@@ -587,26 +620,40 @@ await loadTransfers();
         }
       }
 
-      await logCrewActivity({
-  action: 'TRANSFER_DELETE',
-  category: 'TRANSFER',
-  resourceType: 'crew_transfer',
-  resourceName: group.name,
-  details: {
-    fileCount: group.files.length,
-    totalBytes:
-      Number(group.totalSize || 0),
-    files: group.files.map(
-      (file) => file.fileName
-    )
-  }
-});
+      const auditResult =
+        await logCrewActivity({
+          action: 'TRANSFER_DELETE',
+          category: 'TRANSFER',
+          resourceType:
+            'crew_transfer',
+          resourceName: group.name,
+          details: {
+            fileCount:
+              group.files.length,
+            totalBytes:
+              Number(
+                group.totalSize || 0
+              ),
+            files:
+              group.files.map(
+                (file) =>
+                  file.fileName
+              )
+          }
+        });
 
-setMessage(
-  `${group.name} TRANSFER DELETED`
-);
+      if (!auditResult.success) {
+        console.error(
+          'Transfer deleted, but Black Box logging failed:',
+          auditResult.error
+        );
+      }
 
-await loadTransfers();
+      setMessage(
+        `${group.name} TRANSFER DELETED`
+      );
+
+      await loadTransfers();
     } catch (deleteError) {
       console.error(deleteError);
 
@@ -906,8 +953,8 @@ await loadTransfers();
                       <p>
                         Uploaded by{' '}
                         {getCrewName(
-  group.uploadedBy
-)}
+                          group.uploadedBy
+                        )}
                         {' · '}
                         {formatDate(
                           group.uploaded
