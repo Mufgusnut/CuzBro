@@ -63,7 +63,7 @@ export default function InfoSections() {
 
 <section className="crewGrid">
   <article className="crewCard">
-    <small>OBSERVATORY DIRECTOR</small>
+    <small>TELESCOPE OPERATIONS</small>
     <h3>Dave</h3>
     <p>Telescope operator and deep-sky hunter.</p>
     <ul>

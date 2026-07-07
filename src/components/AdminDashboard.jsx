@@ -19,6 +19,10 @@ import CrewPresencePanel from './CrewPresencePanel.jsx';
 import {
   getCrewMember
 } from '../lib/crew.js';
+import {
+  formatOperationElapsed,
+  useActiveOperation
+} from '../lib/operations.js';
 
 const initialDashboardData = {
   captures: [],
@@ -111,6 +115,11 @@ export default function AdminDashboard({
       session?.user?.email
     );
 
+  const {
+    activeOperation,
+    operationStatus
+  } = useActiveOperation();
+
   const [
     dashboardData,
     setDashboardData
@@ -150,7 +159,7 @@ export default function AdminDashboard({
     const timerId =
       window.setInterval(() => {
         setNow(Date.now());
-      }, 10_000);
+      }, 1_000);
 
     return () => {
       window.clearInterval(
@@ -757,6 +766,91 @@ export default function AdminDashboard({
         <CrewPresencePanel
           session={session}
         />
+
+        <section
+          className={`admin-active-operation${
+            activeOperation
+              ? ' admin-active-operation-live'
+              : ''
+          }`}
+        >
+          <div className="admin-active-operation-status">
+            <span className="admin-card-eyebrow">
+              ACTIVE OPERATION
+            </span>
+
+            {operationStatus === 'loading' ? (
+              <>
+                <h3>Synchronizing Operation Link</h3>
+                <p>Checking shared crew operation state.</p>
+              </>
+            ) : activeOperation ? (
+              <>
+                <div className="admin-active-operation-live-label">
+                  <i />
+                  OPERATION ACTIVE
+                </div>
+
+                <h3>
+                  {activeOperation.designation}
+                </h3>
+
+                <p>
+                  {activeOperation.target} ·{' '}
+                  {activeOperation.operation_type}
+                </p>
+              </>
+            ) : (
+              <>
+                <h3>Observatory Standing By</h3>
+                <p>
+                  No active operation is currently registered.
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="admin-active-operation-clock">
+            <span>
+              {activeOperation
+                ? 'MISSION CLOCK'
+                : 'OPERATION STATE'}
+            </span>
+
+            <strong>
+              {activeOperation
+                ? `T+ ${formatOperationElapsed(
+                    activeOperation.started_at,
+                    null,
+                    now
+                  )}`
+                : 'STANDBY'}
+            </strong>
+
+            {activeOperation && (
+              <small>
+                INITIATED BY{' '}
+                {String(
+                  activeOperation.initiated_by_name ||
+                    'CREW'
+                ).toUpperCase()}
+              </small>
+            )}
+          </div>
+
+          <a
+            className="admin-active-operation-action"
+            href="/admin/operation"
+          >
+            <span>
+              {activeOperation
+                ? 'OPEN OPERATION COMMAND'
+                : 'INITIATE OPERATION'}
+            </span>
+
+            <strong>→</strong>
+          </a>
+        </section>
 
         <section className="admin-system-command-stack">
           <a

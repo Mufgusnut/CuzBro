@@ -4,6 +4,7 @@ import AdminGallery from './components/AdminGallery.jsx';
 import AdminEquipment from './components/AdminEquipment.jsx';
 import CrewTransfer from './components/CrewTransfer.jsx';
 import CommsTerminal from './components/CommsTerminal.jsx';
+import OperationControl from './components/OperationControl.jsx';
 import SystemStatus from './components/SystemStatus.jsx';
 import StorageControl from './components/StorageControl.jsx';
 import BlackBox from './components/BlackBox.jsx';
@@ -322,6 +323,10 @@ export default function App() {
     pathname === '/admin/comms' ||
     pathname === '/admin/comms/';
 
+  const isAdminOperationPage =
+    pathname === '/admin/operation' ||
+    pathname === '/admin/operation/';
+
   const isAdminSystemPage =
     pathname === '/admin/system' ||
     pathname === '/admin/system/';
@@ -346,6 +351,7 @@ export default function App() {
     isAdminEquipmentPage ||
     isAdminTransfersPage ||
     isAdminCommsPage ||
+    isAdminOperationPage ||
     isAdminSystemPage ||
     isAdminStoragePage ||
     isAdminBlackBoxPage ||
@@ -1349,6 +1355,14 @@ export default function App() {
     ) {
       adminContent = (
         <CommsTerminal
+          session={session}
+        />
+      );
+    } else if (
+      isAdminOperationPage
+    ) {
+      adminContent = (
+        <OperationControl
           session={session}
         />
       );

@@ -20,6 +20,10 @@ import {
 import {
   logCrewActivity
 } from '../lib/audit.js';
+import {
+  recordOperationEvent,
+  useActiveOperation
+} from '../lib/operations.js';
 
 const GALLERY_API =
   'https://cuzbro-gallery-api.dve-hffman.workers.dev';
@@ -100,6 +104,10 @@ async function getCrewAccessToken() {
 }
 
 export default function CrewTransfer() {
+  const {
+    activeOperation
+  } = useActiveOperation();
+
   const [transferName, setTransferName] =
     useState('');
 
@@ -176,6 +184,20 @@ export default function CrewTransfer() {
   useEffect(() => {
     loadTransfers();
   }, []);
+
+  useEffect(() => {
+    if (
+      activeOperation?.designation &&
+      !transferName.trim()
+    ) {
+      setTransferName(
+        activeOperation.designation
+      );
+    }
+  }, [
+    activeOperation?.id,
+    activeOperation?.designation
+  ]);
 
   const groupedTransfers =
     useMemo(() => {
@@ -416,6 +438,40 @@ export default function CrewTransfer() {
           'Transfer uploaded, but Black Box logging failed:',
           auditResult.error
         );
+      }
+
+      if (activeOperation) {
+        const operationEventResult =
+          await recordOperationEvent({
+            operation: activeOperation,
+            eventType:
+              'TRANSFER_UPLOAD',
+            eventLabel:
+              'CREW TRANSFER UPLOAD',
+            resourceType:
+              'crew_transfer',
+            resourceName:
+              cleanTransferName,
+            details: {
+              fileCount:
+                selectedFiles.length,
+              totalBytes,
+              files:
+                selectedFiles.map(
+                  (file) => file.name
+                )
+            }
+          });
+
+        if (
+          !operationEventResult.success &&
+          !operationEventResult.skipped
+        ) {
+          console.error(
+            'Transfer uploaded, but operation event logging failed:',
+            operationEventResult.error
+          );
+        }
       }
 
       setMessage(
@@ -785,6 +841,26 @@ export default function CrewTransfer() {
           <div className="admin-error-message">
             {error}
           </div>
+        )}
+
+        {activeOperation && (
+          <a
+            className="admin-inline-operation"
+            href="/admin/operation"
+          >
+            <span>
+              <i />
+              ACTIVE OPERATION
+            </span>
+
+            <strong>
+              {activeOperation.designation}
+            </strong>
+
+            <small>
+              TRANSFER NAME PRELOADED · OPEN COMMAND →
+            </small>
+          </a>
         )}
 
         <section

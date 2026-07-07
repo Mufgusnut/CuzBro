@@ -29,6 +29,7 @@ const CATEGORY_FILTERS = [
   'SYSTEM',
   'CAPTURE',
   'MISSION',
+  'OPERATION',
   'GEAR'
 ];
 
@@ -228,6 +229,16 @@ function getEventDescription(event) {
         details.objectCount || 0
       )} objects · ${formatStorageBytes(
         details.totalBytes
+      )}`;
+
+    case 'OPERATION_STARTED':
+      return `${name} · operation initiated · ${String(
+        details.target || 'target not specified'
+      )}`;
+
+    case 'OPERATION_ENDED':
+      return `${name} · operation complete · ${String(
+        details.duration || 'duration unavailable'
       )}`;
 
     default:

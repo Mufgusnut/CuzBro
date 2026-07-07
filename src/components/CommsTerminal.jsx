@@ -21,6 +21,10 @@ import {
   getLocalCrewStatus,
   setLocalCrewStatus
 } from '../lib/presence.js';
+import {
+  formatOperationElapsed,
+  useActiveOperation
+} from '../lib/operations.js';
 
 const MAX_MESSAGE_LENGTH = 1000;
 const MAX_HISTORY_ROWS = 200;
@@ -114,6 +118,9 @@ function isPresenceOnline(row) {
 
 export default function CommsTerminal({ session }) {
   const crew = getCrewMember(session?.user?.email);
+  const {
+    activeOperation
+  } = useActiveOperation();
   const [messages, setMessages] = useState([]);
   const [localEvents, setLocalEvents] = useState([]);
   const [composer, setComposer] = useState('');
@@ -228,7 +235,7 @@ export default function CommsTerminal({ session }) {
       const { data, error: loadError } = await supabase
         .from('crew_comms')
         .select(
-          'id, user_id, crew_email, crew_name, sender_status, body, created_at'
+          'id, user_id, crew_email, crew_name, sender_status, operation_id, operation_designation, body, created_at'
         )
         .order('created_at', { ascending: false })
         .limit(MAX_HISTORY_ROWS);
@@ -477,6 +484,10 @@ export default function CommsTerminal({ session }) {
         crew_email: session?.user?.email,
         crew_name: crew.callSign,
         sender_status: senderStatus || null,
+        operation_id:
+          activeOperation?.id || null,
+        operation_designation:
+          activeOperation?.designation || null,
         body
       });
 
@@ -627,6 +638,11 @@ export default function CommsTerminal({ session }) {
             '  /sound off           Disable priority audio',
             '  /who                 Crew telemetry',
             '',
+            'OPERATION',
+            '  /operation             Active operation status',
+            '  /operation open        Open Operation Command',
+            '  /operation start       Initiate an operation',
+            '',
             'COMMAND',
             '  /captures            Capture Control',
             '  /transfer            Crew Transfer',
@@ -709,6 +725,51 @@ export default function CommsTerminal({ session }) {
           );
           addLocalEvent(`CREW STATUS SET · ${savedStatus.toUpperCase()}`);
         }
+      } else if (
+        lowerCommand === '/operation'
+      ) {
+        if (!activeOperation) {
+          addLocalEvent(
+            'ACTIVE OPERATION\n\nSTATUS       STANDBY\nNO ACTIVE OPERATION REGISTERED',
+            'TELEMETRY'
+          );
+        } else {
+          addLocalEvent(
+            [
+              'ACTIVE OPERATION',
+              '',
+              activeOperation.designation.toUpperCase(),
+              `TARGET       ${String(
+                activeOperation.target || '—'
+              ).toUpperCase()}`,
+              `TYPE         ${String(
+                activeOperation.operation_type || '—'
+              ).toUpperCase()}`,
+              `INITIATED BY ${String(
+                activeOperation.initiated_by_name || 'CREW'
+              ).toUpperCase()}`,
+              `ELAPSED      ${formatOperationElapsed(
+                activeOperation.started_at
+              )}`,
+              'STATUS       ACTIVE'
+            ].join('\n'),
+            'TELEMETRY'
+          );
+        }
+      } else if (
+        lowerCommand === '/operation open' ||
+        lowerCommand === '/operation start'
+      ) {
+        addLocalEvent(
+          activeOperation
+            ? 'ROUTING TO OPERATION COMMAND...'
+            : 'ROUTING TO OPERATION INITIATION...'
+        );
+
+        window.setTimeout(() => {
+          window.location.href =
+            '/admin/operation';
+        }, 350);
       } else if (NAVIGATION_COMMANDS[lowerCommand]) {
         addLocalEvent(
           `ROUTING TO ${lowerCommand.slice(1).toUpperCase()}...`
@@ -857,6 +918,32 @@ export default function CommsTerminal({ session }) {
           <div className="admin-error-message">{error}</div>
         )}
 
+        {activeOperation && (
+          <a
+            className="comms-operation-link"
+            href="/admin/operation"
+          >
+            <div>
+              <span>
+                <i />
+                ACTIVE OPERATION
+              </span>
+
+              <strong>
+                {activeOperation.designation}
+              </strong>
+            </div>
+
+            <small>
+              T+{' '}
+              {formatOperationElapsed(
+                activeOperation.started_at
+              )}{' '}
+              · OPEN COMMAND →
+            </small>
+          </a>
+        )}
+
         <section className="comms-terminal">
           <div className="comms-terminal-bar">
             <div>
@@ -920,7 +1007,16 @@ export default function CommsTerminal({ session }) {
                 >
                   <time>[{formatTimestamp(message.created_at)}]</time>
                   <strong>{senderLabel}</strong>
-                  <p>{message.body}</p>
+
+                  <div className="comms-message-copy">
+                    {message.operation_designation && (
+                      <span className="comms-message-operation">
+                        {message.operation_designation}
+                      </span>
+                    )}
+
+                    <p>{message.body}</p>
+                  </div>
                 </article>
               );
             })}
@@ -964,7 +1060,12 @@ export default function CommsTerminal({ session }) {
                 key={member.email}
               >
                 <i />
-                <span>{member.callSign}</span>
+
+                <div className="comms-crew-identity">
+                  <span>{member.callSign}</span>
+                  <small>{member.role}</small>
+                </div>
+
                 <strong>{isOnline ? 'ONLINE' : 'OFFLINE'}</strong>
               </div>
             );

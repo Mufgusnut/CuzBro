@@ -20,6 +20,8 @@ function getAdminPageName(pathname) {
       return 'CREW TRANSFER';
     case '/admin/comms':
       return 'COMMS TERMINAL';
+    case '/admin/operation':
+      return 'OPERATION COMMAND';
     case '/admin/system':
       return 'SYSTEM STATUS';
     case '/admin/black-box':

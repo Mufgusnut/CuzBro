@@ -13,6 +13,10 @@ import {
 } from 'lucide-react';
 import * as tiff from 'tiff';
 import { supabase } from '../supabase.js';
+import {
+  recordOperationEvent,
+  useActiveOperation
+} from '../lib/operations.js';
 
 const GALLERY_API =
   'https://cuzbro-gallery-api.dve-hffman.workers.dev';
@@ -433,6 +437,10 @@ async function getCrewAccessToken() {
 }
 
 export default function AdminGallery() {
+  const {
+    activeOperation
+  } = useActiveOperation();
+
   const [captures, setCaptures] =
     useState([]);
 
@@ -1096,16 +1104,21 @@ export default function AdminGallery() {
       }
 
       let saveError;
+      let savedCapture = null;
 
       if (
         editingCaptureId === 'new'
       ) {
         const {
+          data: insertedCapture,
           error: insertError
         } = await supabase
           .from('gallery')
-          .insert(captureRow);
+          .insert(captureRow)
+          .select('id, title')
+          .single();
 
+        savedCapture = insertedCapture;
         saveError = insertError;
       } else {
         const {
@@ -1170,6 +1183,45 @@ export default function AdminGallery() {
 
       const wasNew =
         editingCaptureId === 'new';
+
+      if (
+        wasNew &&
+        activeOperation &&
+        savedCapture
+      ) {
+        const operationEventResult =
+          await recordOperationEvent({
+            operation: activeOperation,
+            eventType:
+              'CAPTURE_CREATED',
+            eventLabel:
+              'CAPTURE CREATED',
+            resourceType: 'gallery',
+            resourceId:
+              savedCapture.id,
+            resourceName:
+              savedCapture.title ||
+              captureRow.title,
+            details: {
+              objectType:
+                captureRow.object_type,
+              exposure:
+                captureRow.exposure,
+              captureDate:
+                captureRow.capture_date
+            }
+          });
+
+        if (
+          !operationEventResult.success &&
+          !operationEventResult.skipped
+        ) {
+          console.error(
+            'Capture saved, but operation event logging failed:',
+            operationEventResult.error
+          );
+        }
+      }
 
       await loadCaptures();
 
@@ -1398,6 +1450,26 @@ export default function AdminGallery() {
             NEW CAPTURE
           </button>
         </section>
+
+        {activeOperation && (
+          <a
+            className="admin-inline-operation"
+            href="/admin/operation"
+          >
+            <span>
+              <i />
+              ACTIVE OPERATION
+            </span>
+
+            <strong>
+              {activeOperation.designation}
+            </strong>
+
+            <small>
+              NEW CAPTURES WILL BE RECORDED IN THE OPERATION TIMELINE · OPEN COMMAND →
+            </small>
+          </a>
+        )}
 
         {message && (
           <div className="admin-success-message">

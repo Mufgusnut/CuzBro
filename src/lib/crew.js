@@ -2,7 +2,7 @@ const CREW_MEMBERS = {
   'dve.hffman@gmail.com': {
     name: 'Dave',
     callSign: 'DAVE',
-    role: 'Observatory Lead'
+    role: 'Telescope Operations'
   },
 
   'jhoff33@gmail.com': {
