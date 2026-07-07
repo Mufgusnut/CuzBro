@@ -228,7 +228,7 @@ export default function CommsTerminal({ session }) {
       const { data, error: loadError } = await supabase
         .from('crew_comms')
         .select(
-          'id, user_id, crew_email, crew_name, body, created_at'
+          'id, user_id, crew_email, crew_name, sender_status, body, created_at'
         )
         .order('created_at', { ascending: false })
         .limit(MAX_HISTORY_ROWS);
@@ -335,6 +335,20 @@ export default function CommsTerminal({ session }) {
               joinedCrew !== crew.callSign
             ) {
               addLocalEvent(`${joinedCrew} ENTERED COMMS`);
+            }
+          });
+        })
+        .on('presence', { event: 'leave' }, ({ leftPresences }) => {
+          leftPresences.forEach((presence) => {
+            const departedCrew = normalizeCrewName(
+              presence.crewName
+            );
+
+            if (
+              departedCrew &&
+              departedCrew !== crew.callSign
+            ) {
+              addLocalEvent(`${departedCrew} EXITED COMMS`);
             }
           });
         })
@@ -452,12 +466,17 @@ export default function CommsTerminal({ session }) {
   }
 
   async function insertCommsMessage(body) {
+    const senderStatus = getLocalCrewStatus(
+      session?.user?.id
+    );
+
     const { error: insertError } = await supabase
       .from('crew_comms')
       .insert({
         user_id: session?.user?.id,
         crew_email: session?.user?.email,
         crew_name: crew.callSign,
+        sender_status: senderStatus || null,
         body
       });
 
@@ -877,6 +896,13 @@ export default function CommsTerminal({ session }) {
 
             {visibleRows.map((message) => {
               const sender = normalizeCrewName(message.crew_name);
+              const senderStatus = String(
+                message.sender_status || ''
+              ).trim();
+              const senderLabel =
+                sender !== 'SYSTEM' && senderStatus
+                  ? `${sender} ${senderStatus}`.toUpperCase()
+                  : sender;
               const eventClass = message.eventType
                 ? ` comms-message-${String(message.eventType).toLowerCase().replace(/_/g, '-')}`
                 : '';
@@ -893,7 +919,7 @@ export default function CommsTerminal({ session }) {
                   key={message.id}
                 >
                   <time>[{formatTimestamp(message.created_at)}]</time>
-                  <strong>{sender}</strong>
+                  <strong>{senderLabel}</strong>
                   <p>{message.body}</p>
                 </article>
               );
