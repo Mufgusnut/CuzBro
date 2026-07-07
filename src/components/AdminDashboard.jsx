@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import {
+  Activity,
   BookOpen,
   Camera,
   Clock3,
   FolderUp,
   LogOut,
+  Radio,
   Settings,
-  Star,
   Telescope
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
@@ -17,27 +18,102 @@ const initialDashboardData = {
   equipment: []
 };
 
-function formatMissionDate(dateString) {
-  if (!dateString) {
-    return 'Unknown date';
+const MAX_ACTIVITY_ROWS = 8;
+
+function formatEventTime(dateValue) {
+  if (!dateValue) {
+    return '--:--:--';
   }
 
-  const date = new Date(
-    `${dateString}T12:00:00`
-  );
+  const date = new Date(dateValue);
 
   if (Number.isNaN(date.getTime())) {
-    return dateString;
+    return '--:--:--';
   }
 
-  return date.toLocaleDateString(
+  return date.toLocaleTimeString(
     'en-US',
     {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit'
     }
   );
+}
+
+function formatEventDate(dateValue) {
+  if (!dateValue) {
+    return 'UNKNOWN DATE';
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'UNKNOWN DATE';
+  }
+
+  return date
+    .toLocaleDateString(
+      'en-US',
+      {
+        month: 'short',
+        day: 'numeric'
+      }
+    )
+    .toUpperCase();
+}
+
+function getActionLabel(action) {
+  return String(action || 'SYSTEM_EVENT')
+    .replaceAll('_', ' ');
+}
+
+function getEventDescription(event) {
+  const name =
+    event.resource_name ||
+    event.resource_type ||
+    'CuzBro system';
+
+  const details =
+    event.details &&
+    typeof event.details === 'object'
+      ? event.details
+      : {};
+
+  switch (event.action) {
+    case 'TRANSFER_UPLOAD':
+      return `${name} · ${Number(
+        details.fileCount || 0
+      )} ${
+        Number(details.fileCount || 0) === 1
+          ? 'file'
+          : 'files'
+      }`;
+
+    case 'TRANSFER_DOWNLOAD':
+      return `${
+        details.transferName ||
+        'Crew Transfer'
+      } · downloaded ${name}`;
+
+    case 'TRANSFER_FILE_DELETE':
+      return `${
+        details.transferName ||
+        'Crew Transfer'
+      } · deleted ${name}`;
+
+    case 'TRANSFER_DELETE':
+      return `${name} · ${Number(
+        details.fileCount || 0
+      )} ${
+        Number(details.fileCount || 0) === 1
+          ? 'file removed'
+          : 'files removed'
+      }`;
+
+    default:
+      return name;
+  }
 }
 
 export default function AdminDashboard({
@@ -55,6 +131,17 @@ export default function AdminDashboard({
 
   const [dashboardError, setDashboardError] =
     useState('');
+
+  const [activity, setActivity] =
+    useState([]);
+
+  const [activityStatus, setActivityStatus] =
+    useState('loading');
+
+  const [
+    realtimeStatus,
+    setRealtimeStatus
+  ] = useState('connecting');
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -130,6 +217,183 @@ export default function AdminDashboard({
     loadDashboardData();
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    let channel = null;
+
+    async function startBlackBoxFeed() {
+      setActivityStatus('loading');
+      setRealtimeStatus('connecting');
+
+      const accessToken =
+        session?.access_token;
+
+      const supabaseUrl =
+        import.meta.env.VITE_SUPABASE_URL;
+
+      const supabasePublishableKey =
+        import.meta.env
+          .VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      if (
+        !accessToken ||
+        !supabaseUrl ||
+        !supabasePublishableKey
+      ) {
+        if (active) {
+          setActivityStatus('error');
+          setRealtimeStatus('error');
+        }
+
+        console.error(
+          'Black Box feed could not start: authenticated Supabase configuration is unavailable.'
+        );
+
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${supabaseUrl}/rest/v1/crew_activity?select=*&order=created_at.desc&limit=${MAX_ACTIVITY_ROWS}`,
+          {
+            headers: {
+              apikey:
+                supabasePublishableKey,
+
+              Authorization:
+                `Bearer ${accessToken}`
+            }
+          }
+        );
+
+        const responseText =
+          await response.text();
+
+        let responseBody = [];
+
+        if (responseText) {
+          try {
+            responseBody =
+              JSON.parse(responseText);
+          } catch {
+            responseBody = [];
+          }
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            responseBody?.message ||
+              `Black Box request failed with status ${response.status}.`
+          );
+        }
+
+        if (active) {
+          setActivity(
+            Array.isArray(responseBody)
+              ? responseBody
+              : []
+          );
+
+          setActivityStatus('ready');
+        }
+
+        await supabase.realtime.setAuth(
+          accessToken
+        );
+
+        if (!active) {
+          return;
+        }
+
+        channel = supabase
+          .channel('cuzbro-black-box-dashboard')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'crew_activity'
+            },
+            (payload) => {
+              const newEvent = payload.new;
+
+              setActivity(
+                (currentActivity) => [
+                  newEvent,
+                  ...currentActivity.filter(
+                    (event) =>
+                      event.id !== newEvent.id
+                  )
+                ].slice(
+                  0,
+                  MAX_ACTIVITY_ROWS
+                )
+              );
+            }
+          )
+          .subscribe((status, error) => {
+            console.log(
+              '[BLACK BOX] Realtime status:',
+              status
+            );
+
+            if (error) {
+              console.error(
+                '[BLACK BOX] Realtime error:',
+                error
+              );
+            }
+
+            if (!active) {
+              return;
+            }
+
+            if (status === 'SUBSCRIBED') {
+              setRealtimeStatus('live');
+              return;
+            }
+
+            if (
+              status === 'CHANNEL_ERROR' ||
+              status === 'TIMED_OUT'
+            ) {
+              setRealtimeStatus('error');
+              return;
+            }
+
+            if (status === 'CLOSED') {
+              setRealtimeStatus('offline');
+              return;
+            }
+
+            setRealtimeStatus('connecting');
+          });
+      } catch (error) {
+        console.error(
+          'Black Box feed failed:',
+          error
+        );
+
+        if (active) {
+          setActivityStatus('error');
+          setRealtimeStatus('error');
+        }
+      }
+    }
+
+    startBlackBoxFeed();
+
+    return () => {
+      active = false;
+
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [
+    session?.access_token
+  ]);
+
   const {
     captures,
     missions,
@@ -140,19 +404,6 @@ export default function AdminDashboard({
     captures.find(
       (capture) => capture.is_featured
     ) || captures[0];
-
-  const newestCapture =
-    [...captures].sort((a, b) => {
-      const aDate = new Date(
-        a.created_at || 0
-      ).getTime();
-
-      const bDate = new Date(
-        b.created_at || 0
-      ).getTime();
-
-      return bDate - aDate;
-    })[0];
 
   const latestMission =
     missions[0] || null;
@@ -334,7 +585,9 @@ export default function AdminDashboard({
                   ? 'SYNCING'
                   : dashboardStatus === 'error'
                     ? 'DATA ALERT'
-                    : 'ADMIN ONLINE'}
+                    : realtimeStatus === 'error'
+                      ? 'BLACK BOX ALERT'
+                      : 'ADMIN ONLINE'}
               </strong>
             </div>
 
@@ -401,124 +654,132 @@ export default function AdminDashboard({
           })}
         </section>
 
-        <section className="admin-activity-panel">
-          <div className="admin-activity-heading">
+        <section className="admin-black-box-panel">
+          <div className="admin-black-box-heading">
             <div>
               <span className="admin-eyebrow">
-                LIVE OBSERVATORY DATA
+                CUZBRO FLIGHT DATA RECORDER
               </span>
 
-              <h2>
-                Recent Observatory Activity
-              </h2>
+              <h2>Live Crew Operations</h2>
+
+              <p>
+                Authenticated administrative
+                events recorded by Black Box.
+              </p>
             </div>
 
-            <div className="admin-activity-live">
+            <div
+              className={`admin-black-box-live admin-black-box-live-${realtimeStatus}`}
+            >
+              <Radio size={15} />
+
               <i />
 
-              SUPABASE LIVE
+              {realtimeStatus === 'live'
+                ? 'LIVE LINK'
+                : realtimeStatus === 'error'
+                  ? 'LINK ERROR'
+                  : realtimeStatus === 'offline'
+                    ? 'LINK CLOSED'
+                    : 'CONNECTING'}
             </div>
           </div>
 
-          <div className="admin-activity-grid">
-            <article className="admin-activity-card">
-              <div className="admin-activity-icon">
-                <Star
-                  size={21}
-                  fill="currentColor"
-                />
+          <div className="admin-black-box-terminal">
+            <div className="admin-black-box-terminal-bar">
+              <div>
+                <Activity size={17} />
+                BLACK BOX
               </div>
 
               <span>
-                CURRENT FEATURE
+                {activity.length} EVENT
+                {activity.length === 1
+                  ? ''
+                  : 'S'}{' '}
+                BUFFERED
               </span>
+            </div>
 
-              <h3>
-                {dashboardStatus === 'loading'
-                  ? 'Loading...'
-                  : featuredCapture?.title ||
-                    'No Featured Capture'}
-              </h3>
-
-              <p>
-                {featuredCapture?.subtitle ||
-                  'Select a featured capture in Capture Control.'}
-              </p>
-
-              <button
-                type="button"
-                onClick={() => {
-                  window.location.href =
-                    '/admin/gallery';
-                }}
-              >
-                CAPTURE CONTROL →
-              </button>
-            </article>
-
-            <article className="admin-activity-card">
-              <div className="admin-activity-icon">
-                <BookOpen size={21} />
+            {activityStatus === 'loading' && (
+              <div className="admin-black-box-state">
+                ESTABLISHING SECURE DATA LINK...
               </div>
+            )}
 
-              <span>LATEST MISSION</span>
-
-              <h3>
-                {dashboardStatus === 'loading'
-                  ? 'Loading...'
-                  : latestMission?.id ||
-                    'No Missions'}
-              </h3>
-
-              <p>
-                {latestMission
-                  ? `${latestMission.mission} · ${formatMissionDate(
-                      latestMission.date
-                    )}`
-                  : 'No Captain’s Log reports have been recorded.'}
-              </p>
-
-              <button
-                type="button"
-                onClick={() => {
-                  window.location.href =
-                    '/admin/captains-log';
-                }}
-              >
-                MISSION REPORTS →
-              </button>
-            </article>
-
-            <article className="admin-activity-card">
-              <div className="admin-activity-icon">
-                <Camera size={21} />
+            {activityStatus === 'error' && (
+              <div className="admin-black-box-state admin-black-box-state-error">
+                BLACK BOX DATA LINK UNAVAILABLE
               </div>
+            )}
 
-              <span>NEWEST ARCHIVE ENTRY</span>
+            {activityStatus === 'ready' &&
+              activity.length === 0 && (
+                <div className="admin-black-box-state">
+                  NO FLIGHT RECORDER EVENTS
+                </div>
+              )}
 
-              <h3>
-                {dashboardStatus === 'loading'
-                  ? 'Loading...'
-                  : newestCapture?.title ||
-                    'No Captures'}
-              </h3>
+            {activityStatus === 'ready' &&
+              activity.length > 0 && (
+                <div className="admin-black-box-feed">
+                  {activity.map((event) => (
+                    <article
+                      className="admin-black-box-event"
+                      key={event.id}
+                    >
+                      <div className="admin-black-box-time">
+                        <strong>
+                          {formatEventTime(
+                            event.created_at
+                          )}
+                        </strong>
 
-              <p>
-                {newestCapture
-                  ? `${newestCapture.capture_date || 'Capture date not listed'} · ${captures.length} total archived`
-                  : 'No Mission Archive captures have been uploaded.'}
-              </p>
+                        <span>
+                          {formatEventDate(
+                            event.created_at
+                          )}
+                        </span>
+                      </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  window.location.href =
-                    '/admin/gallery';
-                }}
-              >
-                VIEW ARCHIVE →
-              </button>
-            </article>
+                      <div className="admin-black-box-pulse">
+                        <i />
+                      </div>
+
+                      <div className="admin-black-box-event-copy">
+                        <div className="admin-black-box-event-meta">
+                          <strong>
+                            {String(
+                              event.crew_name ||
+                                'UNKNOWN'
+                            ).toUpperCase()}
+                          </strong>
+
+                          <span>
+                            {String(
+                              event.category ||
+                                'SYSTEM'
+                            ).toUpperCase()}
+                          </span>
+                        </div>
+
+                        <h3>
+                          {getActionLabel(
+                            event.action
+                          )}
+                        </h3>
+
+                        <p>
+                          {getEventDescription(
+                            event
+                          )}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
           </div>
         </section>
 

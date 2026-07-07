@@ -11520,3 +11520,284 @@ footer p {
     flex: 1;
   }
 }
+/* =========================================================
+   CUZBRO BLACK BOX — LIVE CREW OPERATIONS
+   ========================================================= */
+
+.admin-black-box-panel {
+  margin-top: 42px;
+  border: 1px solid rgba(120, 155, 255, 0.18);
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(12, 19, 40, 0.96),
+      rgba(5, 9, 22, 0.98)
+    );
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.admin-black-box-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px 32px 26px;
+  border-bottom: 1px solid rgba(120, 155, 255, 0.12);
+}
+
+.admin-black-box-heading h2 {
+  margin: 7px 0 8px;
+}
+
+.admin-black-box-heading p {
+  margin: 0;
+  color: rgba(222, 229, 255, 0.64);
+}
+
+.admin-black-box-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 10px 13px;
+  border: 1px solid rgba(117, 148, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(9, 15, 34, 0.72);
+  color: rgba(225, 231, 255, 0.72);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.admin-black-box-live i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e3bd5a;
+  box-shadow: 0 0 14px rgba(227, 189, 90, 0.75);
+}
+
+.admin-black-box-live-live {
+  color: #aef5c6;
+  border-color: rgba(76, 224, 139, 0.25);
+}
+
+.admin-black-box-live-live i {
+  background: #4ce08b;
+  box-shadow: 0 0 16px rgba(76, 224, 139, 0.9);
+  animation: admin-black-box-pulse 1.7s ease-in-out infinite;
+}
+
+.admin-black-box-live-error,
+.admin-black-box-live-offline {
+  color: #ff9a9a;
+  border-color: rgba(255, 96, 96, 0.28);
+}
+
+.admin-black-box-live-error i,
+.admin-black-box-live-offline i {
+  background: #ff6060;
+  box-shadow: 0 0 14px rgba(255, 96, 96, 0.72);
+}
+
+.admin-black-box-terminal {
+  margin: 24px;
+  border: 1px solid rgba(103, 137, 255, 0.16);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 15% 0%,
+      rgba(49, 88, 196, 0.12),
+      transparent 34%
+    ),
+    rgba(2, 6, 16, 0.86);
+}
+
+.admin-black-box-terminal-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 18px;
+  border-bottom: 1px solid rgba(103, 137, 255, 0.14);
+  color: rgba(202, 214, 255, 0.55);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.admin-black-box-terminal-bar div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #d9e2ff;
+}
+
+.admin-black-box-state {
+  padding: 44px 24px;
+  text-align: center;
+  color: rgba(205, 216, 255, 0.54);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.admin-black-box-state-error {
+  color: #ff9292;
+}
+
+.admin-black-box-feed {
+  position: relative;
+}
+
+.admin-black-box-event {
+  display: grid;
+  grid-template-columns: 108px 22px minmax(0, 1fr);
+  gap: 13px;
+  align-items: stretch;
+  padding: 0 24px;
+}
+
+.admin-black-box-event + .admin-black-box-event {
+  border-top: 1px solid rgba(103, 137, 255, 0.08);
+}
+
+.admin-black-box-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 22px 0;
+}
+
+.admin-black-box-time strong {
+  color: #dbe4ff;
+  font-size: 0.83rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.admin-black-box-time span {
+  margin-top: 5px;
+  color: rgba(195, 207, 248, 0.38);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.admin-black-box-pulse {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.admin-black-box-pulse::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(88, 127, 255, 0.18);
+}
+
+.admin-black-box-pulse i {
+  position: relative;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  margin-top: 31px;
+  border: 2px solid #0a1023;
+  border-radius: 50%;
+  background: #6687ff;
+  box-shadow: 0 0 14px rgba(102, 135, 255, 0.75);
+}
+
+.admin-black-box-event-copy {
+  min-width: 0;
+  padding: 18px 0 20px;
+}
+
+.admin-black-box-event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.admin-black-box-event-meta strong {
+  color: #aebeff;
+  font-size: 0.66rem;
+  letter-spacing: 0.13em;
+}
+
+.admin-black-box-event-meta span {
+  padding: 4px 7px;
+  border: 1px solid rgba(115, 149, 255, 0.16);
+  border-radius: 6px;
+  color: rgba(195, 207, 248, 0.48);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.admin-black-box-event-copy h3 {
+  margin: 8px 0 4px;
+  color: #f3f6ff;
+  font-size: 0.98rem;
+  letter-spacing: 0.045em;
+}
+
+.admin-black-box-event-copy p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: rgba(215, 224, 255, 0.58);
+  font-size: 0.84rem;
+}
+
+@keyframes admin-black-box-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.22);
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-black-box-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 24px 22px 20px;
+  }
+
+  .admin-black-box-terminal {
+    margin: 14px;
+  }
+
+  .admin-black-box-terminal-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-black-box-event {
+    grid-template-columns: 74px 16px minmax(0, 1fr);
+    gap: 8px;
+    padding: 0 14px;
+  }
+
+  .admin-black-box-time strong {
+    font-size: 0.7rem;
+  }
+
+  .admin-black-box-event-copy h3 {
+    font-size: 0.88rem;
+  }
+}
