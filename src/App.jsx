@@ -270,8 +270,6 @@ export default function App() {
   const [prioritySignal, setPrioritySignal] =
     useState(null);
 
-  const [tabCommsPulse, setTabCommsPulse] =
-    useState(false);
 
   const [
     authLoading,
@@ -372,35 +370,19 @@ export default function App() {
       return undefined;
     }
 
-    const storageKey =
-      `cuzbro-comms-last-seen-${session.user.id}`;
-
-    if (isAdminCommsPage) {
-      localStorage.setItem(
-        storageKey,
-        new Date().toISOString()
-      );
-
-      setHasUnreadComms(false);
-      return undefined;
-    }
-
     let active = true;
+    let latestIncomingAt = null;
+    let readChannel = null;
+    let unreadChannel = null;
 
-    async function checkUnreadComms() {
-      const lastSeen =
-        localStorage.getItem(storageKey);
-
+    async function loadLatestIncomingComm() {
       const {
         data,
         error: unreadError
       } = await supabase
         .from('crew_comms')
         .select('id, user_id, created_at')
-        .neq(
-          'user_id',
-          session.user.id
-        )
+        .neq('user_id', session.user.id)
         .order('created_at', {
           ascending: false
         })
@@ -412,33 +394,125 @@ export default function App() {
           'Comms unread check failed:',
           unreadError
         );
-
-        return;
+        return null;
       }
 
-      if (!active || !data) {
-        return;
-      }
+      latestIncomingAt = data?.created_at || null;
+      return data;
+    }
 
-      if (!lastSeen) {
-        localStorage.setItem(
-          storageKey,
-          data.created_at
+    async function loadReadReceipt() {
+      const {
+        data,
+        error: receiptError
+      } = await supabase
+        .from('crew_comms_reads')
+        .select('last_seen_at')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (receiptError) {
+        console.error(
+          'Comms read receipt check failed:',
+          receiptError
         );
+        return null;
+      }
 
+      return data;
+    }
+
+    async function refreshUnreadState() {
+      const [latestIncoming, receipt] =
+        await Promise.all([
+          loadLatestIncomingComm(),
+          loadReadReceipt()
+        ]);
+
+      if (!active) {
+        return;
+      }
+
+      if (!latestIncoming) {
         setHasUnreadComms(false);
         return;
       }
 
+      const lastSeenAt = receipt?.last_seen_at;
+
       setHasUnreadComms(
-        new Date(data.created_at) >
-          new Date(lastSeen)
+        !lastSeenAt ||
+        new Date(latestIncoming.created_at) >
+          new Date(lastSeenAt)
       );
     }
 
-    checkUnreadComms();
+    async function markCommsSeen() {
+      if (
+        !isAdminCommsPage ||
+        document.visibilityState !== 'visible'
+      ) {
+        return;
+      }
 
-    const unreadChannel = supabase
+      const latestIncoming =
+        await loadLatestIncomingComm();
+
+      if (!active) {
+        return;
+      }
+
+      const seenAt =
+        latestIncoming?.created_at ||
+        new Date().toISOString();
+
+      const {
+        error: receiptError
+      } = await supabase
+        .from('crew_comms_reads')
+        .upsert(
+          {
+            user_id: session.user.id,
+            crew_email:
+              session.user.email || '',
+            last_seen_at: seenAt,
+            updated_at:
+              new Date().toISOString()
+          },
+          {
+            onConflict: 'user_id'
+          }
+        );
+
+      if (receiptError) {
+        console.error(
+          'Comms read receipt update failed:',
+          receiptError
+        );
+        return;
+      }
+
+      setHasUnreadComms(false);
+    }
+
+    refreshUnreadState().then(() => {
+      markCommsSeen();
+    });
+
+    function handleVisibilityChange() {
+      if (
+        document.visibilityState === 'visible'
+      ) {
+        markCommsSeen();
+      }
+    }
+
+    document.addEventListener(
+      'visibilitychange',
+      handleVisibilityChange
+    );
+
+    unreadChannel = supabase
       .channel(
         `cuzbro-comms-unread-${session.user.id}`
       )
@@ -451,11 +525,58 @@ export default function App() {
         },
         (payload) => {
           if (
-            payload.new?.user_id !==
+            payload.new?.user_id ===
             session.user.id
           ) {
-            setHasUnreadComms(true);
+            return;
           }
+
+          latestIncomingAt =
+            payload.new?.created_at || null;
+
+          if (
+            isAdminCommsPage &&
+            document.visibilityState === 'visible'
+          ) {
+            markCommsSeen();
+            return;
+          }
+
+          setHasUnreadComms(true);
+        }
+      )
+      .subscribe();
+
+    readChannel = supabase
+      .channel(
+        `cuzbro-comms-reads-${session.user.id}`
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'crew_comms_reads',
+          filter:
+            `user_id=eq.${session.user.id}`
+        },
+        (payload) => {
+          const receipt =
+            payload.new || payload.old;
+
+          if (!latestIncomingAt) {
+            setHasUnreadComms(false);
+            return;
+          }
+
+          const lastSeenAt =
+            receipt?.last_seen_at;
+
+          setHasUnreadComms(
+            !lastSeenAt ||
+            new Date(latestIncomingAt) >
+              new Date(lastSeenAt)
+          );
         }
       )
       .subscribe();
@@ -463,14 +584,28 @@ export default function App() {
     return () => {
       active = false;
 
-      supabase.removeChannel(
-        unreadChannel
+      document.removeEventListener(
+        'visibilitychange',
+        handleVisibilityChange
       );
+
+      if (unreadChannel) {
+        supabase.removeChannel(
+          unreadChannel
+        );
+      }
+
+      if (readChannel) {
+        supabase.removeChannel(
+          readChannel
+        );
+      }
     };
   }, [
     isAdminPage,
     isAdminCommsPage,
-    session?.user?.id
+    session?.user?.id,
+    session?.user?.email
   ]);
 
   useEffect(() => {
@@ -576,42 +711,6 @@ export default function App() {
     session?.user?.email
   ]);
 
-  useEffect(() => {
-    if (!isAdminPage || !session?.user?.id) {
-      setTabCommsPulse(false);
-      return undefined;
-    }
-
-    let pulseTimer = null;
-
-    const handleIncomingComms = () => {
-      setTabCommsPulse(true);
-
-      if (pulseTimer) {
-        window.clearTimeout(pulseTimer);
-      }
-
-      pulseTimer = window.setTimeout(() => {
-        setTabCommsPulse(false);
-      }, 7000);
-    };
-
-    window.addEventListener(
-      'cuzbro:incoming-comms',
-      handleIncomingComms
-    );
-
-    return () => {
-      if (pulseTimer) {
-        window.clearTimeout(pulseTimer);
-      }
-
-      window.removeEventListener(
-        'cuzbro:incoming-comms',
-        handleIncomingComms
-      );
-    };
-  }, [isAdminPage, session?.user?.id]);
 
   useEffect(() => {
     if (!isAdminPage) {
@@ -619,10 +718,7 @@ export default function App() {
     }
 
     const normalTitle = 'CuzBro';
-    const hasCommsAlert =
-      hasUnreadComms || tabCommsPulse;
-
-    if (!prioritySignal && !hasCommsAlert) {
+    if (!prioritySignal && !hasUnreadComms) {
       document.title = normalTitle;
       return undefined;
     }
@@ -654,7 +750,6 @@ export default function App() {
     hasUnreadComms,
     isAdminPage,
     prioritySignal,
-    tabCommsPulse
   ]);
 
   async function acknowledgePrioritySignals() {
@@ -1310,9 +1405,7 @@ export default function App() {
                 : ''
             }`}
             href="/admin/comms"
-            onClick={() => {
-              acknowledgePrioritySignals();
-            }}
+
           >
             <strong>
               {prioritySignal.kind === 'RED_ALERT'
@@ -1349,15 +1442,7 @@ export default function App() {
                 ? 'Open CuzBro Comms Terminal — unread communication'
                 : 'Open CuzBro Comms Terminal'
             }
-            onClick={() => {
-              localStorage.setItem(
-                `cuzbro-comms-last-seen-${session.user.id}`,
-                new Date().toISOString()
-              );
 
-              setHasUnreadComms(false);
-              acknowledgePrioritySignals();
-            }}
           >
             <span>●</span>
             COMMS

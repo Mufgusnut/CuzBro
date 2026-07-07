@@ -15242,3 +15242,40 @@ footer p {
     bottom: 108px;
   }
 }
+
+/* =========================================================
+   COMMS v2.4 — PERSISTENT UNREAD / RED SIGNAL DOT
+========================================================= */
+
+.admin-comms-global-launch-unread {
+  border-color: rgba(255, 91, 91, .72) !important;
+  box-shadow:
+    0 14px 38px rgba(0, 0, 0, .44),
+    0 0 14px rgba(255, 91, 91, .28),
+    0 0 34px rgba(255, 91, 91, .16) !important;
+}
+
+.admin-comms-global-launch-unread span {
+  color: #ff5b5b !important;
+  opacity: 1 !important;
+  animation: adminCommsUnreadRedPulse .72s ease-in-out infinite !important;
+}
+
+@keyframes adminCommsUnreadRedPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    text-shadow:
+      0 0 8px #ff5b5b,
+      0 0 18px rgba(255, 91, 91, .92),
+      0 0 30px rgba(255, 91, 91, .48);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(.72);
+    text-shadow:
+      0 0 3px #ff5b5b,
+      0 0 7px rgba(255, 91, 91, .52);
+  }
+}
