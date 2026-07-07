@@ -3,6 +3,7 @@ import AdminCaptainsLog from './components/AdminCaptainsLog.jsx';
 import AdminGallery from './components/AdminGallery.jsx';
 import AdminEquipment from './components/AdminEquipment.jsx';
 import CrewTransfer from './components/CrewTransfer.jsx';
+import CommsTerminal from './components/CommsTerminal.jsx';
 import SystemStatus from './components/SystemStatus.jsx';
 import StorageControl from './components/StorageControl.jsx';
 import BlackBox from './components/BlackBox.jsx';
@@ -260,6 +261,10 @@ export default function App() {
     pathname ===
       '/admin/transfers/';
 
+  const isAdminCommsPage =
+    pathname === '/admin/comms' ||
+    pathname === '/admin/comms/';
+
   const isAdminSystemPage =
     pathname === '/admin/system' ||
     pathname === '/admin/system/';
@@ -283,6 +288,7 @@ export default function App() {
     isAdminGalleryPage ||
     isAdminEquipmentPage ||
     isAdminTransfersPage ||
+    isAdminCommsPage ||
     isAdminSystemPage ||
     isAdminStoragePage ||
     isAdminBlackBoxPage ||
@@ -866,6 +872,14 @@ export default function App() {
         <CrewTransfer />
       );
     } else if (
+      isAdminCommsPage
+    ) {
+      adminContent = (
+        <CommsTerminal
+          session={session}
+        />
+      );
+    } else if (
       isAdminSystemPage
     ) {
       adminContent = (
@@ -909,6 +923,17 @@ export default function App() {
     return (
       <>
         {adminContent}
+
+        {!isAdminCommsPage && (
+          <a
+            className="admin-comms-global-launch"
+            href="/admin/comms"
+            aria-label="Open CuzBro Comms Terminal"
+          >
+            <span>●</span>
+            COMMS
+          </a>
+        )}
 
         <AdminCommandPalette
           onLogout={handleLogout}

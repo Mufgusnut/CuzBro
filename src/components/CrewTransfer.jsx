@@ -128,6 +128,9 @@ export default function CrewTransfer() {
   const [error, setError] =
     useState('');
 
+  const [isDragging, setIsDragging] =
+    useState(false);
+
   async function loadTransfers() {
     setStatus('loading');
     setError('');
@@ -224,18 +227,18 @@ export default function CrewTransfer() {
         );
     }, [files]);
 
-  function handleFileSelection(event) {
-    const pickedFiles =
-      Array.from(
-        event.target.files || []
-      );
+  function acceptTransferFiles(
+    pickedFiles
+  ) {
+    const filesToAccept =
+      Array.from(pickedFiles || []);
 
-    if (!pickedFiles.length) {
+    if (!filesToAccept.length) {
       return;
     }
 
     const tooLarge =
-      pickedFiles.find(
+      filesToAccept.find(
         (file) =>
           file.size >
           MAX_TRANSFER_FILE_BYTES
@@ -246,14 +249,56 @@ export default function CrewTransfer() {
         `${tooLarge.name} is over the current 99 MB per-file upload limit.`
       );
 
-      event.target.value = '';
-
       return;
     }
 
-    setSelectedFiles(pickedFiles);
+    setSelectedFiles(filesToAccept);
     setMessage('');
     setError('');
+  }
+
+  function handleFileSelection(event) {
+    acceptTransferFiles(
+      event.target.files
+    );
+
+    event.target.value = '';
+  }
+
+  function handleTransferDragOver(event) {
+    event.preventDefault();
+
+    if (!uploading) {
+      setIsDragging(true);
+    }
+  }
+
+  function handleTransferDragLeave(event) {
+    event.preventDefault();
+
+    if (
+      event.currentTarget.contains(
+        event.relatedTarget
+      )
+    ) {
+      return;
+    }
+
+    setIsDragging(false);
+  }
+
+  function handleTransferDrop(event) {
+    event.preventDefault();
+
+    setIsDragging(false);
+
+    if (uploading) {
+      return;
+    }
+
+    acceptTransferFiles(
+      event.dataTransfer.files
+    );
   }
 
   async function handleUpload(event) {
@@ -742,7 +787,17 @@ export default function CrewTransfer() {
           </div>
         )}
 
-        <section className="admin-transfer-uploader">
+        <section
+          className={`admin-transfer-uploader${
+            isDragging
+              ? ' admin-transfer-uploader-dragging'
+              : ''
+          }`}
+          onDragEnter={handleTransferDragOver}
+          onDragOver={handleTransferDragOver}
+          onDragLeave={handleTransferDragLeave}
+          onDrop={handleTransferDrop}
+        >
           <div className="admin-transfer-uploader-icon">
             <FolderUp size={36} />
           </div>
@@ -755,11 +810,19 @@ export default function CrewTransfer() {
             <h3>Send Files to the Crew</h3>
 
             <p>
-              Select multiple files at once.
-              Each file is stored privately in
-              R2 and requires an authenticated
-              CuzBro session to list or download.
+              Drag and drop multiple files into
+              this transfer bay, or select them
+              manually. Each file is stored
+              privately in R2 and requires an
+              authenticated CuzBro session to
+              list or download.
             </p>
+
+            <strong className="admin-transfer-drop-hint">
+              {isDragging
+                ? 'RELEASE TO LOAD FILES'
+                : 'DROP FILES ANYWHERE IN THIS BAY'}
+            </strong>
           </div>
 
           <form

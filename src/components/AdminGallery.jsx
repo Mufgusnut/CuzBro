@@ -470,6 +470,16 @@ export default function AdminGallery() {
   const [error, setError] =
     useState('');
 
+  const [
+    imageDragActive,
+    setImageDragActive
+  ] = useState(false);
+
+  const [
+    masterDragActive,
+    setMasterDragActive
+  ] = useState(false);
+
   async function loadCaptures() {
     setStatus('loading');
     setError('');
@@ -584,20 +594,26 @@ export default function AdminGallery() {
     setError('');
   }
 
-  function handleImageSelection(event) {
-    const file =
-      event.target.files?.[0];
-
+  function acceptImageFile(file) {
     if (!file) {
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      setError(
-        'Select a valid image file.'
+    const lowerName =
+      file.name.toLowerCase();
+
+    const isSupportedImage =
+      (
+        lowerName.endsWith('.jpg') ||
+        lowerName.endsWith('.jpeg') ||
+        lowerName.endsWith('.png') ||
+        lowerName.endsWith('.webp')
       );
 
-      event.target.value = '';
+    if (!isSupportedImage) {
+      setError(
+        'Mission Capture must be a JPG, PNG, or WEBP image.'
+      );
 
       return;
     }
@@ -610,15 +626,36 @@ export default function AdminGallery() {
       URL.createObjectURL(file)
     );
 
+    setMessage('');
     setError('');
   }
 
-  async function handleMasterSelection(
-    event
-  ) {
-    const file =
-      event.target.files?.[0];
+  function handleImageSelection(event) {
+    acceptImageFile(
+      event.target.files?.[0]
+    );
 
+    event.target.value = '';
+  }
+
+  function handleImageDrop(event) {
+    event.preventDefault();
+
+    setImageDragActive(false);
+
+    if (
+      convertingMaster ||
+      saving
+    ) {
+      return;
+    }
+
+    acceptImageFile(
+      event.dataTransfer.files?.[0]
+    );
+  }
+
+  async function acceptMasterFile(file) {
     if (!file) {
       return;
     }
@@ -634,8 +671,6 @@ export default function AdminGallery() {
         'Full-resolution master must be a .tif or .tiff file.'
       );
 
-      event.target.value = '';
-
       return;
     }
 
@@ -646,8 +681,6 @@ export default function AdminGallery() {
       setError(
         'TIFF master is too large for the current upload route. Keep the file under 99 MB.'
       );
-
-      event.target.value = '';
 
       return;
     }
@@ -688,11 +721,36 @@ export default function AdminGallery() {
         conversionError.message ||
           'TIFF conversion failed.'
       );
-
-      event.target.value = '';
     }
 
     setConvertingMaster(false);
+  }
+
+  async function handleMasterSelection(
+    event
+  ) {
+    await acceptMasterFile(
+      event.target.files?.[0]
+    );
+
+    event.target.value = '';
+  }
+
+  function handleMasterDrop(event) {
+    event.preventDefault();
+
+    setMasterDragActive(false);
+
+    if (
+      convertingMaster ||
+      saving
+    ) {
+      return;
+    }
+
+    acceptMasterFile(
+      event.dataTransfer.files?.[0]
+    );
   }
 
   async function uploadImage(
@@ -1382,7 +1440,35 @@ export default function AdminGallery() {
               onSubmit={handleSave}
               noValidate
             >
-              <section className="admin-image-uploader">
+              <section
+                className={`admin-image-uploader admin-drop-zone${
+                  imageDragActive
+                    ? ' admin-drop-zone-active'
+                    : ''
+                }`}
+                onDragEnter={(event) => {
+                  event.preventDefault();
+                  setImageDragActive(true);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setImageDragActive(true);
+                }}
+                onDragLeave={(event) => {
+                  event.preventDefault();
+
+                  if (
+                    event.currentTarget.contains(
+                      event.relatedTarget
+                    )
+                  ) {
+                    return;
+                  }
+
+                  setImageDragActive(false);
+                }}
+                onDrop={handleImageDrop}
+              >
                 <div className="admin-image-preview">
                   {previewUrl ? (
                     <img
@@ -1410,14 +1496,19 @@ export default function AdminGallery() {
                   </h4>
 
                   <p>
-                    Optional manual display
-                    image for the public Mission
-                    Archive. Selecting a TIFF
-                    master below automatically
-                    generates a full-dimension,
-                    quality-98 JPEG and places it
-                    here for you.
+                    Drop a JPG, PNG, or WEBP here,
+                    or select one manually.
+                    Selecting a TIFF master below
+                    automatically generates a
+                    full-dimension, quality-98
+                    JPEG and places it here.
                   </p>
+
+                  <strong className="admin-drop-zone-hint">
+                    {imageDragActive
+                      ? 'RELEASE DISPLAY IMAGE'
+                      : 'DROP DISPLAY IMAGE HERE'}
+                  </strong>
 
                   <label className="admin-file-button">
                     <Upload size={18} />
@@ -1453,7 +1544,35 @@ export default function AdminGallery() {
                 </div>
               </section>
 
-              <section className="admin-image-uploader admin-master-uploader">
+              <section
+                className={`admin-image-uploader admin-master-uploader admin-drop-zone${
+                  masterDragActive
+                    ? ' admin-drop-zone-active'
+                    : ''
+                }`}
+                onDragEnter={(event) => {
+                  event.preventDefault();
+                  setMasterDragActive(true);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setMasterDragActive(true);
+                }}
+                onDragLeave={(event) => {
+                  event.preventDefault();
+
+                  if (
+                    event.currentTarget.contains(
+                      event.relatedTarget
+                    )
+                  ) {
+                    return;
+                  }
+
+                  setMasterDragActive(false);
+                }}
+                onDrop={handleMasterDrop}
+              >
                 <div className="admin-image-preview admin-master-preview">
                   <FileArchive size={42} />
 
@@ -1481,14 +1600,20 @@ export default function AdminGallery() {
                   </h4>
 
                   <p>
-                    Recommended workflow:
-                    select one TIFF here. Capture
-                    Control automatically creates
-                    the full-dimension quality-98
-                    JPEG used by the website, then
+                    Recommended workflow: drop one
+                    TIFF here. Capture Control
+                    automatically creates the
+                    full-dimension quality-98 JPEG
+                    used by the website, then
                     stores the original TIFF in R2
                     for full-size download.
                   </p>
+
+                  <strong className="admin-drop-zone-hint">
+                    {masterDragActive
+                      ? 'RELEASE TIFF MASTER'
+                      : 'DROP TIFF MASTER HERE'}
+                  </strong>
 
                   <label className="admin-file-button">
                     <Upload size={18} />
