@@ -50,6 +50,46 @@ const locations = [
   }
 ];
 
+function playPrioritySignal(kind = 'PING') {
+  try {
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+      return;
+    }
+
+    const context = new AudioContextClass();
+    const frequencies =
+      kind === 'RED_ALERT'
+        ? [520, 360, 520]
+        : [740, 1040];
+
+    frequencies.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = context.currentTime + index * 0.16;
+      const end = start + 0.11;
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.12, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, end);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(start);
+      oscillator.stop(end);
+    });
+
+    window.setTimeout(() => {
+      context.close().catch(() => {});
+    }, 1200);
+  } catch (audioError) {
+    console.debug('Priority signal audio unavailable:', audioError);
+  }
+}
+
 function PageNav({ scrolled }) {
   return (
     <header
@@ -216,6 +256,9 @@ export default function App() {
 
   const [hasUnreadComms, setHasUnreadComms] =
     useState(false);
+
+  const [prioritySignal, setPrioritySignal] =
+    useState(null);
 
   const [
     authLoading,
@@ -416,6 +459,143 @@ export default function App() {
     isAdminCommsPage,
     session?.user?.id
   ]);
+
+  useEffect(() => {
+    if (
+      !isAdminPage ||
+      !session?.user?.email
+    ) {
+      setPrioritySignal(null);
+      return undefined;
+    }
+
+    const ownEmail = String(session.user.email)
+      .trim()
+      .toLowerCase();
+
+    let active = true;
+    const originalTitle = document.title;
+
+    async function loadPendingSignals() {
+      const { data, error: signalError } = await supabase
+        .from('crew_pings')
+        .select(
+          'id, sender_name, recipient_email, kind, created_at, acknowledged_at'
+        )
+        .eq('recipient_email', ownEmail)
+        .is('acknowledged_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (signalError) {
+        console.error('Priority signal check failed:', signalError);
+        return;
+      }
+
+      if (active && data) {
+        setPrioritySignal(data);
+        document.title =
+          data.kind === 'RED_ALERT'
+            ? '⚠ RED ALERT · CUZBRO'
+            : `⚡ PING FROM ${data.sender_name} · CUZBRO`;
+      }
+    }
+
+    loadPendingSignals();
+
+    const signalChannel = supabase
+      .channel(`cuzbro-priority-signals-${session.user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'crew_pings'
+        },
+        (payload) => {
+          const signal = payload.new;
+
+          if (
+            String(signal.recipient_email || '').toLowerCase() !== ownEmail
+          ) {
+            return;
+          }
+
+          setPrioritySignal(signal);
+          setHasUnreadComms(true);
+          document.title =
+            signal.kind === 'RED_ALERT'
+              ? '⚠ RED ALERT · CUZBRO'
+              : `⚡ PING FROM ${signal.sender_name} · CUZBRO`;
+          playPrioritySignal(signal.kind);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'crew_pings'
+        },
+        (payload) => {
+          const signal = payload.new;
+
+          if (
+            String(signal.recipient_email || '').toLowerCase() !== ownEmail ||
+            !signal.acknowledged_at
+          ) {
+            return;
+          }
+
+          setPrioritySignal((current) => {
+            if (current?.id !== signal.id) {
+              return current;
+            }
+
+            document.title = originalTitle;
+            return null;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+      document.title = originalTitle;
+      supabase.removeChannel(signalChannel);
+    };
+  }, [
+    isAdminPage,
+    session?.user?.id,
+    session?.user?.email
+  ]);
+
+  async function acknowledgePrioritySignals() {
+    const ownEmail = String(session?.user?.email || '')
+      .trim()
+      .toLowerCase();
+
+    if (!ownEmail) {
+      return;
+    }
+
+    const { error: acknowledgeError } = await supabase
+      .from('crew_pings')
+      .update({ acknowledged_at: new Date().toISOString() })
+      .eq('recipient_email', ownEmail)
+      .is('acknowledged_at', null);
+
+    if (acknowledgeError) {
+      console.error(
+        'Priority signal acknowledgement failed:',
+        acknowledgeError
+      );
+    }
+
+    setPrioritySignal(null);
+    document.title = 'CuzBro';
+  }
 
   const isSkyMapPage =
     pathname === '/skymap';
@@ -1037,11 +1217,45 @@ export default function App() {
       <>
         {adminContent}
 
+        {!isAdminCommsPage && prioritySignal && (
+          <a
+            className={`admin-priority-toast${
+              prioritySignal.kind === 'RED_ALERT'
+                ? ' admin-priority-toast-red-alert'
+                : ''
+            }`}
+            href="/admin/comms"
+            onClick={() => {
+              acknowledgePrioritySignals();
+            }}
+          >
+            <strong>
+              {prioritySignal.kind === 'RED_ALERT'
+                ? '⚠ RED ALERT'
+                : '⚡ INCOMING CREW PING'}
+            </strong>
+
+            <span>
+              {prioritySignal.kind === 'RED_ALERT'
+                ? `DECLARED BY ${prioritySignal.sender_name}`
+                : `${prioritySignal.sender_name} IS REQUESTING YOUR ATTENTION`}
+            </span>
+
+            <small>OPEN COMMS →</small>
+          </a>
+        )}
+
         {!isAdminCommsPage && (
           <a
             className={`admin-comms-global-launch${
               hasUnreadComms
                 ? ' admin-comms-global-launch-unread'
+                : ''
+            }${
+              prioritySignal
+                ? prioritySignal.kind === 'RED_ALERT'
+                  ? ' admin-comms-global-launch-red-alert'
+                  : ' admin-comms-global-launch-priority'
                 : ''
             }`}
             href="/admin/comms"
@@ -1057,6 +1271,7 @@ export default function App() {
               );
 
               setHasUnreadComms(false);
+              acknowledgePrioritySignals();
             }}
           >
             <span>●</span>

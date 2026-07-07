@@ -15040,3 +15040,205 @@ footer p {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================================================
+   COMMS v2 — PRIORITY PING + COMMAND PROTOCOL
+========================================================= */
+
+.admin-comms-global-launch-priority {
+  border-color: rgba(114, 217, 255, .92) !important;
+  box-shadow:
+    0 14px 38px rgba(0, 0, 0, .48),
+    0 0 14px rgba(114, 217, 255, .35),
+    0 0 38px rgba(114, 217, 255, .20) !important;
+  animation: commsPriorityLauncherPulse .48s ease-in-out infinite;
+}
+
+.admin-comms-global-launch-priority span {
+  color: #d9f8ff !important;
+  animation: commsPriorityDotPulse .34s linear infinite !important;
+}
+
+.admin-comms-global-launch-red-alert {
+  color: #fff4f4 !important;
+  border-color: rgba(255, 92, 92, .95) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(70, 8, 15, .97),
+      rgba(27, 2, 7, .99)
+    ) !important;
+  box-shadow:
+    0 14px 38px rgba(0, 0, 0, .52),
+    0 0 18px rgba(255, 71, 71, .48),
+    0 0 48px rgba(255, 71, 71, .25) !important;
+  animation: commsRedLauncherPulse .38s steps(2, end) infinite;
+}
+
+.admin-comms-global-launch-red-alert span {
+  color: #ff5b5b !important;
+  text-shadow: 0 0 14px #ff2929 !important;
+  animation: commsPriorityDotPulse .24s linear infinite !important;
+}
+
+@keyframes commsPriorityLauncherPulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-1px) scale(1.025); }
+}
+
+@keyframes commsPriorityDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1.3); }
+  50% { opacity: .18; transform: scale(.72); }
+}
+
+@keyframes commsRedLauncherPulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.65); }
+}
+
+.comms-page-red-alert {
+  animation: commsRedAlertScreen 1s ease-in-out infinite;
+}
+
+.comms-page-red-alert .comms-terminal {
+  border-color: rgba(255, 77, 77, .72) !important;
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, .62),
+    0 0 44px rgba(255, 50, 50, .20),
+    inset 0 0 70px rgba(255, 35, 35, .06) !important;
+}
+
+.comms-page-red-alert .comms-terminal-bar {
+  color: #ffd0d0;
+  background: rgba(65, 5, 10, .94);
+  border-bottom-color: rgba(255, 80, 80, .34);
+}
+
+.comms-red-alert-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  min-height: 36px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(142, 4, 15, .96);
+  border-bottom: 1px solid rgba(255, 190, 190, .62);
+  box-shadow: 0 0 34px rgba(255, 34, 34, .38);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .70rem;
+  font-weight: 1000;
+  letter-spacing: .32em;
+  animation: commsRedBannerFlash .5s steps(2, end) infinite;
+}
+
+@keyframes commsRedAlertScreen {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: rgba(110, 0, 8, .035); }
+}
+
+@keyframes commsRedBannerFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .64; }
+}
+
+.comms-message-ping strong,
+.comms-message-ping p {
+  color: #bfeeff !important;
+  text-shadow: 0 0 12px rgba(114, 217, 255, .18);
+}
+
+.comms-message-red-alert strong,
+.comms-message-red-alert p {
+  color: #ff8c8c !important;
+  text-shadow: 0 0 12px rgba(255, 65, 65, .25);
+}
+
+.comms-message-help p,
+.comms-message-telemetry p {
+  color: rgba(216, 233, 248, .82) !important;
+  line-height: 1.7;
+}
+
+.comms-page-red-alert .admin-header {
+  margin-top: 36px;
+}
+
+
+/* =========================================================
+   COMMS v2.1 — GLOBAL PRIORITY SIGNAL TOAST
+========================================================= */
+
+.admin-priority-toast {
+  position: fixed;
+  right: 28px;
+  bottom: 118px;
+  z-index: 980;
+  width: min(390px, calc(100vw - 36px));
+  display: grid;
+  gap: 7px;
+  padding: 18px 20px;
+  border: 1px solid rgba(114, 217, 255, .84);
+  border-radius: 14px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top right, rgba(114, 217, 255, .18), transparent 42%),
+    rgba(3, 12, 23, .97);
+  box-shadow:
+    0 22px 58px rgba(0, 0, 0, .62),
+    0 0 22px rgba(114, 217, 255, .22);
+  backdrop-filter: blur(16px);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  animation: adminPriorityToastEnter .24s ease-out, commsPriorityLauncherPulse .48s ease-in-out .24s infinite;
+}
+
+.admin-priority-toast strong {
+  color: #c7f4ff;
+  font-size: .72rem;
+  letter-spacing: .16em;
+}
+
+.admin-priority-toast span {
+  color: #f4fbff;
+  font-size: .92rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.admin-priority-toast small {
+  color: rgba(114, 217, 255, .75);
+  font-size: .60rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+}
+
+.admin-priority-toast-red-alert {
+  border-color: rgba(255, 91, 91, .95);
+  background:
+    radial-gradient(circle at top right, rgba(255, 66, 66, .24), transparent 44%),
+    rgba(45, 3, 8, .98);
+  box-shadow:
+    0 22px 58px rgba(0, 0, 0, .65),
+    0 0 28px rgba(255, 45, 45, .30);
+  animation: adminPriorityToastEnter .24s ease-out, commsRedLauncherPulse .38s steps(2, end) .24s infinite;
+}
+
+.admin-priority-toast-red-alert strong,
+.admin-priority-toast-red-alert small {
+  color: #ff9b9b;
+}
+
+@keyframes adminPriorityToastEnter {
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 700px) {
+  .admin-priority-toast {
+    right: 18px;
+    bottom: 108px;
+  }
+}

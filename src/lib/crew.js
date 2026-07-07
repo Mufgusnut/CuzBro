@@ -19,16 +19,13 @@ const CREW_MEMBERS = {
 };
 
 export function getCrewMember(email) {
-  const normalizedEmail = String(
-    email || ''
-  )
+  const normalizedEmail = String(email || '')
     .trim()
     .toLowerCase();
 
   return (
     CREW_MEMBERS[normalizedEmail] || {
-      name:
-        email || 'Unknown crew member',
+      name: email || 'Unknown crew member',
       callSign: 'UNKNOWN',
       role: 'Crew'
     }
@@ -48,22 +45,37 @@ export function getCrewRole(email) {
 }
 
 export function isKnownCrewMember(email) {
-  const normalizedEmail = String(
-    email || ''
-  )
+  const normalizedEmail = String(email || '')
     .trim()
     .toLowerCase();
 
-  return Boolean(
-    CREW_MEMBERS[normalizedEmail]
-  );
+  return Boolean(CREW_MEMBERS[normalizedEmail]);
 }
 
 export function getAllCrewMembers() {
-  return Object.entries(
-    CREW_MEMBERS
-  ).map(([email, member]) => ({
-    email,
-    ...member
-  }));
+  return Object.entries(CREW_MEMBERS).map(
+    ([email, member]) => ({
+      email,
+      ...member
+    })
+  );
+}
+
+export function findCrewMember(value) {
+  const normalizedValue = String(value || '')
+    .trim()
+    .toLowerCase();
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const match = getAllCrewMembers().find(
+    (member) =>
+      member.email.toLowerCase() === normalizedValue ||
+      member.name.toLowerCase() === normalizedValue ||
+      member.callSign.toLowerCase() === normalizedValue
+  );
+
+  return match || null;
 }
