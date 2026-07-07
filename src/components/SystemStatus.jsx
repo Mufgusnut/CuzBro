@@ -137,6 +137,9 @@ export default function SystemStatus({
   const [totalDuration, setTotalDuration] =
     useState(null);
 
+  const [chappyMode, setChappyMode] =
+    useState(false);
+
   async function runSystemCheck() {
     if (
       !session?.access_token ||
@@ -409,6 +412,27 @@ export default function SystemStatus({
     session?.access_token
   ]);
 
+  useEffect(() => {
+    function handleChappyMode(event) {
+      setChappyMode(
+        Boolean(event?.detail?.active)
+      );
+    }
+
+    window.addEventListener(
+      'cuzbro:chappy-mode',
+      handleChappyMode
+    );
+
+    return () => {
+      window.removeEventListener(
+        'cuzbro:chappy-mode',
+        handleChappyMode
+      );
+    };
+  }, []);
+
+
   const operationalCount =
     checks.filter(
       (check) =>
@@ -552,11 +576,15 @@ export default function SystemStatus({
               </span>
 
               <h3>
-                {overallLabel}
+                {chappyMode
+                  ? 'CHAPPY MODE DETECTED'
+                  : overallLabel}
               </h3>
 
               <p>
-                {summaryText}
+                {chappyMode
+                  ? 'ALL SERVICES ARE RUNNING LATE'
+                  : summaryText}
               </p>
             </div>
           </div>
@@ -636,7 +664,9 @@ export default function SystemStatus({
                     </h3>
 
                     <strong>
-                      CHECKING
+                      {chappyMode
+                        ? 'RUNNING LATE'
+                        : 'CHECKING'}
                     </strong>
 
                     <p>
@@ -679,9 +709,11 @@ export default function SystemStatus({
                   </h3>
 
                   <strong>
-                    {getStatusLabel(
-                      check.status
-                    )}
+                    {chappyMode
+                      ? 'RUNNING LATE'
+                      : getStatusLabel(
+                          check.status
+                        )}
                   </strong>
 
                   <p>

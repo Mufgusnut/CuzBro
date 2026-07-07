@@ -13,6 +13,7 @@ import StorageControl from './components/StorageControl.jsx';
 import BlackBox from './components/BlackBox.jsx';
 import DeploymentControl from './components/DeploymentControl.jsx';
 import AdminCommandPalette from './components/AdminCommandPalette.jsx';
+import EasterEggs from './components/EasterEggs.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import { LogOut } from 'lucide-react';
@@ -1594,6 +1595,8 @@ export default function App() {
 
     return (
       <>
+        <EasterEggs />
+
         <AdminTopNav
           scrolled={scrolled}
           session={session}
@@ -1694,6 +1697,8 @@ export default function App() {
 
   return (
     <>
+      <EasterEggs />
+
       <SpaceBackground />
 
       {isSkyMapPage ||

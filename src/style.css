@@ -19164,3 +19164,497 @@ footer p {
   }
 }
 
+
+/* =========================================================
+   Mission Patch Generator v1
+========================================================= */
+
+.mission-patch {
+  --patch-primary: #72d9ff;
+  --patch-secondary: #ff9d1c;
+  width: 180px;
+  max-width: 100%;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  color: #fff;
+}
+
+.mission-patch-disc {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 255, 255, .10), transparent 34%),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--patch-primary) 24%, transparent), transparent 62%),
+    rgba(3, 10, 22, .92);
+  box-shadow:
+    inset 0 0 24px rgba(255, 255, 255, .06),
+    0 18px 42px rgba(0, 0, 0, .34),
+    0 0 26px color-mix(in srgb, var(--patch-primary) 22%, transparent);
+  transition:
+    transform .22s ease,
+    filter .22s ease,
+    box-shadow .22s ease;
+}
+
+.mission-patch:hover .mission-patch-disc {
+  transform: rotate(-2deg) translateY(-2px) scale(1.015);
+  filter: brightness(1.08);
+  box-shadow:
+    inset 0 0 26px rgba(255, 255, 255, .07),
+    0 22px 52px rgba(0, 0, 0, .40),
+    0 0 34px color-mix(in srgb, var(--patch-primary) 34%, transparent);
+}
+
+.mission-patch svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mission-patch-shadow-ring {
+  fill: rgba(0, 0, 0, .36);
+  stroke: rgba(255, 255, 255, .10);
+  stroke-width: 2;
+}
+
+.mission-patch text {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+  fill: #f6fbff;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, .55);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+  text-transform: uppercase;
+}
+
+.mission-patch-arc {
+  fill: var(--patch-primary) !important;
+  font-size: 23px;
+  font-weight: 950;
+  letter-spacing: .20em;
+}
+
+.mission-patch-op,
+.mission-patch-type,
+.mission-patch-designation,
+.mission-patch-crew,
+.mission-patch-year {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .11em;
+}
+
+.mission-patch-op,
+.mission-patch-designation,
+.mission-patch-year {
+  fill: rgba(224, 238, 255, .72) !important;
+}
+
+.mission-patch-icon {
+  fill: var(--patch-secondary) !important;
+  font-size: 46px;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+.mission-patch-title {
+  fill: #fff !important;
+  font-size: 20px;
+  font-weight: 950;
+  letter-spacing: .09em;
+}
+
+.mission-patch-type {
+  fill: var(--patch-primary) !important;
+}
+
+.mission-patch-crew {
+  fill: rgba(255, 255, 255, .82) !important;
+  font-size: 9px;
+}
+
+.mission-patch figcaption {
+  display: grid;
+  gap: 3px;
+  text-align: center;
+}
+
+.mission-patch figcaption span {
+  color: var(--patch-primary);
+  font-size: .56rem;
+  font-weight: 950;
+  letter-spacing: .14em;
+}
+
+.mission-patch figcaption strong {
+  color: #fff;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.mission-patch-large {
+  width: min(260px, 100%);
+}
+
+.mission-patch-medium {
+  width: 190px;
+}
+
+.mission-patch-small {
+  width: 150px;
+}
+
+.mission-patch-mini {
+  width: 72px;
+}
+
+.mission-patch-mini figcaption {
+  display: none;
+}
+
+.operation-patch-preview {
+  align-content: start;
+}
+
+.operation-patch-preview .mission-patch {
+  margin-top: 22px;
+}
+
+.operation-active-patch {
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 14px;
+  background: rgba(2, 9, 20, .35);
+}
+
+.operation-command-hero {
+  grid-template-columns:
+    minmax(0, 1.15fr)
+    minmax(170px, auto)
+    minmax(230px, .72fr);
+}
+
+.operation-command-facts,
+.operation-end-button {
+  grid-column: 1 / -1;
+}
+
+.operation-end-button {
+  justify-self: end;
+}
+
+.mission-report-patch {
+  display: flex;
+  justify-content: center;
+  margin: 18px 0 20px;
+  padding: 16px;
+  border: 1px solid rgba(114, 217, 255, .12);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top, rgba(114, 217, 255, .08), transparent 56%),
+    rgba(2, 9, 20, .36);
+}
+
+.photoCard {
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-card-patch {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, .46));
+  opacity: .94;
+  pointer-events: none;
+}
+
+.photo-card-patch .mission-patch-disc {
+  box-shadow:
+    inset 0 0 12px rgba(255, 255, 255, .06),
+    0 10px 20px rgba(0, 0, 0, .36),
+    0 0 14px color-mix(in srgb, var(--patch-primary) 24%, transparent);
+}
+
+@media (max-width: 900px) {
+  .operation-command-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .operation-active-patch {
+    justify-items: start;
+  }
+
+  .operation-command-facts,
+  .operation-end-button {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .operation-patch-preview .mission-patch,
+  .operation-active-patch .mission-patch {
+    width: min(220px, 100%);
+    justify-self: center;
+  }
+
+  .operation-active-patch {
+    justify-items: center;
+  }
+
+  .mission-report-patch {
+    padding: 12px;
+  }
+
+  .mission-patch-small {
+    width: 132px;
+  }
+
+  .mission-patch-mini {
+    width: 58px;
+  }
+}
+
+/* Mission Patch Generator visibility polish */
+.operation-patch-callout {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 14px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 157, 28, .34);
+  border-radius: 999px;
+  color: #ffb347;
+  background: rgba(255, 157, 28, .08);
+  font-size: .58rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.operation-patch-preview .admin-card-eyebrow {
+  color: #ffb347;
+}
+
+/* =========================================================
+   CuzBro Easter Eggs
+   ========================================================= */
+.cuzbro-egg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cuzbro-egg-message {
+  position: absolute;
+  left: 50%;
+  display: grid;
+  gap: 7px;
+  min-width: min(560px, calc(100vw - 36px));
+  padding: 20px 26px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 14px;
+  text-align: center;
+  transform: translateX(-50%);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .48);
+}
+
+.cuzbro-egg-message strong {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: clamp(1.05rem, 2.4vw, 1.7rem);
+  font-weight: 950;
+  letter-spacing: .16em;
+}
+
+.cuzbro-egg-message span {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: clamp(.58rem, 1.4vw, .78rem);
+  font-weight: 800;
+  letter-spacing: .19em;
+}
+
+.cuzbro-god-mode {
+  filter: sepia(.35) hue-rotate(72deg) saturate(1.65) contrast(1.08);
+}
+
+.cuzbro-god-mode body {
+  background: #001307;
+}
+
+.cuzbro-god-mode .cuzbro-god-overlay {
+  filter: sepia(0) hue-rotate(-72deg) saturate(.61) contrast(.93);
+}
+
+.cuzbro-god-overlay {
+  background: rgba(0, 24, 8, .12);
+  animation: cuzbroGodFlicker .17s steps(2, end) infinite;
+}
+
+.cuzbro-god-scanlines {
+  position: absolute;
+  inset: 0;
+  opacity: .42;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgba(54, 255, 111, .14) 4px,
+    rgba(54, 255, 111, .14) 5px
+  );
+}
+
+.cuzbro-god-message {
+  top: 18%;
+  color: #5aff89;
+  border-color: rgba(90, 255, 137, .42);
+  background: rgba(0, 28, 9, .88);
+  text-shadow: 0 0 12px rgba(90, 255, 137, .78);
+  animation: cuzbroTerminalDrop .36s ease-out both;
+}
+
+.cuzbro-konami-overlay {
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at center, rgba(7, 27, 58, .42), rgba(0, 0, 0, .04) 58%, transparent 76%);
+}
+
+.cuzbro-konami-infinity {
+  width: min(900px, 94vw);
+  height: auto;
+  overflow: visible;
+}
+
+.cuzbro-konami-trail {
+  fill: none;
+  stroke: rgba(120, 220, 255, .92);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 9px rgba(97, 211, 255, .9));
+  animation: cuzbroDrawInfinity 3.25s .15s ease-in-out forwards;
+}
+
+.cuzbro-konami-star {
+  fill: #fff;
+  stroke: #9ee9ff;
+  stroke-width: 5;
+  opacity: 0;
+  animation: cuzbroStarAppear 3.4s .15s linear forwards;
+}
+
+.cuzbro-konami-message {
+  bottom: 12%;
+  color: #dff8ff;
+  border-color: rgba(114, 217, 255, .34);
+  background: rgba(2, 12, 29, .84);
+  opacity: 0;
+  animation: cuzbroEggMessageIn .5s 3.2s ease-out forwards;
+}
+
+.cuzbro-konami-message strong {
+  color: #72d9ff;
+  text-shadow: 0 0 18px rgba(114, 217, 255, .6);
+}
+
+.cuzbro-chappy-overlay {
+  background: repeating-linear-gradient(
+    -10deg,
+    transparent 0,
+    transparent 48px,
+    rgba(255, 170, 43, .025) 49px,
+    rgba(255, 170, 43, .025) 50px
+  );
+}
+
+.cuzbro-chappy-message {
+  top: 14%;
+  color: #ffe1a8;
+  border-color: rgba(255, 174, 58, .45);
+  background: rgba(36, 19, 2, .9);
+  animation: cuzbroChappyArrival .72s cubic-bezier(.2, .9, .2, 1.2) both;
+}
+
+.cuzbro-chappy-message strong {
+  color: #ffad36;
+  text-shadow: 0 0 16px rgba(255, 173, 54, .46);
+}
+
+@keyframes cuzbroGodFlicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .965; }
+}
+
+@keyframes cuzbroTerminalDrop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -24px) scaleY(.84);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scaleY(1);
+  }
+}
+
+@keyframes cuzbroDrawInfinity {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes cuzbroStarAppear {
+  0% { opacity: 0; }
+  2%, 96% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes cuzbroEggMessageIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes cuzbroChappyArrival {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -80px) rotate(-2deg);
+  }
+  72% {
+    transform: translate(-50%, 8px) rotate(.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cuzbro-god-overlay,
+  .cuzbro-god-message,
+  .cuzbro-konami-trail,
+  .cuzbro-konami-star,
+  .cuzbro-konami-message,
+  .cuzbro-chappy-message {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+  }
+}
