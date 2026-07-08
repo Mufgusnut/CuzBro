@@ -19658,3 +19658,596 @@ footer p {
     animation-delay: 0ms !important;
   }
 }
+
+/* =========================================================
+   CUZBRO GLOBAL DISPLAY THEMES
+   Dark / Light / Observation
+   ========================================================= */
+
+html {
+  transition: background-color .24s ease;
+}
+
+body,
+.nav,
+.admin-top-nav,
+.admin-shell,
+main,
+section,
+[class*="card" i],
+[class*="panel" i],
+[class*="hero" i] {
+  transition:
+    background-color .24s ease,
+    border-color .24s ease,
+    color .24s ease,
+    box-shadow .24s ease,
+    filter .24s ease;
+}
+
+.theme-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 999px;
+  background: rgba(5, 12, 25, .78);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .025);
+  backdrop-filter: blur(14px);
+}
+
+.theme-toggle button {
+  min-width: 0;
+  height: 31px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(220, 231, 247, .64);
+  background: transparent;
+  cursor: pointer;
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  transition:
+    color .18s ease,
+    background .18s ease,
+    box-shadow .18s ease,
+    transform .18s ease;
+}
+
+.theme-toggle button:hover {
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.theme-toggle button.active {
+  color: #fff;
+  background: rgba(74, 140, 255, .2);
+  box-shadow:
+    inset 0 0 0 1px rgba(114, 217, 255, .28),
+    0 0 16px rgba(74, 140, 255, .16);
+}
+
+.admin-top-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* -------------------------
+   LIGHT MODE
+   ------------------------- */
+html[data-theme="light"] {
+  color-scheme: light;
+  --blue: #245fca;
+  --cyan: #087ea4;
+  --orange: #c76200;
+  --purple: #6543d8;
+  --green: #147d42;
+  --bg: #edf3fa;
+  --glass: rgba(255, 255, 255, .86);
+  --line: rgba(18, 42, 72, .18);
+}
+
+html[data-theme="light"] body {
+  color: #13243b;
+  background:
+    radial-gradient(circle at 14% 6%, rgba(74, 140, 255, .14), transparent 26%),
+    radial-gradient(circle at 88% 14%, rgba(255, 157, 28, .10), transparent 24%),
+    linear-gradient(180deg, #f7faff 0%, #edf3fa 48%, #e7eef7 100%);
+}
+
+html[data-theme="light"] .spaceCanvas {
+  opacity: .12;
+}
+
+html[data-theme="light"] .nav,
+html[data-theme="light"] .navSmall,
+html[data-theme="light"] .admin-top-nav,
+html[data-theme="light"] .admin-top-nav-small {
+  color: #13243b;
+  background: rgba(247, 250, 255, .9) !important;
+  border-color: rgba(28, 61, 98, .14) !important;
+  box-shadow: 0 14px 38px rgba(38, 67, 103, .12);
+}
+
+html[data-theme="light"] .logo,
+html[data-theme="light"] .admin-top-brand img {
+  filter: drop-shadow(0 8px 16px rgba(36, 95, 202, .18));
+}
+
+html[data-theme="light"] .nav a,
+html[data-theme="light"] .navDropdownTrigger,
+html[data-theme="light"] .admin-top-menu > a,
+html[data-theme="light"] .admin-top-dropdown > button,
+html[data-theme="light"] .admin-top-user button {
+  color: rgba(19, 36, 59, .78);
+  border-color: rgba(28, 61, 98, .16);
+}
+
+html[data-theme="light"] .nav a:hover,
+html[data-theme="light"] .nav nav a.active,
+html[data-theme="light"] .navDropdownTrigger:hover,
+html[data-theme="light"] .admin-top-menu > a:hover,
+html[data-theme="light"] .admin-top-menu > a.active,
+html[data-theme="light"] .admin-top-dropdown > button:hover,
+html[data-theme="light"] .admin-top-user button:hover {
+  color: #10233c;
+  background: rgba(36, 95, 202, .09);
+}
+
+html[data-theme="light"] .nav .mainNavMenu,
+html[data-theme="light"] .navDropdownMenu,
+html[data-theme="light"] .admin-top-dropdown-menu,
+html[data-theme="light"] .theme-toggle {
+  color: #13243b;
+  background: rgba(255, 255, 255, .94) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 14px 34px rgba(38, 67, 103, .13);
+}
+
+html[data-theme="light"] .theme-toggle button {
+  color: rgba(19, 36, 59, .58);
+}
+
+html[data-theme="light"] .theme-toggle button:hover,
+html[data-theme="light"] .theme-toggle button.active {
+  color: #10233c;
+}
+
+html[data-theme="light"] .theme-toggle button.active {
+  background: rgba(36, 95, 202, .12);
+  box-shadow: inset 0 0 0 1px rgba(36, 95, 202, .2);
+}
+
+html[data-theme="light"] .hero::before {
+  background: linear-gradient(to bottom, rgba(247, 250, 255, .2), rgba(237, 243, 250, .5));
+}
+
+html[data-theme="light"] .hero h1,
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] strong {
+  color: #10233c;
+  text-shadow: none;
+}
+
+html[data-theme="light"] .tagline,
+html[data-theme="light"] p,
+html[data-theme="light"] .captainsLogHero p {
+  color: #405675;
+  text-shadow: none;
+}
+
+html[data-theme="light"] .eyebrow {
+  color: #245fca;
+  text-shadow: none;
+}
+
+html[data-theme="light"] .heroCard,
+html[data-theme="light"] .captainsLogHero,
+html[data-theme="light"] .captainsLogEntry,
+html[data-theme="light"] .captainsLogStatusStrip span,
+html[data-theme="light"] .atlasTimeControls,
+html[data-theme="light"] .atlasZoomControls,
+html[data-theme="light"] .missionMarkerName,
+html[data-theme="light"] .svgMarker,
+html[data-theme="light"] .admin-page,
+html[data-theme="light"] .admin-command-card,
+html[data-theme="light"] .admin-panel,
+html[data-theme="light"] .admin-card,
+html[data-theme="light"] .system-status-card,
+html[data-theme="light"] .crew-presence-panel,
+html[data-theme="light"] [class*="admin-"][class*="card" i],
+html[data-theme="light"] [class*="admin-"][class*="panel" i] {
+  color: #13243b;
+  background: rgba(255, 255, 255, .86) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 18px 48px rgba(38, 67, 103, .12) !important;
+}
+
+html[data-theme="light"] .heroCard *,
+html[data-theme="light"] .admin-shell,
+html[data-theme="light"] .admin-shell p,
+html[data-theme="light"] .admin-shell span,
+html[data-theme="light"] .admin-shell label,
+html[data-theme="light"] .admin-shell small,
+html[data-theme="light"] .captainsLogEntryHeader {
+  text-shadow: none;
+}
+
+html[data-theme="light"] .missionStats strong,
+html[data-theme="light"] .captainsLogEntryHeader,
+html[data-theme="light"] .admin-top-brand strong,
+html[data-theme="light"] .admin-top-auth strong {
+  color: #10233c;
+}
+
+html[data-theme="light"] .missionStats span,
+html[data-theme="light"] .missionStatus,
+html[data-theme="light"] .admin-top-brand em,
+html[data-theme="light"] .admin-top-auth span,
+html[data-theme="light"] .admin-top-auth em {
+  color: #526984;
+}
+
+html[data-theme="light"] input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] select {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .92) !important;
+  border-color: rgba(28, 61, 98, .2) !important;
+}
+
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder {
+  color: rgba(44, 70, 101, .5) !important;
+}
+
+/* -------------------------
+   OBSERVATION MODE
+   Red-only low-light palette
+   ------------------------- */
+html[data-theme="observation"] {
+  color-scheme: dark;
+  --blue: #ff2b2b;
+  --cyan: #ff5757;
+  --orange: #ff3434;
+  --purple: #c92525;
+  --green: #ff4c4c;
+  --bg: #020000;
+  --glass: rgba(18, 0, 0, .9);
+  --line: rgba(255, 55, 55, .2);
+}
+
+html[data-theme="observation"] body {
+  color: #ff4a4a;
+  background: #020000;
+}
+
+html[data-theme="observation"] .spaceCanvas {
+  opacity: .09;
+  filter: grayscale(1) sepia(1) saturate(8) hue-rotate(310deg) brightness(.5) contrast(1.25);
+}
+
+html[data-theme="observation"] .nav,
+html[data-theme="observation"] .navSmall,
+html[data-theme="observation"] .admin-top-nav,
+html[data-theme="observation"] .admin-top-nav-small,
+html[data-theme="observation"] .nav .mainNavMenu,
+html[data-theme="observation"] .navDropdownMenu,
+html[data-theme="observation"] .admin-top-dropdown-menu,
+html[data-theme="observation"] .theme-toggle,
+html[data-theme="observation"] .heroCard,
+html[data-theme="observation"] .captainsLogHero,
+html[data-theme="observation"] .captainsLogEntry,
+html[data-theme="observation"] .captainsLogStatusStrip span,
+html[data-theme="observation"] .atlasTimeControls,
+html[data-theme="observation"] .atlasZoomControls,
+html[data-theme="observation"] .missionMarkerName,
+html[data-theme="observation"] .svgMarker,
+html[data-theme="observation"] [class*="admin-"][class*="card" i],
+html[data-theme="observation"] [class*="admin-"][class*="panel" i] {
+  color: #ff4a4a !important;
+  background: rgba(12, 0, 0, .94) !important;
+  border-color: rgba(255, 48, 48, .22) !important;
+  box-shadow: 0 0 28px rgba(110, 0, 0, .12) !important;
+}
+
+html[data-theme="observation"] .hero::before {
+  background: linear-gradient(to bottom, rgba(8, 0, 0, .28), rgba(2, 0, 0, .62));
+}
+
+html[data-theme="observation"] *,
+html[data-theme="observation"] h1,
+html[data-theme="observation"] h2,
+html[data-theme="observation"] h3,
+html[data-theme="observation"] p,
+html[data-theme="observation"] span,
+html[data-theme="observation"] small,
+html[data-theme="observation"] strong,
+html[data-theme="observation"] em,
+html[data-theme="observation"] label,
+html[data-theme="observation"] a,
+html[data-theme="observation"] button {
+  text-shadow: none !important;
+}
+
+html[data-theme="observation"] h1,
+html[data-theme="observation"] h2,
+html[data-theme="observation"] h3,
+html[data-theme="observation"] strong,
+html[data-theme="observation"] .hero h1,
+html[data-theme="observation"] .missionStats strong,
+html[data-theme="observation"] .admin-top-brand strong,
+html[data-theme="observation"] .admin-top-auth strong {
+  color: #ff3434 !important;
+}
+
+html[data-theme="observation"] p,
+html[data-theme="observation"] .tagline,
+html[data-theme="observation"] .missionStatus,
+html[data-theme="observation"] .missionStats span,
+html[data-theme="observation"] .admin-top-brand em,
+html[data-theme="observation"] .admin-top-auth span,
+html[data-theme="observation"] .admin-top-auth em {
+  color: #c72d2d !important;
+}
+
+html[data-theme="observation"] .hero h1 span {
+  background: none;
+  color: #ff2929 !important;
+  -webkit-text-fill-color: #ff2929;
+}
+
+html[data-theme="observation"] .logo,
+html[data-theme="observation"] .admin-top-brand img {
+  filter: grayscale(1) sepia(1) saturate(10) hue-rotate(310deg) brightness(.72) contrast(1.3)
+    drop-shadow(0 0 10px rgba(255, 0, 0, .2));
+}
+
+html[data-theme="observation"] img:not(.logo):not(.admin-top-brand img) {
+  filter: grayscale(1) sepia(1) saturate(7) hue-rotate(310deg) brightness(.62) contrast(1.28);
+}
+
+html[data-theme="observation"] .theme-toggle button,
+html[data-theme="observation"] .nav a,
+html[data-theme="observation"] .navDropdownTrigger,
+html[data-theme="observation"] .admin-top-menu > a,
+html[data-theme="observation"] .admin-top-dropdown > button,
+html[data-theme="observation"] .admin-top-user button {
+  color: rgba(255, 64, 64, .68) !important;
+  border-color: rgba(255, 48, 48, .18) !important;
+}
+
+html[data-theme="observation"] .theme-toggle button:hover,
+html[data-theme="observation"] .theme-toggle button.active,
+html[data-theme="observation"] .nav a:hover,
+html[data-theme="observation"] .nav nav a.active,
+html[data-theme="observation"] .admin-top-menu > a:hover,
+html[data-theme="observation"] .admin-top-menu > a.active {
+  color: #ff4c4c !important;
+  background: rgba(255, 30, 30, .1) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 48, 48, .22) !important;
+}
+
+html[data-theme="observation"] .online {
+  background: #ff3434;
+  box-shadow: 0 0 10px rgba(255, 52, 52, .55);
+}
+
+html[data-theme="observation"] input,
+html[data-theme="observation"] textarea,
+html[data-theme="observation"] select {
+  color: #ff4a4a !important;
+  background: #090000 !important;
+  border-color: rgba(255, 48, 48, .22) !important;
+  caret-color: #ff3434;
+}
+
+html[data-theme="observation"] input::placeholder,
+html[data-theme="observation"] textarea::placeholder {
+  color: rgba(198, 45, 45, .56) !important;
+}
+
+html[data-theme="observation"] .admin-priority-toast,
+html[data-theme="observation"] .admin-comms-global-launch,
+html[data-theme="observation"] .admin-incident-global-banner {
+  filter: grayscale(1) sepia(1) saturate(8) hue-rotate(310deg) brightness(.75);
+}
+
+@media (max-width: 1220px) {
+  .admin-top-controls {
+    gap: 8px;
+  }
+
+  .admin-top-nav .theme-toggle button span {
+    display: none;
+  }
+
+  .admin-top-nav .theme-toggle button {
+    width: 31px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 1000px) {
+  .nav .theme-toggle button span {
+    display: none;
+  }
+
+  .nav .theme-toggle button {
+    width: 31px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .theme-toggle {
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .theme-toggle button {
+    width: 29px;
+    height: 29px;
+    padding: 0;
+  }
+
+  .theme-toggle button span {
+    display: none;
+  }
+
+  .admin-top-controls {
+    gap: 6px;
+  }
+}
+
+/* =========================================================
+   LIGHT MODE — FULL SURFACE PASS
+   Keeps feature cards bright instead of leaving dark-mode islands.
+   ========================================================= */
+html[data-theme="light"] .admin-dashboard-deployment-row,
+html[data-theme="light"] .admin-dashboard-nav-card,
+html[data-theme="light"] .admin-dashboard-mission-card,
+html[data-theme="light"] .admin-active-operation,
+html[data-theme="light"] .admin-incident-status-strip,
+html[data-theme="light"] .admin-tasking-status-strip,
+html[data-theme="light"] .admin-system-summary > div,
+html[data-theme="light"] .admin-activity-panel,
+html[data-theme="light"] .equipmentTeaser,
+html[data-theme="light"] .equipmentTeaserSystems article,
+html[data-theme="light"] .equipmentLockerHero,
+html[data-theme="light"] .equipmentLockerStatus span,
+html[data-theme="light"] .equipmentCategoryHeader,
+html[data-theme="light"] .equipmentCard,
+html[data-theme="light"] .equipmentFacts span,
+html[data-theme="light"] .equipmentLockerMessage {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .07), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, .96), rgba(239, 245, 252, .94)) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 18px 46px rgba(38, 67, 103, .12) !important;
+}
+
+html[data-theme="light"] .admin-dashboard-nav-card-watch {
+  background:
+    radial-gradient(circle at 12% 50%, rgba(101, 67, 216, .09), transparent 35%),
+    linear-gradient(145deg, rgba(255, 255, 255, .97), rgba(242, 240, 255, .95)) !important;
+}
+
+html[data-theme="light"] .admin-active-operation-live {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(20, 125, 66, .08), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, .97), rgba(239, 249, 243, .95)) !important;
+}
+
+html[data-theme="light"] .admin-incident-status-strip-active {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(199, 98, 0, .09), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, .97), rgba(255, 246, 235, .95)) !important;
+}
+
+html[data-theme="light"] .admin-dashboard-deployment-row:hover,
+html[data-theme="light"] .admin-dashboard-nav-card:hover,
+html[data-theme="light"] .admin-dashboard-mission-card:hover,
+html[data-theme="light"] .admin-active-operation:hover,
+html[data-theme="light"] .admin-incident-status-strip:hover,
+html[data-theme="light"] .admin-tasking-status-strip:hover,
+html[data-theme="light"] .equipmentCard:hover,
+html[data-theme="light"] .equipmentCard.open {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .11), transparent 36%),
+    linear-gradient(145deg, #ffffff, #edf4fc) !important;
+  border-color: rgba(36, 95, 202, .30) !important;
+  box-shadow: 0 22px 54px rgba(38, 67, 103, .17) !important;
+}
+
+html[data-theme="light"] .admin-dashboard-nav-copy > strong,
+html[data-theme="light"] .admin-dashboard-compact-stats strong,
+html[data-theme="light"] .admin-dashboard-card-stats strong,
+html[data-theme="light"] .admin-active-operation-status h3,
+html[data-theme="light"] .admin-active-operation-clock strong,
+html[data-theme="light"] .admin-incident-status-copy strong,
+html[data-theme="light"] .admin-tasking-status-copy > strong,
+html[data-theme="light"] .admin-system-summary strong,
+html[data-theme="light"] .equipmentTeaser h3,
+html[data-theme="light"] .equipmentTeaserSystems strong,
+html[data-theme="light"] .equipmentLockerHero h1,
+html[data-theme="light"] .equipmentCategoryHeader h2,
+html[data-theme="light"] .equipmentCardTitle strong,
+html[data-theme="light"] .equipmentFacts span {
+  color: #10233c !important;
+}
+
+html[data-theme="light"] .admin-dashboard-section-heading p,
+html[data-theme="light"] .admin-dashboard-nav-copy > p,
+html[data-theme="light"] .admin-dashboard-nav-telemetry small,
+html[data-theme="light"] .admin-active-operation-status p,
+html[data-theme="light"] .admin-incident-status-copy p,
+html[data-theme="light"] .admin-tasking-status-copy > p,
+html[data-theme="light"] .equipmentTeaser p,
+html[data-theme="light"] .equipmentLockerHero p,
+html[data-theme="light"] .equipmentCardTitle em,
+html[data-theme="light"] .equipmentCardBody > p,
+html[data-theme="light"] .equipmentFieldNote p,
+html[data-theme="light"] .equipmentCategoryHeader i,
+html[data-theme="light"] .equipmentLockerStatus span,
+html[data-theme="light"] .equipmentLockerMessage {
+  color: #4b617d !important;
+}
+
+html[data-theme="light"] .admin-dashboard-compact-stats,
+html[data-theme="light"] .admin-dashboard-card-stats,
+html[data-theme="light"] .admin-active-operation-clock,
+html[data-theme="light"] .admin-tasking-status-action,
+html[data-theme="light"] .admin-incident-status-action,
+html[data-theme="light"] .equipmentCardBody {
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+html[data-theme="light"] .admin-dashboard-nav-icon,
+html[data-theme="light"] .admin-incident-status-icon,
+html[data-theme="light"] .admin-tasking-status-icon,
+html[data-theme="light"] .equipmentCardIcon,
+html[data-theme="light"] .equipmentCategoryHeader > span {
+  background: rgba(36, 95, 202, .07) !important;
+  border-color: rgba(36, 95, 202, .18) !important;
+}
+
+html[data-theme="light"] .admin-tasking-own-list > *,
+html[data-theme="light"] .equipmentTeaserChips span,
+html[data-theme="light"] .equipmentFacts span,
+html[data-theme="light"] .equipmentBestFor em {
+  background: rgba(36, 95, 202, .055) !important;
+  border-color: rgba(36, 95, 202, .15) !important;
+}
+
+html[data-theme="light"] .equipmentTeaserChips span,
+html[data-theme="light"] .equipmentBestFor em,
+html[data-theme="light"] .equipmentCardHeader,
+html[data-theme="light"] .equipmentCardToggle {
+  color: #274563 !important;
+}
+
+html[data-theme="light"] .equipmentTeaser > div:first-child > a,
+html[data-theme="light"] .equipmentLockerBack {
+  color: #8b4700 !important;
+  background: rgba(199, 98, 0, .08) !important;
+  border-color: rgba(199, 98, 0, .28) !important;
+}
+
+html[data-theme="light"] .equipmentFieldNote {
+  background: rgba(199, 98, 0, .055) !important;
+  border-color: rgba(199, 98, 0, .18) !important;
+}

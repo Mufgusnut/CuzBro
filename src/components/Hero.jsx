@@ -1,4 +1,5 @@
 import HeroDashboard from './HeroDashboard.jsx';
+import ThemeToggle from './ThemeToggle.jsx';
 import { useEffect, useState } from 'react';
 
 function CountUp({ end }) {
@@ -80,6 +81,8 @@ export default function Hero({
           <a href="/equipment">Gear</a>
           <a href="/#about">About</a>
         </nav>
+
+        <ThemeToggle />
       </header>
 
       <section id="home" className="hero">

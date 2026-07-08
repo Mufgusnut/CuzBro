@@ -14,6 +14,7 @@ import BlackBox from './components/BlackBox.jsx';
 import DeploymentControl from './components/DeploymentControl.jsx';
 import AdminCommandPalette from './components/AdminCommandPalette.jsx';
 import EasterEggs from './components/EasterEggs.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
 import { LogOut } from 'lucide-react';
@@ -225,6 +226,8 @@ function PageNav({ scrolled }) {
           About
         </a>
       </nav>
+
+      <ThemeToggle />
     </header>
   );
 }
@@ -341,7 +344,10 @@ function AdminTopNav({
         </div>
       </nav>
 
-      <div className="admin-top-user">
+      <div className="admin-top-controls">
+        <ThemeToggle />
+
+        <div className="admin-top-user">
         <div className="admin-top-auth">
           <span>CREW AUTHENTICATED</span>
           <strong>{crew.callSign}</strong>
@@ -355,6 +361,7 @@ function AdminTopNav({
           <LogOut size={16} />
           Log Out
         </button>
+        </div>
       </div>
     </header>
   );
