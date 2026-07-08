@@ -21,6 +21,8 @@ const DEFAULT_SITE = {
 const MAP_SIZE = 1000;
 const CENTER = MAP_SIZE / 2;
 const RADIUS = 430;
+const ELIOT_TALLEST_TREE_HEIGHT = 156;
+const NYC_SKYLINE_MAX_HEIGHT = Math.round(ELIOT_TALLEST_TREE_HEIGHT * 1.3);
 
 const DESKTOP_DEFAULT_ZOOM = 0.68;
 const MOBILE_DEFAULT_ZOOM = 1.0;
@@ -1704,6 +1706,90 @@ function buildConiferPath(tree) {
 }
 
 
+function buildSkylineBuildings() {
+  const radius = RADIUS - 8;
+  const count = 72;
+
+  return Array.from({ length: count }, (_, index) => {
+    const angle = (360 / count) * index;
+    const base = polarToCartesian(CENTER, CENTER, radius, angle);
+    const broad = Math.sin(toRadians(angle * 1.25 + 22)) * 34;
+    const medium = Math.sin(toRadians(angle * 5.8 - 17)) * 24;
+    const fine = Math.sin(toRadians(angle * 13.2 + 63)) * 13;
+    const height = clamp(132 + broad + medium + fine, 92, NYC_SKYLINE_MAX_HEIGHT);
+    const width = clamp(12 + height * 0.05 + Math.sin(index * 0.91) * 2.4, 10, 22);
+
+    return {
+      id: `nyc-building-${index}`,
+      angle,
+      x: base.x,
+      y: base.y,
+      height,
+      width,
+      variant: index % 4,
+      antennaHeight: index % 6 === 0 ? clamp(height * 0.14, 10, 24) : 0,
+      opacity: clamp(0.78 + Math.sin(index * 0.73) * 0.08, 0.68, 0.92)
+    };
+  });
+}
+
+function buildSkylinePath(building) {
+  const h = building.height;
+  const w = building.width;
+  const left = -w / 2;
+  const right = w / 2;
+
+  if (building.variant === 1) {
+    const upper = h * 0.84;
+    const inset = w * 0.22;
+    return [
+      `M ${left.toFixed(1)} 0`,
+      `L ${left.toFixed(1)} ${(-upper).toFixed(1)}`,
+      `L ${(-inset).toFixed(1)} ${(-upper).toFixed(1)}`,
+      `L ${(-inset).toFixed(1)} ${(-h).toFixed(1)}`,
+      `L ${inset.toFixed(1)} ${(-h).toFixed(1)}`,
+      `L ${inset.toFixed(1)} ${(-upper).toFixed(1)}`,
+      `L ${right.toFixed(1)} ${(-upper).toFixed(1)}`,
+      `L ${right.toFixed(1)} 0 Z`
+    ].join(' ');
+  }
+
+  if (building.variant === 2) {
+    const shoulder = h * 0.72;
+    return [
+      `M ${left.toFixed(1)} 0`,
+      `L ${left.toFixed(1)} ${(-shoulder).toFixed(1)}`,
+      `L ${(-w * 0.28).toFixed(1)} ${(-shoulder).toFixed(1)}`,
+      `L ${(-w * 0.18).toFixed(1)} ${(-h).toFixed(1)}`,
+      `L ${(w * 0.18).toFixed(1)} ${(-h).toFixed(1)}`,
+      `L ${(w * 0.28).toFixed(1)} ${(-shoulder).toFixed(1)}`,
+      `L ${right.toFixed(1)} ${(-shoulder).toFixed(1)}`,
+      `L ${right.toFixed(1)} 0 Z`
+    ].join(' ');
+  }
+
+  if (building.variant === 3) {
+    const notch = h * 0.12;
+    return [
+      `M ${left.toFixed(1)} 0`,
+      `L ${left.toFixed(1)} ${(-h).toFixed(1)}`,
+      `L ${(-w * 0.12).toFixed(1)} ${(-h).toFixed(1)}`,
+      `L ${(-w * 0.12).toFixed(1)} ${(-(h - notch)).toFixed(1)}`,
+      `L ${(w * 0.12).toFixed(1)} ${(-(h - notch)).toFixed(1)}`,
+      `L ${(w * 0.12).toFixed(1)} ${(-h).toFixed(1)}`,
+      `L ${right.toFixed(1)} ${(-h).toFixed(1)}`,
+      `L ${right.toFixed(1)} 0 Z`
+    ].join(' ');
+  }
+
+  return [
+    `M ${left.toFixed(1)} 0`,
+    `L ${left.toFixed(1)} ${(-h).toFixed(1)}`,
+    `L ${right.toFixed(1)} ${(-h).toFixed(1)}`,
+    `L ${right.toFixed(1)} 0 Z`
+  ].join(' ');
+}
+
 function estimateTextBox(text, fontSize = 15) {
   const normalized = String(text || '').trim();
   return {
@@ -3046,6 +3132,13 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const canPanMap = zoom > getDefaultZoom() + 0.02;
   const forestTrees = useMemo(() => buildConnectedForestTrees(), []);
   const forestBasePath = useMemo(() => buildForestBasePath(forestTrees), [forestTrees]);
+  const skylineBuildings = useMemo(() => buildSkylineBuildings(), []);
+  const skylineBasePath = useMemo(() => buildForestBasePath(skylineBuildings), [skylineBuildings]);
+  const obstructionVisual = site?.key === 'CONGERS'
+    ? 'none'
+    : site?.key === 'NEW_YORK_CITY'
+      ? 'skyline'
+      : 'trees';
 
   useEffect(() => {
     return () => {
@@ -3970,7 +4063,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                   onClick={(event) => { event.stopPropagation(); setShowHorizon((current) => !current); }}
                   aria-pressed={showHorizon}
                 >
-                  Trees
+                  Trees/Obstructions
                 </button>
               </div>
             </div>
@@ -4030,7 +4123,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
               <line x1={CENTER} y1={CENTER - RADIUS} x2={CENTER} y2={CENTER + RADIUS} className="skyAxis" />
               <line x1={CENTER - RADIUS} y1={CENTER} x2={CENTER + RADIUS} y2={CENTER} className="skyAxis" />
 
-              {showHorizon && forestTrees.length > 0 && (
+              {showHorizon && obstructionVisual === 'trees' && forestTrees.length > 0 && (
                 <g className="treeHorizon" pointerEvents="none">
                   {forestBasePath && (
                     <path
@@ -4065,6 +4158,48 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                         className="treeHorizonTrunk"
                         vectorEffect="non-scaling-stroke"
                       />
+                    </g>
+                  ))}
+                </g>
+              )}
+
+              {showHorizon && obstructionVisual === 'skyline' && skylineBuildings.length > 0 && (
+                <g className="skylineHorizon" pointerEvents="none">
+                  {skylineBasePath && (
+                    <path
+                      d={skylineBasePath}
+                      className="skylineHorizonBaseGlow"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  )}
+
+                  {skylineBuildings.map((building) => (
+                    <g
+                      key={building.id}
+                      className="skylineHorizonBuildingGroup"
+                      transform={`translate(${building.x.toFixed(1)} ${building.y.toFixed(1)}) rotate(${(building.angle + 180).toFixed(1)})`}
+                      style={{ opacity: building.opacity }}
+                    >
+                      <path
+                        d={buildSkylinePath(building)}
+                        className="skylineHorizonBuildingGlow"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <path
+                        d={buildSkylinePath(building)}
+                        className="skylineHorizonBuilding"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      {building.antennaHeight > 0 && (
+                        <line
+                          x1="0"
+                          y1={(-building.height).toFixed(1)}
+                          x2="0"
+                          y2={(-(building.height + building.antennaHeight)).toFixed(1)}
+                          className="skylineHorizonAntenna"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      )}
                     </g>
                   ))}
                 </g>
