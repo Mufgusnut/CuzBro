@@ -42,6 +42,18 @@ const TARGET_ALIASES = {
   albireo: ['beta cygni']
 };
 
+const TIMELINE_MILESTONES = [
+  {
+    id: 'cpc-800-acquired',
+    date: '2026-06-13',
+    title: 'CPC 800 Acquired',
+    eyebrow: 'Observatory Milestone',
+    description:
+      'The telescope system that started the current CuzBro observing era.'
+  }
+];
+
+
 
 function getMissionType(photo) {
   const typeText = normalizeMissionTargetName(
@@ -270,6 +282,39 @@ function groupMissionsByDate(missions, captainsLog) {
   return groups;
 }
 
+function addMilestonesToDateGroups(dateGroups) {
+  const groups = dateGroups.map((group) => ({
+    ...group,
+    milestones: []
+  }));
+  const byDate = new Map(groups.map((group) => [group.key, group]));
+
+  TIMELINE_MILESTONES.forEach((milestone) => {
+    const key = getDateKey(milestone.date);
+
+    if (!byDate.has(key)) {
+      const group = {
+        key,
+        missionDate: milestone.date,
+        missions: [],
+        milestones: []
+      };
+
+      byDate.set(key, group);
+      groups.push(group);
+    }
+
+    byDate.get(key).milestones.push(milestone);
+  });
+
+  return groups.sort(
+    (a, b) =>
+      (parseMissionDate(a.missionDate)?.getTime() || 0) -
+      (parseMissionDate(b.missionDate)?.getTime() || 0)
+  );
+}
+
+
 export default function MissionTimeline({
   gallery,
   captainsLog = [],
@@ -290,10 +335,12 @@ export default function MissionTimeline({
   const latestMissionId = sortedMissions[0]?.id;
   const recentMissions = sortedMissions.slice(0, 8).reverse();
 
-  const dateGroups = groupMissionsByDate(
+  const observingDateGroups = groupMissionsByDate(
     recentMissions,
     captainsLog
   );
+  const dateGroups = addMilestonesToDateGroups(observingDateGroups);
+  const milestoneCount = TIMELINE_MILESTONES.length;
 
   if (recentMissions.length < 2) {
     return null;
@@ -314,7 +361,7 @@ export default function MissionTimeline({
 
         <div className="missionTimelineMeta">
           <span>
-            {recentMissions.length} captures · {dateGroups.length} observing {dateGroups.length === 1 ? 'date' : 'dates'}
+            {recentMissions.length} captures · {observingDateGroups.length} observing {observingDateGroups.length === 1 ? 'date' : 'dates'} · {milestoneCount} {milestoneCount === 1 ? 'milestone' : 'milestones'}
           </span>
           <span className="missionTimelineInspectHint">
             <Clock3 size={14} />
@@ -336,7 +383,7 @@ export default function MissionTimeline({
           return (
             <div
               className={`missionTimelineDateGroup ${
-                group.missions.length > 1
+                group.missions.length + (group.milestones?.length || 0) > 1
                   ? 'missionTimelineDateGroupStacked'
                   : ''
               }`}
@@ -353,6 +400,43 @@ export default function MissionTimeline({
               </time>
 
               <div className="missionTimelineMissionStack">
+                {(group.milestones || []).map((milestone) => (
+                  <div
+                    className="missionTimelineStop missionTimelineMilestone"
+                    key={milestone.id}
+                  >
+                    <div
+                      className="missionTimelineNode missionTimelineMilestoneNode"
+                      role="img"
+                      aria-label={`${milestone.title}, milestone from ${formatTimelineDate(milestone.date)}`}
+                    >
+                      <i aria-hidden="true">
+                        <Telescope size={11} strokeWidth={2.2} />
+                      </i>
+                      <strong>{milestone.title}</strong>
+                      <em>Milestone</em>
+                    </div>
+
+                    <div
+                      className="missionTimelinePreview missionTimelineMilestonePreview"
+                      aria-hidden="true"
+                    >
+                      <div className="missionTimelineMilestonePreviewIcon">
+                        <Telescope size={28} strokeWidth={1.8} />
+                      </div>
+
+                      <div>
+                        <small>{milestone.eyebrow}</small>
+                        <strong>{milestone.title}</strong>
+                        <span>{milestone.description}</span>
+                        <time dateTime={getDateKey(milestone.date)}>
+                          {formatTimelineDate(milestone.date)}
+                        </time>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
                 {group.missions.map((photo, missionIndex) => {
                   const missionType = getMissionType(photo);
                   const isLatest = photo.id === latestMissionId;

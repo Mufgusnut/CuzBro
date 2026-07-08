@@ -23681,3 +23681,125 @@ html[data-theme="observation"] .atlasObserverSite em {
     font-size: .5rem !important;
   }
 }
+/* =========================================================
+   HOMEPAGE MISSION TIMELINE — CPC 800 ACQUISITION MILESTONE
+   ========================================================= */
+
+.missionTimelineMilestone .missionTimelineNode {
+  cursor: default !important;
+}
+
+.missionTimelineMilestone .missionTimelineNode i {
+  color: #ffb451 !important;
+  border-color: rgba(255, 180, 81, .72) !important;
+  background: rgba(255, 157, 28, .08) !important;
+  box-shadow:
+    0 0 0 5px rgba(255, 157, 28, .055),
+    0 0 16px rgba(255, 157, 28, .14) !important;
+}
+
+.missionTimelineMilestone .missionTimelineNode strong {
+  color: rgba(255, 203, 132, .94) !important;
+}
+
+.missionTimelineMilestone .missionTimelineNode em {
+  color: #ffc16f !important;
+  background: rgba(255, 157, 28, .1) !important;
+  border-color: rgba(255, 157, 28, .34) !important;
+}
+
+.missionTimelineMilestonePreview {
+  width: 190px !important;
+  padding: 8px !important;
+  background:
+    radial-gradient(circle at top left, rgba(255, 157, 28, .12), transparent 46%),
+    rgba(7, 14, 30, .98) !important;
+  border-color: rgba(255, 157, 28, .3) !important;
+}
+
+.missionTimelineMilestonePreview::after {
+  border-right-color: rgba(255, 157, 28, .3) !important;
+  border-bottom-color: rgba(255, 157, 28, .3) !important;
+}
+
+.missionTimelineMilestonePreviewIcon {
+  height: 60px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  color: #ffb451 !important;
+  background:
+    radial-gradient(circle, rgba(255, 157, 28, .13), transparent 68%),
+    rgba(255, 157, 28, .045) !important;
+  border: 1px solid rgba(255, 157, 28, .16) !important;
+}
+
+.missionTimelineMilestonePreview small {
+  color: #d28a35 !important;
+}
+
+html[data-theme="light"] .missionTimelineMilestone .missionTimelineNode i {
+  color: #9a5700 !important;
+  border-color: rgba(154, 87, 0, .5) !important;
+  background: #fff3df !important;
+}
+
+html[data-theme="light"] .missionTimelineMilestone .missionTimelineNode strong {
+  color: #7b4300 !important;
+}
+
+html[data-theme="light"] .missionTimelineMilestone .missionTimelineNode em {
+  color: #7b4300 !important;
+  background: #fff3df !important;
+  border-color: rgba(154, 87, 0, .28) !important;
+}
+
+html[data-theme="light"] .missionTimelineMilestonePreview {
+  color: #13243b !important;
+  background:
+    radial-gradient(circle at top left, rgba(255, 157, 28, .11), transparent 46%),
+    #ffffff !important;
+  border-color: rgba(169, 91, 0, .26) !important;
+}
+
+html[data-theme="light"] .missionTimelineMilestonePreview::after {
+  border-right-color: rgba(169, 91, 0, .26) !important;
+  border-bottom-color: rgba(169, 91, 0, .26) !important;
+}
+
+html[data-theme="light"] .missionTimelineMilestonePreviewIcon {
+  color: #9a5700 !important;
+  background: #fff7eb !important;
+  border-color: rgba(169, 91, 0, .18) !important;
+}
+
+html[data-theme="light"] .missionTimelineMilestonePreview small {
+  color: #9a5700 !important;
+}
+
+html[data-theme="observation"] .missionTimelineMilestone .missionTimelineNode i,
+html[data-theme="observation"] .missionTimelineMilestonePreviewIcon {
+  color: #ff6b6b !important;
+  border-color: rgba(255, 67, 67, .5) !important;
+  background: rgba(110, 0, 0, .14) !important;
+}
+
+html[data-theme="observation"] .missionTimelineMilestone .missionTimelineNode strong,
+html[data-theme="observation"] .missionTimelineMilestone .missionTimelineNode em,
+html[data-theme="observation"] .missionTimelineMilestonePreview small {
+  color: #ff7777 !important;
+}
+
+html[data-theme="observation"] .missionTimelineMilestonePreview {
+  background:
+    radial-gradient(circle at top left, rgba(255, 50, 50, .1), transparent 46%),
+    rgba(12, 0, 0, .98) !important;
+  border-color: rgba(255, 55, 55, .26) !important;
+}
+
+html[data-theme="observation"] .missionTimelineMilestonePreview::after {
+  border-right-color: rgba(255, 55, 55, .26) !important;
+  border-bottom-color: rgba(255, 55, 55, .26) !important;
+}
