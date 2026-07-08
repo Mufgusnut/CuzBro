@@ -24411,3 +24411,150 @@ html[data-theme="observation"] .skylineHorizonBuilding,
 html[data-theme="observation"] .skylineHorizonAntenna {
   filter: saturate(.72) brightness(.82) !important;
 }
+/* =========================================================
+   LIGHT MODE — ADMIN DROPDOWN LINK CONTRAST
+   Dropdown surface was light, but links still inherited the
+   pale dark-theme text color.
+   ========================================================= */
+
+html[data-theme="light"] .admin-top-dropdown-menu a {
+  color: #19314f !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="light"] .admin-top-dropdown-menu a:hover,
+html[data-theme="light"] .admin-top-dropdown-menu a:focus-visible {
+  color: #10233c !important;
+  background: rgba(36, 95, 202, 0.09) !important;
+  outline: none !important;
+}
+
+html[data-theme="light"] .admin-top-dropdown-menu a.active {
+  color: #8b4700 !important;
+  background: rgba(196, 111, 18, 0.10) !important;
+  box-shadow: inset 3px 0 0 rgba(196, 111, 18, 0.68) !important;
+}
+/* =========================================================
+   LIGHT MODE — CELESTIAL ATLAS SVG LABEL / PATH CONTRAST
+   Keep the daylight canvas, but stop map text from washing out.
+   ========================================================= */
+
+html[data-theme="light"] .planetLabel,
+html[data-theme="light"] .brightStarLabel,
+html[data-theme="light"] .polarisLabel,
+html[data-theme="light"] .futureFinderStarLabel,
+html[data-theme="light"] .futureTargetTrackLabel,
+html[data-theme="light"] .missionMarkerName {
+  fill: #142b49 !important;
+  color: #142b49 !important;
+  opacity: 1 !important;
+  paint-order: stroke !important;
+  stroke: rgba(255, 255, 255, .98) !important;
+  stroke-width: 4px !important;
+  stroke-linejoin: round !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .futureTargetTrackPeakLabel {
+  fill: #7b3f00 !important;
+  color: #7b3f00 !important;
+  opacity: 1 !important;
+  paint-order: stroke !important;
+  stroke: rgba(255, 255, 255, .98) !important;
+  stroke-width: 4px !important;
+  stroke-linejoin: round !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .constellationText {
+  fill: #355979 !important;
+  opacity: .82 !important;
+  paint-order: stroke !important;
+  stroke: rgba(255, 255, 255, .96) !important;
+  stroke-width: 3px !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .constellationText.active {
+  fill: #7c3f00 !important;
+  opacity: 1 !important;
+  stroke: rgba(255, 255, 255, .98) !important;
+  stroke-width: 4px !important;
+}
+
+html[data-theme="light"] .constellationSegment {
+  stroke: rgba(73, 118, 162, .30) !important;
+  opacity: .72 !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .constellationSegment.active {
+  stroke: rgba(44, 112, 153, .82) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .planetMarker {
+  fill: #52b8e6 !important;
+  stroke: rgba(25, 57, 91, .50) !important;
+  stroke-width: 1.5px !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .skyStar {
+  fill: #536b86 !important;
+  opacity: .88 !important;
+}
+
+html[data-theme="light"] .polarisStar {
+  fill: #d9a84c !important;
+  stroke: rgba(106, 69, 8, .34) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .futureFinderLine {
+  stroke: rgba(29, 119, 159, .62) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .futureFinderStarHalo {
+  fill: rgba(49, 145, 188, .13) !important;
+  stroke: rgba(38, 117, 153, .44) !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .futureFinderStarDot {
+  fill: #237ea8 !important;
+  stroke: #ffffff !important;
+  stroke-width: 1.5px !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .futureTargetTrackPath {
+  stroke: rgba(25, 113, 151, .92) !important;
+  stroke-width: 2.2px !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .eclipticPath {
+  stroke: #b86c1f !important;
+  stroke-width: 2.3px !important;
+  opacity: .96 !important;
+}
+
+html[data-theme="light"] .lunarPath {
+  stroke: #536d99 !important;
+  stroke-width: 2.2px !important;
+  opacity: .92 !important;
+}
+
+html[data-theme="light"] .skyAltitudeRing,
+html[data-theme="light"] .skyAxis {
+  stroke: rgba(57, 86, 121, .38) !important;
+  opacity: 1 !important;
+}
