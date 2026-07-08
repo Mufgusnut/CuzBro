@@ -21823,3 +21823,95 @@ html[data-theme="light"] .admin-transfer-group-stats .admin-delete-button {
   background: #fff5f5 !important;
   border-color: rgba(182, 59, 59, .25) !important;
 }
+/* =========================================================
+   LIGHT MODE — WEATHER VISIBLE TONIGHT RISE/SET CONTRAST
+   ========================================================= */
+
+html[data-theme="light"] .visible-tonight-row span:last-child,
+html[data-theme="light"] .weather-visible-row span:last-child,
+html[data-theme="light"] .weather-visibility-row span:last-child,
+html[data-theme="light"] .weather-card .visible-tonight span:last-child,
+html[data-theme="light"] .weather-card .visible-tonight-row > :last-child {
+  color: #394f6d !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .visible-tonight-row,
+html[data-theme="light"] .weather-visible-row,
+html[data-theme="light"] .weather-visibility-row {
+  color: #394f6d !important;
+}
+/* =========================================================
+   LIGHT MODE — EXACT WEATHER RISE/SET SELECTOR FIX
+   Weather.jsx renders values as .skyTargets em
+   ========================================================= */
+
+html[data-theme="light"] .skyTargets em {
+  color: #2f4562 !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .skyTargets span {
+  color: #2f4562 !important;
+}
+/* =========================================================
+   LIGHT MODE — GALLERY PHOTO CARD CAPTION CONTRAST
+   Keep astrophotos dark; improve overlay readability.
+   ========================================================= */
+
+html[data-theme="light"] .photoCard::after {
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 46%,
+      rgba(2, 7, 16, .18) 58%,
+      rgba(2, 7, 16, .72) 74%,
+      rgba(2, 7, 16, .97) 100%
+    ) !important;
+}
+
+html[data-theme="light"] .photoCard h3 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .72) !important;
+}
+
+html[data-theme="light"] .photoCard p {
+  color: #e1e7f0 !important;
+  opacity: 1 !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .72) !important;
+}
+
+html[data-theme="light"] .photoCard small {
+  color: #bfd0e8 !important;
+  opacity: 1 !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .72) !important;
+}
+/* =========================================================
+   LIGHT MODE — GALLERY CAROUSEL ARROW BUTTONS
+   ========================================================= */
+
+html[data-theme="light"] .carouselWrap button {
+  background: linear-gradient(180deg, #f8fbff 0%, #eaf2fb 100%) !important;
+  color: #1c3558 !important;
+  border-color: rgba(28, 61, 98, .22) !important;
+  box-shadow: 0 10px 28px rgba(38, 67, 103, .12) !important;
+}
+
+html[data-theme="light"] .carouselWrap button svg,
+html[data-theme="light"] .carouselWrap button i {
+  color: #1c3558 !important;
+}
+
+html[data-theme="light"] .carouselWrap button:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #eef5fd 100%) !important;
+  color: #c46f12 !important;
+  border-color: rgba(196, 111, 18, .42) !important;
+  box-shadow: 0 14px 32px rgba(196, 111, 18, .18) !important;
+}
+
+html[data-theme="light"] .carouselWrap button:hover svg,
+html[data-theme="light"] .carouselWrap button:hover i {
+  color: #c46f12 !important;
+}
