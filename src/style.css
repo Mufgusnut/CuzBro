@@ -20251,3 +20251,890 @@ html[data-theme="light"] .equipmentFieldNote {
   background: rgba(199, 98, 0, .055) !important;
   border-color: rgba(199, 98, 0, .18) !important;
 }
+
+/* =========================================================
+   LIGHT MODE — SITE-WIDE SURFACE AUDIT
+   Comprehensive pass across public and admin feature surfaces.
+   ========================================================= */
+
+/* Primary public surfaces */
+html[data-theme="light"] .heroDashCard,
+html[data-theme="light"] .featuredCapture,
+html[data-theme="light"] .photoCard,
+html[data-theme="light"] .crewCard,
+html[data-theme="light"] .crewSupport,
+html[data-theme="light"] .aboutPanel,
+html[data-theme="light"] .weather,
+html[data-theme="light"] .skyTargets,
+html[data-theme="light"] .supportAnimalCard,
+html[data-theme="light"] .missionSupportHero,
+html[data-theme="light"] .captainsLogWrap,
+html[data-theme="light"] .captainsLogStatusStrip,
+html[data-theme="light"] .missionViewer,
+html[data-theme="light"] .missionFacts,
+html[data-theme="light"] .missionLogLatest,
+html[data-theme="light"] .missionLogLesson,
+html[data-theme="light"] .filmNav,
+html[data-theme="light"] .equipmentTeaser,
+html[data-theme="light"] .equipmentLockerHero,
+html[data-theme="light"] .equipmentCategoryHeader,
+html[data-theme="light"] .equipmentCard,
+html[data-theme="light"] .equipmentLockerMessage {
+  color: #13243b !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .065), transparent 36%),
+    linear-gradient(145deg, rgba(255, 255, 255, .98), rgba(239, 245, 252, .96)) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 18px 46px rgba(38, 67, 103, .12) !important;
+}
+
+/* Public nested surfaces */
+html[data-theme="light"] .weatherTop,
+html[data-theme="light"] .weatherMetrics,
+html[data-theme="light"] .skyTargets,
+html[data-theme="light"] .missionStats,
+html[data-theme="light"] .heroLocation,
+html[data-theme="light"] .missionFacts > *,
+html[data-theme="light"] .captainsLogFacts > *,
+html[data-theme="light"] .reportImageFrame,
+html[data-theme="light"] .zoomTools,
+html[data-theme="light"] .equipmentFacts span,
+html[data-theme="light"] .equipmentFieldNote,
+html[data-theme="light"] .equipmentBestFor em,
+html[data-theme="light"] .equipmentTeaserChips span,
+html[data-theme="light"] .equipmentTeaserSystems article {
+  background: rgba(255, 255, 255, .72) !important;
+  border-color: rgba(28, 61, 98, .14) !important;
+}
+
+/* Homepage quick links and dashboard cards */
+html[data-theme="light"] .quick,
+html[data-theme="light"] .heroDashboard > *,
+html[data-theme="light"] .heroDashCard {
+  color: #13243b !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .06), transparent 36%),
+    linear-gradient(145deg, rgba(255, 255, 255, .97), rgba(239, 245, 252, .95)) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 40px rgba(38, 67, 103, .11) !important;
+}
+
+/* Weather / observing cards */
+html[data-theme="light"] .weatherGrid .weather,
+html[data-theme="light"] .weather {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(79, 133, 215, .09), transparent 38%),
+    linear-gradient(155deg, rgba(255, 255, 255, .98), rgba(232, 241, 251, .96)) !important;
+}
+
+html[data-theme="light"] .skyTargets {
+  background: rgba(246, 249, 253, .92) !important;
+}
+
+/* Crew and mission support */
+html[data-theme="light"] .crewCard,
+html[data-theme="light"] .crewSupport {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(199, 98, 0, .06), transparent 36%),
+    linear-gradient(145deg, rgba(255, 255, 255, .98), rgba(246, 248, 252, .96)) !important;
+}
+
+html[data-theme="light"] .supportAnimalInfo,
+html[data-theme="light"] .crewSupportLink {
+  background: rgba(255, 255, 255, .68) !important;
+  border-color: rgba(28, 61, 98, .13) !important;
+}
+
+/* Gallery and capture archive */
+html[data-theme="light"] .galleryFilters,
+html[data-theme="light"] .carouselWrap,
+html[data-theme="light"] .admin-gallery-page .admin-mission-list,
+html[data-theme="light"] .admin-capture-row,
+html[data-theme="light"] .admin-master-preview,
+html[data-theme="light"] .admin-image-preview,
+html[data-theme="light"] .admin-image-empty,
+html[data-theme="light"] .admin-drop-zone-hint,
+html[data-theme="light"] .admin-upload-controls {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .9) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 40px rgba(38, 67, 103, .1) !important;
+}
+
+html[data-theme="light"] .admin-capture-row:hover,
+html[data-theme="light"] .photoCard:hover,
+html[data-theme="light"] .crewCard:hover,
+html[data-theme="light"] .quick:hover {
+  background: linear-gradient(145deg, #ffffff, #edf4fc) !important;
+  border-color: rgba(36, 95, 202, .28) !important;
+  box-shadow: 0 22px 52px rgba(38, 67, 103, .16) !important;
+}
+
+/* Admin universal content surfaces */
+html[data-theme="light"] .admin-status-card,
+html[data-theme="light"] .admin-live-state-grid > *,
+html[data-theme="light"] .admin-system-summary,
+html[data-theme="light"] .admin-mission-editor,
+html[data-theme="light"] .admin-mission-row,
+html[data-theme="light"] .admin-target-report,
+html[data-theme="light"] .admin-equipment-row,
+html[data-theme="light"] .admin-fact-row,
+html[data-theme="light"] .admin-inline-operation,
+html[data-theme="light"] .admin-crew-link-panel,
+html[data-theme="light"] .admin-crew-link-card,
+html[data-theme="light"] .admin-command-palette,
+html[data-theme="light"] .admin-command-palette-search,
+html[data-theme="light"] .admin-command-palette-group,
+html[data-theme="light"] .admin-command-palette-footer {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .11) !important;
+}
+
+/* Admin active-operation / status bars */
+html[data-theme="light"] .admin-inline-operation,
+html[data-theme="light"] .admin-active-operation,
+html[data-theme="light"] .admin-incident-status-strip,
+html[data-theme="light"] .admin-tasking-status-strip,
+html[data-theme="light"] .admin-dashboard-deployment-row,
+html[data-theme="light"] .storage-control-command,
+html[data-theme="light"] .system-status-command,
+html[data-theme="light"] .deployment-command,
+html[data-theme="light"] .tasking-command-bar,
+html[data-theme="light"] .black-box-command,
+html[data-theme="light"] .operation-command-hero,
+html[data-theme="light"] .incident-page .admin-header + * {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .06), transparent 36%),
+    linear-gradient(145deg, rgba(255, 255, 255, .97), rgba(237, 244, 252, .96)) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  color: #13243b !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .11) !important;
+}
+
+/* Tasking */
+html[data-theme="light"] .tasking-create-panel,
+html[data-theme="light"] .tasking-filter-panel,
+html[data-theme="light"] .tasking-card,
+html[data-theme="light"] .tasking-empty-state,
+html[data-theme="light"] .tasking-footer-note {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+html[data-theme="light"] .tasking-facts,
+html[data-theme="light"] .tasking-card-meta,
+html[data-theme="light"] .tasking-status-line,
+html[data-theme="light"] .tasking-create-meta {
+  background: rgba(244, 248, 252, .88) !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+/* Incidents */
+html[data-theme="light"] .incident-form,
+html[data-theme="light"] .incident-archive,
+html[data-theme="light"] .incident-detail,
+html[data-theme="light"] .incident-empty,
+html[data-theme="light"] .incident-report-block,
+html[data-theme="light"] .incident-resolution-form,
+html[data-theme="light"] .incident-timeline,
+html[data-theme="light"] .incident-update-form,
+html[data-theme="light"] .incident-update-row {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+html[data-theme="light"] .incident-facts > *,
+html[data-theme="light"] .incident-resolution-grid > *,
+html[data-theme="light"] .incident-detail-top,
+html[data-theme="light"] .incident-detail-state {
+  background: rgba(244, 248, 252, .88) !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+/* Operations */
+html[data-theme="light"] .operation-panel,
+html[data-theme="light"] .operation-standby-panel,
+html[data-theme="light"] .operation-init-panel,
+html[data-theme="light"] .operation-live-block,
+html[data-theme="light"] .operation-clock-block,
+html[data-theme="light"] .operation-command-facts,
+html[data-theme="light"] .operation-telemetry-grid > *,
+html[data-theme="light"] .operation-crew-list,
+html[data-theme="light"] .operation-event-list,
+html[data-theme="light"] .operation-event-row,
+html[data-theme="light"] .operation-debrief-preview,
+html[data-theme="light"] .operation-complete-debrief,
+html[data-theme="light"] .operation-complete-grid > * {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+/* Deployment */
+html[data-theme="light"] .deployment-overview,
+html[data-theme="light"] .deployment-primary-card,
+html[data-theme="light"] .deployment-commits-panel,
+html[data-theme="light"] .deployment-commit,
+html[data-theme="light"] .deployment-empty,
+html[data-theme="light"] .deployment-sha-block,
+html[data-theme="light"] .deployment-facts > * {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+/* Storage control */
+html[data-theme="light"] .storage-control-overview,
+html[data-theme="light"] .storage-control-total,
+html[data-theme="light"] .storage-control-category,
+html[data-theme="light"] .storage-control-table-panel,
+html[data-theme="light"] .storage-control-object,
+html[data-theme="light"] .storage-control-mini-panel,
+html[data-theme="light"] .storage-control-footer,
+html[data-theme="light"] .storage-control-section {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+html[data-theme="light"] .storage-control-meter {
+  background: rgba(28, 61, 98, .1) !important;
+}
+
+/* System status */
+html[data-theme="light"] .system-status-overview-main,
+html[data-theme="light"] .system-status-service,
+html[data-theme="light"] .system-status-footer {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+html[data-theme="light"] .system-status-service-head,
+html[data-theme="light"] .system-status-overview-stats > * {
+  background: rgba(244, 248, 252, .9) !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+/* Watch floor */
+html[data-theme="light"] .watch-panel,
+html[data-theme="light"] .watch-operation-panel,
+html[data-theme="light"] .watch-incidents-panel,
+html[data-theme="light"] .watch-crew-panel,
+html[data-theme="light"] .watch-task-panel,
+html[data-theme="light"] .watch-comms-panel,
+html[data-theme="light"] .watch-systems-panel,
+html[data-theme="light"] .watch-empty-state,
+html[data-theme="light"] .watch-floor-footer {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+html[data-theme="light"] .watch-operation-clock,
+html[data-theme="light"] .watch-operation-meta,
+html[data-theme="light"] .watch-task-metrics,
+html[data-theme="light"] .watch-service-grid > *,
+html[data-theme="light"] .watch-storage-summary,
+html[data-theme="light"] .watch-black-box-latest,
+html[data-theme="light"] .watch-nominal-state {
+  background: rgba(244, 248, 252, .9) !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+/* Black box and comms */
+html[data-theme="light"] .black-box-overview,
+html[data-theme="light"] .black-box-filter-panel,
+html[data-theme="light"] .black-box-archive,
+html[data-theme="light"] .black-box-record,
+html[data-theme="light"] .black-box-record-details,
+html[data-theme="light"] .black-box-json-panel,
+html[data-theme="light"] .black-box-empty,
+html[data-theme="light"] .comms-terminal,
+html[data-theme="light"] .comms-terminal-bar,
+html[data-theme="light"] .comms-feed,
+html[data-theme="light"] .comms-composer,
+html[data-theme="light"] .comms-crew-strip,
+html[data-theme="light"] .comms-system-row {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+html[data-theme="light"] .black-box-record-meta,
+html[data-theme="light"] .black-box-detail-grid > *,
+html[data-theme="light"] .comms-message-copy,
+html[data-theme="light"] .comms-crew-identity {
+  background: rgba(244, 248, 252, .88) !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+/* Transfer */
+html[data-theme="light"] .admin-transfer-uploader,
+html[data-theme="light"] .admin-transfer-list,
+html[data-theme="light"] .admin-transfer-group,
+html[data-theme="light"] .admin-transfer-file,
+html[data-theme="light"] .admin-transfer-empty,
+html[data-theme="light"] .admin-transfer-selection,
+html[data-theme="light"] .admin-transfer-progress {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+/* Sky atlas controls and planner */
+html[data-theme="light"] .atlasHero,
+html[data-theme="light"] .atlasCatalog,
+html[data-theme="light"] .plannerCatalog,
+html[data-theme="light"] .plannerControlsPanel,
+html[data-theme="light"] .tonightModePanel,
+html[data-theme="light"] .atlasDetail,
+html[data-theme="light"] .visitorDetail,
+html[data-theme="light"] .plannerDetail,
+html[data-theme="light"] .plannerTabbedDetail,
+html[data-theme="light"] .targetWhyCard,
+html[data-theme="light"] .targetDifficultyFactors,
+html[data-theme="light"] .targetActionGrid > *,
+html[data-theme="light"] .targetFramingGrid > *,
+html[data-theme="light"] .targetEquipmentCheck,
+html[data-theme="light"] .targetMissionHistoryEntry,
+html[data-theme="light"] .cuzBroFieldNote {
+  color: #13243b !important;
+  background: rgba(255, 255, 255, .93) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .1) !important;
+}
+
+html[data-theme="light"] .catalogTabs,
+html[data-theme="light"] .plannerControlChips,
+html[data-theme="light"] .plannerDetailTabs,
+html[data-theme="light"] .targetFramingChips,
+html[data-theme="light"] .targetMissionHistoryFacts,
+html[data-theme="light"] .plannerGeneralInfoFacts {
+  background: rgba(244, 248, 252, .88) !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+/* Light-mode text normalization inside formerly dark surfaces */
+html[data-theme="light"] .heroDashCard *,
+html[data-theme="light"] .featuredCapture *,
+html[data-theme="light"] .crewCard *,
+html[data-theme="light"] .crewSupport *,
+html[data-theme="light"] .weather *,
+html[data-theme="light"] .skyTargets *,
+html[data-theme="light"] .photoCard *,
+html[data-theme="light"] .admin-capture-row *,
+html[data-theme="light"] .tasking-card *,
+html[data-theme="light"] .incident-detail *,
+html[data-theme="light"] .operation-panel *,
+html[data-theme="light"] .deployment-primary-card *,
+html[data-theme="light"] .storage-control-section *,
+html[data-theme="light"] .system-status-service *,
+html[data-theme="light"] .watch-panel *,
+html[data-theme="light"] .black-box-record *,
+html[data-theme="light"] .comms-terminal *,
+html[data-theme="light"] .admin-transfer-group * {
+  text-shadow: none !important;
+}
+
+html[data-theme="light"] .heroDashCard h3,
+html[data-theme="light"] .featuredCapture h2,
+html[data-theme="light"] .crewCard h3,
+html[data-theme="light"] .weather h3,
+html[data-theme="light"] .photoCard h3,
+html[data-theme="light"] .admin-capture-row h2,
+html[data-theme="light"] .admin-capture-row h3,
+html[data-theme="light"] .tasking-card h3,
+html[data-theme="light"] .incident-detail h2,
+html[data-theme="light"] .incident-detail h3,
+html[data-theme="light"] .operation-panel h2,
+html[data-theme="light"] .operation-panel h3,
+html[data-theme="light"] .deployment-primary-card h2,
+html[data-theme="light"] .deployment-primary-card h3,
+html[data-theme="light"] .storage-control-section h2,
+html[data-theme="light"] .storage-control-section h3,
+html[data-theme="light"] .system-status-service h3,
+html[data-theme="light"] .watch-panel h3,
+html[data-theme="light"] .black-box-record strong,
+html[data-theme="light"] .comms-terminal strong {
+  color: #10233c !important;
+}
+
+html[data-theme="light"] .heroDashCard p,
+html[data-theme="light"] .featuredCapture p,
+html[data-theme="light"] .crewCard p,
+html[data-theme="light"] .weather p,
+html[data-theme="light"] .photoCard p,
+html[data-theme="light"] .admin-capture-row p,
+html[data-theme="light"] .tasking-card p,
+html[data-theme="light"] .incident-detail p,
+html[data-theme="light"] .operation-panel p,
+html[data-theme="light"] .deployment-primary-card p,
+html[data-theme="light"] .storage-control-section p,
+html[data-theme="light"] .system-status-service p,
+html[data-theme="light"] .watch-panel p,
+html[data-theme="light"] .black-box-record p,
+html[data-theme="light"] .comms-terminal p {
+  color: #4b617d !important;
+}
+
+/* Keep imagery natural in light mode */
+html[data-theme="light"] .featuredCapture img,
+html[data-theme="light"] .photoCard img,
+html[data-theme="light"] .admin-capture-thumbnail img,
+html[data-theme="light"] .reportImage,
+html[data-theme="light"] .supportAnimalPhoto img,
+html[data-theme="light"] .equipmentCard img {
+  filter: none !important;
+}
+
+/* =========================================================
+   LIGHT MODE FINAL CONTRAST + STRAGGLER FIXES
+   ========================================================= */
+
+/* Homepage quick-link cards: dark surface lives on the anchor, not .quick */
+html[data-theme="light"] .quick a {
+  color: #13243b !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .06), transparent 38%),
+    linear-gradient(145deg, rgba(255,255,255,.98), rgba(238,245,252,.96)) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 40px rgba(38, 67, 103, .13) !important;
+}
+
+html[data-theme="light"] .quick a:hover {
+  background: linear-gradient(145deg, #ffffff, #eaf3fc) !important;
+  border-color: rgba(199, 98, 0, .42) !important;
+  box-shadow: 0 22px 52px rgba(38, 67, 103, .17) !important;
+}
+
+html[data-theme="light"] .quick h3,
+html[data-theme="light"] .quick a:hover h3 {
+  color: #10233c !important;
+}
+
+html[data-theme="light"] .quick span {
+  color: #526984 !important;
+}
+
+html[data-theme="light"] .quick svg {
+  color: #365f9b !important;
+}
+
+/* Sky map back button */
+html[data-theme="light"] .atlasBackButton {
+  color: #9b4f08 !important;
+  background: rgba(255, 157, 28, .10) !important;
+  border-color: rgba(199, 98, 0, .42) !important;
+}
+
+html[data-theme="light"] .atlasBackButton:hover {
+  color: #733800 !important;
+  background: rgba(255, 157, 28, .18) !important;
+  border-color: rgba(199, 98, 0, .72) !important;
+}
+
+/* Sky map / Tonight control bar */
+html[data-theme="light"] .compactTonightControls,
+html[data-theme="light"] .tonightControls,
+html[data-theme="light"] .atlasTimeControls {
+  color: #13243b !important;
+  background: rgba(255,255,255,.95) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 18px 48px rgba(38, 67, 103, .13) !important;
+}
+
+html[data-theme="light"] .compactTonightControls strong,
+html[data-theme="light"] .compactTonightControls small,
+html[data-theme="light"] .tonightControls strong,
+html[data-theme="light"] .tonightControls small,
+html[data-theme="light"] .atlasTimeControls strong,
+html[data-theme="light"] .atlasTimeControls small {
+  color: #334f70 !important;
+}
+
+html[data-theme="light"] .compactTonightControls button,
+html[data-theme="light"] .tonightControls button,
+html[data-theme="light"] .atlasTimeControls button {
+  color: #233955 !important;
+  background: rgba(233, 240, 248, .96) !important;
+  border-color: rgba(28, 61, 98, .18) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] .compactTonightControls button:hover,
+html[data-theme="light"] .tonightControls button:hover,
+html[data-theme="light"] .atlasTimeControls button:hover {
+  color: #10233c !important;
+  background: #ffffff !important;
+  border-color: rgba(199, 98, 0, .45) !important;
+}
+
+html[data-theme="light"] .compactTonightControls button.active,
+html[data-theme="light"] .tonightControls button.active,
+html[data-theme="light"] .atlasTimeControls button.active {
+  color: #783b00 !important;
+  background: rgba(255, 157, 28, .14) !important;
+  border-color: rgba(199, 98, 0, .62) !important;
+}
+
+/* Clean / Detail mode toggle inside Tonight controls */
+html[data-theme="light"] .inlineModeToggle {
+  background: rgba(235, 241, 248, .96) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+}
+
+html[data-theme="light"] .inlineModeToggle button {
+  color: #526984 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+html[data-theme="light"] .inlineModeToggle button.active {
+  color: #783b00 !important;
+  background: rgba(255, 157, 28, .14) !important;
+  border-color: rgba(199, 98, 0, .58) !important;
+}
+
+/* Planner detail tabs */
+html[data-theme="light"] .plannerDetailTabs,
+html[data-theme="light"] .catalogTabs {
+  background: rgba(242, 247, 252, .96) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] .plannerDetailTabs button,
+html[data-theme="light"] .catalogTabs button {
+  color: #526984 !important;
+  background: rgba(255,255,255,.52) !important;
+  border-color: rgba(28, 61, 98, .10) !important;
+}
+
+html[data-theme="light"] .plannerDetailTabs button:hover,
+html[data-theme="light"] .catalogTabs button:hover {
+  color: #10233c !important;
+  background: #ffffff !important;
+  border-color: rgba(199, 98, 0, .36) !important;
+}
+
+html[data-theme="light"] .plannerDetailTabs button.active,
+html[data-theme="light"] .catalogTabs button.active {
+  color: #783b00 !important;
+  background: rgba(255, 157, 28, .13) !important;
+  border-color: rgba(199, 98, 0, .58) !important;
+}
+
+/* Finder / moon / tree notes in planner */
+html[data-theme="light"] .futureFinderNote,
+html[data-theme="light"] .visitorNote {
+  color: #405b78 !important;
+  background: rgba(224, 244, 252, .72) !important;
+  border-color: rgba(64, 159, 192, .24) !important;
+}
+
+html[data-theme="light"] .futureFinderNote b,
+html[data-theme="light"] .visitorNote b {
+  color: #147a9d !important;
+}
+
+/* Gallery filter pills */
+html[data-theme="light"] .galleryFilters {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] .galleryFilters button {
+  color: #405874 !important;
+  background: rgba(228, 235, 244, .94) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+}
+
+html[data-theme="light"] .galleryFilters button:hover {
+  color: #10233c !important;
+  background: #ffffff !important;
+  border-color: rgba(199, 98, 0, .38) !important;
+}
+
+html[data-theme="light"] .galleryFilters button.active {
+  color: #783b00 !important;
+  background: rgba(255, 157, 28, .13) !important;
+  border-color: rgba(199, 98, 0, .58) !important;
+}
+
+/* Featured capture CTA contrast */
+html[data-theme="light"] .featuredCapture button {
+  color: #783b00 !important;
+  background: rgba(255, 157, 28, .12) !important;
+  border-color: rgba(199, 98, 0, .48) !important;
+}
+
+html[data-theme="light"] .featuredCapture button:hover {
+  color: #5e2d00 !important;
+  background: rgba(255, 157, 28, .20) !important;
+  border-color: rgba(199, 98, 0, .72) !important;
+}
+
+/* =========================================================
+   LIGHT MODE: TONIGHT MODE + WHITE SKY MAP
+   ========================================================= */
+
+/* Tonight Mode panel copy and session pills */
+html[data-theme="light"] .tonightModePanel,
+html[data-theme="light"] .tonightModePanel > div {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .tonightModePanel small {
+  color: #a45108 !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .tonightModePanel p {
+  color: #4b617d !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="light"] .tonightModePanel .plannerControlChips {
+  background: rgba(240, 245, 251, .98) !important;
+  border-color: rgba(28, 61, 98, .14) !important;
+}
+
+html[data-theme="light"] .tonightModePanel .plannerControlChips button {
+  color: #314c6b !important;
+  background: rgba(255, 255, 255, .92) !important;
+  border-color: rgba(28, 61, 98, .14) !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .tonightModePanel .plannerControlChips button:hover {
+  color: #10233c !important;
+  background: #ffffff !important;
+  border-color: rgba(199, 98, 0, .42) !important;
+}
+
+html[data-theme="light"] .tonightModePanel .plannerControlChips button.active {
+  color: #783b00 !important;
+  background: rgba(255, 157, 28, .14) !important;
+  border-color: rgba(199, 98, 0, .62) !important;
+  box-shadow: 0 0 0 1px rgba(199, 98, 0, .08) inset !important;
+}
+
+/* Light mode gets a daylight-style sky-map canvas */
+html[data-theme="light"] .atlasMap.realSkyMap,
+html[data-theme="light"] .realSkyMap {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(85, 150, 215, .06), transparent 42%),
+    linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%) !important;
+  border-color: rgba(28, 61, 98, .18) !important;
+  box-shadow: 0 18px 48px rgba(38, 67, 103, .14) !important;
+}
+
+html[data-theme="light"] .skyHorizonCircle {
+  fill: rgba(255, 255, 255, .94) !important;
+  stroke: rgba(31, 58, 91, .34) !important;
+}
+
+html[data-theme="light"] .backgroundStar {
+  fill: rgba(30, 50, 78, .62) !important;
+}
+
+html[data-theme="light"] .skyAltitudeRing {
+  stroke: rgba(46, 77, 116, .28) !important;
+}
+
+html[data-theme="light"] .skyAxis {
+  stroke: rgba(46, 77, 116, .30) !important;
+}
+
+html[data-theme="light"] .skyZenithDot {
+  fill: #203a5c !important;
+}
+
+html[data-theme="light"] .compassLabel {
+  fill: #20344f !important;
+}
+
+html[data-theme="light"] .zenithLabel {
+  fill: #2f6f9e !important;
+}
+
+html[data-theme="light"] .eclipticPath {
+  stroke: rgba(190, 105, 15, .92) !important;
+}
+
+html[data-theme="light"] .lunarPath {
+  stroke: rgba(63, 94, 137, .80) !important;
+}
+
+html[data-theme="light"] .treeHorizonBaseGlow,
+html[data-theme="light"] .treeHorizonTreeGlow {
+  stroke: rgba(128, 81, 37, .14) !important;
+  fill: rgba(128, 81, 37, .08) !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .treeHorizonTree {
+  fill: rgba(145, 94, 47, .38) !important;
+  stroke: rgba(110, 70, 34, .58) !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .treeHorizonTrunk {
+  stroke: rgba(91, 58, 31, .62) !important;
+}
+
+html[data-theme="light"] .futureTargetTrackPath {
+  stroke: rgba(31, 132, 166, .78) !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .futureTargetTrackDot,
+html[data-theme="light"] .futureTargetTrackDot.now {
+  fill: #ffffff !important;
+  stroke: #247fa2 !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .futureTargetTrackDot.peak {
+  fill: #d97a17 !important;
+  stroke: #6f3900 !important;
+}
+
+html[data-theme="light"] .futureTargetTrackPeakHalo {
+  fill: rgba(217, 122, 23, .14) !important;
+  stroke: rgba(180, 88, 0, .68) !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .futureTargetTrackLabel,
+html[data-theme="light"] .futureTargetTrackPeakLabel,
+html[data-theme="light"] .futureFinderStarLabel,
+html[data-theme="light"] .missionMarkerName {
+  fill: #17304f !important;
+  color: #17304f !important;
+  stroke: rgba(255, 255, 255, .96) !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .realSkyMap > .atlasLegend,
+html[data-theme="light"] .realSkyMap > .enhancedLegend,
+html[data-theme="light"] .realSkyMap > .atlasLegend.enhancedLegend {
+  color: #263d59 !important;
+  background: rgba(255, 255, 255, .94) !important;
+  border-color: rgba(28, 61, 98, .18) !important;
+  box-shadow: 0 12px 30px rgba(38, 67, 103, .12) !important;
+}
+
+html[data-theme="light"] .realSkyMap > .atlasLegend span,
+html[data-theme="light"] .realSkyMap > .enhancedLegend span,
+html[data-theme="light"] .realSkyMap > .atlasLegend.enhancedLegend span {
+  color: #263d59 !important;
+}
+
+/* =========================================================
+   LIGHT MODE: TARGET PLANNER CARD READABILITY
+   ========================================================= */
+
+html[data-theme="light"] .plannerCatalog .catalogItem.futureItem,
+html[data-theme="light"] .plannerCatalog .catalogItem.visitorItem {
+  color: #13243b !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.99), rgba(238,245,252,.98)) !important;
+  border: 1px solid rgba(28, 61, 98, .17) !important;
+  box-shadow: 0 14px 34px rgba(38, 67, 103, .10) !important;
+}
+
+html[data-theme="light"] .plannerCatalog .catalogItem.futureItem:hover,
+html[data-theme="light"] .plannerCatalog .catalogItem.futureItem.active,
+html[data-theme="light"] .plannerCatalog .catalogItem.visitorItem:hover,
+html[data-theme="light"] .plannerCatalog .catalogItem.visitorItem.active {
+  background: linear-gradient(145deg, #ffffff, #edf5fc) !important;
+  border-color: rgba(199, 98, 0, .48) !important;
+  box-shadow: 0 18px 44px rgba(38, 67, 103, .15) !important;
+}
+
+html[data-theme="light"] .plannerCatalog .catalogItem strong {
+  color: #10233c !important;
+}
+
+html[data-theme="light"] .plannerCatalog .catalogItem em {
+  color: #365f9b !important;
+}
+
+html[data-theme="light"] .plannerCatalog .catalogItem small {
+  color: #536a85 !important;
+}
+
+html[data-theme="light"] .plannerCatalog .catalogItem b {
+  color: #2c6f9f !important;
+  border-color: rgba(76, 178, 224, .58) !important;
+  background: rgba(76, 178, 224, .08) !important;
+}
+
+html[data-theme="light"] .plannerCatalog .catalogItem.active b {
+  color: #9b4f08 !important;
+  border-color: rgba(199, 98, 0, .52) !important;
+  background: rgba(255, 157, 28, .12) !important;
+  box-shadow: inset 0 0 0 1px rgba(199, 98, 0, .12) !important;
+}
+
+html[data-theme="light"] .plannerCatalog .targetStatusBadge {
+  color: #445a75 !important;
+  border-color: rgba(28, 61, 98, .24) !important;
+  background: rgba(28, 61, 98, .06) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] .plannerCatalog .targetStatusBadge.best {
+  color: #8b4607 !important;
+  border-color: rgba(199, 98, 0, .56) !important;
+  background: rgba(255, 157, 28, .13) !important;
+}
+
+html[data-theme="light"] .plannerCatalog .targetStatusBadge.good {
+  color: #1e6945 !important;
+  border-color: rgba(35, 132, 84, .42) !important;
+  background: rgba(55, 170, 105, .10) !important;
+}
+
+html[data-theme="light"] .plannerCatalog .targetStatusBadge.low,
+html[data-theme="light"] .plannerCatalog .moonImpactBadge.caution,
+html[data-theme="light"] .plannerCatalog .treeObstructionBadge.caution,
+html[data-theme="light"] .plannerCatalog .targetDifficultyBadge.medium {
+  color: #875506 !important;
+  border-color: rgba(190, 126, 18, .48) !important;
+  background: rgba(232, 166, 50, .12) !important;
+}
+
+html[data-theme="light"] .plannerCatalog .moonImpactBadge.ok,
+html[data-theme="light"] .plannerCatalog .treeObstructionBadge.ok,
+html[data-theme="light"] .plannerCatalog .targetDifficultyBadge.easy {
+  color: #176783 !important;
+  border-color: rgba(40, 143, 180, .44) !important;
+  background: rgba(76, 190, 225, .11) !important;
+}
+
+html[data-theme="light"] .plannerCatalog .moonImpactBadge.bad,
+html[data-theme="light"] .plannerCatalog .treeObstructionBadge.bad,
+html[data-theme="light"] .plannerCatalog .targetDifficultyBadge.hard,
+html[data-theme="light"] .plannerCatalog .targetDifficultyBadge.expert {
+  color: #9b3045 !important;
+  border-color: rgba(190, 70, 95, .46) !important;
+  background: rgba(225, 90, 115, .10) !important;
+}
