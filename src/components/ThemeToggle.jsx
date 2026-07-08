@@ -2,7 +2,7 @@ import { Moon, Sun, Telescope } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'cuzbro-theme';
-const THEMES = ['light', 'dark', 'observation'];
+const THEMES = ['dark', 'light', 'observation'];
 
 function getSavedTheme() {
   const savedTheme = localStorage.getItem(STORAGE_KEY);
@@ -55,18 +55,6 @@ export default function ThemeToggle() {
     <div className="theme-toggle" aria-label="Display theme">
       <button
         type="button"
-        className={theme === 'light' ? 'active' : ''}
-        onClick={() => chooseTheme('light')}
-        aria-label="Use light mode"
-        aria-pressed={theme === 'light'}
-        title="Light mode"
-      >
-        <Sun size={15} />
-        <span>Light</span>
-      </button>
-
-      <button
-        type="button"
         className={theme === 'dark' ? 'active' : ''}
         onClick={() => chooseTheme('dark')}
         aria-label="Use dark mode"
@@ -75,6 +63,18 @@ export default function ThemeToggle() {
       >
         <Moon size={15} />
         <span>Dark</span>
+      </button>
+
+      <button
+        type="button"
+        className={theme === 'light' ? 'active' : ''}
+        onClick={() => chooseTheme('light')}
+        aria-label="Use light mode"
+        aria-pressed={theme === 'light'}
+        title="Light mode"
+      >
+        <Sun size={15} />
+        <span>Light</span>
       </button>
 
       <button

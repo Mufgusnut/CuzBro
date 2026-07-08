@@ -22672,3 +22672,263 @@ html[data-theme="observation"] .missionTimelineDate span {
 .navSmall {
   z-index: 1000 !important;
 }
+/* =========================================================
+   LIGHT MODE — MISSION ARCHIVE / REPORT VIEWER FINAL PASS
+   ========================================================= */
+
+html[data-theme="light"] .lightbox {
+  background: rgba(232, 238, 246, .92) !important;
+  backdrop-filter: blur(18px) saturate(.9) !important;
+}
+
+html[data-theme="light"] .missionViewer {
+  color: #13243b !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .055), transparent 34%),
+    linear-gradient(180deg, #fdfefe 0%, #eef4fa 100%) !important;
+  border-color: rgba(28, 61, 98, .18) !important;
+  box-shadow: 0 28px 80px rgba(38, 67, 103, .22) !important;
+}
+
+html[data-theme="light"] .missionBrand {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .missionBrand strong,
+html[data-theme="light"] .crosshair {
+  color: #a95b00 !important;
+}
+
+html[data-theme="light"] .lightboxClose,
+html[data-theme="light"] .filmNav,
+html[data-theme="light"] .lightboxArrow,
+html[data-theme="light"] .zoomHint,
+html[data-theme="light"] .zoomTools button,
+html[data-theme="light"] .cinemaExitButton {
+  color: #183357 !important;
+  background: linear-gradient(180deg, #ffffff, #edf4fb) !important;
+  border-color: rgba(28, 61, 98, .22) !important;
+  box-shadow: 0 10px 28px rgba(38, 67, 103, .12) !important;
+}
+
+html[data-theme="light"] .lightboxClose:hover,
+html[data-theme="light"] .filmNav:hover,
+html[data-theme="light"] .lightboxArrow:hover,
+html[data-theme="light"] .zoomTools button:hover,
+html[data-theme="light"] .cinemaExitButton:hover {
+  color: #a95b00 !important;
+  border-color: rgba(169, 91, 0, .35) !important;
+  background: linear-gradient(180deg, #ffffff, #fff4e8) !important;
+}
+
+html[data-theme="light"] .missionImagePanel {
+  border-color: rgba(28, 61, 98, .18) !important;
+  background: #d9dde3 !important;
+}
+
+html[data-theme="light"] .imageFrame,
+html[data-theme="light"] .reportImageFrame {
+  background: #d7d7d7 !important;
+}
+
+html[data-theme="light"] .imageCaption {
+  color: #435a76 !important;
+  background: rgba(247, 250, 253, .96) !important;
+  border-top: 1px solid rgba(28, 61, 98, .12) !important;
+}
+
+html[data-theme="light"] .missionPanel {
+  color: #13243b !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .06), transparent 34%),
+    linear-gradient(180deg, #ffffff, #f1f6fb) !important;
+  border-color: rgba(28, 61, 98, .18) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .7) !important;
+  scrollbar-color: rgba(74, 95, 123, .55) rgba(225, 232, 240, .7) !important;
+}
+
+html[data-theme="light"] .missionPanel::-webkit-scrollbar {
+  width: 10px !important;
+}
+
+html[data-theme="light"] .missionPanel::-webkit-scrollbar-track {
+  background: rgba(225, 232, 240, .72) !important;
+}
+
+html[data-theme="light"] .missionPanel::-webkit-scrollbar-thumb {
+  background: rgba(74, 95, 123, .56) !important;
+  border-radius: 999px !important;
+  border: 2px solid rgba(225, 232, 240, .72) !important;
+}
+
+html[data-theme="light"] .missionPanel small,
+html[data-theme="light"] .missionPanel h4 {
+  color: #a95b00 !important;
+}
+
+html[data-theme="light"] .missionPanel h2 {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .missionPanel h3 {
+  color: #326f95 !important;
+}
+
+html[data-theme="light"] .missionPanel p {
+  color: #4b617d !important;
+}
+
+html[data-theme="light"] .missionFacts {
+  background: rgba(247, 250, 253, .94) !important;
+  border-top-color: rgba(28, 61, 98, .14) !important;
+  border-bottom-color: rgba(28, 61, 98, .14) !important;
+}
+
+html[data-theme="light"] .missionFacts > div {
+  background: #ffffff !important;
+  border: 1px solid rgba(28, 61, 98, .10) !important;
+}
+
+html[data-theme="light"] .missionFacts b {
+  color: #326f95 !important;
+}
+
+html[data-theme="light"] .missionFacts span {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .missionFilmstrip {
+  color: #13243b !important;
+  background: rgba(219, 224, 231, .96) !important;
+  border-color: rgba(28, 61, 98, .18) !important;
+  box-shadow: 0 14px 36px rgba(38, 67, 103, .12) !important;
+}
+
+html[data-theme="light"] .filmItems {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .filmCard {
+  color: #13243b !important;
+  background: linear-gradient(180deg, #ffffff, #eef4fa) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 8px 18px rgba(38, 67, 103, .08) !important;
+}
+
+html[data-theme="light"] .filmCard:hover {
+  background: linear-gradient(180deg, #ffffff, #e7f1fb) !important;
+  border-color: rgba(50, 111, 149, .34) !important;
+}
+
+html[data-theme="light"] .filmCard.active {
+  border-color: rgba(169, 91, 0, .68) !important;
+  box-shadow: 0 0 0 2px rgba(169, 91, 0, .10), 0 10px 24px rgba(169, 91, 0, .12) !important;
+}
+
+html[data-theme="light"] .filmCard strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .filmCard span {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .missionFooter {
+  color: #596f8a !important;
+}
+/* =========================================================
+   LIGHT MODE — CREW CARD VALUES + MISSION LOG SUMMARY FIX
+   ========================================================= */
+
+/* Public crew cards: right-side values must not remain white */
+html[data-theme="light"] .crewCard span {
+  color: #13243b !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="light"] .crewCard li {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .crewCard b {
+  color: #326f95 !important;
+}
+
+html[data-theme="light"] .crewCard ul {
+  border-top-color: rgba(28, 61, 98, .16) !important;
+}
+
+/* Mission Archive — Captain's Log linked summary */
+html[data-theme="light"] .missionLogSummary {
+  color: #13243b !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(36, 95, 202, .055), transparent 36%),
+    linear-gradient(180deg, #f7fafd 0%, #edf4fa 100%) !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 12px 28px rgba(38, 67, 103, .08) !important;
+}
+
+html[data-theme="light"] .missionLogSummary.empty {
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+html[data-theme="light"] .missionLogSummaryHeader small {
+  color: #a95b00 !important;
+}
+
+html[data-theme="light"] .missionLogSummaryHeader h4 {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .missionLogSummaryHeader i {
+  color: #326f95 !important;
+  background: #eef6fb !important;
+  border-color: rgba(50, 111, 149, .24) !important;
+}
+
+html[data-theme="light"] .missionLogLatest {
+  background: #ffffff !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+  box-shadow: 0 8px 20px rgba(38, 67, 103, .06) !important;
+}
+
+html[data-theme="light"] .missionLogLatest b,
+html[data-theme="light"] .missionLogLesson b {
+  color: #326f95 !important;
+}
+
+html[data-theme="light"] .missionLogLatest strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .missionLogLatest span {
+  color: #647996 !important;
+}
+
+html[data-theme="light"] .missionLogSummary > p,
+html[data-theme="light"] .missionLogLesson p {
+  color: #4b617d !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .missionLogLesson {
+  background: #fff8ef !important;
+  border-color: rgba(169, 91, 0, .20) !important;
+}
+
+html[data-theme="light"] .missionLogLesson b {
+  color: #a95b00 !important;
+}
+
+html[data-theme="light"] .missionLogSummary > a {
+  color: #8b4700 !important;
+  background: #fff5e8 !important;
+  border-color: rgba(169, 91, 0, .30) !important;
+}
+
+html[data-theme="light"] .missionLogSummary > a:hover {
+  color: #6f3900 !important;
+  background: #ffedd8 !important;
+  border-color: rgba(169, 91, 0, .48) !important;
+}
