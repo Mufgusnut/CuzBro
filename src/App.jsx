@@ -33,6 +33,7 @@ import MissionSupport from './components/MissionSupport.jsx';
 import CaptainsLog from './components/CaptainsLog.jsx';
 import EquipmentLocker from './components/EquipmentLocker.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
+import MissionTimeline from './components/MissionTimeline.jsx';
 import React, {
   useEffect,
   useRef,
@@ -978,6 +979,20 @@ export default function App() {
         )
       : -1;
 
+  const openTimelineMission = (photoId) => {
+    const missionIndex = gallery.findIndex(
+      (photo) => photo.id === photoId
+    );
+
+    if (missionIndex < 0) {
+      return;
+    }
+
+    setActiveFilter('All');
+    setViewerMode('report');
+    setSelectedIndex(missionIndex);
+  };
+
   const openFeaturedPhoto = () => {
     if (featuredPhotoIndex < 0) {
       return;
@@ -1774,6 +1789,14 @@ export default function App() {
         ) : (
           <>
             <QuickLinks />
+
+            <MissionTimeline
+              gallery={gallery}
+              captainsLog={captainsLog}
+              onOpenMission={
+                openTimelineMission
+              }
+            />
 
             <Weather
               locations={locations}
