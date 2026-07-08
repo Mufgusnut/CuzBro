@@ -21138,3 +21138,137 @@ html[data-theme="light"] .plannerCatalog .targetDifficultyBadge.expert {
   border-color: rgba(190, 70, 95, .46) !important;
   background: rgba(225, 90, 115, .10) !important;
 }
+
+/* =========================================================
+   LIGHT MODE — ADMIN NESTED TEXT CONTRAST AUDIT
+   ========================================================= */
+
+/* Crew Link */
+html[data-theme="light"] .admin-crew-link-heading h2,
+html[data-theme="light"] .admin-crew-link-identity strong,
+html[data-theme="light"] .admin-crew-link-status strong {
+  color: #10233c !important;
+}
+
+html[data-theme="light"] .admin-crew-link-identity span,
+html[data-theme="light"] .admin-crew-link-status > span,
+html[data-theme="light"] .admin-crew-link-last-seen {
+  color: #5a6f8c !important;
+}
+
+html[data-theme="light"] .admin-crew-link-card-online .admin-crew-link-status strong {
+  color: #21834f !important;
+}
+
+html[data-theme="light"] .admin-crew-link-avatar {
+  color: #365fc9 !important;
+  background: #edf3ff !important;
+  border-color: rgba(54, 95, 201, .22) !important;
+}
+
+html[data-theme="light"] .admin-crew-link-summary {
+  color: #176e42 !important;
+  background: #edf9f2 !important;
+  border-color: rgba(33, 131, 79, .28) !important;
+}
+
+html[data-theme="light"] .admin-crew-link-grid {
+  background: rgba(28, 61, 98, .12) !important;
+}
+
+html[data-theme="light"] .admin-crew-link-card {
+  background: rgba(255, 255, 255, .97) !important;
+}
+
+html[data-theme="light"] .admin-crew-link-card-header {
+  background: transparent !important;
+}
+
+/* System Status overview */
+html[data-theme="light"] .system-status-overview-main span,
+html[data-theme="light"] .system-status-overview-stats span {
+  color: #647792 !important;
+}
+
+html[data-theme="light"] .system-status-overview-main h3 {
+  color: #10233c !important;
+}
+
+html[data-theme="light"] .system-status-overview-main p {
+  color: #465d7a !important;
+}
+
+html[data-theme="light"] .system-status-overview-stats strong {
+  color: #10233c !important;
+}
+
+html[data-theme="light"] .system-status-overview-stats svg {
+  color: #496ed8 !important;
+}
+
+html[data-theme="light"] .system-status-overview-icon {
+  color: #496ed8 !important;
+  background: #edf3ff !important;
+  border-color: rgba(73, 110, 216, .22) !important;
+}
+
+html[data-theme="light"] .system-status-overview-operational .system-status-overview-icon {
+  color: #2f9d61 !important;
+  background: #edf9f2 !important;
+  border-color: rgba(47, 157, 97, .24) !important;
+}
+
+/* System Status service cards */
+html[data-theme="light"] .system-status-service > span {
+  color: #60738f !important;
+}
+
+html[data-theme="light"] .system-status-service h3 {
+  color: #10233c !important;
+}
+
+html[data-theme="light"] .system-status-service > strong {
+  color: #365fc9 !important;
+}
+
+html[data-theme="light"] .system-status-service-operational > strong {
+  color: #21834f !important;
+}
+
+html[data-theme="light"] .system-status-service-offline > strong {
+  color: #b53b45 !important;
+}
+
+html[data-theme="light"] .system-status-service p {
+  color: #4b617d !important;
+}
+
+html[data-theme="light"] .system-status-service small {
+  color: #536a87 !important;
+  background: #f4f7fb !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+}
+
+html[data-theme="light"] .system-status-service-icon {
+  color: #496ed8 !important;
+  background: #edf3ff !important;
+  border-color: rgba(73, 110, 216, .2) !important;
+}
+
+/* Admin headings / eyebrow labels that retained low-opacity dark-theme colors */
+html[data-theme="light"] .admin-page .admin-eyebrow,
+html[data-theme="light"] .admin-page [class*="-eyebrow"],
+html[data-theme="light"] .admin-page [class*="-label"],
+html[data-theme="light"] .admin-page [class*="-meta"] > span,
+html[data-theme="light"] .admin-page [class*="-stats"] span,
+html[data-theme="light"] .admin-page [class*="-status"] > span {
+  text-shadow: none !important;
+}
+
+/* Common small admin metadata: improve contrast without recoloring semantic status badges */
+html[data-theme="light"] .admin-page small:not(.status-badge):not([class*="badge"]),
+html[data-theme="light"] .admin-page .admin-section-kicker,
+html[data-theme="light"] .admin-page .admin-helper,
+html[data-theme="light"] .admin-page .admin-muted {
+  color: #5b708c !important;
+}
