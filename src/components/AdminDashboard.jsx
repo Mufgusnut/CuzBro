@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
 import CrewPresencePanel from './CrewPresencePanel.jsx';
+import ObservingSiteControl from './ObservingSiteControl.jsx';
 import {
   getCrewMember
 } from '../lib/crew.js';
@@ -121,7 +122,12 @@ function parseTotalCount(
 
 export default function AdminDashboard({
   session,
-  onLogout
+  onLogout,
+  currentSite,
+  observingSiteStatus,
+  observingSiteError,
+  observingSiteSaving,
+  onSelectObservingSite
 }) {
   const crew =
     getCrewMember(
@@ -755,6 +761,14 @@ export default function AdminDashboard({
 
         <CrewPresencePanel
           session={session}
+        />
+
+        <ObservingSiteControl
+          currentSite={currentSite}
+          status={observingSiteStatus}
+          error={observingSiteError}
+          saving={observingSiteSaving}
+          onSelect={onSelectObservingSite}
         />
 
         <section className="admin-live-state-grid">

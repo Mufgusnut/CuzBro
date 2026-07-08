@@ -34,7 +34,8 @@ export default function Hero({
   scrolled,
   featuredPhoto,
   setSelectedIndex,
-  weather
+  weather,
+  currentSite
 }) {
   return (
     <>
@@ -106,6 +107,7 @@ export default function Hero({
             featuredPhoto={featuredPhoto}
             setSelectedIndex={setSelectedIndex}
             weather={weather}
+            currentSite={currentSite}
           />
         </div>
 

@@ -1,4 +1,4 @@
-import { Clock3 } from 'lucide-react';
+import { Clock3, Moon, Sparkles, Star, Telescope } from 'lucide-react';
 
 function getCaptureImageUrl(image) {
   if (!image) {
@@ -41,6 +41,58 @@ const TARGET_ALIASES = {
   m13: ['great hercules cluster'],
   albireo: ['beta cygni']
 };
+
+
+function getMissionType(photo) {
+  const typeText = normalizeMissionTargetName(
+    [photo?.category, photo?.objectType, photo?.subtitle, photo?.title]
+      .filter(Boolean)
+      .join(' ')
+  );
+
+  if (typeText.includes('moon') || typeText.includes('lunar')) {
+    return 'lunar';
+  }
+
+  if (typeText.includes('galaxy')) {
+    return 'galaxy';
+  }
+
+  if (
+    typeText.includes('nebula') ||
+    typeText.includes('planetary') ||
+    typeText.includes('emission')
+  ) {
+    return 'nebula';
+  }
+
+  if (
+    typeText.includes('cluster') ||
+    typeText.includes('double star') ||
+    typeText.includes('star') ||
+    typeText.includes('albireo')
+  ) {
+    return 'stellar';
+  }
+
+  return 'other';
+}
+
+function MissionTypeIcon({ type }) {
+  if (type === 'lunar') {
+    return <Moon size={11} strokeWidth={2.2} aria-hidden="true" />;
+  }
+
+  if (type === 'galaxy') {
+    return <Sparkles size={11} strokeWidth={2.2} aria-hidden="true" />;
+  }
+
+  if (type === 'stellar') {
+    return <Star size={11} strokeWidth={2.2} aria-hidden="true" />;
+  }
+
+  return <Telescope size={11} strokeWidth={2.2} aria-hidden="true" />;
+}
 
 function getCatalogIdentifiers(value) {
   const normalized = normalizeMissionTargetName(value);
@@ -223,20 +275,20 @@ export default function MissionTimeline({
   captainsLog = [],
   onOpenMission
 }) {
-  const recentMissions = [...(gallery || [])]
-    .sort((a, b) => {
-      const dateDifference =
-        getMissionTime(b, captainsLog) -
-        getMissionTime(a, captainsLog);
+  const sortedMissions = [...(gallery || [])].sort((a, b) => {
+    const dateDifference =
+      getMissionTime(b, captainsLog) -
+      getMissionTime(a, captainsLog);
 
-      if (dateDifference !== 0) {
-        return dateDifference;
-      }
+    if (dateDifference !== 0) {
+      return dateDifference;
+    }
 
-      return (b.sortOrder || 0) - (a.sortOrder || 0);
-    })
-    .slice(0, 7)
-    .reverse();
+    return (b.sortOrder || 0) - (a.sortOrder || 0);
+  });
+
+  const latestMissionId = sortedMissions[0]?.id;
+  const recentMissions = sortedMissions.slice(0, 8).reverse();
 
   const dateGroups = groupMissionsByDate(
     recentMissions,
@@ -260,10 +312,15 @@ export default function MissionTimeline({
           </h2>
         </div>
 
-        <span>
-          <Clock3 size={14} />
-          Hover to inspect
-        </span>
+        <div className="missionTimelineMeta">
+          <span>
+            {recentMissions.length} captures · {dateGroups.length} observing {dateGroups.length === 1 ? 'date' : 'dates'}
+          </span>
+          <span className="missionTimelineInspectHint">
+            <Clock3 size={14} />
+            Hover to inspect
+          </span>
+        </div>
       </div>
 
       <div
@@ -296,50 +353,63 @@ export default function MissionTimeline({
               </time>
 
               <div className="missionTimelineMissionStack">
-                {group.missions.map((photo, missionIndex) => (
-                  <div
-                    className="missionTimelineStop"
-                    key={photo.id}
-                  >
-                    <button
-                      type="button"
-                      className="missionTimelineNode"
-                      onClick={() => onOpenMission(photo.id)}
-                      aria-label={`Open mission report for ${photo.title} from ${formatTimelineDate(group.missionDate)}`}
-                    >
-                      <i aria-hidden="true" />
-                      <strong>{photo.title}</strong>
-                    </button>
+                {group.missions.map((photo, missionIndex) => {
+                  const missionType = getMissionType(photo);
+                  const isLatest = photo.id === latestMissionId;
 
+                  return (
                     <div
-                      className={`missionTimelinePreview ${
-                        groupIndex >= dateGroups.length - 2
-                          ? 'missionTimelinePreviewLeft'
-                          : ''
-                      } ${
-                        missionIndex > 0
-                          ? 'missionTimelinePreviewStacked'
-                          : ''
+                      className={`missionTimelineStop missionTimelineType-${missionType} ${
+                        isLatest ? 'missionTimelineStopLatest' : ''
                       }`}
-                      aria-hidden="true"
+                      key={photo.id}
                     >
-                      <img
-                        src={getCaptureImageUrl(photo.image)}
-                        alt=""
-                      />
-
-                      <div>
-                        <small>
-                          {photo.category ||
-                            photo.objectType ||
-                            'Mission Capture'}
-                        </small>
+                      <button
+                        type="button"
+                        className="missionTimelineNode"
+                        onClick={() => onOpenMission(photo.id)}
+                        aria-label={`Open mission report for ${photo.title} from ${formatTimelineDate(group.missionDate)}`}
+                      >
+                        <i aria-hidden="true">
+                          <MissionTypeIcon type={missionType} />
+                        </i>
                         <strong>{photo.title}</strong>
-                        <span>{photo.subtitle}</span>
+                        {isLatest ? <em>Latest</em> : null}
+                      </button>
+
+                      <div
+                        className={`missionTimelinePreview ${
+                          groupIndex >= dateGroups.length - 2
+                            ? 'missionTimelinePreviewLeft'
+                            : ''
+                        } ${
+                          missionIndex > 0
+                            ? 'missionTimelinePreviewStacked'
+                            : ''
+                        }`}
+                        aria-hidden="true"
+                      >
+                        <img
+                          src={getCaptureImageUrl(photo.image)}
+                          alt=""
+                        />
+
+                        <div>
+                          <small>
+                            {photo.category ||
+                              photo.objectType ||
+                              'Mission Capture'}
+                          </small>
+                          <strong>{photo.title}</strong>
+                          <span>{photo.subtitle}</span>
+                          <time dateTime={getDateKey(group.missionDate)}>
+                            {formatTimelineDate(group.missionDate)}
+                          </time>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );

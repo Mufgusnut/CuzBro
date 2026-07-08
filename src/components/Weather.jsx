@@ -109,7 +109,7 @@ function StarRating({ count }) {
   );
 }
 
-export default function Weather({ locations, weather }) {
+export default function Weather({ locations, weather, activeSite }) {
   return (
     <>
       <section id="observatory" className="sectionHeader">
@@ -118,15 +118,35 @@ export default function Weather({ locations, weather }) {
       </section>
 
       <div className="weatherGrid">
-        {locations.map((loc) => {
+        {[...locations]
+          .sort((a, b) => {
+            if (a.key === activeSite?.key) return -1;
+            if (b.key === activeSite?.key) return 1;
+            return 0;
+          })
+          .map((loc) => {
           const w = weather[loc.name];
           const score = scoreWeather(w);
           const targets = getSkyTargets(loc);
 
           return (
-            <article className="weather" key={loc.name}>
+            <article
+              className={
+                loc.key === activeSite?.key
+                  ? 'weather weatherCurrentSite'
+                  : 'weather'
+              }
+              key={loc.name}
+            >
               <div className="weatherTop">
-                <h3>{loc.name}</h3>
+                <div>
+                  <h3>{loc.name}</h3>
+                  {loc.key === activeSite?.key ? (
+                    <span className="weatherCurrentSiteLabel">
+                      CURRENT TELESCOPE SITE
+                    </span>
+                  ) : null}
+                </div>
                 <b>{score.badge}</b>
               </div>
 

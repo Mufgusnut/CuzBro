@@ -39,7 +39,8 @@ function scoreWeather(weather) {
 export default function HeroDashboard({
   featuredPhoto,
   setSelectedIndex,
-  weather
+  weather,
+  currentSite
 }) {
   const score = scoreWeather(weather);
 
@@ -74,8 +75,8 @@ export default function HeroDashboard({
         </p>
 
         <div className="heroLocation">
-          <small>CURRENT SITE</small>
-          <strong>📍 Eliot, ME</strong>
+          <small>CURRENT TELESCOPE SITE</small>
+          <strong>📍 {currentSite?.name || 'Eliot, ME'}</strong>
         </div>
       </a>
 

@@ -44,24 +44,12 @@ import QuickLinks from './components/QuickLinks.jsx';
 import Gallery from './components/Gallery.jsx';
 import Weather from './components/Weather.jsx';
 import Lightbox from './components/Lightbox.jsx';
+import {
+  OBSERVING_SITES,
+  useObservingSite
+} from './lib/observingSites.js';
 
-const locations = [
-  {
-    name: 'Eliot, ME',
-    lat: 43.1531,
-    lon: -70.7828
-  },
-  {
-    name: 'Congers, NY',
-    lat: 41.1507,
-    lon: -73.9454
-  },
-  {
-    name: 'New York City, NY',
-    lat: 40.7128,
-    lon: -74.0060
-  }
-];
+const locations = OBSERVING_SITES;
 
 function isPrioritySoundEnabled(userId) {
   return localStorage.getItem(
@@ -419,6 +407,14 @@ export default function App() {
 
   const [prioritySignal, setPrioritySignal] =
     useState(null);
+
+  const {
+    currentSite,
+    status: observingSiteStatus,
+    error: observingSiteError,
+    saving: observingSiteSaving,
+    updateObservingSite
+  } = useObservingSite(session);
 
 
   const [
@@ -1611,6 +1607,11 @@ export default function App() {
         <AdminDashboard
           session={session}
           onLogout={handleLogout}
+          currentSite={currentSite}
+          observingSiteStatus={observingSiteStatus}
+          observingSiteError={observingSiteError}
+          observingSiteSaving={observingSiteSaving}
+          onSelectObservingSite={updateObservingSite}
         />
       );
     }
@@ -1741,8 +1742,9 @@ export default function App() {
             openFeaturedPhoto
           }
           weather={
-            weather['Eliot, ME']
+            weather[currentSite.name]
           }
+          currentSite={currentSite}
         />
       )}
 
@@ -1769,6 +1771,7 @@ export default function App() {
             setSelectedIndex={
               setSelectedIndex
             }
+            activeSite={currentSite}
           />
         ) : isMissionSupportPage ? (
           <MissionSupport />
@@ -1801,6 +1804,7 @@ export default function App() {
             <Weather
               locations={locations}
               weather={weather}
+              activeSite={currentSite}
             />
 
             <Gallery

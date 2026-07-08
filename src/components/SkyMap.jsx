@@ -11,8 +11,9 @@ import {
   VectorFromSphere
 } from 'astronomy-engine';
 
-const SITE = {
+const DEFAULT_SITE = {
   name: 'Eliot, ME',
+  fullName: 'Eliot, Maine',
   lat: 43.1531,
   lon: -70.7828
 };
@@ -848,10 +849,10 @@ function getDayOfYear(date) {
   return Math.floor((current - start) / 86400000);
 }
 
-function getSunEventDate(baseDate, isSunrise) {
+function getSunEventDate(baseDate, isSunrise, site = DEFAULT_SITE) {
   const zenith = 90.833;
   const day = getDayOfYear(baseDate);
-  const lngHour = SITE.lon / 15;
+  const lngHour = site.lon / 15;
   const approximateTime = day + ((isSunrise ? 6 : 18) - lngHour) / 24;
   const meanAnomaly = 0.9856 * approximateTime - 3.289;
 
@@ -874,8 +875,8 @@ function getSunEventDate(baseDate, isSunrise) {
   const cosDec = Math.cos(Math.asin(sinDec));
 
   const cosHour =
-    (Math.cos(toRadians(zenith)) - sinDec * Math.sin(toRadians(SITE.lat))) /
-    (cosDec * Math.cos(toRadians(SITE.lat)));
+    (Math.cos(toRadians(zenith)) - sinDec * Math.sin(toRadians(site.lat))) /
+    (cosDec * Math.cos(toRadians(site.lat)));
 
   if (cosHour > 1 || cosHour < -1) return new Date(baseDate);
 
@@ -903,16 +904,16 @@ function getLocalDateAt(baseDate, hour, minute = 0, addDays = 0) {
   return date;
 }
 
-function getPresetDate(preset, currentDate) {
+function getPresetDate(preset, currentDate, site = DEFAULT_SITE) {
   const now = new Date();
   if (preset === 'now') return now;
-  if (preset === 'sunset') return getSunEventDate(currentDate, false);
+  if (preset === 'sunset') return getSunEventDate(currentDate, false, site);
   if (preset === '10pm') return getLocalDateAt(currentDate, 22, 0, 0);
   if (preset === 'midnight') return getLocalDateAt(currentDate, 0, 0, 1);
 
   if (preset === 'predawn') {
     const tomorrow = getLocalDateAt(currentDate, 0, 0, 1);
-    const sunrise = getSunEventDate(tomorrow, true);
+    const sunrise = getSunEventDate(tomorrow, true, site);
     return new Date(sunrise.getTime() - 90 * 60 * 1000);
   }
 
@@ -1211,12 +1212,12 @@ function getPriorityWeight(priority) {
   return 1;
 }
 
-function getTonightSampleDates(mapDate) {
+function getTonightSampleDates(mapDate, site = DEFAULT_SITE) {
   return [
-    { key: 'sunset', label: 'Sunset', date: getPresetDate('sunset', mapDate) },
-    { key: '10pm', label: '10 PM', date: getPresetDate('10pm', mapDate) },
-    { key: 'midnight', label: 'Midnight', date: getPresetDate('midnight', mapDate) },
-    { key: 'predawn', label: 'Pre-dawn', date: getPresetDate('predawn', mapDate) }
+    { key: 'sunset', label: 'Sunset', date: getPresetDate('sunset', mapDate, site) },
+    { key: '10pm', label: '10 PM', date: getPresetDate('10pm', mapDate, site) },
+    { key: 'midnight', label: 'Midnight', date: getPresetDate('midnight', mapDate, site) },
+    { key: 'predawn', label: 'Pre-dawn', date: getPresetDate('predawn', mapDate, site) }
   ].sort((a, b) => a.date - b.date);
 }
 
@@ -1225,8 +1226,8 @@ function getTargetRaDecAt(target, sampleDate, observer) {
   return { ra: target.ra, dec: target.dec };
 }
 
-function buildTonightPlan(target, mapDate, observer) {
-  const samples = getTonightSampleDates(mapDate).map((sample) => {
+function buildTonightPlan(target, mapDate, observer, site = DEFAULT_SITE) {
+  const samples = getTonightSampleDates(mapDate, site).map((sample) => {
     const position = getTargetAltAzAt(target, sample.date, observer);
     const status = getObservingStatus({ alt: position.alt });
 
@@ -1283,11 +1284,11 @@ function makeTrackPoint(target, sampleDate, observer) {
   };
 }
 
-function buildTargetTrack(target, mapDate, observer) {
+function buildTargetTrack(target, mapDate, observer, site = DEFAULT_SITE) {
   if (!target) return null;
 
-  let start = getPresetDate('sunset', mapDate);
-  let end = getPresetDate('predawn', mapDate);
+  let start = getPresetDate('sunset', mapDate, site);
+  let end = getPresetDate('predawn', mapDate, site);
 
   if (end <= start) {
     end = new Date(end.getTime() + 24 * 60 * 60 * 1000);
@@ -1305,8 +1306,8 @@ function buildTargetTrack(target, mapDate, observer) {
   const markerDefs = [
     { key: 'sunset', label: 'Sunset', date: start },
     { key: 'now', label: 'Now', date: now },
-    { key: '10pm', label: '10 PM', date: getPresetDate('10pm', mapDate) },
-    { key: 'midnight', label: 'Midnight', date: getPresetDate('midnight', mapDate) },
+    { key: '10pm', label: '10 PM', date: getPresetDate('10pm', mapDate, site) },
+    { key: 'midnight', label: 'Midnight', date: getPresetDate('midnight', mapDate, site) },
     { key: '2am', label: '2 AM', date: getLocalDateAt(mapDate, 2, 0, 1) },
     { key: 'predawn', label: 'Pre-dawn', date: end }
   ];
@@ -3012,7 +3013,7 @@ function CuzBroFieldNote({ entry, targetTitle }) {
 }
 
 
-export default function SkyMap({ gallery, captainsLog = [], equipment = [], setSelectedIndex }) {
+export default function SkyMap({ gallery, captainsLog = [], equipment = [], setSelectedIndex, activeSite = DEFAULT_SITE }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeFutureIndex, setActiveFutureIndex] = useState(0);
   const [activeVisitorIndex, setActiveVisitorIndex] = useState(0);
@@ -3035,7 +3036,11 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const mapSectionRef = useRef(null);
   const mapRef = useRef(null);
   const plannerDetailRef = useRef(null);
-  const observer = useMemo(() => new Observer(SITE.lat, SITE.lon, 0), []);
+  const site = activeSite || DEFAULT_SITE;
+  const observer = useMemo(
+    () => new Observer(site.lat, site.lon, 0),
+    [site.lat, site.lon]
+  );
   const isDetailMode = viewMode === 'detail';
   const mobileLayout = isMobileViewport();
   const canPanMap = zoom > getDefaultZoom() + 0.02;
@@ -3138,7 +3143,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
       const point = projectAltAz(altAz.alt, altAz.az);
       const status = getObservingStatus({ alt: altAz.alt });
       const moonImpact = getMoonImpact({ ...target, ra, dec, alt: altAz.alt, az: altAz.az }, moonInfo);
-      const tonightPlan = buildTonightPlan({ ...target, ra, dec }, date, observer);
+      const tonightPlan = buildTonightPlan({ ...target, ra, dec }, date, observer, site);
       const treeObstruction = getTreeObstruction({ ...target, ra, dec, alt: altAz.alt, az: altAz.az }, tonightPlan);
       const plannerStatus = getFuturePlannerStatus(status, tonightPlan, target, date, moonImpact, treeObstruction);
 
@@ -3206,7 +3211,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
       const point = projectAltAz(altAz.alt, altAz.az);
       const status = getObservingStatus({ alt: altAz.alt });
       const moonImpact = getMoonImpact({ ...visitor, alt: altAz.alt, az: altAz.az }, moonInfo);
-      const tonightPlan = buildTonightPlan(visitor, date, observer);
+      const tonightPlan = buildTonightPlan(visitor, date, observer, site);
       const treeObstruction = getTreeObstruction({ ...visitor, alt: altAz.alt, az: altAz.az }, tonightPlan);
       const basePlannerStatus = getFuturePlannerStatus(status, tonightPlan, visitor, date, moonImpact, treeObstruction);
       const plannerStatus = {
@@ -3327,7 +3332,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const activeTargetTrack = useMemo(() => {
     const trackTarget = selectedPanel === 'visitor' ? activeVisitorTarget : activeFutureTarget;
     if (!['future', 'visitor'].includes(selectedPanel) || !trackTarget || trackTarget.ephemerisNeeded) return null;
-    return buildTargetTrack(trackTarget, date, observer);
+    return buildTargetTrack(trackTarget, date, observer, site);
   }, [activeFutureTarget, activeVisitorTarget, date, observer, selectedPanel]);
 
   const constellationLines = useMemo(() => {
@@ -3760,7 +3765,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
 
   const setPresetTime = (preset) => {
     setActivePreset(preset);
-    setDate((currentDate) => getPresetDate(preset, currentDate));
+    setDate((currentDate) => getPresetDate(preset, currentDate, site));
   };
 
   const resetToNow = () => {
@@ -3929,9 +3934,14 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
         <p className="eyebrow">MISSION CONTROL</p>
         <h1>Celestial Atlas</h1>
         <p className="tagline">
-          Live sky planning from Eliot, Maine. Jump to sunset, 10 PM, midnight,
+          Live sky planning from {site.fullName || site.name}. Jump to sunset, 10 PM, midnight,
           or pre-dawn and see which CuzBro missions are best placed.
         </p>
+        <div className="atlasObserverSite" aria-label={`Current telescope site: ${site.fullName || site.name}`}>
+          <span>CURRENT TELESCOPE SITE</span>
+          <strong>📍 {site.fullName || site.name}</strong>
+          <em>Observer location used for sky calculations</em>
+        </div>
         <a className="atlasBackButton" href="/#observatory">← Back to Observatory</a>
       </section>
 
@@ -3999,7 +4009,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
           onTouchCancel={handleTouchEnd}
         >
           <div className="skyPanLayer" style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) rotate(${rotation}deg) scale(${zoom})`, transformOrigin: '50% 50%' }}>
-            <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label="Live sky map for Eliot, Maine">
+            <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label={`Live sky map for ${site.fullName || site.name}`}>
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
 
               {BACKGROUND_STARS.map((star) => (
