@@ -475,6 +475,19 @@ export default function Lightbox({
               </div>
             </div>
 
+            {selectedPhoto.sourceOperationDesignation && (
+              <section className="missionSourceOperation">
+                <small>SOURCE OPERATION</small>
+                <strong>
+                  {selectedPhoto.sourceOperationDesignation}
+                </strong>
+                <span>
+                  Mission Report generated from an archived CuzBro
+                  crew operation.
+                </span>
+              </section>
+            )}
+
             <h4>Equipment</h4>
 
             <p>

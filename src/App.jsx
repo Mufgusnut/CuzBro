@@ -229,6 +229,43 @@ function AdminTopNav({
   const crew = getCrewMember(
     session?.user?.email
   );
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const adminMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (
+        adminMenuRef.current &&
+        !adminMenuRef.current.contains(event.target)
+      ) {
+        setOpenDropdown(null);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const toggleDropdown = (name) => {
+    setOpenDropdown((current) =>
+      current === name ? null : name
+    );
+  };
+
+  const closeDropdown = () => {
+    setOpenDropdown(null);
+  };
 
   const pathname =
     window.location.pathname;
@@ -241,7 +278,27 @@ function AdminTopNav({
     );
 
   return (
-    <header
+    <>
+      <div className="admin-crew-strip">
+        <div className="admin-crew-strip-inner">
+          <div className="admin-top-auth">
+            <span>CREW AUTHENTICATED</span>
+            <strong>{crew.callSign}</strong>
+            <em>{crew.role}</em>
+          </div>
+
+          <button
+            type="button"
+            className="admin-crew-strip-logout"
+            onClick={onLogout}
+          >
+            <LogOut size={16} />
+            Log Out
+          </button>
+        </div>
+      </div>
+
+      <header
       className={
         scrolled
           ? 'admin-top-nav admin-top-nav-small'
@@ -267,7 +324,10 @@ function AdminTopNav({
         </span>
       </a>
 
-      <nav className="admin-top-menu">
+      <nav
+        className="admin-top-menu"
+        ref={adminMenuRef}
+      >
         <a
           href="/admin"
           className={
@@ -275,50 +335,107 @@ function AdminTopNav({
               ? 'active'
               : ''
           }
+          onClick={closeDropdown}
         >
           Admin Home
         </a>
 
-        <a
-          href="/admin#live-systems"
-          className={
-            isActive([
-              '/admin/system',
-              '/admin/comms',
-              '/admin/watch',
-              '/admin/black-box',
-              '/admin/deployments'
-            ])
-              ? 'active'
-              : ''
-          }
+        <div
+          className={`admin-top-dropdown ${
+            openDropdown === 'live' ? 'open' : ''
+          }`}
         >
-          Live Systems
-        </a>
+          <button
+            type="button"
+            className={
+              isActive([
+                '/admin/watch',
+                '/admin/system',
+                '/admin/storage',
+                '/admin/black-box',
+                '/admin/deployments'
+              ])
+                ? 'active'
+                : ''
+            }
+            aria-expanded={openDropdown === 'live'}
+            aria-haspopup="true"
+            onClick={() => toggleDropdown('live')}
+          >
+            Live Systems <span aria-hidden="true">⌄</span>
+          </button>
 
-        <a
-          href="/admin#observatory-tools"
-          className={
-            isActive([
-              '/admin/gallery',
-              '/admin/captains-log',
-              '/admin/equipment',
-              '/admin/storage',
-              '/admin/transfers',
-              '/admin/operation',
-              '/admin/incidents',
-              '/admin/tasks'
-            ])
-              ? 'active'
-              : ''
-          }
+          <div className="admin-top-dropdown-menu">
+            <a href="/admin/watch" onClick={closeDropdown}>
+              Watch Floor
+            </a>
+            <a href="/admin/system" onClick={closeDropdown}>
+              System Status
+            </a>
+            <a href="/admin/storage" onClick={closeDropdown}>
+              Storage Control
+            </a>
+            <a href="/admin/black-box" onClick={closeDropdown}>
+              Black Box
+            </a>
+            <a href="/admin/deployments" onClick={closeDropdown}>
+              Deployments
+            </a>
+          </div>
+        </div>
+
+        <div
+          className={`admin-top-dropdown ${
+            openDropdown === 'observatory' ? 'open' : ''
+          }`}
         >
-          Observatory Tools
-        </a>
+          <button
+            type="button"
+            className={
+              isActive([
+                '/admin/gallery',
+                '/admin/captains-log',
+                '/admin/equipment',
+                '/admin/transfers'
+              ])
+                ? 'active'
+                : ''
+            }
+            aria-expanded={openDropdown === 'observatory'}
+            aria-haspopup="true"
+            onClick={() => toggleDropdown('observatory')}
+          >
+            Observatory Tools <span aria-hidden="true">⌄</span>
+          </button>
 
-        <div className="admin-top-dropdown">
-          <button type="button">
-            Admin Links <span>⌄</span>
+          <div className="admin-top-dropdown-menu">
+            <a href="/admin/gallery" onClick={closeDropdown}>
+              Capture Control
+            </a>
+            <a href="/admin/captains-log" onClick={closeDropdown}>
+              Mission Reports
+            </a>
+            <a href="/admin/equipment" onClick={closeDropdown}>
+              Gear Inventory
+            </a>
+            <a href="/admin/transfers" onClick={closeDropdown}>
+              Crew Transfer
+            </a>
+          </div>
+        </div>
+
+        <div
+          className={`admin-top-dropdown ${
+            openDropdown === 'links' ? 'open' : ''
+          }`}
+        >
+          <button
+            type="button"
+            aria-expanded={openDropdown === 'links'}
+            aria-haspopup="true"
+            onClick={() => toggleDropdown('links')}
+          >
+            Admin Links <span aria-hidden="true">⌄</span>
           </button>
 
           <div className="admin-top-dropdown-menu">
@@ -326,6 +443,7 @@ function AdminTopNav({
               href="https://dns.cuzbro.net"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={closeDropdown}
             >
               DNS Portal
             </a>
@@ -335,24 +453,9 @@ function AdminTopNav({
 
       <div className="admin-top-controls">
         <ThemeToggle />
-
-        <div className="admin-top-user">
-        <div className="admin-top-auth">
-          <span>CREW AUTHENTICATED</span>
-          <strong>{crew.callSign}</strong>
-          <em>{crew.role}</em>
-        </div>
-
-        <button
-          type="button"
-          onClick={onLogout}
-        >
-          <LogOut size={16} />
-          Log Out
-        </button>
-        </div>
       </div>
-    </header>
+      </header>
+    </>
   );
 }
 
@@ -1199,6 +1302,12 @@ export default function App() {
 
             nextGoal:
               capture.next_goal,
+
+            sourceOperationId:
+              capture.source_operation_id,
+
+            sourceOperationDesignation:
+              capture.source_operation_designation,
 
             image:
               capture.image,

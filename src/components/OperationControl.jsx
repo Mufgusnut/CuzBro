@@ -7,7 +7,10 @@ import {
   Square,
   Telescope,
   Users,
-  ClipboardList
+  ClipboardList,
+  FileText,
+  ChevronRight,
+  X
 } from 'lucide-react';
 import {
   useEffect,
@@ -31,6 +34,10 @@ import {
 import {
   formatIncidentCode
 } from '../lib/incidents.js';
+import { useObservingSite } from '../lib/observingSites.js';
+import {
+  saveOperationReportHandoff
+} from '../lib/operationReportHandoff.js';
 
 const ONLINE_WINDOW_MS = 45_000;
 
@@ -159,6 +166,8 @@ export default function OperationControl({
     operationError
   } = useActiveOperation();
 
+  const { currentSite } = useObservingSite(session);
+
   const [form, setForm] = useState({
     designation: '',
     target: '',
@@ -179,6 +188,7 @@ export default function OperationControl({
       filesTransferred: 0,
       bytesTransferred: 0,
       capturesCreated: 0,
+      captures: [],
       blackBoxEvents: 0,
       incidents: [],
       tasks: [],
@@ -237,6 +247,7 @@ export default function OperationControl({
         filesTransferred: 0,
         bytesTransferred: 0,
         capturesCreated: 0,
+        captures: [],
         blackBoxEvents: 0,
         incidents: [],
         tasks: [],
@@ -384,6 +395,45 @@ export default function OperationControl({
             'CAPTURE_CREATED'
         );
 
+      const captureIds = captureEvents
+        .map((event) => event.resource_id)
+        .filter(Boolean);
+
+      let operationCaptures = [];
+
+      if (captureIds.length) {
+        const {
+          data: captureRows,
+          error: captureError
+        } = await supabase
+          .from('gallery')
+          .select(
+            'id, title, subtitle, equipment, image, capture_date, sort_order'
+          )
+          .in('id', captureIds);
+
+        if (captureError) {
+          console.error(
+            'Operation captures could not be loaded:',
+            captureError
+          );
+        } else {
+          const captureById = new Map(
+            (captureRows || []).map((capture) => [
+              capture.id,
+              capture
+            ])
+          );
+
+          operationCaptures = captureEvents
+            .map((event) =>
+              captureById.get(event.resource_id)
+            )
+            .filter(Boolean)
+            .reverse();
+        }
+      }
+
       const participantEmails =
         new Set();
 
@@ -437,6 +487,8 @@ export default function OperationControl({
 
         capturesCreated:
           captureEvents.length,
+
+        captures: operationCaptures,
 
         blackBoxEvents:
           (blackBoxResponse.data || [])
@@ -688,6 +740,63 @@ export default function OperationControl({
     }
   }
 
+  async function getOperationReportCaptures(operationId) {
+    const {
+      data: captureEvents,
+      error: eventError
+    } = await supabase
+      .from('crew_operation_events')
+      .select('resource_id, created_at')
+      .eq('operation_id', operationId)
+      .eq('event_type', 'CAPTURE_CREATED')
+      .order('created_at', { ascending: true });
+
+    if (eventError) {
+      console.error(
+        'Operation report capture events could not be refreshed:',
+        eventError
+      );
+      return summary.captures || [];
+    }
+
+    const captureIds = (captureEvents || [])
+      .map((event) => event.resource_id)
+      .filter(Boolean);
+
+    if (!captureIds.length) {
+      return [];
+    }
+
+    const {
+      data: captureRows,
+      error: captureError
+    } = await supabase
+      .from('gallery')
+      .select(
+        'id, title, subtitle, equipment, image, capture_date, sort_order'
+      )
+      .in('id', captureIds);
+
+    if (captureError) {
+      console.error(
+        'Operation report captures could not be refreshed:',
+        captureError
+      );
+      return summary.captures || [];
+    }
+
+    const captureById = new Map(
+      (captureRows || []).map((capture) => [
+        capture.id,
+        capture
+      ])
+    );
+
+    return captureIds
+      .map((captureId) => captureById.get(captureId))
+      .filter(Boolean);
+  }
+
   async function endOperation() {
     if (!activeOperation?.id) {
       return;
@@ -780,10 +889,17 @@ export default function OperationControl({
         completedOperation
       );
 
+      const reportCaptures =
+        await getOperationReportCaptures(
+          completedOperation.id
+        );
+
       setCompletedDebrief({
         operation: completedOperation,
         summary: {
-          ...summary
+          ...summary,
+          captures: reportCaptures,
+          capturesCreated: reportCaptures.length
         }
       });
 
@@ -805,6 +921,40 @@ export default function OperationControl({
     } finally {
       setSaving(false);
     }
+  }
+
+  function openMissionReportHandoff(capture = null) {
+    if (!completedDebrief?.operation?.id) {
+      return;
+    }
+
+    saveOperationReportHandoff({
+      operation: {
+        id: completedDebrief.operation.id,
+        designation:
+          completedDebrief.operation.designation,
+        target:
+          completedDebrief.operation.target,
+        operationType:
+          completedDebrief.operation.operation_type,
+        objective:
+          completedDebrief.operation.objective,
+        startedAt:
+          completedDebrief.operation.started_at,
+        endedAt:
+          completedDebrief.operation.ended_at,
+        initiatedBy:
+          completedDebrief.operation.initiated_by_name,
+        endedBy:
+          completedDebrief.operation.ended_by_name
+      },
+      site: currentSite,
+      summary: completedDebrief.summary,
+      selectedCaptureId: capture?.id || null
+    });
+
+    window.location.href =
+      '/admin/gallery?operationHandoff=1';
   }
 
   const presenceByEmail = new Map(
@@ -1498,6 +1648,67 @@ export default function OperationControl({
                   </strong>
                 </p>
               </div>
+
+              <section className="operation-report-handoff">
+                <div className="operation-report-handoff-heading">
+                  <span>
+                    <FileText size={18} />
+                  </span>
+
+                  <div>
+                    <small>MISSION REPORT HANDOFF</small>
+                    <h4>Create report from operation</h4>
+                    <p>
+                      Carry operation date, telescope site, crew,
+                      incidents, captures, and open follow-up into
+                      Capture Control.
+                    </p>
+                  </div>
+                </div>
+
+                {completedDebrief.summary.captures.length ? (
+                  <div className="operation-report-capture-options">
+                    <small>
+                      {completedDebrief.summary.captures.length === 1
+                        ? 'USE OPERATION CAPTURE'
+                        : 'CHOOSE REPORT CAPTURE'}
+                    </small>
+
+                    {completedDebrief.summary.captures.map((capture) => (
+                      <button
+                        type="button"
+                        key={capture.id}
+                        onClick={() => openMissionReportHandoff(capture)}
+                      >
+                        <span>
+                          <strong>{capture.title}</strong>
+                          <em>{capture.subtitle || 'Mission capture'}</em>
+                        </span>
+                        <ChevronRight size={18} />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="operation-report-create-button"
+                    onClick={() => openMissionReportHandoff()}
+                  >
+                    <FileText size={18} />
+                    CREATE NEW REPORT DRAFT
+                    <ChevronRight size={18} />
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="operation-report-dismiss-button"
+                  onClick={() => setCompletedDebrief(null)}
+                >
+                  <X size={15} />
+                  CLOSE WITHOUT REPORT
+                </button>
+              </section>
 
               <small>
                 OPERATION ARCHIVED IN CREW OPERATIONS · BLACK BOX EVENT RECORDED

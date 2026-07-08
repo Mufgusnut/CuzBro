@@ -3,6 +3,8 @@ import {
   ArrowLeft,
   Camera,
   FileArchive,
+  FileText,
+  Link2,
   ImagePlus,
   Pencil,
   Save,
@@ -17,6 +19,13 @@ import {
   recordOperationEvent,
   useActiveOperation
 } from '../lib/operations.js';
+import {
+  buildOperationReportNextGoal,
+  buildOperationReportNotes,
+  clearOperationReportHandoff,
+  formatOperationReportDate,
+  readOperationReportHandoff
+} from '../lib/operationReportHandoff.js';
 
 const GALLERY_API =
   'https://cuzbro-gallery-api.dve-hffman.workers.dev';
@@ -455,6 +464,12 @@ export default function AdminGallery() {
   const [form, setForm] =
     useState(emptyCapture);
 
+  const [sourceOperation, setSourceOperation] =
+    useState(null);
+
+  const [handoffLoaded, setHandoffLoaded] =
+    useState(false);
+
   const [imageFile, setImageFile] =
     useState(null);
 
@@ -520,6 +535,111 @@ export default function AdminGallery() {
   }, []);
 
   useEffect(() => {
+    if (
+      handoffLoaded ||
+      status !== 'ready' ||
+      !new URLSearchParams(window.location.search).has(
+        'operationHandoff'
+      )
+    ) {
+      return;
+    }
+
+    setHandoffLoaded(true);
+
+    const handoff = readOperationReportHandoff();
+
+    if (!handoff?.operation?.id) {
+      setError(
+        'Operation report handoff data is no longer available.'
+      );
+      return;
+    }
+
+    const capture = handoff.selectedCaptureId
+      ? captures.find(
+          (item) => item.id === handoff.selectedCaptureId
+        )
+      : null;
+
+    const handoffNotes = buildOperationReportNotes(handoff);
+    const handoffNextGoal =
+      buildOperationReportNextGoal(handoff);
+    const nextSortOrder =
+      captures.reduce(
+        (highest, item) =>
+          Math.max(highest, item.sort_order || 0),
+        0
+      ) + 1;
+
+    setSourceOperation({
+      id: handoff.operation.id,
+      designation: handoff.operation.designation,
+      target: handoff.operation.target,
+      captureCount:
+        handoff.summary?.captures?.length || 0,
+      incidentCount:
+        handoff.summary?.incidents?.length || 0,
+      participants:
+        handoff.summary?.participants || []
+    });
+
+    setEditingCaptureId(capture?.id || 'new');
+
+    if (capture) {
+      const existingForm = databaseRowToForm(capture);
+
+      setForm({
+        ...existingForm,
+        captureDate:
+          existingForm.captureDate ||
+          formatOperationReportDate(
+            handoff.operation.startedAt
+          ),
+        notes: [existingForm.notes, handoffNotes]
+          .filter(Boolean)
+          .join('\n\n'),
+        nextGoal: [existingForm.nextGoal, handoffNextGoal]
+          .filter(Boolean)
+          .join('; ')
+      });
+
+      setPreviewUrl(getCaptureImageUrl(capture.image));
+    } else {
+      setForm({
+        ...emptyCapture,
+        title:
+          handoff.operation.target ||
+          handoff.operation.designation ||
+          '',
+        subtitle:
+          handoff.operation.objective ||
+          `${handoff.operation.operationType || 'Observing'} operation`,
+        category:
+          handoff.operation.operationType ||
+          'Astrophotography',
+        captureDate: formatOperationReportDate(
+          handoff.operation.startedAt
+        ),
+        notes: handoffNotes,
+        nextGoal: handoffNextGoal,
+        sortOrder: String(nextSortOrder)
+      });
+
+      setPreviewUrl('');
+    }
+
+    setImageFile(null);
+    setMasterFile(null);
+    setMessage(
+      `OPERATION HANDOFF LOADED · ${String(
+        handoff.operation.designation || 'OPERATION'
+      ).toUpperCase()}`
+    );
+    setError('');
+  }, [captures, handoffLoaded, status]);
+
+  useEffect(() => {
     return () => {
       if (
         previewUrl.startsWith('blob:')
@@ -549,6 +669,7 @@ export default function AdminGallery() {
 
     setEditingCaptureId(null);
     setForm(emptyCapture);
+    setSourceOperation(null);
     setImageFile(null);
     setMasterFile(null);
     setPreviewUrl('');
@@ -558,6 +679,7 @@ export default function AdminGallery() {
 
   function startNewCapture() {
     releasePreviewUrl();
+    setSourceOperation(null);
 
     const nextSortOrder =
       captures.reduce(
@@ -585,6 +707,17 @@ export default function AdminGallery() {
 
   function startEditingCapture(capture) {
     releasePreviewUrl();
+
+    setSourceOperation(
+      capture.source_operation_id
+        ? {
+            id: capture.source_operation_id,
+            designation:
+              capture.source_operation_designation ||
+              'Linked operation'
+          }
+        : null
+    );
 
     setEditingCaptureId(capture.id);
     setForm(
@@ -1081,6 +1214,16 @@ export default function AdminGallery() {
             ? 0
             : Number(form.sortOrder),
 
+        source_operation_id:
+          sourceOperation?.id ||
+          existingCapture?.source_operation_id ||
+          null,
+
+        source_operation_designation:
+          sourceOperation?.designation ||
+          existingCapture?.source_operation_designation ||
+          null,
+
         updated_at:
           new Date().toISOString()
       };
@@ -1223,12 +1366,50 @@ export default function AdminGallery() {
         }
       }
 
+      if (sourceOperation?.id) {
+        const reportId =
+          savedCapture?.id || editingCaptureId;
+
+        const reportLinkResult = await recordOperationEvent({
+          operation: {
+            id: sourceOperation.id,
+            designation: sourceOperation.designation
+          },
+          eventType: 'MISSION_REPORT_LINKED',
+          eventLabel: 'MISSION REPORT LINKED',
+          resourceType: 'gallery',
+          resourceId: reportId,
+          resourceName: captureRow.title,
+          details: {
+            reportTitle: captureRow.title
+          }
+        });
+
+        if (
+          !reportLinkResult.success &&
+          !reportLinkResult.skipped
+        ) {
+          console.error(
+            'Mission report saved, but operation link event failed:',
+            reportLinkResult.error
+          );
+        }
+
+        clearOperationReportHandoff();
+        window.history.replaceState(
+          {},
+          '',
+          '/admin/gallery'
+        );
+      }
+
       await loadCaptures();
 
       releasePreviewUrl();
 
       setEditingCaptureId(null);
       setForm(emptyCapture);
+      setSourceOperation(null);
       setImageFile(null);
       setMasterFile(null);
       setPreviewUrl('');
@@ -1507,6 +1688,26 @@ export default function AdminGallery() {
                 <X size={20} />
               </button>
             </div>
+
+            {sourceOperation && (
+              <section className="admin-operation-handoff-banner">
+                <span>
+                  <Link2 size={18} />
+                </span>
+
+                <div>
+                  <small>OPERATION HANDOFF</small>
+                  <strong>{sourceOperation.designation}</strong>
+                  <p>
+                    This Mission Report will be permanently linked to
+                    the source operation. Review the carried-over notes
+                    before saving.
+                  </p>
+                </div>
+
+                <FileText size={22} />
+              </section>
+            )}
 
             <form
               onSubmit={handleSave}

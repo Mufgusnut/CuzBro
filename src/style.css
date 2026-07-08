@@ -23803,3 +23803,550 @@ html[data-theme="observation"] .missionTimelineMilestonePreview::after {
   border-right-color: rgba(255, 55, 55, .26) !important;
   border-bottom-color: rgba(255, 55, 55, .26) !important;
 }
+
+
+/* =========================================================
+   OPERATION → MISSION REPORT HANDOFF
+   ========================================================= */
+
+.operation-report-handoff {
+  margin-top: 22px;
+  padding: 20px;
+  border: 1px solid rgba(114, 217, 255, .18);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 157, 28, .11), transparent 36%),
+    rgba(7, 14, 30, .58);
+}
+
+.operation-report-handoff-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.operation-report-handoff-heading > span {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #72d9ff;
+  background: rgba(114, 217, 255, .08);
+  border: 1px solid rgba(114, 217, 255, .2);
+}
+
+.operation-report-handoff-heading small,
+.operation-report-capture-options > small {
+  display: block;
+  color: rgba(255, 180, 95, .9);
+  font-weight: 900;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.operation-report-handoff-heading h4 {
+  margin: 5px 0 6px;
+  font-size: 1.18rem;
+}
+
+.operation-report-handoff-heading p {
+  margin: 0;
+  color: rgba(226, 236, 255, .68);
+  line-height: 1.45;
+}
+
+.operation-report-capture-options {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.operation-report-capture-options button,
+.operation-report-create-button {
+  width: 100%;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(114, 217, 255, .18);
+  border-radius: 18px;
+  color: #eef5ff;
+  background: rgba(4, 10, 22, .62);
+  cursor: pointer;
+  text-align: left;
+}
+
+.operation-report-capture-options button:hover,
+.operation-report-create-button:hover {
+  border-color: rgba(255, 157, 28, .46);
+  background: rgba(255, 157, 28, .07);
+}
+
+.operation-report-capture-options button span {
+  display: grid;
+  gap: 3px;
+}
+
+.operation-report-capture-options button strong {
+  color: #eef5ff;
+}
+
+.operation-report-capture-options button em {
+  color: rgba(190, 205, 228, .66);
+  font-style: normal;
+}
+
+.operation-report-create-button {
+  margin-top: 18px;
+  justify-content: flex-start;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.operation-report-create-button svg:last-child {
+  margin-left: auto;
+}
+
+.operation-report-dismiss-button {
+  margin-top: 12px;
+  padding: 8px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  color: rgba(190, 205, 228, .58);
+  background: transparent;
+  cursor: pointer;
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+}
+
+.admin-operation-handoff-banner {
+  margin: 0 0 18px;
+  padding: 15px 17px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 13px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 157, 28, .28);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 157, 28, .12), transparent 42%),
+    rgba(255, 157, 28, .045);
+}
+
+.admin-operation-handoff-banner > span {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #ff9d1c;
+  background: rgba(255, 157, 28, .09);
+}
+
+.admin-operation-handoff-banner small {
+  display: block;
+  color: #ffb45f;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.admin-operation-handoff-banner strong {
+  display: block;
+  margin-top: 3px;
+}
+
+.admin-operation-handoff-banner p {
+  margin: 4px 0 0;
+  color: rgba(226, 236, 255, .68);
+  line-height: 1.4;
+}
+
+.admin-operation-handoff-banner > svg {
+  color: rgba(114, 217, 255, .72);
+}
+
+.missionSourceOperation {
+  margin: 18px 0;
+  padding: 14px 16px;
+  display: grid;
+  gap: 4px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 157, 28, .22);
+  background: rgba(255, 157, 28, .055);
+}
+
+.missionSourceOperation small {
+  color: #ffb45f;
+  font-weight: 900;
+  letter-spacing: .13em;
+}
+
+.missionSourceOperation strong {
+  color: #f4f7ff;
+}
+
+.missionSourceOperation span {
+  color: rgba(190, 205, 228, .65);
+  font-size: .82rem;
+  line-height: 1.4;
+}
+
+html[data-theme="light"] .operation-report-handoff,
+html[data-theme="light"] .admin-operation-handoff-banner,
+html[data-theme="light"] .missionSourceOperation {
+  color: #13243b !important;
+  background: linear-gradient(180deg, #fffaf3, #f7fafe) !important;
+  border-color: rgba(169, 91, 0, .22) !important;
+}
+
+html[data-theme="light"] .operation-report-handoff-heading p,
+html[data-theme="light"] .admin-operation-handoff-banner p,
+html[data-theme="light"] .missionSourceOperation span {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .operation-report-capture-options button,
+html[data-theme="light"] .operation-report-create-button {
+  color: #13243b !important;
+  background: #ffffff !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+}
+
+html[data-theme="light"] .operation-report-capture-options button strong,
+html[data-theme="light"] .missionSourceOperation strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .operation-report-capture-options button em,
+html[data-theme="light"] .operation-report-dismiss-button {
+  color: #596f8a !important;
+}
+
+html[data-theme="observation"] .operation-report-handoff,
+html[data-theme="observation"] .admin-operation-handoff-banner,
+html[data-theme="observation"] .missionSourceOperation {
+  background: rgba(14, 0, 0, .94) !important;
+  border-color: rgba(255, 60, 60, .24) !important;
+}
+
+@media (max-width: 700px) {
+  .operation-report-handoff {
+    padding: 16px;
+  }
+
+  .admin-operation-handoff-banner {
+    grid-template-columns: auto 1fr;
+  }
+
+  .admin-operation-handoff-banner > svg {
+    display: none;
+  }
+}
+/* =========================================================
+   ADMIN NAV — CLICKABLE LIVE SYSTEMS / OBSERVATORY DROPDOWNS
+   Keep menus open from explicit click/tap state as well as
+   desktop hover/focus. Menus stay above admin content.
+   ========================================================= */
+
+.admin-top-dropdown > button.active {
+  color: #ffffff;
+  border-color: rgba(143, 213, 236, 0.52);
+  background: rgba(143, 213, 236, 0.08);
+  box-shadow: 0 0 24px rgba(98, 177, 222, 0.16);
+}
+
+.admin-top-dropdown > button span {
+  display: inline-block;
+  transition: transform 0.16s ease;
+}
+
+.admin-top-dropdown.open > button span {
+  transform: rotate(180deg);
+}
+
+.admin-top-dropdown-menu {
+  z-index: 80;
+}
+
+.admin-top-dropdown.open .admin-top-dropdown-menu,
+.admin-top-dropdown:hover .admin-top-dropdown-menu,
+.admin-top-dropdown:focus-within .admin-top-dropdown-menu,
+.admin-top-dropdown-menu:hover {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+html[data-theme="light"] .admin-top-dropdown > button.active {
+  color: #183357 !important;
+  border-color: rgba(36, 95, 202, 0.32) !important;
+  background: rgba(36, 95, 202, 0.08) !important;
+}
+
+html[data-theme="observation"] .admin-top-dropdown > button.active {
+  color: #ff4c4c !important;
+  border-color: rgba(255, 48, 48, 0.24) !important;
+  background: rgba(255, 30, 30, 0.1) !important;
+}
+
+@media (max-width: 760px) {
+  .admin-top-dropdown-menu {
+    top: calc(100% + 6px) !important;
+    left: 0 !important;
+    right: auto !important;
+    width: min(280px, calc(100vw - 28px)) !important;
+    min-width: 0 !important;
+    max-height: min(360px, 55vh) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    z-index: 120 !important;
+  }
+
+  .admin-top-dropdown:nth-of-type(even) .admin-top-dropdown-menu {
+    left: auto !important;
+    right: 0 !important;
+  }
+
+  .admin-top-dropdown-menu a {
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+}
+/* =========================================================
+   ADMIN NAV — CREW UTILITY STRIP
+   Keep crew identity/logout outside the sticky navigation row.
+   ========================================================= */
+
+.admin-crew-strip {
+  position: relative;
+  z-index: 1210;
+  width: 100%;
+  color: #f4f7fb;
+  background: rgba(2, 6, 14, .98);
+  border-bottom: 1px solid rgba(143, 193, 219, .10);
+}
+
+.admin-crew-strip-inner {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 5px clamp(24px, 3vw, 58px);
+}
+
+.admin-crew-strip .admin-top-auth {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+}
+
+.admin-crew-strip .admin-top-auth span,
+.admin-crew-strip .admin-top-auth strong,
+.admin-crew-strip .admin-top-auth em {
+  margin: 0;
+  line-height: 1;
+}
+
+.admin-crew-strip .admin-top-auth span {
+  color: rgba(143, 193, 219, .60);
+  font-size: .43rem;
+  letter-spacing: .16em;
+}
+
+.admin-crew-strip .admin-top-auth strong {
+  color: rgba(235, 244, 250, .94);
+  font-size: .57rem;
+  letter-spacing: .12em;
+}
+
+.admin-crew-strip .admin-top-auth em {
+  color: rgba(205, 221, 235, .52);
+  font-size: .46rem;
+  letter-spacing: .10em;
+}
+
+.admin-crew-strip-logout {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  color: rgba(229, 239, 247, .76);
+  background: rgba(255, 255, 255, .025);
+  border: 1px solid rgba(143, 193, 219, .16);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: .45rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.admin-crew-strip-logout:hover {
+  color: #fff;
+  border-color: rgba(143, 213, 236, .45);
+  background: rgba(143, 213, 236, .07);
+}
+
+.admin-top-nav {
+  justify-content: flex-start !important;
+}
+
+.admin-top-menu {
+  flex: 1 1 auto !important;
+  justify-content: center !important;
+}
+
+.admin-top-controls {
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+}
+
+.admin-top-nav .admin-top-brand {
+  min-width: 178px !important;
+}
+
+@media (min-width: 1121px) and (max-width: 1500px) {
+  .admin-top-nav {
+    gap: 10px !important;
+    padding-left: clamp(18px, 2vw, 34px) !important;
+    padding-right: clamp(18px, 2vw, 34px) !important;
+  }
+
+  .admin-top-brand {
+    min-width: 160px !important;
+    gap: 9px !important;
+  }
+
+  .admin-top-brand img {
+    width: 78px !important;
+  }
+
+  .admin-top-menu {
+    gap: 5px !important;
+  }
+
+  .admin-top-menu > a,
+  .admin-top-dropdown > button {
+    min-height: 36px !important;
+    padding: 0 11px !important;
+    font-size: .47rem !important;
+    letter-spacing: .12em !important;
+  }
+
+  .admin-top-controls .theme-toggle button {
+    min-width: 40px !important;
+  }
+}
+
+@media (max-width: 1120px) {
+  .admin-crew-strip-inner {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-crew-strip-inner {
+    min-height: 42px;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 14px;
+  }
+
+  .admin-crew-strip .admin-top-auth {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 2px 8px;
+  }
+
+  .admin-crew-strip .admin-top-auth span {
+    grid-column: 1 / -1;
+  }
+
+  .admin-crew-strip .admin-top-auth em {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-crew-strip-logout {
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 0 12px;
+  }
+
+  .admin-top-controls {
+    order: 1 !important;
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .admin-top-controls .theme-toggle {
+    width: 100% !important;
+  }
+
+  .admin-top-brand {
+    order: 2 !important;
+  }
+
+  .admin-top-menu {
+    order: 3 !important;
+  }
+}
+
+html[data-theme="light"] .admin-crew-strip {
+  color: #13243b;
+  background: rgba(248, 251, 255, .98);
+  border-bottom-color: rgba(28, 61, 98, .12);
+}
+
+html[data-theme="light"] .admin-crew-strip .admin-top-auth span,
+html[data-theme="light"] .admin-crew-strip .admin-top-auth em {
+  color: #60758f !important;
+}
+
+html[data-theme="light"] .admin-crew-strip .admin-top-auth strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .admin-crew-strip-logout {
+  color: #294e75;
+  background: #fff;
+  border-color: rgba(28, 61, 98, .18);
+}
+
+html[data-theme="observation"] .admin-crew-strip {
+  color: #ff5a5a;
+  background: rgba(8, 0, 0, .98);
+  border-bottom-color: rgba(255, 48, 48, .16);
+}
+
+html[data-theme="observation"] .admin-crew-strip .admin-top-auth span,
+html[data-theme="observation"] .admin-crew-strip .admin-top-auth em {
+  color: #b94d4d !important;
+}
+
+html[data-theme="observation"] .admin-crew-strip .admin-top-auth strong,
+html[data-theme="observation"] .admin-crew-strip-logout {
+  color: #ff6a6a !important;
+}
+
+html[data-theme="observation"] .admin-crew-strip-logout {
+  background: rgba(32, 0, 0, .9);
+  border-color: rgba(255, 48, 48, .22);
+}
