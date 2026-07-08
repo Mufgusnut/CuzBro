@@ -21915,3 +21915,181 @@ html[data-theme="light"] .carouselWrap button:hover svg,
 html[data-theme="light"] .carouselWrap button:hover i {
   color: #c46f12 !important;
 }
+/* =========================================================
+   OBSERVATION MODE — STRONGER RED MASK FOR SKY MAP + PLANNER
+   Make planner surfaces warmer and reduce cool blue glow.
+   ========================================================= */
+
+html[data-theme="observation"] .plannerControlsPanel,
+html[data-theme="observation"] .tonightModePanel,
+html[data-theme="observation"] .plannerCatalog,
+html[data-theme="observation"] .plannerDetail,
+html[data-theme="observation"] .plannerTabbedDetail,
+html[data-theme="observation"] .atlasDetail,
+html[data-theme="observation"] .atlasCatalog,
+html[data-theme="observation"] .atlasMap,
+html[data-theme="observation"] .plannerControlChips,
+html[data-theme="observation"] .plannerDetailTabs,
+html[data-theme="observation"] .plannerGeneralInfoFacts,
+html[data-theme="observation"] .targetWhyCard,
+html[data-theme="observation"] .targetDifficultyCard,
+html[data-theme="observation"] .targetActionCard,
+html[data-theme="observation"] .targetFramingCard,
+html[data-theme="observation"] .atlasFacts,
+html[data-theme="observation"] .catalogEmptyState,
+html[data-theme="observation"] .shareTonightCard,
+html[data-theme="observation"] .targetWhyColumns div,
+html[data-theme="observation"] .shareTonightGrid span {
+  background:
+    radial-gradient(circle at top left, rgba(255, 64, 64, 0.12), transparent 36%),
+    linear-gradient(180deg, rgba(20, 0, 0, 0.95), rgba(10, 0, 0, 0.94)) !important;
+  border-color: rgba(255, 62, 62, 0.24) !important;
+  box-shadow: 0 0 26px rgba(110, 0, 0, 0.14) !important;
+}
+
+html[data-theme="observation"] .plannerControlChips button,
+html[data-theme="observation"] .plannerDetailTabs button,
+html[data-theme="observation"] .plannerCatalog .catalogTabs button,
+html[data-theme="observation"] .atlasTimeControls button,
+html[data-theme="observation"] .atlasModeControls button,
+html[data-theme="observation"] .atlasZoomControls button,
+html[data-theme="observation"] .atlasBackButton,
+html[data-theme="observation"] .inlineModeToggle button {
+  background: linear-gradient(180deg, rgba(32, 4, 4, 0.95), rgba(18, 2, 2, 0.95)) !important;
+  border-color: rgba(255, 72, 72, 0.22) !important;
+  color: #ffd6d6 !important;
+  box-shadow: 0 0 18px rgba(120, 10, 10, 0.16) !important;
+}
+
+html[data-theme="observation"] .plannerControlChips button.active,
+html[data-theme="observation"] .plannerDetailTabs button.active,
+html[data-theme="observation"] .plannerCatalog .catalogTabs button.active,
+html[data-theme="observation"] .atlasTimeControls button.active,
+html[data-theme="observation"] .atlasModeControls button.active,
+html[data-theme="observation"] .atlasZoomControls button.active,
+html[data-theme="observation"] .inlineModeToggle button.active {
+  background: linear-gradient(180deg, rgba(86, 28, 10, 0.95), rgba(52, 14, 6, 0.95)) !important;
+  border-color: rgba(255, 132, 58, 0.54) !important;
+  color: #fff0e6 !important;
+  box-shadow: 0 0 22px rgba(255, 96, 32, 0.16) !important;
+}
+
+html[data-theme="observation"] .plannerControlChips button:hover,
+html[data-theme="observation"] .plannerDetailTabs button:hover,
+html[data-theme="observation"] .plannerCatalog .catalogTabs button:hover,
+html[data-theme="observation"] .atlasTimeControls button:hover,
+html[data-theme="observation"] .atlasModeControls button:hover,
+html[data-theme="observation"] .atlasZoomControls button:hover,
+html[data-theme="observation"] .atlasBackButton:hover,
+html[data-theme="observation"] .inlineModeToggle button:hover {
+  background: linear-gradient(180deg, rgba(58, 12, 12, 0.96), rgba(28, 4, 4, 0.96)) !important;
+  border-color: rgba(255, 102, 62, 0.38) !important;
+  color: #fff0e6 !important;
+}
+
+html[data-theme="observation"] .catalogItem,
+html[data-theme="observation"] .plannerCatalog .catalogItem.futureItem,
+html[data-theme="observation"] .plannerCatalog .catalogItem.visitorItem {
+  background:
+    radial-gradient(circle at top left, rgba(255, 46, 46, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(8, 0, 0, 0.96), rgba(3, 0, 0, 0.98)) !important;
+  border-color: rgba(255, 58, 58, 0.18) !important;
+}
+
+html[data-theme="observation"] .catalogItem:hover,
+html[data-theme="observation"] .catalogItem.active,
+html[data-theme="observation"] .plannerCatalog .catalogItem.futureItem:hover,
+html[data-theme="observation"] .plannerCatalog .catalogItem.futureItem.active,
+html[data-theme="observation"] .plannerCatalog .catalogItem.visitorItem:hover,
+html[data-theme="observation"] .plannerCatalog .catalogItem.visitorItem.active {
+  background:
+    radial-gradient(circle at top left, rgba(255, 72, 72, 0.11), transparent 38%),
+    linear-gradient(180deg, rgba(16, 0, 0, 0.98), rgba(6, 0, 0, 1)) !important;
+  border-color: rgba(255, 86, 86, 0.24) !important;
+  box-shadow: 0 0 24px rgba(120, 8, 8, 0.14) !important;
+}
+
+html[data-theme="observation"] .skyMapPage,
+html[data-theme="observation"] .atlasPage {
+  background:
+    radial-gradient(circle at top center, rgba(52, 0, 0, 0.24), transparent 42%),
+    #020000 !important;
+}
+
+html[data-theme="observation"] .realSkyMap,
+html[data-theme="observation"] .atlasMap.realSkyMap {
+  position: relative !important;
+  background:
+    radial-gradient(circle at center, rgba(12, 6, 18, 0.72), rgba(2, 0, 0, 0.96)) !important;
+  border-color: rgba(255, 52, 52, 0.18) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 40, 40, 0.06), 0 0 24px rgba(70, 0, 0, 0.14) !important;
+}
+
+html[data-theme="observation"] .realSkyMap::before,
+html[data-theme="observation"] .atlasMap.realSkyMap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(34, 0, 0, 0.10), rgba(92, 0, 0, 0.12)),
+    radial-gradient(circle at center, rgba(255, 42, 42, 0.07), transparent 68%);
+  mix-blend-mode: screen;
+}
+
+html[data-theme="observation"] .realSkyMap > *,
+html[data-theme="observation"] .atlasMap.realSkyMap > * {
+  position: relative;
+  z-index: 2;
+}
+
+html[data-theme="observation"] .realSkyMap canvas,
+html[data-theme="observation"] .realSkyMap svg,
+html[data-theme="observation"] .realSkyMap img,
+html[data-theme="observation"] .atlasMap.realSkyMap canvas,
+html[data-theme="observation"] .atlasMap.realSkyMap svg,
+html[data-theme="observation"] .atlasMap.realSkyMap img {
+  filter: grayscale(0.12) sepia(0.34) saturate(0.9) hue-rotate(-18deg) brightness(0.78) contrast(1.08) !important;
+}
+
+html[data-theme="observation"] .realSkyMap > .atlasLegend,
+html[data-theme="observation"] .realSkyMap > .enhancedLegend,
+html[data-theme="observation"] .realSkyMap > .atlasLegend.enhancedLegend,
+html[data-theme="observation"] .atlasTimeControls,
+html[data-theme="observation"] .atlasZoomControls,
+html[data-theme="observation"] .atlasModeControls {
+  background: rgba(18, 2, 2, 0.88) !important;
+  border-color: rgba(255, 60, 60, 0.20) !important;
+  box-shadow: 0 0 18px rgba(100, 0, 0, 0.14) !important;
+}
+
+html[data-theme="observation"] .targetStatusBadge,
+html[data-theme="observation"] .moonImpactBadge,
+html[data-theme="observation"] .treeObstructionBadge,
+html[data-theme="observation"] .targetDifficultyBadge,
+html[data-theme="observation"] .visitorEphemerisBadge {
+  box-shadow: none !important;
+  filter: saturate(0.82) brightness(0.96) !important;
+}
+
+html[data-theme="observation"] .targetWhyCard p,
+html[data-theme="observation"] .plannerTabPanel > p,
+html[data-theme="observation"] .tonightModePanel p,
+html[data-theme="observation"] .catalogItem em,
+html[data-theme="observation"] .catalogItem small,
+html[data-theme="observation"] .atlasDetail p,
+html[data-theme="observation"] .atlasFacts span,
+html[data-theme="observation"] .shareTonightGrid em {
+  color: #df6a6a !important;
+}
+
+html[data-theme="observation"] .targetWhyColumns b,
+html[data-theme="observation"] .shareTonightGrid b,
+html[data-theme="observation"] .catalogItem strong,
+html[data-theme="observation"] .atlasDetail h2,
+html[data-theme="observation"] .atlasDetail h3,
+html[data-theme="observation"] .plannerTabPanel > h2,
+html[data-theme="observation"] .plannerTabPanel > h3 {
+  color: #ff8c8c !important;
+}
