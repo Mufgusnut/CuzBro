@@ -21272,3 +21272,554 @@ html[data-theme="light"] .admin-page .admin-helper,
 html[data-theme="light"] .admin-page .admin-muted {
   color: #5b708c !important;
 }
+
+/* =========================================================
+   LIGHT MODE — FINAL ADMIN CONTRAST SWEEP
+   Nested dark-theme metadata and controls
+   ========================================================= */
+
+/* Page commands and primary controls */
+html[data-theme="light"] .system-status-command p,
+html[data-theme="light"] .storage-control-command p,
+html[data-theme="light"] .black-box-command p,
+html[data-theme="light"] .admin-command-header p,
+html[data-theme="light"] .admin-log-heading p,
+html[data-theme="light"] .admin-equipment-section-heading p,
+html[data-theme="light"] .admin-black-box-heading p {
+  color: #4d627d !important;
+}
+
+html[data-theme="light"] .system-status-run,
+html[data-theme="light"] .storage-control-refresh {
+  color: #183357 !important;
+  background: #e7eefc !important;
+  border-color: rgba(55, 91, 181, .34) !important;
+}
+
+html[data-theme="light"] .system-status-run:disabled,
+html[data-theme="light"] .storage-control-refresh:disabled {
+  color: #536985 !important;
+  opacity: .72 !important;
+}
+
+/* System status */
+html[data-theme="light"] .system-status-overview-main span,
+html[data-theme="light"] .system-status-overview-stats span,
+html[data-theme="light"] .system-status-service > span {
+  color: #536985 !important;
+}
+
+html[data-theme="light"] .system-status-overview-main p,
+html[data-theme="light"] .system-status-service p,
+html[data-theme="light"] .system-status-footer p {
+  color: #4d627d !important;
+}
+
+html[data-theme="light"] .system-status-service small {
+  color: #4a617e !important;
+  background: #f4f7fb !important;
+}
+
+/* Watch floor */
+html[data-theme="light"] .watch-panel-title span {
+  color: #183357 !important;
+}
+
+html[data-theme="light"] .watch-panel-title strong {
+  color: #23784b !important;
+}
+
+html[data-theme="light"] .watch-operation-active > p,
+html[data-theme="light"] .watch-empty-state strong,
+html[data-theme="light"] .watch-incident small,
+html[data-theme="light"] .watch-task-list article small,
+html[data-theme="light"] .watch-black-box-latest span {
+  color: #4d627d !important;
+}
+
+html[data-theme="light"] .watch-operation-clock strong,
+html[data-theme="light"] .watch-operation-meta b,
+html[data-theme="light"] .watch-task-metrics b,
+html[data-theme="light"] .watch-task-list article strong,
+html[data-theme="light"] .watch-service strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .watch-operation-meta span,
+html[data-theme="light"] .watch-crew-member small,
+html[data-theme="light"] .watch-crew-member span,
+html[data-theme="light"] .watch-task-metrics span,
+html[data-theme="light"] .watch-comms-feed time,
+html[data-theme="light"] .watch-black-box-latest small,
+html[data-theme="light"] .watch-floor-clock small {
+  color: #5b708c !important;
+}
+
+html[data-theme="light"] .watch-crew-member em,
+html[data-theme="light"] .watch-comms-feed strong {
+  color: #236f98 !important;
+}
+
+html[data-theme="light"] .watch-comms-feed p {
+  color: #334a67 !important;
+}
+
+html[data-theme="light"] .watch-panel-title,
+html[data-theme="light"] .watch-comms-feed article,
+html[data-theme="light"] .watch-task-list article,
+html[data-theme="light"] .watch-crew-member {
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+/* Storage console and object list */
+html[data-theme="light"] .storage-control-total span,
+html[data-theme="light"] .storage-control-overview-stats span,
+html[data-theme="light"] .storage-control-category > span,
+html[data-theme="light"] .storage-control-footer span,
+html[data-theme="light"] .storage-control-breakdown-list small {
+  color: #596f8a !important;
+}
+
+html[data-theme="light"] .storage-control-total p,
+html[data-theme="light"] .storage-control-category p {
+  color: #4d627d !important;
+}
+
+html[data-theme="light"] .storage-control-category small,
+html[data-theme="light"] .storage-control-object-copy span {
+  color: #607590 !important;
+}
+
+html[data-theme="light"] .storage-control-object-copy strong,
+html[data-theme="light"] .storage-control-breakdown-list span {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .storage-control-object-rank {
+  color: #496ed8 !important;
+}
+
+html[data-theme="light"] .storage-control-object-size {
+  color: #365fc9 !important;
+}
+
+html[data-theme="light"] .storage-control-object + .storage-control-object {
+  border-color: rgba(28, 61, 98, .14) !important;
+}
+
+/* Black Box */
+html[data-theme="light"] .black-box-overview span,
+html[data-theme="light"] .black-box-filter-group > span,
+html[data-theme="light"] .black-box-record-time span,
+html[data-theme="light"] .black-box-record-meta span,
+html[data-theme="light"] .black-box-detail-grid span,
+html[data-theme="light"] .admin-black-box-time span,
+html[data-theme="light"] .admin-black-box-event-meta span,
+html[data-theme="light"] .admin-black-box-command-telemetry > span {
+  color: #596f8a !important;
+}
+
+html[data-theme="light"] .black-box-record-copy p,
+html[data-theme="light"] .admin-black-box-event-copy p,
+html[data-theme="light"] .admin-black-box-state,
+html[data-theme="light"] .admin-black-box-terminal-bar,
+html[data-theme="light"] .black-box-empty {
+  color: #4d627d !important;
+}
+
+html[data-theme="light"] .black-box-detail-grid strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .black-box-filter-group button {
+  color: #334a67 !important;
+}
+
+html[data-theme="light"] .black-box-search input::placeholder {
+  color: #71839b !important;
+  opacity: 1 !important;
+}
+
+/* Comms */
+html[data-theme="light"] .comms-terminal-bar > span,
+html[data-theme="light"] .comms-message time,
+html[data-theme="light"] .comms-composer small,
+html[data-theme="light"] .comms-crew-strip > div,
+html[data-theme="light"] .comms-crew-identity small,
+html[data-theme="light"] .admin-active-operation-clock span,
+html[data-theme="light"] .admin-active-operation-clock small,
+html[data-theme="light"] .admin-inline-operation > small,
+html[data-theme="light"] .comms-operation-link > small {
+  color: #5b708c !important;
+}
+
+html[data-theme="light"] .comms-boot-sequence,
+html[data-theme="light"] .comms-system-row {
+  color: #23784b !important;
+}
+
+html[data-theme="light"] .comms-composer input::placeholder {
+  color: #71839b !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .comms-crew-strip strong {
+  color: #334a67 !important;
+}
+
+html[data-theme="light"] .comms-crew-online .comms-crew-identity small {
+  color: #23784b !important;
+}
+
+/* Operations and incidents */
+html[data-theme="light"] .operation-standby-copy p,
+html[data-theme="light"] .admin-incident-status-copy p,
+html[data-theme="light"] .incident-form-heading p,
+html[data-theme="light"] .operation-event-list > p {
+  color: #4d627d !important;
+}
+
+html[data-theme="light"] .operation-init-form label > span,
+html[data-theme="light"] .operation-init-meta span,
+html[data-theme="light"] .operation-clock-block span,
+html[data-theme="light"] .operation-command-facts span,
+html[data-theme="light"] .operation-telemetry-grid span,
+html[data-theme="light"] .operation-debrief-preview p span,
+html[data-theme="light"] .operation-complete-grid p span,
+html[data-theme="light"] .operation-crew-row span,
+html[data-theme="light"] .operation-event-row time,
+html[data-theme="light"] .operation-complete-duration span,
+html[data-theme="light"] .operation-complete-debrief > small {
+  color: #5b708c !important;
+}
+
+/* Deployments */
+html[data-theme="light"] .deployment-state-card > small,
+html[data-theme="light"] .deployment-repo-label,
+html[data-theme="light"] .deployment-commit-copy span,
+html[data-theme="light"] .deployment-empty {
+  color: #566d88 !important;
+}
+
+/* Command palette */
+html[data-theme="light"] .admin-command-palette-hint,
+html[data-theme="light"] .admin-command-palette-group,
+html[data-theme="light"] .admin-command-palette-copy small,
+html[data-theme="light"] .admin-command-palette-empty span,
+html[data-theme="light"] .admin-command-palette-footer,
+html[data-theme="light"] .admin-command-palette-search > kbd,
+html[data-theme="light"] .admin-command-palette-search button {
+  color: #596f8a !important;
+}
+
+html[data-theme="light"] .admin-command-palette-search input::placeholder {
+  color: #71839b !important;
+  opacity: 1 !important;
+}
+
+/* Catch the remaining all-caps admin micro-labels without flattening semantic badges */
+html[data-theme="light"] .admin-page [class*="-heading"] > span,
+html[data-theme="light"] .admin-page [class*="-heading"] > small,
+html[data-theme="light"] .admin-page [class*="-title"] > span,
+html[data-theme="light"] .admin-page [class*="-title"] > small,
+html[data-theme="light"] .admin-page [class*="-copy"] > span:not([class*="badge"]),
+html[data-theme="light"] .admin-page [class*="-copy"] > small:not([class*="badge"]),
+html[data-theme="light"] .admin-page [class*="-meta"] > span,
+html[data-theme="light"] .admin-page [class*="-meta"] > small,
+html[data-theme="light"] .admin-page [class*="-stats"] > span,
+html[data-theme="light"] .admin-page [class*="-stats"] > small {
+  color: #596f8a !important;
+  text-shadow: none !important;
+}
+/* =========================================================
+   LIGHT MODE — REMAINING ADMIN SECTION CONTRAST FIX
+   Targets: Black Box, Watch Floor, Storage, Deployment,
+   mission/equipment lists, Crew Transfer.
+   ========================================================= */
+
+/* Black Box overview + search */
+html[data-theme="light"] .black-box-overview {
+  background: rgba(28, 61, 98, .12) !important;
+  border-color: rgba(28, 61, 98, .18) !important;
+}
+
+html[data-theme="light"] .black-box-overview > div {
+  background: #ffffff !important;
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .black-box-overview svg {
+  color: #496ed8 !important;
+}
+
+html[data-theme="light"] .black-box-overview span {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .black-box-overview strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .black-box-filter-panel,
+html[data-theme="light"] .black-box-search {
+  background: #ffffff !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+}
+
+html[data-theme="light"] .black-box-search {
+  overflow: hidden !important;
+}
+
+html[data-theme="light"] .black-box-search svg {
+  color: #496ed8 !important;
+}
+
+html[data-theme="light"] .black-box-search input {
+  color: #13243b !important;
+  background: #f5f8fc !important;
+}
+
+html[data-theme="light"] .black-box-search input::placeholder {
+  color: #657a94 !important;
+  opacity: 1 !important;
+}
+
+/* Watch Floor — make the actual display a Light Mode surface */
+html[data-theme="light"] .watch-floor-page {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(74, 140, 255, .08), transparent 25%),
+    radial-gradient(circle at 86% 100%, rgba(199, 98, 0, .05), transparent 28%),
+    #f4f7fb !important;
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .watch-floor-header {
+  border-color: rgba(28, 61, 98, .18) !important;
+}
+
+html[data-theme="light"] .watch-floor-header > div:first-child > span {
+  color: #236f98 !important;
+}
+
+html[data-theme="light"] .watch-floor-header h1,
+html[data-theme="light"] .watch-floor-clock strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .watch-floor-clock small,
+html[data-theme="light"] .watch-floor-clock span {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .watch-panel {
+  background: #ffffff !important;
+  color: #13243b !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 18px 46px rgba(38, 67, 103, .12) !important;
+}
+
+html[data-theme="light"] .watch-panel-title {
+  background: #f5f8fc !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+}
+
+html[data-theme="light"] .watch-panel-title span {
+  color: #183357 !important;
+}
+
+html[data-theme="light"] .watch-operation-active,
+html[data-theme="light"] .watch-comms-feed,
+html[data-theme="light"] .watch-task-list,
+html[data-theme="light"] .watch-crew-list,
+html[data-theme="light"] .watch-service-grid {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .watch-floor-footer {
+  color: #536982 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Storage Control overview stats */
+html[data-theme="light"] .storage-control-overview {
+  background: rgba(28, 61, 98, .12) !important;
+}
+
+html[data-theme="light"] .storage-control-total,
+html[data-theme="light"] .storage-control-overview-stats > div {
+  background: #ffffff !important;
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .storage-control-total h3,
+html[data-theme="light"] .storage-control-overview-stats strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .storage-control-total span,
+html[data-theme="light"] .storage-control-total p,
+html[data-theme="light"] .storage-control-overview-stats span {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .storage-control-overview-stats svg {
+  color: #496ed8 !important;
+}
+
+/* Deployment State card */
+html[data-theme="light"] .deployment-state-card {
+  background: #ffffff !important;
+  color: #13243b !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+  box-shadow: 0 16px 42px rgba(38, 67, 103, .11) !important;
+}
+
+html[data-theme="light"] .deployment-state-card > span,
+html[data-theme="light"] .deployment-state-card > small,
+html[data-theme="light"] .deployment-state-card > div:last-of-type span {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .deployment-state-card > strong {
+  color: #183357 !important;
+}
+
+html[data-theme="light"] .deployment-state-card p {
+  color: #4d627d !important;
+}
+
+html[data-theme="light"] .deployment-state-card > div:last-of-type {
+  border-color: rgba(28, 61, 98, .14) !important;
+}
+
+html[data-theme="light"] .deployment-state-card > div:last-of-type strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .deployment-state-current > strong {
+  color: #23784b !important;
+}
+
+html[data-theme="light"] .deployment-state-behind > strong,
+html[data-theme="light"] .deployment-state-different > strong {
+  color: #a95b00 !important;
+}
+
+/* Admin mission/equipment archive headers */
+html[data-theme="light"] .admin-mission-list {
+  background: #ffffff !important;
+  border-color: rgba(28, 61, 98, .16) !important;
+}
+
+html[data-theme="light"] .admin-list-title {
+  color: #236f98 !important;
+  background: #f5f8fc !important;
+  border-color: rgba(28, 61, 98, .14) !important;
+}
+
+html[data-theme="light"] .admin-list-title svg {
+  color: #236f98 !important;
+}
+
+html[data-theme="light"] .admin-mission-row,
+html[data-theme="light"] .admin-equipment-row {
+  background: #ffffff !important;
+  color: #13243b !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] .admin-mission-summary h3,
+html[data-theme="light"] .admin-mission-summary strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .admin-mission-summary p,
+html[data-theme="light"] .admin-mission-id span,
+html[data-theme="light"] .admin-mission-id time {
+  color: #4d627d !important;
+}
+
+html[data-theme="light"] .admin-card-eyebrow {
+  color: #596f8a !important;
+}
+
+/* Admin archive action buttons */
+html[data-theme="light"] .admin-mission-actions button {
+  color: #236f98 !important;
+  background: #f3f8fc !important;
+  border-color: rgba(35, 111, 152, .24) !important;
+}
+
+html[data-theme="light"] .admin-mission-actions button svg {
+  color: #236f98 !important;
+}
+
+html[data-theme="light"] .admin-mission-actions .admin-delete-button,
+html[data-theme="light"] .admin-delete-button {
+  color: #b63b3b !important;
+  background: #fff5f5 !important;
+  border-color: rgba(182, 59, 59, .25) !important;
+}
+
+html[data-theme="light"] .admin-mission-actions .admin-delete-button svg,
+html[data-theme="light"] .admin-delete-button svg {
+  color: #d55252 !important;
+}
+
+/* Crew Transfer file picker */
+html[data-theme="light"] .admin-transfer-file-picker {
+  color: #236f98 !important;
+  background: #f5faff !important;
+  border-color: rgba(35, 111, 152, .3) !important;
+}
+
+html[data-theme="light"] .admin-transfer-file-picker svg {
+  color: #236f98 !important;
+}
+
+html[data-theme="light"] .admin-transfer-file-picker:hover {
+  color: #183357 !important;
+  background: #edf6fd !important;
+  border-color: rgba(35, 111, 152, .48) !important;
+}
+
+/* Crew Transfer file rows + actions */
+html[data-theme="light"] .admin-transfer-file {
+  background: #ffffff !important;
+  border-color: rgba(28, 61, 98, .12) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] .admin-transfer-file-icon {
+  color: #236f98 !important;
+  background: #eef6fb !important;
+}
+
+html[data-theme="light"] .admin-transfer-file-name strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .admin-transfer-file-name span {
+  color: #596f8a !important;
+}
+
+html[data-theme="light"] .admin-transfer-file-actions button,
+html[data-theme="light"] .admin-transfer-group-stats button {
+  color: #236f98 !important;
+  background: #f3f8fc !important;
+  border-color: rgba(35, 111, 152, .22) !important;
+}
+
+html[data-theme="light"] .admin-transfer-file-actions button svg,
+html[data-theme="light"] .admin-transfer-group-stats button svg {
+  color: #236f98 !important;
+}
+
+html[data-theme="light"] .admin-transfer-file-actions .admin-delete-button,
+html[data-theme="light"] .admin-transfer-group-stats .admin-delete-button {
+  color: #b63b3b !important;
+  background: #fff5f5 !important;
+  border-color: rgba(182, 59, 59, .25) !important;
+}
