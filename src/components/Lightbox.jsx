@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -177,6 +177,118 @@ function getCaptureImageUrl(image) {
 }
 
 
+function clampProcessingFrame(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function getProcessingStageFocus(photo, stageKey) {
+  const focusMap = {
+    raw: [photo.replayRawFocusX, photo.replayRawFocusY],
+    stacked: [photo.replayStackedFocusX, photo.replayStackedFocusY],
+    final: [photo.replayFinalFocusX, photo.replayFinalFocusY]
+  };
+
+  const [xValue, yValue] = focusMap[stageKey] || [];
+  const x = Number(xValue);
+  const y = Number(yValue);
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return null;
+  }
+
+  return {
+    x: clampProcessingFrame(x, 0.02, 0.98),
+    y: clampProcessingFrame(y, 0.02, 0.98)
+  };
+}
+
+function useProcessingStageSize(ref) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const element = ref.current;
+
+    if (!element || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const updateSize = (width, height) => {
+      setSize((current) => {
+        if (
+          Math.round(current.width) === Math.round(width) &&
+          Math.round(current.height) === Math.round(height)
+        ) {
+          return current;
+        }
+
+        return { width, height };
+      });
+    };
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+
+      if (entry) {
+        updateSize(entry.contentRect.width, entry.contentRect.height);
+      }
+    });
+
+    observer.observe(element);
+    updateSize(element.clientWidth, element.clientHeight);
+
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return size;
+}
+
+function getProcessingAlignedStyle(stageSize, imageMeta, focus) {
+  if (
+    !focus ||
+    !imageMeta?.width ||
+    !imageMeta?.height ||
+    !stageSize.width ||
+    !stageSize.height
+  ) {
+    return null;
+  }
+
+  const stageWidth = stageSize.width;
+  const stageHeight = stageSize.height;
+  const imageWidth = imageMeta.width;
+  const imageHeight = imageMeta.height;
+  const safeFocusX = clampProcessingFrame(focus.x, 0.001, 0.999);
+  const safeFocusY = clampProcessingFrame(focus.y, 0.001, 0.999);
+
+  const coverScale = Math.max(
+    stageWidth / imageWidth,
+    stageHeight / imageHeight
+  );
+
+  // Minimum scale required to put the manually selected target coordinate
+  // exactly at the comparison viewport center while keeping every edge filled.
+  const scale = Math.max(
+    coverScale,
+    stageWidth / (2 * safeFocusX * imageWidth),
+    stageWidth / (2 * (1 - safeFocusX) * imageWidth),
+    stageHeight / (2 * safeFocusY * imageHeight),
+    stageHeight / (2 * (1 - safeFocusY) * imageHeight)
+  ) * 1.002;
+
+  const renderedWidth = imageWidth * scale;
+  const renderedHeight = imageHeight * scale;
+  const left = stageWidth / 2 - safeFocusX * renderedWidth;
+  const top = stageHeight / 2 - safeFocusY * renderedHeight;
+
+  return {
+    '--processing-align-left': `${left}px`,
+    '--processing-align-top': `${top}px`,
+    '--processing-align-width': `${renderedWidth}px`,
+    '--processing-align-height': `${renderedHeight}px`
+  };
+}
+
+
 function BeforeAfterViewer({
   photo,
   finalImageUrl,
@@ -188,20 +300,23 @@ function BeforeAfterViewer({
       ? {
           key: 'raw',
           label: 'RAW',
-          image: getCaptureImageUrl(photo.rawImage)
+          image: getCaptureImageUrl(photo.rawImage),
+          focus: getProcessingStageFocus(photo, 'raw')
         }
       : null,
     photo.stackedImage
       ? {
           key: 'stacked',
           label: 'STACKED',
-          image: getCaptureImageUrl(photo.stackedImage)
+          image: getCaptureImageUrl(photo.stackedImage),
+          focus: getProcessingStageFocus(photo, 'stacked')
         }
       : null,
     {
       key: 'final',
       label: 'FINAL',
-      image: finalImageUrl
+      image: finalImageUrl,
+      focus: getProcessingStageFocus(photo, 'final')
     }
   ].filter(Boolean);
 
@@ -220,6 +335,10 @@ function BeforeAfterViewer({
 
   const [slider, setSlider] =
     useState(50);
+
+  const compareStageRef = useRef(null);
+  const compareStageSize = useProcessingStageSize(compareStageRef);
+  const [stageImageMeta, setStageImageMeta] = useState({});
 
   const updateSliderFromPointer = (event) => {
     const stage = event.currentTarget;
@@ -260,6 +379,7 @@ function BeforeAfterViewer({
     setLeftStageKey(nextLeft.key);
     setRightStageKey('final');
     setSlider(50);
+    setStageImageMeta({});
   }, [photo.id]);
 
   const leftStage =
@@ -269,6 +389,40 @@ function BeforeAfterViewer({
   const rightStage =
     stages.find((stage) => stage.key === rightStageKey) ||
     stages[stages.length - 1];
+
+  const leftAlignedStyle = getProcessingAlignedStyle(
+    compareStageSize,
+    stageImageMeta[leftStage.key],
+    leftStage.focus
+  );
+
+  const rightAlignedStyle = getProcessingAlignedStyle(
+    compareStageSize,
+    stageImageMeta[rightStage.key],
+    rightStage.focus
+  );
+
+  const recordStageImageMeta = (stageKey, image) => {
+    const width = image.naturalWidth;
+    const height = image.naturalHeight;
+
+    if (!width || !height) {
+      return;
+    }
+
+    setStageImageMeta((current) => {
+      const existing = current[stageKey];
+
+      if (existing?.width === width && existing?.height === height) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [stageKey]: { width, height }
+      };
+    });
+  };
 
   if (stages.length <= 1) {
     return (
@@ -374,14 +528,22 @@ function BeforeAfterViewer({
           </div>
 
           <div
+            ref={compareStageRef}
             className="processingCompareStage"
             onPointerDown={handleComparisonPointerDown}
             onPointerMove={handleComparisonPointerMove}
           >
             <img
-              className="processingCompareBase"
+              className={`processingCompareBase${leftAlignedStyle ? ' processingCompareAligned' : ''}`}
               src={leftStage.image}
               alt={`${photo.title} ${leftStage.label.toLowerCase()} stage`}
+              style={leftAlignedStyle || undefined}
+              onLoad={(event) =>
+                recordStageImageMeta(
+                  leftStage.key,
+                  event.currentTarget
+                )
+              }
             />
 
             <div
@@ -391,9 +553,16 @@ function BeforeAfterViewer({
               }}
             >
               <img
-                className="processingCompareFinal"
+                className={`processingCompareFinal${rightAlignedStyle ? ' processingCompareAligned' : ''}`}
                 src={rightStage.image}
                 alt={`${photo.title} ${rightStage.label.toLowerCase()} stage`}
+                style={rightAlignedStyle || undefined}
+                onLoad={(event) =>
+                  recordStageImageMeta(
+                    rightStage.key,
+                    event.currentTarget
+                  )
+                }
               />
             </div>
 

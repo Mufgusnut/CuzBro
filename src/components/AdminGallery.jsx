@@ -338,7 +338,231 @@ function formatFileSize(bytes) {
     ).toFixed(1)} KB`;
   }
 
-  return `${size} bytes`;
+  
+return `${size} bytes`;
+}
+
+function clampFocusValue(value) {
+  return Math.min(1, Math.max(0, value));
+}
+
+function normalizeFocusInput(value) {
+  if (value === '' || value === null || value === undefined) {
+    return '';
+  }
+
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return '';
+  }
+
+  return String(clampFocusValue(number));
+}
+
+function formatFocusCoordinate(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return '';
+  }
+
+  return clampFocusValue(number)
+    .toFixed(4)
+    .replace(/0+$/, '')
+    .replace(/\.$/, '');
+}
+
+function getStoredFocusPair(xValue, yValue) {
+  const x = Number(xValue);
+  const y = Number(yValue);
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return null;
+  }
+
+  return {
+    x: clampFocusValue(x),
+    y: clampFocusValue(y)
+  };
+}
+
+function getContainFrame(bounds, naturalWidth, naturalHeight) {
+  if (!bounds.width || !bounds.height || !naturalWidth || !naturalHeight) {
+    return null;
+  }
+
+  const scale = Math.min(
+    bounds.width / naturalWidth,
+    bounds.height / naturalHeight
+  );
+  const width = naturalWidth * scale;
+  const height = naturalHeight * scale;
+
+  return {
+    left: (bounds.width - width) / 2,
+    top: (bounds.height - height) / 2,
+    width,
+    height
+  };
+}
+
+function ReplayFocusPickerCard({
+  label,
+  description,
+  imageUrl,
+  xValue,
+  yValue,
+  onCoordinateChange,
+  onClear
+}) {
+  const focus = getStoredFocusPair(xValue, yValue);
+  const [imageMeta, setImageMeta] = useState({
+    width: 0,
+    height: 0
+  });
+
+  const previewFrame = getContainFrame(
+    {
+      width: 1,
+      height: 1
+    },
+    imageMeta.width,
+    imageMeta.height
+  );
+
+  const handleImageClick = (event) => {
+    if (!imageUrl) {
+      return;
+    }
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const containFrame = getContainFrame(
+      {
+        width: bounds.width,
+        height: bounds.height
+      },
+      imageMeta.width,
+      imageMeta.height
+    );
+
+    if (!containFrame) {
+      return;
+    }
+
+    const relativeX = event.clientX - bounds.left - containFrame.left;
+    const relativeY = event.clientY - bounds.top - containFrame.top;
+
+    if (
+      relativeX < 0 ||
+      relativeY < 0 ||
+      relativeX > containFrame.width ||
+      relativeY > containFrame.height
+    ) {
+      return;
+    }
+
+    const nextX = clampFocusValue(
+      relativeX / containFrame.width
+    );
+    const nextY = clampFocusValue(
+      relativeY / containFrame.height
+    );
+
+    onCoordinateChange(nextX, nextY);
+  };
+
+  const pointStyle = focus && previewFrame
+    ? {
+        left: `${previewFrame.left * 100 + focus.x * previewFrame.width * 100}%`,
+        top: `${previewFrame.top * 100 + focus.y * previewFrame.height * 100}%`
+      }
+    : null;
+
+  return (
+    <article className="admin-replay-focus-card">
+      <div className="admin-replay-focus-card-header">
+        <div>
+          <small>MISSION REPLAY TARGET</small>
+          <strong>{label}</strong>
+        </div>
+
+        {focus && (
+          <button type="button" onClick={onClear}>
+            CLEAR
+          </button>
+        )}
+      </div>
+
+      <p>{description}</p>
+
+      <button
+        type="button"
+        className={`admin-replay-focus-preview${imageUrl ? '' : ' is-disabled'}`}
+        onClick={handleImageClick}
+        disabled={!imageUrl}
+      >
+        {imageUrl ? (
+          <>
+            <img
+              src={imageUrl}
+              alt={`${label} replay target`}
+              onLoad={(event) => {
+                setImageMeta({
+                  width: event.currentTarget.naturalWidth,
+                  height: event.currentTarget.naturalHeight
+                });
+              }}
+            />
+            <span className="admin-replay-focus-crosshair" aria-hidden="true" />
+            {pointStyle && (
+              <span
+                className="admin-replay-focus-point"
+                style={pointStyle}
+                aria-hidden="true"
+              />
+            )}
+          </>
+        ) : (
+          <span className="admin-replay-focus-empty">
+            IMAGE NOT AVAILABLE YET
+          </span>
+        )}
+      </button>
+
+      <div className="admin-replay-focus-fields">
+        <label>
+          <span>X</span>
+          <input
+            type="number"
+            min="0"
+            max="1"
+            step="0.0001"
+            value={xValue}
+            onChange={(event) => onCoordinateChange(event.target.value, yValue)}
+            placeholder="0.5000"
+          />
+        </label>
+
+        <label>
+          <span>Y</span>
+          <input
+            type="number"
+            min="0"
+            max="1"
+            step="0.0001"
+            value={yValue}
+            onChange={(event) => onCoordinateChange(xValue, event.target.value)}
+            placeholder="0.5000"
+          />
+        </label>
+      </div>
+
+      <small className="admin-replay-focus-hint">
+        Click directly on the object center. Only clicks on the visible image area are recorded.
+      </small>
+    </article>
+  );
 }
 
 const emptyCapture = {
@@ -356,7 +580,13 @@ const emptyCapture = {
   nextGoal: '',
   ra: '',
   dec: '',
-  sortOrder: ''
+  sortOrder: '',
+  replayRawFocusX: '',
+  replayRawFocusY: '',
+  replayStackedFocusX: '',
+  replayStackedFocusY: '',
+  replayFinalFocusX: '',
+  replayFinalFocusY: ''
 };
 
 function databaseRowToForm(capture) {
@@ -393,7 +623,13 @@ function databaseRowToForm(capture) {
       capture.sort_order === null ||
       capture.sort_order === undefined
         ? ''
-        : String(capture.sort_order)
+        : String(capture.sort_order),
+    replayRawFocusX: normalizeFocusInput(capture.replay_raw_focus_x),
+    replayRawFocusY: normalizeFocusInput(capture.replay_raw_focus_y),
+    replayStackedFocusX: normalizeFocusInput(capture.replay_stacked_focus_x),
+    replayStackedFocusY: normalizeFocusInput(capture.replay_stacked_focus_y),
+    replayFinalFocusX: normalizeFocusInput(capture.replay_final_focus_x),
+    replayFinalFocusY: normalizeFocusInput(capture.replay_final_focus_y)
   };
 }
 
@@ -503,6 +739,14 @@ export default function AdminGallery() {
     masterDragActive,
     setMasterDragActive
   ] = useState(false);
+
+  const editingCapture =
+    editingCaptureId === 'new'
+      ? null
+      : captures.find(
+          (capture) =>
+            capture.id === editingCaptureId
+        ) || null;
 
   async function loadCaptures() {
     setStatus('loading');
@@ -1200,6 +1444,36 @@ export default function AdminGallery() {
           existingCapture?.master_file_size ??
           null,
 
+        replay_raw_focus_x:
+          form.replayRawFocusX.trim() === ''
+            ? null
+            : Number(form.replayRawFocusX),
+
+        replay_raw_focus_y:
+          form.replayRawFocusY.trim() === ''
+            ? null
+            : Number(form.replayRawFocusY),
+
+        replay_stacked_focus_x:
+          form.replayStackedFocusX.trim() === ''
+            ? null
+            : Number(form.replayStackedFocusX),
+
+        replay_stacked_focus_y:
+          form.replayStackedFocusY.trim() === ''
+            ? null
+            : Number(form.replayStackedFocusY),
+
+        replay_final_focus_x:
+          form.replayFinalFocusX.trim() === ''
+            ? null
+            : Number(form.replayFinalFocusX),
+
+        replay_final_focus_y:
+          form.replayFinalFocusY.trim() === ''
+            ? null
+            : Number(form.replayFinalFocusY),
+
         ra:
           form.ra.trim() === ''
             ? null
@@ -1244,6 +1518,26 @@ export default function AdminGallery() {
       ) {
         throw new Error(
           'Declination must be a number.'
+        );
+      }
+
+      const replayFocusFields = [
+        ['RAW target X', captureRow.replay_raw_focus_x],
+        ['RAW target Y', captureRow.replay_raw_focus_y],
+        ['STACKED target X', captureRow.replay_stacked_focus_x],
+        ['STACKED target Y', captureRow.replay_stacked_focus_y],
+        ['FINAL target X', captureRow.replay_final_focus_x],
+        ['FINAL target Y', captureRow.replay_final_focus_y]
+      ];
+
+      const invalidReplayFocusFields = replayFocusFields
+        .filter(([, value]) => value !== null)
+        .filter(([, value]) => Number.isNaN(value) || value < 0 || value > 1)
+        .map(([label]) => label);
+
+      if (invalidReplayFocusFields.length > 0) {
+        throw new Error(
+          `Replay target coordinates must be between 0 and 1. Fix: ${invalidReplayFocusFields.join(', ')}.`
         );
       }
 
@@ -1885,11 +2179,7 @@ export default function AdminGallery() {
                     {masterFile
                       ? 'TIFF MASTER SELECTED'
                       : editingCaptureId !== 'new' &&
-                          captures.find(
-                            (capture) =>
-                              capture.id ===
-                              editingCaptureId
-                          )?.master_file_name
+                          editingCapture?.master_file_name
                         ? 'TIFF MASTER STORED'
                         : 'NO TIFF MASTER'}
                   </span>
@@ -1928,11 +2218,7 @@ export default function AdminGallery() {
                       : masterFile
                         ? 'CHANGE TIFF MASTER'
                       : editingCaptureId !== 'new' &&
-                          captures.find(
-                            (capture) =>
-                              capture.id ===
-                              editingCaptureId
-                          )?.master_storage_path
+                          editingCapture?.master_storage_path
                         ? 'REPLACE TIFF MASTER'
                         : 'SELECT TIFF MASTER'}
 
@@ -1959,30 +2245,140 @@ export default function AdminGallery() {
                     </small>
                   ) : (
                     editingCaptureId !== 'new' &&
-                    captures.find(
-                      (capture) =>
-                        capture.id ===
-                        editingCaptureId
-                    )?.master_file_name && (
+                    editingCapture?.master_file_name && (
                       <small>
                         {
-                          captures.find(
-                            (capture) =>
-                              capture.id ===
-                              editingCaptureId
-                          ).master_file_name
+                          editingCapture.master_file_name
                         }
                         {' · '}
                         {formatFileSize(
-                          captures.find(
-                            (capture) =>
-                              capture.id ===
-                              editingCaptureId
-                          ).master_file_size
+                          editingCapture.master_file_size
                         )}
                       </small>
                     )
                   )}
+                </div>
+              </section>
+
+              <section className="admin-replay-focus-section">
+                <div className="admin-replay-focus-section-header">
+                  <div>
+                    <span className="admin-card-eyebrow">
+                      MISSION REPLAY TARGET LOCK
+                    </span>
+
+                    <h4>
+                      Manual subject centering
+                    </h4>
+                  </div>
+
+                  <p>
+                    Click the target in each available phase image so Mission Replay can center the object exactly under the crosshair.
+                  </p>
+                </div>
+
+                <div className="admin-replay-focus-grid">
+                  <ReplayFocusPickerCard
+                    label="FINAL / DISPLAY"
+                    description="Used for the finished public image. Available for new uploads immediately."
+                    imageUrl={
+                      previewUrl ||
+                      getCaptureImageUrl(
+                        editingCapture?.image
+                      )
+                    }
+                    xValue={form.replayFinalFocusX}
+                    yValue={form.replayFinalFocusY}
+                    onCoordinateChange={(
+                      nextX,
+                      nextY
+                    ) => {
+                      updateForm(
+                        'replayFinalFocusX',
+                        formatFocusCoordinate(nextX)
+                      );
+                      updateForm(
+                        'replayFinalFocusY',
+                        formatFocusCoordinate(nextY)
+                      );
+                    }}
+                    onClear={() => {
+                      updateForm(
+                        'replayFinalFocusX',
+                        ''
+                      );
+                      updateForm(
+                        'replayFinalFocusY',
+                        ''
+                      );
+                    }}
+                  />
+
+                  <ReplayFocusPickerCard
+                    label="RAW"
+                    description="Used at the opening of Mission Replay. Existing raw stage image required."
+                    imageUrl={getCaptureImageUrl(
+                      editingCapture?.raw_image
+                    )}
+                    xValue={form.replayRawFocusX}
+                    yValue={form.replayRawFocusY}
+                    onCoordinateChange={(
+                      nextX,
+                      nextY
+                    ) => {
+                      updateForm(
+                        'replayRawFocusX',
+                        formatFocusCoordinate(nextX)
+                      );
+                      updateForm(
+                        'replayRawFocusY',
+                        formatFocusCoordinate(nextY)
+                      );
+                    }}
+                    onClear={() => {
+                      updateForm(
+                        'replayRawFocusX',
+                        ''
+                      );
+                      updateForm(
+                        'replayRawFocusY',
+                        ''
+                      );
+                    }}
+                  />
+
+                  <ReplayFocusPickerCard
+                    label="STACKED"
+                    description="Used for signal accumulation / stacking. Existing stacked stage image required."
+                    imageUrl={getCaptureImageUrl(
+                      editingCapture?.stacked_image
+                    )}
+                    xValue={form.replayStackedFocusX}
+                    yValue={form.replayStackedFocusY}
+                    onCoordinateChange={(
+                      nextX,
+                      nextY
+                    ) => {
+                      updateForm(
+                        'replayStackedFocusX',
+                        formatFocusCoordinate(nextX)
+                      );
+                      updateForm(
+                        'replayStackedFocusY',
+                        formatFocusCoordinate(nextY)
+                      );
+                    }}
+                    onClear={() => {
+                      updateForm(
+                        'replayStackedFocusX',
+                        ''
+                      );
+                      updateForm(
+                        'replayStackedFocusY',
+                        ''
+                      );
+                    }}
+                  />
                 </div>
               </section>
 

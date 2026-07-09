@@ -1382,6 +1382,24 @@ export default function App() {
             stackedStoragePath:
               capture.stacked_storage_path,
 
+            replayRawFocusX:
+              capture.replay_raw_focus_x,
+
+            replayRawFocusY:
+              capture.replay_raw_focus_y,
+
+            replayStackedFocusX:
+              capture.replay_stacked_focus_x,
+
+            replayStackedFocusY:
+              capture.replay_stacked_focus_y,
+
+            replayFinalFocusX:
+              capture.replay_final_focus_x,
+
+            replayFinalFocusY:
+              capture.replay_final_focus_y,
+
             storagePath:
               capture.storage_path,
 

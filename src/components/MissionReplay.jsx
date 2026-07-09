@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Pause, Play, RotateCcw, X } from 'lucide-react';
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function getCaptureImageUrl(image) {
   if (!image) return '';
 
@@ -149,6 +153,259 @@ function parseReplayCaptureSettings(exposureText) {
   };
 }
 
+function getManualFocus(xValue, yValue) {
+  const x = Number(xValue);
+  const y = Number(yValue);
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return null;
+  }
+
+  return {
+    x: clamp(x, 0.02, 0.98),
+    y: clamp(y, 0.02, 0.98)
+  };
+}
+
+function analyzeImageFocus(url) {
+  return new Promise((resolve) => {
+    if (!url) {
+      resolve({
+        focus: { x: 0.5, y: 0.5 },
+        imageMeta: null,
+        status: 'missing'
+      });
+      return;
+    }
+
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.decoding = 'async';
+
+    image.onload = () => {
+      const naturalWidth = image.naturalWidth || image.width || 0;
+      const naturalHeight = image.naturalHeight || image.height || 0;
+
+      try {
+        const sampleLimit = 320;
+        const sampleScale = Math.min(1, sampleLimit / Math.max(naturalWidth, naturalHeight, 1));
+        const sampleWidth = Math.max(96, Math.round(naturalWidth * sampleScale));
+        const sampleHeight = Math.max(96, Math.round(naturalHeight * sampleScale));
+        const canvas = document.createElement('canvas');
+        canvas.width = sampleWidth;
+        canvas.height = sampleHeight;
+
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+
+        if (!context) {
+          throw new Error('2D canvas unavailable');
+        }
+
+        context.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+        const { data } = context.getImageData(0, 0, sampleWidth, sampleHeight);
+
+        const luminance = new Float32Array(sampleWidth * sampleHeight);
+
+        for (let i = 0; i < luminance.length; i += 1) {
+          const pixelIndex = i * 4;
+          luminance[i] =
+            data[pixelIndex] * 0.2126 +
+            data[pixelIndex + 1] * 0.7152 +
+            data[pixelIndex + 2] * 0.0722;
+        }
+
+        const scales = [4, 7, 11, 17];
+        let bestScore = -Infinity;
+        let bestX = sampleWidth / 2;
+        let bestY = sampleHeight / 2;
+
+        for (const radius of scales) {
+          const step = Math.max(1, Math.floor(radius / 2));
+
+          for (let y = radius; y < sampleHeight - radius; y += step) {
+            for (let x = radius; x < sampleWidth - radius; x += step) {
+              let total = 0;
+              let count = 0;
+
+              for (let offsetY = -radius; offsetY <= radius; offsetY += 1) {
+                for (let offsetX = -radius; offsetX <= radius; offsetX += 1) {
+                  if (offsetX * offsetX + offsetY * offsetY > radius * radius) {
+                    continue;
+                  }
+
+                  const index = (y + offsetY) * sampleWidth + (x + offsetX);
+                  total += luminance[index];
+                  count += 1;
+                }
+              }
+
+              if (!count) continue;
+
+              const normalizedX = x / sampleWidth;
+              const normalizedY = y / sampleHeight;
+              const distanceFromCenter = Math.hypot(normalizedX - 0.5, normalizedY - 0.5);
+              const centerWeight = Math.max(0.55, 1 - distanceFromCenter * 0.9);
+              const score = (total / count) * radius * centerWeight;
+
+              if (score > bestScore) {
+                bestScore = score;
+                bestX = x;
+                bestY = y;
+              }
+            }
+          }
+        }
+
+        resolve({
+          focus: {
+            x: clamp(bestX / sampleWidth, 0.08, 0.92),
+            y: clamp(bestY / sampleHeight, 0.08, 0.92)
+          },
+          imageMeta:
+            naturalWidth && naturalHeight
+              ? {
+                  width: naturalWidth,
+                  height: naturalHeight
+                }
+              : null,
+          status: 'auto'
+        });
+      } catch (error) {
+        resolve({
+          focus: { x: 0.5, y: 0.5 },
+          imageMeta:
+            naturalWidth && naturalHeight
+              ? {
+                  width: naturalWidth,
+                  height: naturalHeight
+                }
+              : null,
+          status: 'default'
+        });
+      }
+    };
+
+    image.onerror = () => {
+      resolve({
+        focus: { x: 0.5, y: 0.5 },
+        imageMeta: null,
+        status: 'missing'
+      });
+    };
+
+    image.src = url;
+  });
+}
+
+function useReplayStageFrame(url, manualFocus) {
+  const [state, setState] = useState({
+    focus: manualFocus || { x: 0.5, y: 0.5 },
+    imageMeta: null,
+    status: manualFocus ? 'manual' : 'loading'
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    analyzeImageFocus(url).then((result) => {
+      if (cancelled) return;
+
+      setState({
+        focus: manualFocus || result.focus,
+        imageMeta: result.imageMeta,
+        status: manualFocus ? 'manual' : result.status
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url, manualFocus?.x, manualFocus?.y]);
+
+  return state;
+}
+
+function useShellSize(ref) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const element = ref.current;
+
+    if (!element || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+
+      if (!entry) return;
+
+      setSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height
+      });
+    });
+
+    observer.observe(element);
+    setSize({
+      width: element.clientWidth,
+      height: element.clientHeight
+    });
+
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return size;
+}
+
+function getFrameStyle(shellSize, imageMeta, focus, zoom = 1) {
+  if (!imageMeta?.width || !imageMeta?.height || !shellSize.width || !shellSize.height) {
+    return {
+      width: `${zoom * 100}%`,
+      height: `${zoom * 100}%`,
+      left: `${50 - zoom * 50}%`,
+      top: `${50 - zoom * 50}%`
+    };
+  }
+
+  const shellWidth = shellSize.width;
+  const shellHeight = shellSize.height;
+  const imageWidth = imageMeta.width;
+  const imageHeight = imageMeta.height;
+  const safeFocusX = clamp(focus.x, 0.001, 0.999);
+  const safeFocusY = clamp(focus.y, 0.001, 0.999);
+
+  const coverScale = Math.max(
+    shellWidth / imageWidth,
+    shellHeight / imageHeight
+  );
+
+  // Exact target-lock framing: find the minimum scale that allows the
+  // selected image coordinate to sit at viewport center without exposing
+  // empty space on any edge. This avoids the old clamp that left the target
+  // visibly off the reticle.
+  const exactCenterScale = Math.max(
+    coverScale,
+    shellWidth / (2 * safeFocusX * imageWidth),
+    shellWidth / (2 * (1 - safeFocusX) * imageWidth),
+    shellHeight / (2 * safeFocusY * imageHeight),
+    shellHeight / (2 * (1 - safeFocusY) * imageHeight)
+  );
+
+  const scale = exactCenterScale * zoom * 1.002;
+  const renderedWidth = imageWidth * scale;
+  const renderedHeight = imageHeight * scale;
+  const left = shellWidth / 2 - safeFocusX * renderedWidth;
+  const top = shellHeight / 2 - safeFocusY * renderedHeight;
+
+  return {
+    width: `${renderedWidth}px`,
+    height: `${renderedHeight}px`,
+    left: `${left}px`,
+    top: `${top}px`
+  };
+}
+
 export default function MissionReplay({ photo, onClose, onCopyLink }) {
   const { frameCount, exposureSeconds } = parseReplayCaptureSettings(photo.exposure);
   const durationMs = 24500;
@@ -158,14 +415,33 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
   const startRef = useRef(performance.now());
   const progressRef = useRef(0);
   const animationRef = useRef(null);
+  const shellRef = useRef(null);
 
   const rawUrl = getCaptureImageUrl(photo.rawImage || photo.image);
   const stackedUrl = getCaptureImageUrl(photo.stackedImage || photo.rawImage || photo.image);
   const finalUrl = getCaptureImageUrl(photo.image);
 
+  const rawManualFocus = useMemo(
+    () => getManualFocus(photo.replayRawFocusX, photo.replayRawFocusY),
+    [photo.replayRawFocusX, photo.replayRawFocusY]
+  );
+  const stackedManualFocus = useMemo(
+    () => getManualFocus(photo.replayStackedFocusX, photo.replayStackedFocusY),
+    [photo.replayStackedFocusX, photo.replayStackedFocusY]
+  );
+  const finalManualFocus = useMemo(
+    () => getManualFocus(photo.replayFinalFocusX, photo.replayFinalFocusY),
+    [photo.replayFinalFocusX, photo.replayFinalFocusY]
+  );
+
+  const rawStage = useReplayStageFrame(rawUrl, rawManualFocus);
+  const stackedStage = useReplayStageFrame(stackedUrl, stackedManualFocus);
+  const finalStage = useReplayStageFrame(finalUrl, finalManualFocus);
+  const shellSize = useShellSize(shellRef);
+
   const replayState = useMemo(
     () => getReplayState(progress, frameCount, exposureSeconds),
-    [progress]
+    [progress, frameCount, exposureSeconds]
   );
 
   useEffect(() => {
@@ -179,7 +455,6 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
 
     const tick = (now) => {
       const nextProgress = Math.min(100, ((now - startRef.current) / durationMs) * 100);
-
       setProgress(nextProgress);
 
       if (nextProgress >= 100) {
@@ -235,7 +510,7 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
   };
 
   const captureFraction = Math.min(1, progress / 72);
-  const rawOpacity = replayState.imageStage === 'raw' ? 1 : Math.max(0, 1 - captureFraction * 1.1);
+  const rawOpacity = replayState.imageStage === 'raw' ? 1 : Math.max(0, 1 - captureFraction * 1.08);
   const stackedOpacity =
     replayState.imageStage === 'capture'
       ? Math.max(0, Math.min(0.82, (captureFraction - 0.08) * 0.92))
@@ -247,6 +522,25 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
   const finalOpacity = progress < 88 ? 0 : Math.min(1, (progress - 88) / 10);
   const captureNoise = Math.max(0, 0.72 - captureFraction * 0.62);
   const isComplete = progress >= 96;
+  const rawStyle = useMemo(
+    () => getFrameStyle(shellSize, rawStage.imageMeta, rawStage.focus, 1),
+    [shellSize, rawStage.imageMeta, rawStage.focus]
+  );
+  const stackedStyle = useMemo(
+    () => getFrameStyle(shellSize, stackedStage.imageMeta, stackedStage.focus, 1),
+    [shellSize, stackedStage.imageMeta, stackedStage.focus]
+  );
+  const finalStyle = useMemo(
+    () => getFrameStyle(shellSize, finalStage.imageMeta, finalStage.focus, 1),
+    [shellSize, finalStage.imageMeta, finalStage.focus]
+  );
+
+  const targetLockLabel =
+    rawStage.status === 'manual' ||
+    stackedStage.status === 'manual' ||
+    finalStage.status === 'manual'
+      ? 'MANUAL TARGET LOCK'
+      : 'AUTO TARGET LOCK';
 
   return (
     <div className="missionReplay" role="dialog" aria-modal="true" aria-label={`${photo.title} mission replay`}>
@@ -276,12 +570,13 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
       </header>
 
       <main className="missionReplayStage">
-        <div className="missionReplayImageShell">
+        <div ref={shellRef} className="missionReplayImageShell">
           <img
             className="missionReplayImage missionReplayRaw"
             src={rawUrl}
             alt=""
             style={{
+              ...rawStyle,
               opacity: rawOpacity,
               filter: `brightness(${0.48 + captureFraction * 0.34}) contrast(${1.22 - captureFraction * 0.12})`
             }}
@@ -292,6 +587,7 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
             src={stackedUrl}
             alt=""
             style={{
+              ...stackedStyle,
               opacity: stackedOpacity,
               filter: `brightness(${0.58 + captureFraction * 0.34}) saturate(${0.55 + captureFraction * 0.45}) contrast(1.12)`
             }}
@@ -301,15 +597,14 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
             className="missionReplayImage missionReplayFinal"
             src={finalUrl}
             alt={`${photo.title} final capture`}
-            style={{ opacity: finalOpacity }}
+            style={{
+              ...finalStyle,
+              opacity: finalOpacity
+            }}
           />
 
           {progress >= 8 && progress < 88 && (
-            <div
-              className="missionReplayNoise"
-              style={{ opacity: captureNoise }}
-              aria-hidden="true"
-            />
+            <div className="missionReplayNoise" style={{ opacity: captureNoise }} aria-hidden="true" />
           )}
 
           <div className="missionReplayReticle" aria-hidden="true">
@@ -345,6 +640,11 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
           <div>
             <small>EXPOSURE</small>
             <strong>{exposureSeconds.toFixed(1)} SEC</strong>
+          </div>
+
+          <div>
+            <small>TARGET LOCK</small>
+            <strong>{targetLockLabel}</strong>
           </div>
 
           <div>
