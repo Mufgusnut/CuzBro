@@ -1639,15 +1639,44 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const SHRINK_AT = 120;
+    const EXPAND_AT = 32;
+    let scrollFrame = null;
+
+    const updateNavState = () => {
+      scrollFrame = null;
+      const scrollY = Math.max(
+        0,
+        window.scrollY ||
+          document.documentElement.scrollTop ||
+          0
+      );
+
+      setScrolled((currentScrolled) => {
+        if (currentScrolled) {
+          return scrollY > EXPAND_AT;
+        }
+
+        return scrollY >= SHRINK_AT;
+      });
+    };
+
     const onScroll = () => {
-      setScrolled(
-        window.scrollY > 80
+      if (scrollFrame !== null) {
+        return;
+      }
+
+      scrollFrame = window.requestAnimationFrame(
+        updateNavState
       );
     };
 
+    updateNavState();
+
     window.addEventListener(
       'scroll',
-      onScroll
+      onScroll,
+      { passive: true }
     );
 
     return () => {
@@ -1655,6 +1684,12 @@ export default function App() {
         'scroll',
         onScroll
       );
+
+      if (scrollFrame !== null) {
+        window.cancelAnimationFrame(
+          scrollFrame
+        );
+      }
     };
   }, []);
 
