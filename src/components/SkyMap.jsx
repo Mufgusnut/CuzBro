@@ -2935,6 +2935,14 @@ const PLANNER_DETAIL_TABS = [
   { key: 'info', label: 'General Info' }
 ];
 
+const CAPTURED_DETAIL_TABS = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'capture', label: 'Capture' },
+  { key: 'processing', label: 'Processing' },
+  { key: 'history', label: 'Mission History' },
+  { key: 'info', label: 'General Info' }
+];
+
 function getSessionModeBonus(target, sessionMode = 'balanced') {
   const type = target?.objectType || '';
   const title = target?.title || '';
@@ -3323,6 +3331,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const [activePreset, setActivePreset] = useState('now');
   const [sessionMode, setSessionMode] = useState('balanced');
   const [activePlannerTab, setActivePlannerTab] = useState('overview');
+  const [activeCapturedTab, setActiveCapturedTab] = useState('overview');
   const [targetTrace, setTargetTrace] = useState(null);
   const [traceMapFocus, setTraceMapFocus] = useState(null);
 
@@ -3594,6 +3603,10 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   }, [mappedVisitorTargets]);
 
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
+
+  useEffect(() => {
+    setActiveCapturedTab('overview');
+  }, [activeObject?.id]);
   const activeFutureTarget = rankedFutureTargets.find((target) => target.actualIndex === activeFutureIndex) || rankedFutureTargets[0] || mappedFutureTargets[0];
   const activeVisitorTarget = rankedVisitorTargets.find((target) => target.actualIndex === activeVisitorIndex) || rankedVisitorTargets[0] || mappedVisitorTargets[0];
   const selectedTarget = selectedPanel === 'future' ? activeFutureTarget : selectedPanel === 'visitor' ? activeVisitorTarget : activeObject;
@@ -5577,37 +5590,23 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
       )}
 
       {selectedPanel === 'captured' && activeObject && (
-        <section ref={plannerDetailRef} className="atlasDetail">
-          <img
-            src={getCaptureImageUrl(
-              activeObject.image
-            )}
-            alt={activeObject.title}
-          />
+        <section ref={plannerDetailRef} className="atlasDetail plannerDetail plannerDetailNoBadge plannerTabbedDetail capturedTabbedDetail">
           <div>
             <small>Selected Mission</small>
-            <h2><span>{activeIndex + 1}</span>{activeObject.title}</h2>
-            <h3>{activeObject.subtitle}</h3>
-            <p>{activeObject.notes}</p>
-            <div className="atlasFacts">
-              <span><b>Status</b>{activeObject.observingStatus.label}</span>
-              <span><b>Constellation</b>{activeObject.constellation}</span>
-              <span><b>Type</b>{activeObject.objectType}</span>
-              <span><b>RA</b>{formatRa(activeObject.ra)}</span>
-              <span><b>Dec</b>{formatDec(activeObject.dec)}</span>
-              <span><b>Altitude</b>{activeObject.alt.toFixed(1)}°</span>
-              <span><b>Azimuth</b>{activeObject.az.toFixed(1)}°</span>
-              <span><b>Map Time</b>{formatCompactTime(date)}</span>
-              <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
+
+            <div className="capturedTargetHeader">
+              <div>
+                <h2><span>{activeIndex + 1}</span>{activeObject.title}</h2>
+                <h3>{activeObject.subtitle}</h3>
+              </div>
+
+              <img
+                src={getCaptureImageUrl(activeObject.image)}
+                alt={activeObject.title}
+              />
             </div>
 
-            <MissionHistoryPanel
-              targetTitle={activeObject.title}
-              entries={selectedMissionHistory}
-              compact
-            />
-
-            <div className="atlasTargetTraceActions">
+            <div className="atlasTargetTraceActions capturedTargetPrimaryActions">
               <button
                 type="button"
                 className="atlasTraceToCaptureButton"
@@ -5621,14 +5620,108 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                 Open Mission Report →
               </button>
             </div>
+
+            <div className="plannerDetailTabs" role="tablist" aria-label="Captured mission detail tabs">
+              {CAPTURED_DETAIL_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeCapturedTab === tab.key}
+                  className={activeCapturedTab === tab.key ? 'active' : ''}
+                  onClick={() => setActiveCapturedTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="plannerTabPanel capturedTabPanel">
+              {activeCapturedTab === 'overview' && (
+                <>
+                  <p>{activeObject.notes || 'No mission notes recorded.'}</p>
+                  <div className="capturedOverviewHighlights">
+                    <span><b>Status</b>{activeObject.observingStatus.label}</span>
+                    <span><b>Constellation</b>{activeObject.constellation}</span>
+                    <span><b>Type</b>{activeObject.objectType}</span>
+                    <span><b>Capture Date</b>{activeObject.captureDate || 'Not recorded'}</span>
+                  </div>
+                </>
+              )}
+
+              {activeCapturedTab === 'capture' && (
+                <div className="atlasFacts plannerGeneralInfoFacts">
+                  <span><b>Exposure</b>{activeObject.exposure || 'Not recorded'}</span>
+                  <span><b>Equipment</b>{activeObject.equipment || 'Not recorded'}</span>
+                  <span><b>Capture Date</b>{activeObject.captureDate || 'Not recorded'}</span>
+                  <span><b>Distance</b>{activeObject.distance || 'Not recorded'}</span>
+                  <span><b>Next Goal</b>{activeObject.nextGoal || 'Not recorded'}</span>
+                  <span><b>Archive Status</b>{activeObject.image ? 'Published capture' : 'No display image'}</span>
+                </div>
+              )}
+
+              {activeCapturedTab === 'processing' && (
+                <>
+                  <p>{activeObject.processing || 'No processing notes recorded.'}</p>
+                  <div className="atlasFacts plannerGeneralInfoFacts">
+                    <span><b>RAW Stage</b>{activeObject.rawImage ? 'Available' : 'Not uploaded'}</span>
+                    <span><b>STACKED Stage</b>{activeObject.stackedImage ? 'Available' : 'Not uploaded'}</span>
+                    <span><b>FINAL Stage</b>{activeObject.image ? 'Available' : 'Not uploaded'}</span>
+                    <span><b>Mission Replay</b>{activeObject.rawImage && activeObject.stackedImage ? 'Available' : 'Not configured'}</span>
+                  </div>
+                </>
+              )}
+
+              {activeCapturedTab === 'history' && (
+                <MissionHistoryPanel
+                  targetTitle={activeObject.title}
+                  entries={selectedMissionHistory}
+                  compact
+                />
+              )}
+
+              {activeCapturedTab === 'info' && (
+                <div className="atlasFacts plannerGeneralInfoFacts">
+                  <span><b>Status</b>{activeObject.observingStatus.label}</span>
+                  <span><b>Constellation</b>{activeObject.constellation}</span>
+                  <span><b>Type</b>{activeObject.objectType}</span>
+                  <span><b>RA</b>{formatRa(activeObject.ra)}</span>
+                  <span><b>Dec</b>{formatDec(activeObject.dec)}</span>
+                  <span><b>Altitude</b>{activeObject.alt.toFixed(1)}°</span>
+                  <span><b>Azimuth</b>{activeObject.az.toFixed(1)}°</span>
+                  <span><b>Map Time</b>{formatCompactTime(date)}</span>
+                  <span><b>Moon Phase</b>{moonData.phaseSymbol} {moonData.phaseName} · {moonData.phasePercent}% lit</span>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       )}
 
       {selectedPanel === 'future' && activeFutureTarget && (
-        <section ref={plannerDetailRef} className="atlasDetail plannerDetail plannerDetailNoBadge plannerTabbedDetail">
+        <section ref={plannerDetailRef} className="atlasDetail plannerDetail plannerDetailNoBadge plannerTabbedDetail futureTabbedDetail">
           <div>
             <small>Target Planner</small>
+
+            <div className="futureTargetHeader">
+              <h2><span>＋</span>{activeFutureTarget.title}</h2>
+              <h3>{activeFutureTarget.constellation} · {activeFutureTarget.objectType}</h3>
+            </div>
+
+            <div className="atlasTargetTraceActions futureTargetPrimaryActions">
+              <button
+                type="button"
+                className="atlasTraceToCaptureButton"
+                onClick={() => beginTargetTrace(
+                  activeFutureTarget,
+                  archivedCaptureForSelectedTarget
+                )}
+              >
+                <span aria-hidden="true">⊕</span>
+                ACQUIRE TARGET
+              </button>
+            </div>
+
             <div className="plannerDetailTabs" role="tablist" aria-label="Target planner detail tabs">
               {PLANNER_DETAIL_TABS.map((tab) => (
                 <button
@@ -5654,20 +5747,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                 <div className="plannerTabPanel">
                   {activePlannerTab === 'overview' && (
                     <>
-                      <h2><span>＋</span>{activeFutureTarget.title}</h2>
-                      <h3>{activeFutureTarget.constellation} · {activeFutureTarget.objectType}</h3>
                       <p>{activeFutureTarget.notes}</p>
-                      <button
-                        type="button"
-                        className="atlasTraceToCaptureButton"
-                        onClick={() => beginTargetTrace(
-                          activeFutureTarget,
-                          archivedCaptureForSelectedTarget
-                        )}
-                      >
-                        <span aria-hidden="true">⊕</span>
-                        ACQUIRE TARGET
-                      </button>
                       {activeFutureGuide?.finderNote && (
                         <p className="futureFinderNote">
                           <b>Finder guide:</b> {activeFutureGuide.finderNote}

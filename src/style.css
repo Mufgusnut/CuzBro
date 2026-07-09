@@ -28941,3 +28941,187 @@ body.skyTargetTraceOpen {
     min-width: 0;
   }
 }
+
+/* =========================================================
+   SKY MAP: TABBED CAPTURED MISSION DETAIL
+========================================================= */
+
+.capturedTabbedDetail .capturedTargetHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 320px);
+  gap: 22px;
+  align-items: center;
+  margin: 4px 0 16px;
+}
+
+.capturedTabbedDetail .capturedTargetHeader h2,
+.capturedTabbedDetail .capturedTargetHeader h3 {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: none !important;
+}
+
+.capturedTabbedDetail .capturedTargetHeader img {
+  width: 100% !important;
+  height: 150px !important;
+  object-fit: cover !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(111, 226, 255, 0.18) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28) !important;
+}
+
+.capturedTargetPrimaryActions {
+  margin: 0 0 18px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+.capturedTargetPrimaryActions .atlasTraceToCaptureButton,
+.capturedTargetPrimaryActions > button {
+  margin: 0 !important;
+}
+
+.capturedTabPanel {
+  min-height: 170px;
+}
+
+.capturedOverviewHighlights {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.capturedOverviewHighlights span {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid rgba(111, 226, 255, 0.13);
+  border-radius: 16px;
+  background: rgba(7, 16, 31, 0.58);
+  color: rgba(226, 236, 255, 0.84);
+}
+
+.capturedOverviewHighlights b {
+  color: #8ddff1;
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .capturedTabbedDetail .capturedTargetHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .capturedTabbedDetail .capturedTargetHeader img {
+    height: min(42vw, 240px) !important;
+  }
+
+  .capturedOverviewHighlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .capturedOverviewHighlights {
+    grid-template-columns: 1fr;
+  }
+
+  .capturedTargetPrimaryActions {
+    display: grid !important;
+  }
+
+  .capturedTargetPrimaryActions > button {
+    width: 100% !important;
+  }
+}
+
+/* =========================================================
+   FUTURE TARGET: PERSISTENT IDENTITY + PRIMARY ACTION
+========================================================= */
+
+.futureTabbedDetail .futureTargetHeader {
+  display: grid;
+  gap: 4px;
+  margin: 20px 0 14px;
+}
+
+.futureTabbedDetail .futureTargetHeader h2,
+.futureTabbedDetail .futureTargetHeader h3 {
+  margin: 0;
+}
+
+.futureTabbedDetail .futureTargetHeader h2 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.futureTabbedDetail .futureTargetHeader h2 span {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border: 2px solid rgba(255, 166, 52, 0.78);
+  border-radius: 50%;
+  color: #ffad42;
+  background: rgba(255, 166, 52, 0.08);
+  box-shadow: inset 0 0 18px rgba(255, 166, 52, 0.1);
+}
+
+.futureTabbedDetail .futureTargetHeader h3 {
+  color: #92dfff;
+}
+
+.futureTargetPrimaryActions {
+  margin: 0 0 18px;
+}
+
+@media (max-width: 700px) {
+  .futureTabbedDetail .futureTargetHeader h2 span {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+  }
+}
+
+/* =========================================================
+   PORTRAIT MOBILE PROCESSING COMPARISON
+   Keep the aligned comparison viewport width-driven so target-lock
+   framing does not have to fill an extremely tall, narrow stage.
+========================================================= */
+@media (max-width: 700px) and (orientation: portrait) {
+  .processingComparison:not(.cinemaComparison) .processingCompareStage,
+  .processingComparison:not(.cinemaComparison) .processingFinalStage {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  .processingComparison:not(.cinemaComparison) .processingCompareBase,
+  .processingComparison:not(.cinemaComparison) .processingCompareFinal,
+  .processingComparison:not(.cinemaComparison) .processingFinalStage img {
+    min-width: 0 !important;
+    min-height: 0 !important;
+  }
+
+  .processingComparison:not(.cinemaComparison) .processingCompareDivider span {
+    width: 54px !important;
+    height: 54px !important;
+    border-width: 3px !important;
+    font-size: 1.08rem !important;
+  }
+
+  .processingComparison:not(.cinemaComparison) .processingCompareLabel {
+    top: 16px !important;
+  }
+
+  .processingComparison:not(.cinemaComparison) .processingComparisonHint {
+    margin-top: 10px !important;
+  }
+}
