@@ -51,6 +51,184 @@ function getCaptureImageUrl(image) {
   );
 }
 
+function getManualFocus(xValue, yValue) {
+  const x = Number(xValue);
+  const y = Number(yValue);
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return null;
+  }
+
+  return {
+    x: clamp(x, 0.02, 0.98),
+    y: clamp(y, 0.02, 0.98)
+  };
+}
+
+function getCenteredBackgroundStyle(shellSize, imageMeta, focus, imageUrl) {
+  if (
+    !imageUrl ||
+    !shellSize.width ||
+    !shellSize.height ||
+    !imageMeta?.width ||
+    !imageMeta?.height
+  ) {
+    return {
+      backgroundImage: 'none'
+    };
+  }
+
+  const shellWidth = shellSize.width;
+  const shellHeight = shellSize.height;
+  const imageWidth = imageMeta.width;
+  const imageHeight = imageMeta.height;
+  const baseScale = Math.max(
+    shellWidth / imageWidth,
+    shellHeight / imageHeight
+  );
+  const safeFocusX = clamp(focus?.x ?? 0.5, 0.02, 0.98);
+  const safeFocusY = clamp(focus?.y ?? 0.5, 0.02, 0.98);
+
+  const requiredZoom = Math.max(
+    1,
+    shellWidth / (2 * safeFocusX * imageWidth * baseScale),
+    shellWidth / (2 * (1 - safeFocusX) * imageWidth * baseScale),
+    shellHeight / (2 * safeFocusY * imageHeight * baseScale),
+    shellHeight / (2 * (1 - safeFocusY) * imageHeight * baseScale)
+  );
+
+  const uniformScale = baseScale * requiredZoom;
+  const renderedWidth = imageWidth * uniformScale;
+  const renderedHeight = imageHeight * uniformScale;
+  const left = shellWidth / 2 - safeFocusX * renderedWidth;
+  const top = shellHeight / 2 - safeFocusY * renderedHeight;
+
+  return {
+    backgroundImage: `url("${String(imageUrl).replace(/"/g, '\\"')}")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: `${renderedWidth}px ${renderedHeight}px`,
+    backgroundPosition: `${left}px ${top}px`
+  };
+}
+
+function normalizeBestTimeLabel(label) {
+  if (!label) {
+    return 'BEST AVAILABLE WINDOW';
+  }
+
+  return String(label).toUpperCase();
+}
+
+function normalizeConstellationName(target) {
+  return getMissionConstellation(target) || target?.constellation || 'SKY REGION';
+}
+
+function useElementSize(ref, activationKey = null) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const element = ref.current;
+
+    if (!element || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+
+      if (!entry) return;
+
+      setSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height
+      });
+    });
+
+    observer.observe(element);
+    setSize({ width: element.clientWidth, height: element.clientHeight });
+
+    return () => observer.disconnect();
+  }, [ref, activationKey]);
+
+  return size;
+}
+
+function useTraceCaptureMeta(imageUrl) {
+  const [imageMeta, setImageMeta] = useState(null);
+
+  useEffect(() => {
+    if (!imageUrl) {
+      setImageMeta(null);
+      return;
+    }
+
+    let cancelled = false;
+    const image = new Image();
+    image.decoding = 'async';
+
+    image.onload = () => {
+      if (cancelled) return;
+      setImageMeta({ width: image.naturalWidth || image.width, height: image.naturalHeight || image.height });
+    };
+
+    image.onerror = () => {
+      if (cancelled) return;
+      setImageMeta(null);
+    };
+
+    image.src = imageUrl;
+
+    return () => {
+      cancelled = true
+    };
+  }, [imageUrl]);
+
+  return imageMeta;
+}
+
+function normalizeTargetIdentity(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/(?:galaxy|nebula|cluster|star|moon|planet)/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function getTargetIdentityTokens(target) {
+  return [
+    target?.title,
+    target?.shortTitle,
+    target?.subtitle
+  ]
+    .map(normalizeTargetIdentity)
+    .filter(Boolean);
+}
+
+function findArchivedCaptureForTarget(target, gallery) {
+  if (!target || !Array.isArray(gallery)) {
+    return null;
+  }
+
+  const targetTokens = getTargetIdentityTokens(target);
+
+  return gallery.find((capture) => {
+    if (target?.id && capture.id === target.id) {
+      return true;
+    }
+
+    const captureTokens = getTargetIdentityTokens(capture);
+
+    return targetTokens.some((targetToken) =>
+      captureTokens.some((captureToken) =>
+        targetToken === captureToken ||
+        targetToken.includes(captureToken) ||
+        captureToken.includes(targetToken)
+      )
+    );
+  }) || null;
+}
+
 function isMobileViewport() {
   return typeof window !== 'undefined' && window.innerWidth <= 700;
 }
@@ -374,7 +552,14 @@ const STAR_CATALOG = [
   { name: 'Algol', ra: 3.1361, dec: 40.9556, mag: 2.1 },
   { name: 'Atik', ra: 3.9022, dec: 31.8836, mag: 3.8 },
   { name: 'Delta Per', ra: 3.7154, dec: 47.7876, mag: 3.0 },
-  { name: 'Eta Per', ra: 2.8449, dec: 55.8955, mag: 3.8 }
+  { name: 'Eta Per', ra: 2.8449, dec: 55.8955, mag: 3.8 },
+
+  // Serpens Cauda — gives M16 / Pillars of Creation acquisition context.
+  { name: 'Eta Ser', ra: 18.3552, dec: -2.8988, mag: 3.3 },
+  { name: 'Xi Ser', ra: 17.6264, dec: -15.3986, mag: 3.5 },
+  { name: 'Nu Ser', ra: 17.3471, dec: -12.8469, mag: 4.3 },
+  { name: 'Omicron Ser', ra: 17.6903, dec: -12.8753, mag: 4.3 },
+  { name: 'Theta1 Ser', ra: 18.9369, dec: 4.2036, mag: 4.6 }
 ];
 
 const CONSTELLATION_SEGMENTS = [
@@ -436,7 +621,12 @@ const CONSTELLATION_SEGMENTS = [
   { group: 'Perseus', stars: ['Mirfak', 'Delta Per'] },
   { group: 'Perseus', stars: ['Delta Per', 'Algol'] },
   { group: 'Perseus', stars: ['Algol', 'Atik'] },
-  { group: 'Perseus', stars: ['Mirfak', 'Eta Per'] }
+  { group: 'Perseus', stars: ['Mirfak', 'Eta Per'] },
+
+  { group: 'Serpens', stars: ['Nu Ser', 'Xi Ser'] },
+  { group: 'Serpens', stars: ['Xi Ser', 'Omicron Ser'] },
+  { group: 'Serpens', stars: ['Omicron Ser', 'Eta Ser'] },
+  { group: 'Serpens', stars: ['Eta Ser', 'Theta1 Ser'] }
 ];
 
 const CONSTELLATION_LABEL_GROUPS = {
@@ -451,7 +641,8 @@ const CONSTELLATION_LABEL_GROUPS = {
   'Canes Venatici': ['Cor Caroli', 'Chara', 'La Superba'],
   Draco: ['Eltanin', 'Rastaban', 'Kuma', 'Thuban', 'Edasich'],
   Andromeda: ['Alpheratz', 'Mirach', 'Almach', 'Mu And'],
-  Perseus: ['Mirfak', 'Algol', 'Delta Per', 'Eta Per']
+  Perseus: ['Mirfak', 'Algol', 'Delta Per', 'Eta Per'],
+  Serpens: ['Nu Ser', 'Xi Ser', 'Omicron Ser', 'Eta Ser']
 };
 
 const CONSTELLATION_LABEL_OFFSETS = {
@@ -466,7 +657,8 @@ const CONSTELLATION_LABEL_OFFSETS = {
   'Canes Venatici': { x: 0, y: -18 },
   Draco: { x: 0, y: -18 },
   Andromeda: { x: 12, y: -18 },
-  Perseus: { x: 0, y: -18 }
+  Perseus: { x: 0, y: -18 },
+  Serpens: { x: 0, y: 22 }
 };
 
 function clamp(value, min, max) {
@@ -3131,6 +3323,8 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const [activePreset, setActivePreset] = useState('now');
   const [sessionMode, setSessionMode] = useState('balanced');
   const [activePlannerTab, setActivePlannerTab] = useState('overview');
+  const [targetTrace, setTargetTrace] = useState(null);
+  const [traceMapFocus, setTraceMapFocus] = useState(null);
 
   const dragRef = useRef(null);
   const panFrameRef = useRef(null);
@@ -3138,7 +3332,10 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const touchDragRef = useRef(null);
   const mapSectionRef = useRef(null);
   const mapRef = useRef(null);
+  const traceCaptureRef = useRef(null);
   const plannerDetailRef = useRef(null);
+  const targetTraceTimersRef = useRef([]);
+  const preAcquisitionViewRef = useRef(null);
   const site = activeSite || DEFAULT_SITE;
   const observer = useMemo(
     () => new Observer(site.lat, site.lon, 0),
@@ -3162,6 +3359,9 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
       if (panFrameRef.current) {
         cancelAnimationFrame(panFrameRef.current);
       }
+
+      targetTraceTimersRef.current.forEach((timer) => clearTimeout(timer));
+      document.body.classList.remove('skyTargetTraceOpen');
     };
   }, []);
 
@@ -3397,12 +3597,35 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const activeFutureTarget = rankedFutureTargets.find((target) => target.actualIndex === activeFutureIndex) || rankedFutureTargets[0] || mappedFutureTargets[0];
   const activeVisitorTarget = rankedVisitorTargets.find((target) => target.actualIndex === activeVisitorIndex) || rankedVisitorTargets[0] || mappedVisitorTargets[0];
   const selectedTarget = selectedPanel === 'future' ? activeFutureTarget : selectedPanel === 'visitor' ? activeVisitorTarget : activeObject;
-  const activeConstellation = getMissionConstellation(selectedTarget) || selectedTarget?.constellation;
+  const activeConstellation = traceMapFocus?.constellation || getMissionConstellation(selectedTarget) || selectedTarget?.constellation;
   const selectedMissionHistory = useMemo(
     () => getMissionHistoryForTarget(selectedTarget?.title, captainsLog),
     [selectedTarget?.title, captainsLog]
   );
   const latestSelectedMission = selectedMissionHistory[0] || null;
+  const archivedCaptureForSelectedTarget = useMemo(
+    () => findArchivedCaptureForTarget(selectedTarget, gallery),
+    [selectedTarget, gallery]
+  );
+  const traceCaptureUrl = useMemo(
+    () => getCaptureImageUrl(targetTrace?.capture?.image || ''),
+    [targetTrace?.capture?.image]
+  );
+  const traceCaptureShellSize = useElementSize(traceCaptureRef, traceCaptureUrl);
+  const traceCaptureMeta = useTraceCaptureMeta(traceCaptureUrl);
+  const traceCaptureFocus = useMemo(
+    () => getManualFocus(targetTrace?.capture?.replayFinalFocusX, targetTrace?.capture?.replayFinalFocusY) || { x: 0.5, y: 0.5 },
+    [targetTrace?.capture?.replayFinalFocusX, targetTrace?.capture?.replayFinalFocusY]
+  );
+  const traceCaptureBackgroundStyle = useMemo(
+    () => getCenteredBackgroundStyle(
+      traceCaptureShellSize,
+      traceCaptureMeta,
+      traceCaptureFocus,
+      traceCaptureUrl
+    ),
+    [traceCaptureShellSize, traceCaptureMeta, traceCaptureFocus, traceCaptureUrl]
+  );
 
   const visibleObjects = useMemo(() => mappedObjects.filter((photo) => isInsideSky(photo, 12)), [mappedObjects]);
   const visibleFutureTargets = useMemo(() => rankedFutureTargets.filter((target) => isInsideSky(target, 14)), [rankedFutureTargets]);
@@ -3445,6 +3668,36 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
     return buildTargetTrack(trackTarget, date, observer, site);
   }, [activeFutureTarget, activeVisitorTarget, date, observer, selectedPanel]);
 
+  const acquisitionTargetTrack = useMemo(() => {
+    const target = traceMapFocus?.target;
+
+    if (!target || target.ephemerisNeeded) {
+      return null;
+    }
+
+    return buildTargetTrack(target, date, observer, site);
+  }, [traceMapFocus?.target, date, observer, site]);
+
+  const displayedTargetTrack = traceMapFocus
+    ? acquisitionTargetTrack
+    : activeTargetTrack;
+
+  const displayedTrackTarget = traceMapFocus?.target || activeFutureTarget;
+
+  const acquisitionTargetPoint = useMemo(() => {
+    if (!traceMapFocus?.target) {
+      return null;
+    }
+
+    const position = getTargetAltAzAt(traceMapFocus.target, date, observer);
+    const point = projectAltAz(position.alt, position.az);
+
+    return {
+      ...position,
+      ...point
+    };
+  }, [traceMapFocus?.target, date, observer]);
+
   const constellationLines = useMemo(() => {
     return CONSTELLATION_SEGMENTS.map((segment) => {
       const [nameA, nameB] = segment.stars;
@@ -3455,6 +3708,11 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
       return { group: segment.group, path: `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} L ${b.x.toFixed(1)} ${b.y.toFixed(1)}` };
     }).filter(Boolean);
   }, [starLookup]);
+
+  const hasActiveConstellationGeometry = useMemo(
+    () => constellationLines.some((segment) => segment.group === activeConstellation),
+    [constellationLines, activeConstellation]
+  );
 
   const constellationLabels = useMemo(() => {
     return Object.entries(CONSTELLATION_LABEL_GROUPS)
@@ -3799,6 +4057,157 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
     if (realIndex !== -1) setSelectedIndex(realIndex);
   };
 
+  const beginTargetTrace = (target, capture = null) => {
+    if (!target || targetTrace || traceMapFocus) {
+      return;
+    }
+
+    targetTraceTimersRef.current.forEach((timer) => clearTimeout(timer));
+    targetTraceTimersRef.current = [];
+
+    const scrollAcquisitionMapIntoView = () => {
+      const mapElement = mapRef.current || mapSectionRef.current;
+
+      if (!mapElement) {
+        return;
+      }
+
+      const rect = mapElement.getBoundingClientRect();
+      const pageY = window.scrollY || window.pageYOffset || 0;
+      const headerOffset = isMobileViewport() ? 76 : 112;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 800;
+      const usableHeight = Math.max(320, viewportHeight - headerOffset - 132);
+      const mapCenterOffset = Math.max(0, (rect.height - usableHeight) / 2);
+
+      window.scrollTo({
+        top: Math.max(0, rect.top + pageY + mapCenterOffset - headerOffset),
+        behavior: 'smooth'
+      });
+    };
+
+    scrollAcquisitionMapIntoView();
+
+    preAcquisitionViewRef.current = {
+      date,
+      zoom,
+      pan,
+      rotation,
+      viewMode,
+      showHorizon,
+      activePreset
+    };
+
+    const tonightPlan = target?.tonightPlan || buildTonightPlan(target, date, observer, site);
+    const bestTraceDate = new Date(tonightPlan?.peak?.date || date);
+    const tracePosition = getTargetAltAzAt(target, bestTraceDate, observer);
+    const tracePoint = projectAltAz(tracePosition.alt, tracePosition.az);
+    const traceZoom = clamp(mobileLayout ? 1.16 : 0.9, getMinZoom(), getMaxZoom());
+    const tracePan = {
+      x: (CENTER - tracePoint.x) * traceZoom,
+      y: (CENTER - tracePoint.y) * traceZoom
+    };
+    const bestTimeLabel = normalizeBestTimeLabel(tonightPlan?.peak?.label);
+    const constellation = normalizeConstellationName(target);
+
+    setViewMode('detail');
+    setShowHorizon(false);
+    setRotation(0);
+    setActivePreset('custom');
+    setDate(bestTraceDate);
+    setZoom(traceZoom);
+    setPan(tracePan);
+    setTraceMapFocus({
+      target,
+      capture,
+      targetTitle: target.title,
+      bestTimeLabel,
+      constellation
+    });
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        scrollAcquisitionMapIntoView();
+      });
+    });
+
+    targetTraceTimersRef.current.push(
+      setTimeout(scrollAcquisitionMapIntoView, 500)
+    );
+  };
+
+  const zeroInOnTarget = () => {
+    if (!traceMapFocus || targetTrace) {
+      return;
+    }
+
+    document.body.classList.add('skyTargetTraceOpen');
+    setTargetTrace({
+      target: traceMapFocus.target,
+      capture: traceMapFocus.capture,
+      phase: 'photo',
+      bestTimeLabel: traceMapFocus.bestTimeLabel,
+      constellation: traceMapFocus.constellation
+    });
+  };
+
+  const returnToSkyMap = () => {
+    if (!traceMapFocus) {
+      return;
+    }
+
+    setTargetTrace(null);
+    document.body.classList.remove('skyTargetTraceOpen');
+
+    window.requestAnimationFrame(() => {
+      const mapElement = mapRef.current || mapSectionRef.current;
+
+      if (!mapElement) {
+        return;
+      }
+
+      const rect = mapElement.getBoundingClientRect();
+      const pageY = window.scrollY || window.pageYOffset || 0;
+      const headerOffset = isMobileViewport() ? 76 : 112;
+
+      window.scrollTo({
+        top: Math.max(0, rect.top + pageY - headerOffset),
+        behavior: 'smooth'
+      });
+    });
+  };
+
+  const disengageTarget = () => {
+    targetTraceTimersRef.current.forEach((timer) => clearTimeout(timer));
+    targetTraceTimersRef.current = [];
+    setTargetTrace(null);
+    setTraceMapFocus(null);
+    document.body.classList.remove('skyTargetTraceOpen');
+
+    const previousView = preAcquisitionViewRef.current;
+    preAcquisitionViewRef.current = null;
+
+    if (previousView) {
+      setDate(previousView.date);
+      setZoom(previousView.zoom);
+      setPan(previousView.pan);
+      setRotation(previousView.rotation);
+      setViewMode(previousView.viewMode);
+      setShowHorizon(previousView.showHorizon);
+      setActivePreset(previousView.activePreset);
+    }
+  };
+
+  const examineTarget = () => {
+    if (!targetTrace?.capture) {
+      return;
+    }
+
+    openMission(targetTrace.capture);
+    setTargetTrace(null);
+    setTraceMapFocus(null);
+    document.body.classList.remove('skyTargetTraceOpen');
+  };
+
   const scrollToElement = (targetRef, fallbackRef = null) => {
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
@@ -3890,7 +4299,8 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
       target.closest('.atlasTimeControls') ||
       target.closest('.atlasLegend') ||
       target.closest('.missionSvgCallout') ||
-      target.closest('.futureTargetMarker')
+      target.closest('.futureTargetMarker') ||
+      target.closest('.skyTraceMapControl')
     );
   };
 
@@ -4039,7 +4449,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const keepUpright = (x, y) => `rotate(${-rotation} ${x} ${y})`;
 
   return (
-    <div className="atlasPage">
+    <div className={traceMapFocus ? 'atlasPage acquiringTargetMode' : 'atlasPage'}>
       <section className="atlasHero">
         <p className="eyebrow">MISSION CONTROL</p>
         <h1>Celestial Atlas</h1>
@@ -4099,13 +4509,13 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
             </div>
           </div>
 
-
         <div
           ref={mapRef}
           className={[
             'atlasMap realSkyMap',
             isDetailMode ? 'detailMode' : 'cleanMode',
-            canPanMap ? 'canPanMap' : ''
+            canPanMap ? 'canPanMap' : '',
+            traceMapFocus ? 'traceFocusActive' : ''
           ].join(' ')}
           style={{ touchAction: canPanMap ? 'none' : 'pan-y', WebkitUserSelect: 'none', userSelect: 'none' }}
           onContextMenu={(event) => event.preventDefault()}
@@ -4118,6 +4528,16 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
         >
+          {traceMapFocus && !targetTrace && (
+            <>
+              <div className="skyTraceMapReticle" aria-hidden="true">
+                <span />
+                <i />
+              </div>
+
+            </>
+          )}
+
           <div className="skyPanLayer" style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) rotate(${rotation}deg) scale(${zoom})`, transformOrigin: '50% 50%' }}>
             <svg className="skySvg" viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`} role="img" aria-label={`Live sky map for ${site.fullName || site.name}`}>
               <circle cx={CENTER} cy={CENTER} r={RADIUS} className="skyHorizonCircle" />
@@ -4259,11 +4679,11 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                 </g>
               )}
 
-              {selectedPanel === 'future' && activeTargetTrack?.path && (
-                <g className="futureTargetTrack" pointerEvents="none">
-                  <path d={activeTargetTrack.path} className="futureTargetTrackPath" />
+              {(traceMapFocus || selectedPanel === 'future') && displayedTargetTrack?.path && (
+                <g className={traceMapFocus ? 'futureTargetTrack acquisitionTargetTrack' : 'futureTargetTrack'} pointerEvents="none">
+                  <path d={displayedTargetTrack.path} className="futureTargetTrackPath" />
 
-                  {activeTargetTrack.markers.map((marker) => (
+                  {displayedTargetTrack.markers.map((marker) => (
                     <g key={`track-${marker.key}`}>
                       <circle cx={marker.x} cy={marker.y} r={marker.key === 'now' ? 5.2 : 4.2} className={marker.key === 'now' ? 'futureTargetTrackDot now' : 'futureTargetTrackDot'} />
                       <text
@@ -4277,21 +4697,77 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                     </g>
                   ))}
 
-                  {activeTargetTrack.peak && (
+                  {displayedTargetTrack.peak && (
                     <g>
-                      <circle cx={activeTargetTrack.peak.x} cy={activeTargetTrack.peak.y} r={8.5} className="futureTargetTrackPeakHalo" />
-                      <circle cx={activeTargetTrack.peak.x} cy={activeTargetTrack.peak.y} r={4.4} className="futureTargetTrackDot peak" />
+                      <circle cx={displayedTargetTrack.peak.x} cy={displayedTargetTrack.peak.y} r={8.5} className="futureTargetTrackPeakHalo" />
+                      <circle cx={displayedTargetTrack.peak.x} cy={displayedTargetTrack.peak.y} r={4.4} className="futureTargetTrackDot peak" />
                       <text
-                        x={activeTargetTrack.peak.x + 12}
-                        y={activeTargetTrack.peak.y + 18}
+                        x={displayedTargetTrack.peak.x + 12}
+                        y={displayedTargetTrack.peak.y + 18}
                         className="futureTargetTrackPeakLabel"
-                        transform={keepUpright(activeTargetTrack.peak.x + 12, activeTargetTrack.peak.y + 18)}
+                        transform={keepUpright(displayedTargetTrack.peak.x + 12, displayedTargetTrack.peak.y + 18)}
                       >
-                        Peaks {activeFutureTarget.tonightPlan.peak.label}
+                        Peaks {displayedTrackTarget?.tonightPlan?.peak?.label || traceMapFocus?.bestTimeLabel || 'Best window'}
                       </text>
                     </g>
                   )}
                 </g>
+              )}
+
+              {traceMapFocus && acquisitionTargetPoint && (
+                <g className="acquisitionLockedTargetMarker" pointerEvents="none">
+                  <circle
+                    cx={acquisitionTargetPoint.x}
+                    cy={acquisitionTargetPoint.y}
+                    r={14}
+                    className="acquisitionLockedTargetHalo"
+                  />
+                  <circle
+                    cx={acquisitionTargetPoint.x}
+                    cy={acquisitionTargetPoint.y}
+                    r={5.5}
+                    className="acquisitionLockedTargetDot"
+                  />
+                  <line
+                    x1={acquisitionTargetPoint.x - 22}
+                    y1={acquisitionTargetPoint.y}
+                    x2={acquisitionTargetPoint.x - 8}
+                    y2={acquisitionTargetPoint.y}
+                    className="acquisitionLockedTargetTick"
+                  />
+                  <line
+                    x1={acquisitionTargetPoint.x + 8}
+                    y1={acquisitionTargetPoint.y}
+                    x2={acquisitionTargetPoint.x + 22}
+                    y2={acquisitionTargetPoint.y}
+                    className="acquisitionLockedTargetTick"
+                  />
+                  <line
+                    x1={acquisitionTargetPoint.x}
+                    y1={acquisitionTargetPoint.y - 22}
+                    x2={acquisitionTargetPoint.x}
+                    y2={acquisitionTargetPoint.y - 8}
+                    className="acquisitionLockedTargetTick"
+                  />
+                  <line
+                    x1={acquisitionTargetPoint.x}
+                    y1={acquisitionTargetPoint.y + 8}
+                    x2={acquisitionTargetPoint.x}
+                    y2={acquisitionTargetPoint.y + 22}
+                    className="acquisitionLockedTargetTick"
+                  />
+                </g>
+              )}
+
+              {traceMapFocus && acquisitionTargetPoint && !hasActiveConstellationGeometry && (
+                <text
+                  x={acquisitionTargetPoint.x + 24}
+                  y={acquisitionTargetPoint.y - 24}
+                  className="constellationText active acquisitionFallbackConstellationLabel"
+                  transform={keepUpright(acquisitionTargetPoint.x + 24, acquisitionTargetPoint.y - 24)}
+                >
+                  {activeConstellation}
+                </text>
               )}
 
               {visibleStars.map((star) => (
@@ -4934,6 +5410,19 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                       <h2><span>☄</span>{activeVisitorTarget.title}</h2>
                       <h3>{activeVisitorTarget.objectType} · {activeVisitorTarget.constellation}</h3>
                       <p>{activeVisitorTarget.notes}</p>
+                      {!activeVisitorTarget.ephemerisNeeded && (
+                        <button
+                          type="button"
+                          className="atlasTraceToCaptureButton"
+                          onClick={() => beginTargetTrace(
+                            activeVisitorTarget,
+                            archivedCaptureForSelectedTarget
+                          )}
+                        >
+                          <span aria-hidden="true">⊕</span>
+                          ACQUIRE TARGET
+                        </button>
+                      )}
                       <p className={`futureFinderNote visitorNote ${activeVisitorTarget.ephemerisFreshness?.className || (activeVisitorTarget.ephemerisNeeded ? 'caution' : 'ok')}`}>
                         <b>Ephemeris check:</b> {getVisitorActionNote(activeVisitorTarget, date)}
                       </p>
@@ -5118,7 +5607,20 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
               compact
             />
 
-            <button type="button" onClick={() => openMission(activeObject)}>Open Mission Report →</button>
+            <div className="atlasTargetTraceActions">
+              <button
+                type="button"
+                className="atlasTraceToCaptureButton"
+                onClick={() => beginTargetTrace(activeObject, activeObject)}
+              >
+                <span aria-hidden="true">⊕</span>
+                ACQUIRE TARGET
+              </button>
+
+              <button type="button" onClick={() => openMission(activeObject)}>
+                Open Mission Report →
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -5155,6 +5657,17 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                       <h2><span>＋</span>{activeFutureTarget.title}</h2>
                       <h3>{activeFutureTarget.constellation} · {activeFutureTarget.objectType}</h3>
                       <p>{activeFutureTarget.notes}</p>
+                      <button
+                        type="button"
+                        className="atlasTraceToCaptureButton"
+                        onClick={() => beginTargetTrace(
+                          activeFutureTarget,
+                          archivedCaptureForSelectedTarget
+                        )}
+                      >
+                        <span aria-hidden="true">⊕</span>
+                        ACQUIRE TARGET
+                      </button>
                       {activeFutureGuide?.finderNote && (
                         <p className="futureFinderNote">
                           <b>Finder guide:</b> {activeFutureGuide.finderNote}
@@ -5308,6 +5821,129 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
           </div>
         </section>
       )}
+      {traceMapFocus && !targetTrace && (
+        <div
+          className="skyAcquireViewportControl"
+          aria-live="polite"
+          onPointerDown={(event) => event.stopPropagation()}
+          onPointerMove={(event) => event.stopPropagation()}
+          onPointerUp={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div>
+            <small>ACQUIRE TARGET // SKY LOCK</small>
+            <strong>{traceMapFocus.targetTitle}</strong>
+            <span>{traceMapFocus.constellation} · BEST WINDOW {traceMapFocus.bestTimeLabel}</span>
+          </div>
+
+          <div className="skyAcquireViewportActions">
+            <button
+              type="button"
+              className="skyAcquireDisengageButton"
+              onClick={(event) => {
+                event.stopPropagation();
+                disengageTarget();
+              }}
+            >
+              DISENGAGE TARGET
+            </button>
+
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                zeroInOnTarget();
+              }}
+            >
+              ZERO IN ON TARGET
+            </button>
+          </div>
+        </div>
+      )}
+
+      {targetTrace && (
+        <div
+          className={`skyTargetTrace skyTargetTrace-photo${targetTrace.capture?.image ? '' : ' skyTargetTrace-unresolved'}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Zeroed in on ${targetTrace.target.title}`}
+        >
+          <div className="skyTargetTraceGrid" aria-hidden="true" />
+          <div className="skyTargetTraceScanlines" aria-hidden="true" />
+
+          {targetTrace.capture?.image ? (
+            <div
+              ref={traceCaptureRef}
+              className="skyTargetTraceCapture skyTargetTraceCaptureVisible"
+              style={traceCaptureMeta ? traceCaptureBackgroundStyle : undefined}
+              aria-hidden="true"
+            />
+          ) : (
+            <div className="skyTargetTraceUnknownField" aria-hidden="true">
+              <span>??</span>
+            </div>
+          )}
+
+          <div className="skyTargetTraceReticle skyTargetTraceReticleLocked" aria-hidden="true">
+            <span />
+            <i />
+          </div>
+
+          <section className="skyTargetTraceReadout">
+            <small>CUZBRO SKY MAP // {targetTrace.capture?.image ? 'SENSOR LOCK' : 'UNRESOLVED TARGET'}</small>
+            <h2>{targetTrace.target.title}</h2>
+            <div>
+              <span>
+                <b>RA</b>
+                {targetTrace.target.ra != null ? formatRa(targetTrace.target.ra) : 'EPHEMERIS'}
+              </span>
+              <span>
+                <b>DEC</b>
+                {targetTrace.target.dec != null ? formatDec(targetTrace.target.dec) : 'EPHEMERIS'}
+              </span>
+              <span>
+                <b>CONST</b>
+                {targetTrace.constellation}
+              </span>
+              <span>
+                <b>BEST</b>
+                {targetTrace.bestTimeLabel}
+              </span>
+            </div>
+            <strong>
+              {targetTrace.capture?.image
+                ? 'ARCHIVED SENSOR RECORD LOCKED'
+                : 'NO CUZBRO SENSOR RECORD AVAILABLE'}
+            </strong>
+          </section>
+
+          <div className="skyTargetTraceActions">
+            <button
+              type="button"
+              className="skyTargetTraceReturnButton"
+              onClick={returnToSkyMap}
+            >
+              RETURN TO SKY MAP
+            </button>
+
+            <button
+              type="button"
+              className={`skyTargetTraceExamineButton${targetTrace.capture?.image ? '' : ' is-disabled'}`}
+              onClick={targetTrace.capture?.image ? examineTarget : undefined}
+              disabled={!targetTrace.capture?.image}
+              aria-disabled={!targetTrace.capture?.image}
+            >
+              EXAMINE TARGET
+            </button>
+          </div>
+
+          <div className="skyTargetTraceStatus">
+            <span className="skyTargetTraceStatusDot" />
+            {targetTrace.capture?.image ? 'MANUAL TARGET LOCK' : 'TARGET NOT YET CAPTURED'}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

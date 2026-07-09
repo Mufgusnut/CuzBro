@@ -4784,11 +4784,43 @@ footer p {
 ========================================================= */
 
 .realSkyMap {
-  overscroll-behavior: contain !important;
+  overscroll-behavior: auto !important;
 }
 
 .realSkyMap .skyPanLayer {
   will-change: transform !important;
+}
+
+.realSkyMap.traceFocusActive .skyPanLayer {
+  transition: transform 1550ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skyTraceMapFocusBanner {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(111, 226, 255, 0.2);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(6, 13, 26, 0.9), rgba(7, 20, 36, 0.76));
+  color: #eafcff;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.skyTraceMapFocusBanner small {
+  color: #8ddff1;
+  letter-spacing: 0.16em;
+}
+
+.skyTraceMapFocusBanner strong {
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+}
+
+.skyTraceMapFocusBanner span {
+  color: rgba(234, 252, 255, 0.8);
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
 }
 
 .realSkyMap.canPanMap {
@@ -27661,4 +27693,1251 @@ html[data-theme="light"] .missionReplayLaunch {
   max-height: none !important;
   object-fit: cover !important;
   object-position: center !important;
+}
+
+body.skyTargetTraceOpen {
+  overflow: hidden;
+}
+
+.atlasTargetTraceActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.atlasTraceToCaptureButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid rgba(111, 226, 255, 0.46) !important;
+  background:
+    linear-gradient(135deg, rgba(20, 105, 137, 0.26), rgba(10, 24, 43, 0.86)) !important;
+  color: #dffaff !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 0 0 rgba(111, 226, 255, 0);
+  letter-spacing: 0.12em;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease !important;
+}
+
+.atlasTraceToCaptureButton:hover {
+  transform: translateY(-2px);
+  border-color: rgba(111, 226, 255, 0.86) !important;
+  box-shadow: 0 0 28px rgba(72, 199, 239, 0.22) !important;
+}
+
+.atlasTraceToCaptureButton span {
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #6fe2ff;
+}
+
+.skyTargetTrace {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  overflow: hidden;
+  background: #010407;
+  color: #eafcff;
+  font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  isolation: isolate;
+}
+
+.skyTargetTraceGrid,
+.skyTargetTraceScanlines,
+.skyTargetTraceCapture {
+  position: absolute;
+  inset: 0;
+}
+
+.skyTargetTraceGrid {
+  z-index: 1;
+  background-image:
+    linear-gradient(rgba(91, 201, 235, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 201, 235, 0.055) 1px, transparent 1px),
+    radial-gradient(circle at center, rgba(31, 129, 164, 0.12), transparent 58%);
+  background-size: 74px 74px, 74px 74px, 100% 100%;
+  opacity: 0.72;
+  animation: skyTargetTraceGridPulse 1.1s ease-in-out infinite alternate;
+}
+
+.skyTargetTraceScanlines {
+  z-index: 7;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.02) 0,
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  opacity: 0.34;
+  mix-blend-mode: screen;
+}
+
+.skyTargetTraceCapture {
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(1.08);
+  transition:
+    opacity 1100ms ease,
+    transform 1700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skyTargetTraceCapture::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, transparent 38%, rgba(0, 4, 7, 0.58) 92%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.38));
+}
+
+.skyTargetTraceCapture img {
+  position: absolute;
+  max-width: none;
+  max-height: none;
+  filter: brightness(0.74) saturate(0.72) contrast(1.1);
+}
+
+.skyTargetTrace-revealing .skyTargetTraceCapture {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.skyTargetTrace-revealing .skyTargetTraceGrid {
+  opacity: 0.14;
+  transition: opacity 800ms ease;
+}
+
+.skyTargetTraceReticle {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 50%;
+  width: min(38vw, 510px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(111, 226, 255, 0.38);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1.7);
+  opacity: 0;
+  animation: skyTargetTraceAcquire 1250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 0 46px rgba(86, 210, 245, 0.08);
+}
+
+.skyTargetTraceReticle::before,
+.skyTargetTraceReticle::after,
+.skyTargetTraceReticle span::before,
+.skyTargetTraceReticle span::after {
+  content: '';
+  position: absolute;
+  background: rgba(111, 226, 255, 0.66);
+}
+
+.skyTargetTraceReticle::before {
+  width: 1px;
+  height: 29%;
+  left: 50%;
+  top: -10%;
+}
+
+.skyTargetTraceReticle::after {
+  width: 1px;
+  height: 29%;
+  left: 50%;
+  bottom: -10%;
+}
+
+.skyTargetTraceReticle span::before {
+  height: 1px;
+  width: 29%;
+  top: 50%;
+  left: -10%;
+}
+
+.skyTargetTraceReticle span::after {
+  height: 1px;
+  width: 29%;
+  top: 50%;
+  right: -10%;
+}
+
+.skyTargetTraceReticle i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(111, 226, 255, 0.8);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.skyTargetTrace-matched .skyTargetTraceReticle {
+  border-color: rgba(175, 246, 255, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.38),
+    0 0 38px rgba(111, 226, 255, 0.25);
+}
+
+.skyTargetTraceReadout {
+  position: absolute;
+  z-index: 6;
+  left: clamp(24px, 4vw, 64px);
+  top: clamp(28px, 6vh, 74px);
+  max-width: min(620px, 84vw);
+}
+
+.skyTargetTraceReadout small {
+  color: #6fe2ff;
+  letter-spacing: 0.18em;
+  font-size: clamp(0.68rem, 1vw, 0.86rem);
+}
+
+.skyTargetTraceReadout h2 {
+  margin: 14px 0 18px;
+  font-size: clamp(2.1rem, 5.5vw, 6.2rem);
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  text-shadow: 0 0 38px rgba(111, 226, 255, 0.12);
+}
+
+.skyTargetTraceReadout > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+  margin-bottom: 20px;
+}
+
+.skyTargetTraceReadout span {
+  display: grid;
+  gap: 3px;
+  font-size: clamp(0.9rem, 1.35vw, 1.15rem);
+  letter-spacing: 0.08em;
+}
+
+.skyTargetTraceReadout span b {
+  color: rgba(183, 236, 250, 0.62);
+  font-size: 0.72em;
+  letter-spacing: 0.18em;
+}
+
+.skyTargetTraceReadout > strong {
+  display: inline-flex;
+  padding: 10px 14px;
+  border-left: 2px solid #6fe2ff;
+  background: rgba(3, 13, 22, 0.7);
+  color: #dffaff;
+  letter-spacing: 0.13em;
+  font-size: clamp(0.78rem, 1.2vw, 1rem);
+}
+
+.skyTargetTraceStatus {
+  position: absolute;
+  z-index: 6;
+  right: clamp(22px, 4vw, 58px);
+  bottom: clamp(24px, 5vh, 56px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(111, 226, 255, 0.24);
+  background: rgba(2, 9, 16, 0.74);
+  letter-spacing: 0.13em;
+  font-size: clamp(0.72rem, 1vw, 0.88rem);
+}
+
+.skyTargetTraceStatusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6fe2ff;
+  box-shadow: 0 0 14px rgba(111, 226, 255, 0.8);
+  animation: skyTargetTraceStatusPulse 580ms ease-in-out infinite alternate;
+}
+
+@keyframes skyTargetTraceAcquire {
+  0% {
+    transform: translate(-50%, -50%) scale(1.7) rotate(-7deg);
+    opacity: 0;
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes skyTargetTraceGridPulse {
+  from {
+    opacity: 0.48;
+  }
+
+  to {
+    opacity: 0.82;
+  }
+}
+
+@keyframes skyTargetTraceStatusPulse {
+  from {
+    opacity: 0.42;
+    transform: scale(0.82);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@media (max-width: 700px) {
+  .atlasTargetTraceActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .skyTargetTraceReticle {
+    width: 66vw;
+  }
+
+  .skyTargetTraceReadout {
+    top: 7vh;
+  }
+
+  .skyTargetTraceReadout h2 {
+    font-size: clamp(2rem, 11vw, 4rem);
+  }
+
+  .skyTargetTraceStatus {
+    left: 22px;
+    right: auto;
+    bottom: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skyTargetTraceGrid,
+  .skyTargetTraceReticle,
+  .skyTargetTraceStatusDot {
+    animation: none;
+  }
+
+  .skyTargetTraceReticle {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* =========================================================
+   SKY MAP ACQUIRE TARGET — MANUAL THREE-STAGE FLOW
+========================================================= */
+
+.skyTraceMapFocusBanner {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.skyTraceMapFocusBanner > div {
+  display: grid;
+  gap: 4px;
+}
+
+.skyTraceMapFocusBanner button,
+.skyTargetTraceExamineButton {
+  border: 1px solid rgba(111, 226, 255, 0.42);
+  border-radius: 999px;
+  background: rgba(7, 27, 43, 0.86);
+  color: #eafcff;
+  padding: 11px 17px;
+  font: 700 0.76rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.11em;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(84, 210, 246, 0.08);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.skyTraceMapFocusBanner button:hover,
+.skyTargetTraceExamineButton:hover {
+  transform: translateY(-1px);
+  border-color: rgba(111, 226, 255, 0.82);
+  background: rgba(12, 43, 66, 0.94);
+}
+
+.realSkyMap.traceFocusActive {
+  position: relative;
+}
+
+.skyTraceMapReticle {
+  position: absolute;
+  z-index: 40;
+  left: 50%;
+  top: 50%;
+  width: min(30vw, 360px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(111, 226, 255, 0.58);
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.42),
+    0 0 42px rgba(86, 210, 245, 0.09);
+  animation: skyTraceMapReticlePulse 1050ms ease-in-out infinite alternate;
+}
+
+.skyTraceMapReticle::before,
+.skyTraceMapReticle::after,
+.skyTraceMapReticle span::before,
+.skyTraceMapReticle span::after {
+  content: '';
+  position: absolute;
+  background: rgba(111, 226, 255, 0.78);
+}
+
+.skyTraceMapReticle::before {
+  width: 1px;
+  height: 25%;
+  left: 50%;
+  top: -9%;
+}
+
+.skyTraceMapReticle::after {
+  width: 1px;
+  height: 25%;
+  left: 50%;
+  bottom: -9%;
+}
+
+.skyTraceMapReticle span::before {
+  height: 1px;
+  width: 25%;
+  top: 50%;
+  left: -9%;
+}
+
+.skyTraceMapReticle span::after {
+  height: 1px;
+  width: 25%;
+  top: 50%;
+  right: -9%;
+}
+
+.skyTraceMapReticle i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(111, 226, 255, 0.9);
+  border-radius: 50%;
+}
+
+@keyframes skyTraceMapReticlePulse {
+  from {
+    opacity: 0.72;
+    box-shadow: 0 0 20px rgba(86, 210, 245, 0.03);
+  }
+
+  to {
+    opacity: 1;
+    box-shadow: 0 0 50px rgba(86, 210, 245, 0.13);
+  }
+}
+
+.skyTargetTrace-photo .skyTargetTraceCapture,
+.skyTargetTraceCaptureVisible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.skyTargetTraceCapture img {
+  position: absolute;
+  display: block;
+  object-fit: unset;
+  max-width: none !important;
+  max-height: none !important;
+  min-width: 0;
+  min-height: 0;
+  transform: none !important;
+  aspect-ratio: auto !important;
+}
+
+.skyTargetTraceReticleLocked {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  animation: skyTargetTraceLockedPulse 1000ms ease-in-out infinite alternate;
+}
+
+@keyframes skyTargetTraceLockedPulse {
+  from {
+    border-color: rgba(111, 226, 255, 0.42);
+    box-shadow: 0 0 28px rgba(86, 210, 245, 0.05);
+  }
+
+  to {
+    border-color: rgba(111, 226, 255, 0.72);
+    box-shadow: 0 0 58px rgba(86, 210, 245, 0.12);
+  }
+}
+
+.skyTargetTraceExamineButton {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  bottom: 8.5%;
+  transform: translateX(-50%);
+  padding: 14px 22px;
+}
+
+.skyTargetTraceExamineButton:hover {
+  transform: translateX(-50%) translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .skyTraceMapFocusBanner {
+    grid-template-columns: 1fr;
+  }
+
+  .skyTraceMapFocusBanner button {
+    width: 100%;
+  }
+
+  .skyTraceMapReticle {
+    width: min(64vw, 320px);
+  }
+
+  .skyTargetTraceExamineButton {
+    bottom: 11%;
+    width: min(86vw, 360px);
+  }
+}
+
+/* =========================================================
+   ACQUIRE TARGET — IN-MAP STEP CONTROL FIX
+========================================================= */
+
+.skyTraceMapControl {
+  position: absolute;
+  z-index: 75;
+  left: 50%;
+  bottom: 24px;
+  width: min(calc(100% - 40px), 720px);
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(111, 226, 255, 0.28);
+  border-radius: 18px;
+  background: rgba(3, 10, 20, 0.92);
+  color: #eafcff;
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.48),
+    inset 0 0 28px rgba(59, 173, 215, 0.04);
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+}
+
+.skyTraceMapControl > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.skyTraceMapControl small {
+  color: #8ddff1;
+  font: 700 0.68rem/1.2 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.15em;
+}
+
+.skyTraceMapControl strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 700 1rem/1.25 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.07em;
+}
+
+.skyTraceMapControl span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(234, 252, 255, 0.72);
+  font: 600 0.78rem/1.3 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.05em;
+}
+
+.skyTraceMapControl button {
+  border: 1px solid rgba(111, 226, 255, 0.55);
+  border-radius: 999px;
+  background: rgba(7, 34, 52, 0.96);
+  color: #f1fdff;
+  padding: 12px 18px;
+  font: 800 0.76rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.skyTraceMapControl button:hover {
+  border-color: rgba(111, 226, 255, 0.95);
+  background: rgba(13, 54, 79, 0.98);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 700px) {
+  .skyTraceMapControl {
+    bottom: 14px;
+    width: min(calc(100% - 24px), 520px);
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .skyTraceMapControl button {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   ACQUIRE TARGET — FINAL VIEWPORT + ASPECT RATIO FIX
+   ========================================================= */
+
+.skyTargetTraceCapture.skyTargetTraceCaptureVisible {
+  background-color: #010407;
+  background-origin: border-box;
+  background-clip: border-box;
+}
+
+.skyTargetTraceCapture.skyTargetTraceCaptureVisible img {
+  display: none !important;
+}
+
+/* =========================================================
+   ACQUIRE TARGET — FOCUSED SKY LOCK POLISH
+   ========================================================= */
+
+.acquiringTargetMode .atlasTimeControls,
+.acquiringTargetMode .skyMapLegend {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.realSkyMap.traceFocusActive .skyAltitudeRing,
+.realSkyMap.traceFocusActive .skyZenithDot,
+.realSkyMap.traceFocusActive .skyAxis,
+.realSkyMap.traceFocusActive .compassLabel,
+.realSkyMap.traceFocusActive .zenithLabel,
+.realSkyMap.traceFocusActive .summerTriangleOutline,
+.realSkyMap.traceFocusActive .guideLabel,
+.realSkyMap.traceFocusActive .futureFinderGuide,
+.realSkyMap.traceFocusActive .futureTargetTrack,
+.realSkyMap.traceFocusActive .futureTargetMarker,
+.realSkyMap.traceFocusActive .missionSvgCallout,
+.realSkyMap.traceFocusActive .brightStarLabel,
+.realSkyMap.traceFocusActive .futureFinderStarLabel,
+.realSkyMap.traceFocusActive .planetLabel,
+.realSkyMap.traceFocusActive .moonLabel,
+.realSkyMap.traceFocusActive .moonPhaseLabel {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.realSkyMap.traceFocusActive .constellationSegment {
+  opacity: 0.18 !important;
+  stroke-width: 1.15 !important;
+}
+
+.realSkyMap.traceFocusActive .constellationSegment.active {
+  opacity: 1 !important;
+  stroke-width: 2.15 !important;
+  filter: drop-shadow(0 0 6px rgba(143, 205, 255, 0.24));
+}
+
+.realSkyMap.traceFocusActive .constellationText {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.realSkyMap.traceFocusActive .constellationText.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.realSkyMap.traceFocusActive .backgroundStar {
+  opacity: 0.2 !important;
+}
+
+.realSkyMap.traceFocusActive .skyStar {
+  opacity: 0.82 !important;
+}
+
+.realSkyMap.traceFocusActive .eclipticPath,
+.realSkyMap.traceFocusActive .lunarPath,
+.realSkyMap.traceFocusActive .planetMarker,
+.realSkyMap.traceFocusActive .moonMarkerGlow,
+.realSkyMap.traceFocusActive .moonPhaseIcon,
+.realSkyMap.traceFocusActive .pathLabel {
+  opacity: 0.72 !important;
+  visibility: visible !important;
+}
+
+.skyTraceMapControl {
+  position: fixed !important;
+  z-index: 100000 !important;
+  left: 50% !important;
+  bottom: max(22px, env(safe-area-inset-bottom)) !important;
+  width: min(calc(100vw - 44px), 760px) !important;
+  transform: translateX(-50%) !important;
+}
+
+.skyTraceMapReticle {
+  width: min(82vw, 880px);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.35);
+  animation: skyTraceMapAcquireLock 1750ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.skyTraceMapReticle i {
+  width: 56px;
+  height: 56px;
+}
+
+@keyframes skyTraceMapAcquireLock {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.4);
+  }
+
+  12% {
+    opacity: 0.9;
+  }
+
+  68% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.18);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.18);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.42),
+      0 0 72px rgba(86, 210, 245, 0.28);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.12);
+  }
+}
+
+@media (max-width: 700px) {
+  .skyTraceMapControl {
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    width: min(calc(100vw - 22px), 560px) !important;
+  }
+
+  .skyTraceMapReticle {
+    width: min(110vw, 720px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skyTraceMapReticle {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+
+/* =========================================================
+   ACQUIRE TARGET — VIEWPORT CONTROL + WHEEL SCROLL FINAL FIX
+   ========================================================= */
+
+.realSkyMap,
+.realSkyMap.canPanMap {
+  overscroll-behavior: auto !important;
+}
+
+.skyAcquireViewportControl {
+  position: fixed;
+  z-index: 1000000;
+  left: 50%;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  width: min(calc(100vw - 44px), 760px);
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 17px;
+  border: 1px solid rgba(111, 226, 255, 0.46);
+  border-radius: 20px;
+  background: rgba(3, 10, 20, 0.96);
+  color: #eafcff;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.64),
+    0 0 42px rgba(86, 210, 245, 0.08),
+    inset 0 0 30px rgba(59, 173, 215, 0.05);
+  backdrop-filter: blur(16px);
+  pointer-events: auto;
+}
+
+.skyAcquireViewportControl > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.skyAcquireViewportControl small {
+  color: #8ddff1;
+  font: 700 0.7rem/1.2 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.16em;
+}
+
+.skyAcquireViewportControl strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 800 1.03rem/1.25 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.08em;
+}
+
+.skyAcquireViewportControl span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(234, 252, 255, 0.74);
+  font: 600 0.8rem/1.3 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.05em;
+}
+
+.skyAcquireViewportControl button {
+  border: 1px solid rgba(111, 226, 255, 0.78);
+  border-radius: 999px;
+  background: rgba(9, 43, 65, 0.98);
+  color: #f4feff;
+  padding: 13px 20px;
+  font: 900 0.79rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.11em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 0 28px rgba(86, 210, 245, 0.08);
+}
+
+.skyAcquireViewportControl button:hover {
+  border-color: rgba(159, 239, 255, 1);
+  background: rgba(14, 62, 90, 1);
+  transform: translateY(-1px);
+}
+
+/* Make the sky acquisition unmistakable before it contracts. */
+.skyTraceMapReticle {
+  width: min(96vw, 1060px) !important;
+  border: 3px solid rgba(126, 232, 255, 0.96) !important;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.58),
+    0 0 42px rgba(86, 210, 245, 0.36),
+    0 0 110px rgba(86, 210, 245, 0.22) !important;
+  animation: skyTraceMapAcquireLockFinal 2700ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.skyTraceMapReticle::before,
+.skyTraceMapReticle::after,
+.skyTraceMapReticle span::before,
+.skyTraceMapReticle span::after {
+  background: rgba(143, 239, 255, 1) !important;
+  box-shadow: 0 0 14px rgba(111, 226, 255, 0.7);
+}
+
+.skyTraceMapReticle::before,
+.skyTraceMapReticle::after {
+  width: 3px !important;
+  height: 34% !important;
+}
+
+.skyTraceMapReticle span::before,
+.skyTraceMapReticle span::after {
+  height: 3px !important;
+  width: 34% !important;
+}
+
+.skyTraceMapReticle i {
+  width: 78px !important;
+  height: 78px !important;
+  border: 3px solid rgba(177, 246, 255, 1) !important;
+  box-shadow:
+    0 0 26px rgba(111, 226, 255, 0.42),
+    inset 0 0 18px rgba(111, 226, 255, 0.12);
+}
+
+@keyframes skyTraceMapAcquireLockFinal {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.55);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  28% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.13);
+  }
+
+  84% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.13);
+    filter: brightness(1.65);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.09);
+    filter: brightness(1.8);
+  }
+}
+
+/* Sensor overlay must be measurable before background framing is applied. */
+.skyTargetTraceCapture.skyTargetTraceCaptureVisible {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  box-sizing: border-box !important;
+  opacity: 1 !important;
+  transform: none !important;
+  background-color: #010407 !important;
+}
+
+@media (max-width: 700px) {
+  .skyAcquireViewportControl {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: min(calc(100vw - 22px), 560px);
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .skyAcquireViewportControl button {
+    width: 100%;
+  }
+
+  .skyTraceMapReticle {
+    width: min(125vw, 820px) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skyTraceMapReticle {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+/* =========================================================
+   ACQUIRE TARGET — LOCKED TARGET CONTEXT + DISENGAGE
+   ========================================================= */
+
+.realSkyMap.traceFocusActive .futureTargetTrack.acquisitionTargetTrack {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.realSkyMap.traceFocusActive .acquisitionTargetTrack .futureTargetTrackPath {
+  opacity: 1 !important;
+  stroke: rgba(111, 226, 255, 0.92) !important;
+  stroke-width: 2.6 !important;
+  filter: drop-shadow(0 0 7px rgba(86, 210, 245, 0.35));
+}
+
+.realSkyMap.traceFocusActive .acquisitionTargetTrack .futureTargetTrackDot,
+.realSkyMap.traceFocusActive .acquisitionTargetTrack .futureTargetTrackPeakHalo,
+.realSkyMap.traceFocusActive .acquisitionTargetTrack .futureTargetTrackPeakLabel,
+.realSkyMap.traceFocusActive .acquisitionTargetTrack .futureTargetTrackLabel {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.acquisitionLockedTargetMarker {
+  opacity: 1;
+  animation: acquisitionLockedTargetAppear 320ms ease-out 2.35s both;
+}
+
+.acquisitionLockedTargetHalo {
+  fill: rgba(4, 18, 30, 0.72);
+  stroke: rgba(126, 232, 255, 0.94);
+  stroke-width: 2.2;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 9px rgba(86, 210, 245, 0.55));
+  animation: acquisitionLockedTargetPulse 1.9s ease-in-out infinite;
+}
+
+.acquisitionLockedTargetDot {
+  fill: #dffbff;
+  stroke: rgba(67, 187, 225, 0.95);
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.acquisitionLockedTargetTick {
+  stroke: rgba(143, 239, 255, 0.94);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 5px rgba(86, 210, 245, 0.4));
+}
+
+.acquisitionFallbackConstellationLabel {
+  opacity: 1 !important;
+  visibility: visible !important;
+  fill: rgba(220, 247, 255, 0.92) !important;
+}
+
+@keyframes acquisitionLockedTargetAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+    transform-origin: center;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    transform-origin: center;
+  }
+}
+
+@keyframes acquisitionLockedTargetPulse {
+  0%, 100% {
+    stroke-opacity: 0.68;
+  }
+  50% {
+    stroke-opacity: 1;
+  }
+}
+
+.skyAcquireViewportActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.skyAcquireViewportControl .skyAcquireDisengageButton {
+  border-color: rgba(175, 197, 208, 0.34);
+  background: rgba(10, 18, 29, 0.94);
+  color: rgba(229, 243, 248, 0.74);
+  box-shadow: none;
+}
+
+.skyAcquireViewportControl .skyAcquireDisengageButton:hover {
+  border-color: rgba(205, 225, 234, 0.62);
+  background: rgba(19, 30, 43, 1);
+  color: #f2fbff;
+}
+
+@media (max-width: 760px) {
+  .skyAcquireViewportControl {
+    grid-template-columns: 1fr;
+  }
+
+  .skyAcquireViewportActions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .skyAcquireViewportActions button {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   ACQUIRE TARGET — RETURN / UNRESOLVED TARGET STATE
+   ========================================================= */
+
+.skyTargetTraceActions {
+  position: fixed;
+  z-index: 12;
+  left: 50%;
+  bottom: max(34px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: min(calc(100vw - 36px), 760px);
+  pointer-events: auto;
+}
+
+.skyTargetTraceReturnButton,
+.skyTargetTraceActions .skyTargetTraceExamineButton {
+  min-width: 220px;
+  border: 1px solid rgba(111, 226, 255, 0.42);
+  border-radius: 999px;
+  background: rgba(7, 27, 43, 0.9);
+  color: #eafcff;
+  padding: 15px 22px;
+  font: 700 0.82rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  box-shadow: 0 0 28px rgba(84, 210, 246, 0.08);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, opacity 180ms ease;
+}
+
+.skyTargetTraceReturnButton:hover,
+.skyTargetTraceActions .skyTargetTraceExamineButton:not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: rgba(111, 226, 255, 0.82);
+  background: rgba(12, 43, 66, 0.96);
+}
+
+.skyTargetTraceReturnButton {
+  border-color: rgba(175, 197, 208, 0.34);
+  background: rgba(10, 18, 29, 0.94);
+  color: rgba(229, 243, 248, 0.78);
+  box-shadow: none;
+}
+
+.skyTargetTraceActions .skyTargetTraceExamineButton {
+  position: static;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  transform: none;
+}
+
+.skyTargetTraceActions .skyTargetTraceExamineButton.is-disabled,
+.skyTargetTraceActions .skyTargetTraceExamineButton:disabled {
+  position: relative;
+  cursor: not-allowed;
+  opacity: 0.42;
+  border-color: rgba(146, 173, 184, 0.28);
+  background: rgba(10, 16, 24, 0.82);
+  color: rgba(216, 230, 236, 0.62);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(255, 126, 126, 0.8);
+}
+
+.skyTargetTraceActions .skyTargetTraceExamineButton.is-disabled::after,
+.skyTargetTraceActions .skyTargetTraceExamineButton:disabled::after {
+  content: '';
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  top: 50%;
+  height: 2px;
+  background: rgba(255, 126, 126, 0.76);
+  transform: rotate(-7deg);
+  transform-origin: center;
+}
+
+.skyTargetTraceUnknownField {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at center, rgba(29, 100, 128, 0.11), transparent 28%),
+    #010407;
+}
+
+.skyTargetTraceUnknownField::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(111, 226, 255, 0.08), transparent 34%),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.012) 0,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+}
+
+.skyTargetTraceUnknownField span {
+  position: relative;
+  z-index: 1;
+  color: rgba(222, 249, 255, 0.95);
+  font: 700 clamp(7rem, 22vw, 18rem)/0.8 'Courier New', ui-monospace, monospace;
+  letter-spacing: -0.08em;
+  text-shadow:
+    0 0 18px rgba(111, 226, 255, 0.5),
+    0 0 68px rgba(86, 210, 245, 0.2);
+  animation: skyTargetTraceUnknownPulse 1.9s ease-in-out infinite alternate;
+}
+
+.skyTargetTrace-unresolved .skyTargetTraceReticle {
+  z-index: 6;
+}
+
+.skyTargetTrace-unresolved .skyTargetTraceReadout {
+  z-index: 9;
+}
+
+.skyTargetTrace-unresolved .skyTargetTraceStatusDot {
+  background: rgba(214, 226, 231, 0.58);
+  box-shadow: 0 0 12px rgba(185, 210, 220, 0.25);
+}
+
+@keyframes skyTargetTraceUnknownPulse {
+  from {
+    opacity: 0.72;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+@media (max-width: 700px) {
+  .skyTargetTraceActions {
+    bottom: max(16px, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: 1fr;
+    width: min(calc(100vw - 22px), 560px);
+  }
+
+  .skyTargetTraceReturnButton,
+  .skyTargetTraceActions .skyTargetTraceExamineButton {
+    width: 100%;
+    min-width: 0;
+  }
 }
