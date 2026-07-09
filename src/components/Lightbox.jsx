@@ -218,6 +218,38 @@ function BeforeAfterViewer({
   const [slider, setSlider] =
     useState(50);
 
+  const updateSliderFromPointer = (event) => {
+    const stage = event.currentTarget;
+    const bounds = stage.getBoundingClientRect();
+
+    if (!bounds.width) {
+      return;
+    }
+
+    const nextValue = Math.max(
+      0,
+      Math.min(
+        100,
+        ((event.clientX - bounds.left) / bounds.width) * 100
+      )
+    );
+
+    setSlider(nextValue);
+  };
+
+  const handleComparisonPointerDown = (event) => {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    updateSliderFromPointer(event);
+  };
+
+  const handleComparisonPointerMove = (event) => {
+    if (!event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      return;
+    }
+
+    updateSliderFromPointer(event);
+  };
+
   useEffect(() => {
     const nextLeft = getDefaultLeftStage();
 
@@ -338,7 +370,11 @@ function BeforeAfterViewer({
             </label>
           </div>
 
-          <div className="processingCompareStage">
+          <div
+            className="processingCompareStage"
+            onPointerDown={handleComparisonPointerDown}
+            onPointerMove={handleComparisonPointerMove}
+          >
             <img
               className="processingCompareBase"
               src={leftStage.image}

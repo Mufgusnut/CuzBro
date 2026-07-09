@@ -26824,3 +26824,102 @@ html[data-theme="observation"] .processingSideSelectors select {
     min-height: 360px !important;
   }
 }
+
+/* =========================================================
+   MOBILE COMPARISON VIEWER RESTORE + LARGE TOUCH DRAG TARGET
+========================================================= */
+
+.processingCompareStage {
+  touch-action: pan-y !important;
+}
+
+.processingCompareRange {
+  pointer-events: none !important;
+}
+
+@media (max-width: 700px) {
+  .lightbox:has(.processingComparison:not(.cinemaComparison)) {
+    place-items: start center !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-bottom: 24px !important;
+  }
+
+  .missionViewer:has(.processingComparison:not(.cinemaComparison)) {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    grid-template-rows: auto auto auto auto !important;
+    align-self: start !important;
+  }
+
+  .missionViewer:has(.processingComparison:not(.cinemaComparison)) .missionGrid {
+    grid-template-columns: 1fr !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .missionImagePanel:not(.cinemaMode):has(.processingComparison:not(.cinemaComparison)) {
+    min-height: 0 !important;
+    height: auto !important;
+    grid-template-rows: auto !important;
+    overflow: visible !important;
+  }
+
+  .processingComparison:not(.cinemaComparison) {
+    min-height: 0 !important;
+    height: auto !important;
+    grid-template-rows: auto auto auto auto !important;
+    overflow: visible !important;
+  }
+
+  .processingComparison:not(.cinemaComparison) .processingCompareStage,
+  .processingComparison:not(.cinemaComparison) .processingFinalStage {
+    display: block !important;
+    height: clamp(320px, 58vh, 520px) !important;
+    min-height: 320px !important;
+    max-height: 520px !important;
+    overflow: hidden !important;
+  }
+
+  .processingComparison:not(.cinemaComparison) .processingCompareBase,
+  .processingComparison:not(.cinemaComparison) .processingCompareFinal,
+  .processingComparison:not(.cinemaComparison) .processingFinalStage img {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    object-fit: contain !important;
+  }
+
+  .missionViewer:has(.processingComparison:not(.cinemaComparison)) .missionPanel:not(.hiddenPanel) {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .processingCompareDivider span {
+    width: 64px !important;
+    height: 64px !important;
+    border-width: 4px !important;
+    font-size: 1.25rem !important;
+  }
+
+  .processingCompareDivider::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 88px;
+    transform: translateX(-50%);
+    background: transparent;
+  }
+
+  .processingComparisonHint {
+    line-height: 1.45;
+  }
+}
