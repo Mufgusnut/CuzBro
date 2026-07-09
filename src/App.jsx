@@ -1313,6 +1313,18 @@ export default function App() {
             image:
               capture.image,
 
+            rawImage:
+              capture.raw_image,
+
+            rawStoragePath:
+              capture.raw_storage_path,
+
+            stackedImage:
+              capture.stacked_image,
+
+            stackedStoragePath:
+              capture.stacked_storage_path,
+
             storagePath:
               capture.storage_path,
 

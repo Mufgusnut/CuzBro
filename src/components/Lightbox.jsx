@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -172,6 +173,237 @@ function getCaptureImageUrl(image) {
   );
 }
 
+
+function BeforeAfterViewer({
+  photo,
+  finalImageUrl,
+  isCinema = false,
+  onEnterCinema
+}) {
+  const stages = [
+    photo.rawImage
+      ? {
+          key: 'raw',
+          label: 'RAW',
+          image: getCaptureImageUrl(photo.rawImage)
+        }
+      : null,
+    photo.stackedImage
+      ? {
+          key: 'stacked',
+          label: 'STACKED',
+          image: getCaptureImageUrl(photo.stackedImage)
+        }
+      : null,
+    {
+      key: 'final',
+      label: 'FINAL',
+      image: finalImageUrl
+    }
+  ].filter(Boolean);
+
+  const getDefaultLeftStage = () =>
+    stages.find((stage) => stage.key !== 'final') ||
+    stages[0];
+
+  const [displayMode, setDisplayMode] =
+    useState('comparison');
+
+  const [leftStageKey, setLeftStageKey] =
+    useState(getDefaultLeftStage().key);
+
+  const [rightStageKey, setRightStageKey] =
+    useState('final');
+
+  const [slider, setSlider] =
+    useState(50);
+
+  useEffect(() => {
+    const nextLeft = getDefaultLeftStage();
+
+    setDisplayMode('comparison');
+    setLeftStageKey(nextLeft.key);
+    setRightStageKey('final');
+    setSlider(50);
+  }, [photo.id]);
+
+  const leftStage =
+    stages.find((stage) => stage.key === leftStageKey) ||
+    stages[0];
+
+  const rightStage =
+    stages.find((stage) => stage.key === rightStageKey) ||
+    stages[stages.length - 1];
+
+  if (stages.length <= 1) {
+    return (
+      <div className="reportImageFrame">
+        <img
+          className="reportImage"
+          src={finalImageUrl}
+          alt={photo.title}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={
+        isCinema
+          ? 'processingComparison cinemaComparison'
+          : 'processingComparison'
+      }
+    >
+      <div className="processingComparisonHeader">
+        <div className="processingComparisonTitle">
+          <small>PROCESSING EVOLUTION</small>
+          <strong>Before / After Viewer</strong>
+        </div>
+
+        {!isCinema && onEnterCinema && (
+          <button
+            type="button"
+            className="processingCinemaButton"
+            onClick={onEnterCinema}
+          >
+            <Search size={16} />
+            Enter Cinema Mode
+          </button>
+        )}
+
+        <div
+          className="processingDisplayModeTabs"
+          aria-label="Viewer mode"
+        >
+          <button
+            type="button"
+            className={displayMode === 'comparison' ? 'active' : ''}
+            onClick={() => setDisplayMode('comparison')}
+          >
+            COMPARISON MODE
+          </button>
+
+          <button
+            type="button"
+            className={displayMode === 'final' ? 'active' : ''}
+            onClick={() => setDisplayMode('final')}
+          >
+            FINAL
+          </button>
+        </div>
+      </div>
+
+      {displayMode === 'comparison' ? (
+        <>
+          <div className="processingSideSelectors">
+            <label>
+              <span>LEFT SIDE</span>
+
+              <select
+                value={leftStageKey}
+                onChange={(event) =>
+                  setLeftStageKey(event.target.value)
+                }
+              >
+                {stages.map((stage) => (
+                  <option
+                    key={`left-${stage.key}`}
+                    value={stage.key}
+                  >
+                    {stage.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span>RIGHT SIDE</span>
+
+              <select
+                value={rightStageKey}
+                onChange={(event) =>
+                  setRightStageKey(event.target.value)
+                }
+              >
+                {stages.map((stage) => (
+                  <option
+                    key={`right-${stage.key}`}
+                    value={stage.key}
+                  >
+                    {stage.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="processingCompareStage">
+            <img
+              className="processingCompareBase"
+              src={leftStage.image}
+              alt={`${photo.title} ${leftStage.label.toLowerCase()} stage`}
+            />
+
+            <div
+              className="processingCompareFinalClip"
+              style={{
+                clipPath: `inset(0 ${100 - slider}% 0 0)`
+              }}
+            >
+              <img
+                className="processingCompareFinal"
+                src={rightStage.image}
+                alt={`${photo.title} ${rightStage.label.toLowerCase()} stage`}
+              />
+            </div>
+
+            <div
+              className="processingCompareDivider"
+              style={{ left: `${slider}%` }}
+              aria-hidden="true"
+            >
+              <span>↔</span>
+            </div>
+
+            <span className="processingCompareLabel before">
+              {leftStage.label}
+            </span>
+
+            <span className="processingCompareLabel after">
+              {rightStage.label}
+            </span>
+
+            <input
+              className="processingCompareRange"
+              type="range"
+              min="0"
+              max="100"
+              value={slider}
+              onChange={(event) =>
+                setSlider(Number(event.target.value))
+              }
+              aria-label={`Compare ${leftStage.label} with ${rightStage.label}`}
+            />
+          </div>
+
+          <p className="processingComparisonHint">
+            Drag right to reveal more {rightStage.label}. Drag left to reveal more {leftStage.label}.
+          </p>
+        </>
+      ) : (
+        <div className="processingFinalStage">
+          <img
+            src={finalImageUrl}
+            alt={`${photo.title} final published image`}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export default function Lightbox({
   selectedPhoto,
   gallery,
@@ -210,6 +442,10 @@ export default function Lightbox({
 
   const imageUrl = getCaptureImageUrl(
     selectedPhoto.image
+  );
+
+  const hasProcessingComparison = Boolean(
+    selectedPhoto.rawImage || selectedPhoto.stackedImage
   );
 
   const handleImageClick = () => {
@@ -299,25 +535,39 @@ export default function Lightbox({
             }
           >
             {viewerMode === 'report' ? (
-              <>
-                <button
-                  type="button"
-                  className="zoomHint"
-                  onClick={handleImageClick}
-                >
-                  <Search size={16} />
-                  Enter Cinema Mode
-                </button>
-
-                <div className="reportImageFrame">
-                  <img
-                    className="reportImage"
-                    src={imageUrl}
-                    alt={selectedPhoto.title}
+              hasProcessingComparison ? (
+                <BeforeAfterViewer
+                  photo={selectedPhoto}
+                  finalImageUrl={imageUrl}
+                  onEnterCinema={handleImageClick}
+                />
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="zoomHint"
                     onClick={handleImageClick}
-                  />
-                </div>
-              </>
+                  >
+                    <Search size={16} />
+                    Enter Cinema Mode
+                  </button>
+
+                  <div className="reportImageFrame">
+                    <img
+                      className="reportImage"
+                      src={imageUrl}
+                      alt={selectedPhoto.title}
+                      onClick={handleImageClick}
+                    />
+                  </div>
+                </>
+              )
+            ) : hasProcessingComparison ? (
+              <BeforeAfterViewer
+                photo={selectedPhoto}
+                finalImageUrl={imageUrl}
+                isCinema
+              />
             ) : (
               <TransformWrapper
                 key={selectedPhoto.id}
