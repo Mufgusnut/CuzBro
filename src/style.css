@@ -29337,3 +29337,613 @@ body.skyTargetTraceOpen {
     r: 7px;
   }
 }
+
+/* =========================================================
+   TARGET DOSSIER
+========================================================= */
+
+body.targetDossierOpen {
+  overflow: hidden !important;
+}
+
+.atlasTargetDossierButton {
+  border: 1px solid rgba(111, 226, 255, 0.3);
+  background: rgba(7, 18, 31, 0.74);
+  color: var(--text-color);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.atlasTargetDossierButton:hover {
+  transform: translateY(-2px);
+  border-color: rgba(111, 226, 255, 0.72);
+  background: rgba(13, 34, 55, 0.92);
+}
+
+.targetDossier {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  background: #02070d;
+  color: #eafcff;
+  font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  isolation: isolate;
+}
+
+.targetDossierBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(rgba(111, 226, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 226, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 20% 16%, rgba(30, 124, 163, 0.16), transparent 34%),
+    radial-gradient(circle at 80% 78%, rgba(20, 71, 105, 0.12), transparent 38%),
+    #02070d;
+  background-size: 52px 52px, 52px 52px, 100% 100%, 100% 100%, 100% 100%;
+}
+
+.targetDossierTopbar,
+.targetDossierFooter {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  border-color: rgba(111, 226, 255, 0.2);
+  background: rgba(1, 6, 11, 0.9);
+  backdrop-filter: blur(16px);
+}
+
+.targetDossierTopbar {
+  border-bottom: 1px solid rgba(111, 226, 255, 0.2);
+}
+
+.targetDossierFooter {
+  justify-content: center;
+  border-top: 1px solid rgba(111, 226, 255, 0.2);
+}
+
+.targetDossierTopbar > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.targetDossierGlyph {
+  color: #6fe2ff;
+  font-size: 1.4rem;
+  text-shadow: 0 0 16px rgba(111, 226, 255, 0.55);
+}
+
+.targetDossierTopbar strong {
+  letter-spacing: 0.12em;
+}
+
+.targetDossierTopbar small {
+  color: rgba(234, 252, 255, 0.58);
+  letter-spacing: 0.08em;
+}
+
+.targetDossierTopActions,
+.targetDossierFooter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.targetDossierTopActions button,
+.targetDossierFooter button {
+  border: 1px solid rgba(111, 226, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(8, 20, 34, 0.82);
+  color: #eafcff;
+  padding: 10px 15px;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.targetDossierTopActions button:hover,
+.targetDossierFooter button:not(:disabled):hover {
+  transform: translateY(-2px);
+  border-color: rgba(111, 226, 255, 0.8);
+  background: rgba(14, 40, 62, 0.94);
+}
+
+.targetDossierFooter .targetDossierPrimary {
+  border-color: rgba(111, 226, 255, 0.76);
+  background: linear-gradient(135deg, rgba(22, 104, 135, 0.78), rgba(13, 58, 84, 0.9));
+  box-shadow: 0 0 24px rgba(111, 226, 255, 0.1);
+}
+
+.targetDossierPrimary span {
+  margin-right: 5px;
+  color: #bff5ff;
+}
+
+.targetDossierFooter button:disabled,
+.targetDossierDisabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.targetDossierStruck {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.targetDossierMain {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.targetDossierHero {
+  position: relative;
+  min-height: min(48vh, 520px);
+  overflow: hidden;
+  border-bottom: 1px solid rgba(111, 226, 255, 0.16);
+  background: #010407;
+}
+
+.targetDossierHero > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(0.68) saturate(0.78) contrast(1.06);
+  transform: scale(1.015);
+}
+
+.targetDossierHeroShade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(1, 5, 10, 0.96) 0%, rgba(1, 5, 10, 0.74) 34%, rgba(1, 5, 10, 0.14) 72%),
+    linear-gradient(to top, rgba(1, 5, 10, 0.74), transparent 48%);
+}
+
+.targetDossierHero.unresolved {
+  background:
+    radial-gradient(circle at center, rgba(30, 121, 157, 0.14), transparent 31%),
+    #010407;
+}
+
+.targetDossierUnknown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(111, 226, 255, 0.42);
+  font-size: clamp(8rem, 24vw, 21rem);
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  text-shadow: 0 0 70px rgba(111, 226, 255, 0.18);
+}
+
+.targetDossierIdentity {
+  position: absolute;
+  z-index: 2;
+  left: clamp(24px, 5vw, 74px);
+  top: 50%;
+  max-width: min(660px, 82vw);
+  transform: translateY(-50%);
+}
+
+.targetDossierIdentity small {
+  color: #78d7ed;
+  letter-spacing: 0.2em;
+  font-weight: 800;
+}
+
+.targetDossierIdentity h1 {
+  margin: 12px 0 4px;
+  font-family: inherit;
+  font-size: clamp(2.25rem, 6vw, 6.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+
+.targetDossierIdentity h2 {
+  margin: 0;
+  color: rgba(234, 252, 255, 0.72);
+  font-size: clamp(0.9rem, 1.7vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.targetDossierStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 22px;
+  padding: 8px 13px;
+  border: 1px solid rgba(111, 226, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(2, 9, 16, 0.66);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.targetDossierStatus span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #6fe2ff;
+  box-shadow: 0 0 14px rgba(111, 226, 255, 0.72);
+}
+
+.targetDossierStatus.uncaptured span {
+  background: transparent;
+  border: 1px solid rgba(111, 226, 255, 0.7);
+  box-shadow: none;
+}
+
+.targetDossierStats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-bottom: 1px solid rgba(111, 226, 255, 0.16);
+  background: rgba(3, 10, 17, 0.86);
+}
+
+.targetDossierStats > div {
+  min-width: 0;
+  padding: 18px 20px;
+  border-right: 1px solid rgba(111, 226, 255, 0.12);
+}
+
+.targetDossierStats > div:last-child {
+  border-right: 0;
+}
+
+.targetDossierStats small,
+.targetDossierCardHeader small {
+  display: block;
+  color: rgba(139, 222, 241, 0.68);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+}
+
+.targetDossierStats strong {
+  display: block;
+  margin-top: 6px;
+  overflow: hidden;
+  color: #f3fdff;
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.targetDossierGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.9fr);
+  gap: 18px;
+  width: min(1420px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 24px 0 38px;
+}
+
+.targetDossierCard {
+  border: 1px solid rgba(111, 226, 255, 0.16);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(7, 18, 31, 0.9), rgba(3, 10, 19, 0.86));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.targetDossierCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(111, 226, 255, 0.12);
+}
+
+.targetDossierCardHeader strong {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+}
+
+.targetDossierSideStack {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.targetDossierTimeline {
+  position: relative;
+  display: grid;
+  gap: 0;
+  padding: 10px 22px 18px 40px;
+}
+
+.targetDossierTimeline::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 28px;
+  bottom: 28px;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(111, 226, 255, 0.56), rgba(111, 226, 255, 0.08));
+}
+
+.targetDossierTimelineEntry {
+  position: relative;
+  padding: 16px 0 18px 16px;
+  border-bottom: 1px solid rgba(111, 226, 255, 0.09);
+}
+
+.targetDossierTimelineEntry:last-child {
+  border-bottom: 0;
+}
+
+.targetDossierTimelineNode {
+  position: absolute;
+  left: -22px;
+  top: 22px;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #6fe2ff;
+  border-radius: 50%;
+  background: #03101a;
+  box-shadow: 0 0 14px rgba(111, 226, 255, 0.44);
+}
+
+.targetDossierTimelineEntry small {
+  color: rgba(139, 222, 241, 0.68);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+
+.targetDossierTimelineEntry strong {
+  display: block;
+  margin: 6px 0 8px;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+}
+
+.targetDossierTimelineEntry p,
+.targetDossierObjective p,
+.targetDossierEmptyState p {
+  margin: 0;
+  color: rgba(234, 252, 255, 0.7);
+  line-height: 1.55;
+}
+
+.targetDossierProfile {
+  margin: 0;
+  padding: 6px 18px 14px;
+}
+
+.targetDossierProfile > div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.7fr) minmax(0, 1.3fr);
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(111, 226, 255, 0.09);
+}
+
+.targetDossierProfile > div:last-child {
+  border-bottom: 0;
+}
+
+.targetDossierProfile dt {
+  color: rgba(139, 222, 241, 0.65);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.targetDossierProfile dd {
+  margin: 0;
+  color: #eefcff;
+  text-align: right;
+  line-height: 1.4;
+}
+
+.targetDossierObjective p {
+  padding: 18px;
+}
+
+.targetDossierEmptyState {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 280px;
+  padding: 34px;
+  text-align: center;
+}
+
+.targetDossierEmptyState span {
+  color: #6fe2ff;
+  font-size: 2rem;
+}
+
+.targetDossierEmptyState strong {
+  letter-spacing: 0.12em;
+}
+
+.targetDossierEmptyState p {
+  max-width: 520px;
+}
+
+@media (max-width: 1050px) {
+  .targetDossierStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .targetDossierStats > div:nth-child(3) {
+    border-right: 0;
+  }
+
+  .targetDossierStats > div:nth-child(-n + 3) {
+    border-bottom: 1px solid rgba(111, 226, 255, 0.12);
+  }
+
+  .targetDossierGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .targetDossier {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .targetDossierTopbar {
+    align-items: flex-start;
+    padding: max(12px, env(safe-area-inset-top)) 14px 11px;
+  }
+
+  .targetDossierTopbar > div:first-child {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2px 9px;
+  }
+
+  .targetDossierTopbar strong {
+    font-size: 0.76rem;
+  }
+
+  .targetDossierTopbar small {
+    grid-column: 2;
+    font-size: 0.59rem;
+  }
+
+  .targetDossierGlyph {
+    grid-row: 1 / span 2;
+  }
+
+  .targetDossierTopActions {
+    gap: 5px;
+  }
+
+  .targetDossierTopActions button {
+    padding: 8px 9px;
+    font-size: 0.58rem;
+  }
+
+  .targetDossierTopActions button:first-child {
+    display: none;
+  }
+
+  .targetDossierHero {
+    min-height: 38vh;
+  }
+
+  .targetDossierHeroShade {
+    background:
+      linear-gradient(to top, rgba(1, 5, 10, 0.92) 0%, rgba(1, 5, 10, 0.35) 66%),
+      linear-gradient(to right, rgba(1, 5, 10, 0.62), transparent 72%);
+  }
+
+  .targetDossierIdentity {
+    left: 18px;
+    right: 18px;
+    top: auto;
+    bottom: 22px;
+    max-width: none;
+    transform: none;
+  }
+
+  .targetDossierIdentity h1 {
+    font-size: clamp(2rem, 12vw, 4.2rem);
+  }
+
+  .targetDossierIdentity h2 {
+    font-size: 0.82rem;
+  }
+
+  .targetDossierStatus {
+    margin-top: 14px;
+    padding: 7px 10px;
+    font-size: 0.64rem;
+  }
+
+  .targetDossierStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .targetDossierStats > div,
+  .targetDossierStats > div:nth-child(3) {
+    border-right: 1px solid rgba(111, 226, 255, 0.12);
+    border-bottom: 1px solid rgba(111, 226, 255, 0.12);
+    padding: 13px 14px;
+  }
+
+  .targetDossierStats > div:nth-child(even) {
+    border-right: 0;
+  }
+
+  .targetDossierStats small {
+    font-size: 0.56rem;
+  }
+
+  .targetDossierStats strong {
+    font-size: 0.76rem;
+  }
+
+  .targetDossierGrid {
+    width: calc(100% - 24px);
+    gap: 12px;
+    padding: 14px 0 24px;
+  }
+
+  .targetDossierCard,
+  .targetDossierObjective {
+    border-radius: 16px;
+  }
+
+  .targetDossierTimeline {
+    padding-left: 32px;
+  }
+
+  .targetDossierTimeline::before {
+    left: 18px;
+  }
+
+  .targetDossierTimelineEntry {
+    padding-left: 12px;
+  }
+
+  .targetDossierTimelineNode {
+    left: -19px;
+  }
+
+  .targetDossierFooter {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+  }
+
+  .targetDossierFooter button {
+    min-height: 44px;
+    padding: 8px 9px;
+    font-size: 0.62rem;
+  }
+
+  .targetDossierFooter .targetDossierPrimary {
+    grid-column: 1 / -1;
+  }
+}

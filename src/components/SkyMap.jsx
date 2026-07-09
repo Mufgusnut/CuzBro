@@ -10,6 +10,7 @@ import {
   Rotation_EQJ_HOR,
   VectorFromSphere
 } from 'astronomy-engine';
+import TargetDossier from './TargetDossier.jsx';
 
 const DEFAULT_SITE = {
   name: 'Eliot, ME',
@@ -190,7 +191,7 @@ function normalizeTargetIdentity(value) {
   return String(value || '')
     .toLowerCase()
     .replace(/[’']/g, '')
-    .replace(/(?:galaxy|nebula|cluster|star|moon|planet)/g, ' ')
+    .replace(/\b(?:galaxy|nebula|cluster|star|moon|planet)\b/g, ' ')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
@@ -227,6 +228,41 @@ function findArchivedCaptureForTarget(target, gallery) {
       )
     );
   }) || null;
+}
+
+function getArchivedCapturesForTarget(target, gallery) {
+  if (!target || !Array.isArray(gallery)) {
+    return [];
+  }
+
+  const targetTokens = getTargetIdentityTokens(target);
+
+  return gallery.filter((capture) => {
+    if (target?.id && capture.id === target.id) {
+      return true;
+    }
+
+    const captureTokens = getTargetIdentityTokens(capture);
+
+    return targetTokens.some((targetToken) =>
+      captureTokens.some((captureToken) =>
+        targetToken === captureToken ||
+        targetToken.includes(captureToken) ||
+        captureToken.includes(targetToken)
+      )
+    );
+  });
+}
+
+function getTargetDossierSlug(target) {
+  const preferred = target?.shortTitle || target?.title || target?.id || 'target';
+
+  return String(preferred)
+    .trim()
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function isMobileViewport() {
@@ -3334,6 +3370,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const [activeCapturedTab, setActiveCapturedTab] = useState('overview');
   const [targetTrace, setTargetTrace] = useState(null);
   const [traceMapFocus, setTraceMapFocus] = useState(null);
+  const [dossierTarget, setDossierTarget] = useState(null);
 
   const dragRef = useRef(null);
   const panFrameRef = useRef(null);
@@ -3621,6 +3658,50 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
       }));
   }, [mappedVisitorTargets]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedTarget = params.get('target');
+    const requestedView = params.get('view');
+
+    if (!requestedTarget || requestedView !== 'dossier' || dossierTarget) {
+      return;
+    }
+
+    const allTargets = [
+      ...mappedObjects.map((target, index) => ({ target, panel: 'captured', index })),
+      ...mappedFutureTargets.map((target) => ({ target, panel: 'future', index: target.actualIndex })),
+      ...mappedVisitorTargets.map((target) => ({ target, panel: 'visitor', index: target.actualIndex }))
+    ];
+    const requested = allTargets.find(
+      (entry) => getTargetDossierSlug(entry.target) === requestedTarget
+    );
+
+    if (!requested) {
+      return;
+    }
+
+    if (requested.panel === 'captured') {
+      setCatalogView('captured');
+      setSelectedPanel('captured');
+      setActiveIndex(requested.index);
+    } else if (requested.panel === 'future') {
+      setCatalogView('future');
+      setSelectedPanel('future');
+      setActiveFutureIndex(requested.index);
+    } else {
+      setCatalogView('visitors');
+      setSelectedPanel('visitor');
+      setActiveVisitorIndex(requested.index);
+    }
+
+    openTargetDossier(requested.target, { replaceHistory: true });
+  }, [
+    dossierTarget,
+    mappedObjects,
+    mappedFutureTargets,
+    mappedVisitorTargets
+  ]);
+
   const activeObject = mappedObjects[activeIndex] || mappedObjects[0];
 
   useEffect(() => {
@@ -3638,6 +3719,14 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const archivedCaptureForSelectedTarget = useMemo(
     () => findArchivedCaptureForTarget(selectedTarget, gallery),
     [selectedTarget, gallery]
+  );
+  const dossierCaptures = useMemo(
+    () => getArchivedCapturesForTarget(dossierTarget, gallery),
+    [dossierTarget, gallery]
+  );
+  const dossierMissionHistory = useMemo(
+    () => getMissionHistoryForTarget(dossierTarget?.title, captainsLog),
+    [dossierTarget?.title, captainsLog]
   );
   const traceCaptureUrl = useMemo(
     () => getCaptureImageUrl(targetTrace?.capture?.image || ''),
@@ -4087,6 +4176,91 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
     if (realIndex !== -1) setSelectedIndex(realIndex);
+  };
+
+  const openTargetDossier = (target, { replaceHistory = false } = {}) => {
+    if (!target) {
+      return;
+    }
+
+    setDossierTarget(target);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('target', getTargetDossierSlug(target));
+    url.searchParams.set('view', 'dossier');
+
+    if (replaceHistory) {
+      window.history.replaceState({}, '', url);
+    } else {
+      window.history.pushState({}, '', url);
+    }
+  };
+
+  const closeTargetDossier = () => {
+    setDossierTarget(null);
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete('target');
+
+    if (url.searchParams.get('view') === 'dossier') {
+      url.searchParams.delete('view');
+    }
+
+    window.history.replaceState({}, '', url);
+  };
+
+  const copyTargetDossierLink = async () => {
+    if (!dossierTarget) {
+      return;
+    }
+
+    const url = new URL(window.location.origin + '/skymap');
+    url.searchParams.set('target', getTargetDossierSlug(dossierTarget));
+    url.searchParams.set('view', 'dossier');
+
+    try {
+      await navigator.clipboard.writeText(url.toString());
+    } catch (error) {
+      console.error('Target dossier link copy failed:', error);
+      window.prompt('Copy this target dossier link:', url.toString());
+    }
+  };
+
+  const replayDossierMission = (capture) => {
+    if (!capture) {
+      return;
+    }
+
+    const missionSlug = String(capture.title || capture.id || 'mission')
+      .trim()
+      .toLowerCase()
+      .replace(/[’']/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const url = new URL(window.location.origin + '/');
+    url.searchParams.set('mission', missionSlug);
+    url.searchParams.set('view', 'replay');
+    url.hash = 'gallery';
+    window.location.assign(url.toString());
+  };
+
+  const acquireFromDossier = () => {
+    if (!dossierTarget) {
+      return;
+    }
+
+    const capture = findArchivedCaptureForTarget(dossierTarget, gallery);
+    const target = dossierTarget;
+    closeTargetDossier();
+
+    window.requestAnimationFrame(() => {
+      beginTargetTrace(target, capture);
+    });
+  };
+
+  const openDossierMission = (capture) => {
+    closeTargetDossier();
+    openMission(capture);
   };
 
   const beginTargetTrace = (target, capture = null) => {
@@ -5635,6 +5809,14 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                 ACQUIRE TARGET
               </button>
 
+              <button
+                type="button"
+                className="atlasTargetDossierButton"
+                onClick={() => openTargetDossier(activeObject)}
+              >
+                ▤ TARGET DOSSIER
+              </button>
+
               <button type="button" onClick={() => openMission(activeObject)}>
                 Open Mission Report →
               </button>
@@ -5738,6 +5920,14 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
               >
                 <span aria-hidden="true">⊕</span>
                 ACQUIRE TARGET
+              </button>
+
+              <button
+                type="button"
+                className="atlasTargetDossierButton"
+                onClick={() => openTargetDossier(activeFutureTarget)}
+              >
+                ▤ TARGET DOSSIER
               </button>
             </div>
 
@@ -5967,6 +6157,19 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
             </button>
           </div>
         </div>
+      )}
+
+      {dossierTarget && (
+        <TargetDossier
+          target={dossierTarget}
+          captures={dossierCaptures}
+          missionHistory={dossierMissionHistory}
+          onClose={closeTargetDossier}
+          onAcquire={acquireFromDossier}
+          onOpenMission={openDossierMission}
+          onReplayMission={replayDossierMission}
+          onCopyLink={copyTargetDossierLink}
+        />
       )}
 
       {targetTrace && (
