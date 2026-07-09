@@ -123,7 +123,19 @@ function createBackgroundStars(count = 360) {
 const BACKGROUND_STARS = createBackgroundStars();
 
 const FUTURE_TARGETS = [
-{
+  {
+    title: 'Pillars of Creation',
+    shortTitle: 'Eagle Nebula',
+    constellation: 'Serpens',
+    objectType: 'Emission Nebula',
+    ra: 18.313,
+    dec: -13.781,
+    priority: 'High',
+    bestSeason: 'Summer',
+    gear: 'Best near culmination; camera-friendly target, dark sky helps',
+    notes: 'The Pillars of Creation sit inside the Eagle Nebula (M16). It is a classic summer deep-sky target, but from your northern sites it stays fairly low in the southern sky, so it is best when it culminates.'
+  },
+  {
     title: 'Cat’s Eye Nebula',
     shortTitle: 'NGC 6543',
     constellation: 'Draco',
@@ -244,6 +256,11 @@ const VISITOR_TARGETS = [
 ];
 
 const FUTURE_TARGET_GUIDES = {
+  'Pillars of Creation': {
+    guideConstellation: 'Serpens',
+    anchorStars: ['Altair', 'Tarazed', 'Alshain'],
+    finderNote: 'Look low in the southern Milky Way near the Scutum and Serpens region. The Pillars of Creation are part of the Eagle Nebula (M16), so this is a target to catch when it climbs as high as it can.'
+  },
   'Fireworks Galaxy': {
     guideConstellation: 'Cepheus',
     anchorStars: ['Alderamin', 'Delta Cep', 'Zeta Cep'],

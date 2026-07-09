@@ -1,15 +1,48 @@
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
+  CalendarClock,
+  History,
   PackagePlus,
   Pencil,
   Plus,
   Save,
   Telescope,
   Trash2,
+  Wrench,
   X
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
+
+const HISTORY_EVENT_TYPES = [
+  'ACQUIRED',
+  'UPGRADE',
+  'SERVICE',
+  'MAINTENANCE',
+  'INCIDENT',
+  'REPAIR',
+  'NOTE'
+];
+
+const emptyHistoryEvent = {
+  occurredOn: '',
+  eventType: 'MAINTENANCE',
+  title: '',
+  description: ''
+};
+
+function formatHistoryDate(value) {
+  if (!value) return 'DATE NOT RECORDED';
+
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(date).toUpperCase();
+}
 
 const emptyEquipment = {
   id: '',
@@ -75,6 +108,11 @@ function textToArray(value) {
 export default function AdminEquipment() {
   const [equipment, setEquipment] = useState([]);
   const [status, setStatus] = useState('loading');
+  const [historyEvents, setHistoryEvents] = useState([]);
+  const [historyEquipment, setHistoryEquipment] = useState(null);
+  const [editingHistoryEventId, setEditingHistoryEventId] = useState(null);
+  const [historyForm, setHistoryForm] = useState(emptyHistoryEvent);
+  const [historySaving, setHistorySaving] = useState(false);
 
   const [editingEquipmentId, setEditingEquipmentId] =
     useState(null);
@@ -107,8 +145,25 @@ export default function AdminEquipment() {
     setStatus('ready');
   }
 
+  async function loadHistoryEvents() {
+    const { data, error: historyError } = await supabase
+      .from('equipment_events')
+      .select('*')
+      .order('occurred_on', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (historyError) {
+      console.error(historyError);
+      setError(historyError.message);
+      return;
+    }
+
+    setHistoryEvents(data || []);
+  }
+
   useEffect(() => {
     loadEquipment();
+    loadHistoryEvents();
   }, []);
 
   function updateForm(field, value) {
@@ -161,6 +216,118 @@ export default function AdminEquipment() {
                 factIndex !== index
             )
     }));
+  }
+
+  function openHistory(item) {
+    setHistoryEquipment(item);
+    setEditingHistoryEventId(null);
+    setHistoryForm(emptyHistoryEvent);
+    setMessage('');
+    setError('');
+  }
+
+  function closeHistory() {
+    setHistoryEquipment(null);
+    setEditingHistoryEventId(null);
+    setHistoryForm(emptyHistoryEvent);
+  }
+
+  function startNewHistoryEvent() {
+    setEditingHistoryEventId('new');
+    setHistoryForm({
+      ...emptyHistoryEvent,
+      occurredOn: new Date().toISOString().slice(0, 10)
+    });
+    setMessage('');
+    setError('');
+  }
+
+  function startEditingHistoryEvent(event) {
+    setEditingHistoryEventId(event.id);
+    setHistoryForm({
+      occurredOn: event.occurred_on || '',
+      eventType: event.event_type || 'MAINTENANCE',
+      title: event.title || '',
+      description: event.description || ''
+    });
+    setMessage('');
+    setError('');
+  }
+
+  function updateHistoryForm(field, value) {
+    setHistoryForm((current) => ({
+      ...current,
+      [field]: value
+    }));
+  }
+
+  async function saveHistoryEvent(event) {
+    event.preventDefault();
+
+    if (!historyEquipment?.id) return;
+
+    setHistorySaving(true);
+    setMessage('');
+    setError('');
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    const row = {
+      equipment_id: historyEquipment.id,
+      occurred_on: historyForm.occurredOn,
+      event_type: historyForm.eventType,
+      title: historyForm.title.trim(),
+      description: historyForm.description.trim() || null,
+      created_by_email: session?.user?.email || null,
+      updated_at: new Date().toISOString()
+    };
+
+    let saveError;
+
+    if (editingHistoryEventId === 'new') {
+      const { error: insertError } = await supabase
+        .from('equipment_events')
+        .insert(row);
+      saveError = insertError;
+    } else {
+      const { error: updateError } = await supabase
+        .from('equipment_events')
+        .update(row)
+        .eq('id', editingHistoryEventId);
+      saveError = updateError;
+    }
+
+    if (saveError) {
+      console.error(saveError);
+      setError(saveError.message);
+      setHistorySaving(false);
+      return;
+    }
+
+    await loadHistoryEvents();
+    setEditingHistoryEventId(null);
+    setHistoryForm(emptyHistoryEvent);
+    setHistorySaving(false);
+    setMessage('EQUIPMENT HISTORY UPDATED');
+  }
+
+  async function deleteHistoryEvent(event) {
+    const confirmed = window.confirm(`Delete history event "${event.title}"?`);
+    if (!confirmed) return;
+
+    const { error: deleteError } = await supabase
+      .from('equipment_events')
+      .delete()
+      .eq('id', event.id);
+
+    if (deleteError) {
+      console.error(deleteError);
+      setError(deleteError.message);
+      return;
+    }
+
+    await loadHistoryEvents();
+    setMessage('EQUIPMENT HISTORY EVENT DELETED');
   }
 
   function startNewEquipment() {
@@ -338,6 +505,10 @@ export default function AdminEquipment() {
     await loadEquipment();
   }
 
+  const selectedHistoryEvents = historyEquipment
+    ? historyEvents.filter((event) => event.equipment_id === historyEquipment.id)
+    : [];
+
   return (
     <div className="admin-page admin-equipment-page">
       <header className="admin-header">
@@ -403,6 +574,88 @@ export default function AdminEquipment() {
           <div className="admin-error-message">
             {error}
           </div>
+        )}
+
+        {historyEquipment && (
+          <section className="admin-equipment-history-panel">
+            <div className="admin-editor-header">
+              <div>
+                <span className="admin-card-eyebrow">EQUIPMENT HISTORY</span>
+                <h3>{historyEquipment.name}</h3>
+                <p>Record acquisitions, upgrades, maintenance, repairs, and service events without changing the public gear specifications.</p>
+              </div>
+              <button type="button" className="admin-editor-close" onClick={closeHistory}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="admin-equipment-history-toolbar">
+              <span>
+                <History size={18} />
+                {selectedHistoryEvents.length} {selectedHistoryEvents.length === 1 ? 'HISTORY EVENT' : 'HISTORY EVENTS'}
+              </span>
+              <button type="button" className="admin-add-fact" onClick={startNewHistoryEvent}>
+                <Plus size={17} /> ADD HISTORY EVENT
+              </button>
+            </div>
+
+            {editingHistoryEventId !== null && (
+              <form className="admin-equipment-history-form" onSubmit={saveHistoryEvent}>
+                <div className="admin-form-grid">
+                  <label>
+                    <span>EVENT DATE</span>
+                    <input type="date" value={historyForm.occurredOn} onChange={(event) => updateHistoryForm('occurredOn', event.target.value)} required />
+                  </label>
+                  <label>
+                    <span>EVENT TYPE</span>
+                    <select value={historyForm.eventType} onChange={(event) => updateHistoryForm('eventType', event.target.value)} required>
+                      {HISTORY_EVENT_TYPES.map((type) => <option value={type} key={type}>{type}</option>)}
+                    </select>
+                  </label>
+                  <label className="admin-form-wide">
+                    <span>TITLE</span>
+                    <input type="text" value={historyForm.title} onChange={(event) => updateHistoryForm('title', event.target.value)} placeholder="HBG3 controller installed" required />
+                  </label>
+                  <label className="admin-form-wide">
+                    <span>DETAILS</span>
+                    <textarea value={historyForm.description} onChange={(event) => updateHistoryForm('description', event.target.value)} placeholder="What changed, why it mattered, or what was serviced." />
+                  </label>
+                </div>
+                <div className="admin-editor-actions">
+                  <button type="button" className="admin-editor-cancel" onClick={() => { setEditingHistoryEventId(null); setHistoryForm(emptyHistoryEvent); }}>
+                    <X size={17} /> CANCEL
+                  </button>
+                  <button type="submit" className="admin-editor-save" disabled={historySaving}>
+                    <Save size={17} /> {historySaving ? 'SAVING...' : editingHistoryEventId === 'new' ? 'ADD HISTORY EVENT' : 'SAVE HISTORY EVENT'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div className="admin-equipment-history-list">
+              {selectedHistoryEvents.length === 0 ? (
+                <p className="admin-list-status">NO HISTORY EVENTS RECORDED</p>
+              ) : selectedHistoryEvents.map((event) => (
+                <article className="admin-equipment-history-row" key={event.id}>
+                  <span className="admin-equipment-history-icon"><Wrench size={18} /></span>
+                  <div>
+                    <small>{event.event_type}</small>
+                    <strong>{event.title}</strong>
+                    <time>{formatHistoryDate(event.occurred_on)}</time>
+                    {event.description && <p>{event.description}</p>}
+                  </div>
+                  <div className="admin-mission-actions">
+                    <button type="button" onClick={() => startEditingHistoryEvent(event)}>
+                      <Pencil size={16} /> EDIT
+                    </button>
+                    <button type="button" className="admin-delete-button" onClick={() => deleteHistoryEvent(event)}>
+                      <Trash2 size={16} /> DELETE
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
         )}
 
         {editingEquipmentId !== null && (
@@ -764,6 +1017,14 @@ export default function AdminEquipment() {
                   >
                     <Pencil size={16} />
                     EDIT
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openHistory(item)}
+                  >
+                    <CalendarClock size={16} />
+                    HISTORY
                   </button>
 
                   <button

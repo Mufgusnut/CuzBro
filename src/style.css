@@ -24558,3 +24558,828 @@ html[data-theme="light"] .skyAxis {
   stroke: rgba(57, 86, 121, .38) !important;
   opacity: 1 !important;
 }
+
+/* =========================================================
+   EQUIPMENT LOCKER — SERVICE & SYSTEM HISTORY
+   ========================================================= */
+
+.equipmentHistory {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.09);
+}
+
+.equipmentHistoryHeading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+.equipmentHistoryHeading > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--orange);
+  border: 1px solid rgba(255,157,28,.22);
+  background: rgba(255,157,28,.065);
+}
+
+.equipmentHistoryHeading small,
+.equipmentHistoryHeading strong {
+  display: block;
+}
+
+.equipmentHistoryHeading small {
+  color: var(--orange);
+  font-size: .67rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.equipmentHistoryHeading strong {
+  margin-top: 4px;
+  color: #b9c8df;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.equipmentHistoryTimeline {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding-left: 8px;
+}
+
+.equipmentHistoryTimeline::before {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 17px;
+  bottom: 17px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(255,157,28,.42), rgba(114,217,255,.13));
+}
+
+.equipmentHistoryEvent {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+}
+
+.equipmentHistoryNode {
+  position: relative;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  margin-top: 9px;
+  border-radius: 50%;
+  color: #07101a;
+  background: var(--orange);
+  box-shadow: 0 0 0 4px rgba(255,157,28,.08), 0 0 16px rgba(255,157,28,.15);
+}
+
+.equipmentHistoryEvent > div {
+  padding: 11px 13px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 13px;
+  background: rgba(0,0,0,.14);
+}
+
+.equipmentHistoryEvent small,
+.equipmentHistoryEvent strong,
+.equipmentHistoryEvent time {
+  display: block;
+}
+
+.equipmentHistoryEvent small {
+  color: var(--cyan);
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.equipmentHistoryEvent strong {
+  margin-top: 4px;
+  color: #fff;
+  font-size: .93rem;
+}
+
+.equipmentHistoryEvent time {
+  margin-top: 4px;
+  color: #91a7c8;
+  font-size: .72rem;
+  font-style: normal;
+}
+
+.equipmentHistoryEvent p {
+  margin: 8px 0 0;
+  color: #c3cfe0;
+  line-height: 1.5;
+  font-size: .82rem;
+}
+
+.equipmentHistoryEvent.acquired .equipmentHistoryNode,
+.equipmentHistoryEvent.upgrade .equipmentHistoryNode {
+  background: #ffb347;
+}
+
+.equipmentHistoryEvent.incident .equipmentHistoryNode,
+.equipmentHistoryEvent.repair .equipmentHistoryNode {
+  background: #ff7f7f;
+}
+
+/* =========================================================
+   ADMIN EQUIPMENT — HISTORY EDITOR
+   ========================================================= */
+
+.admin-equipment-history-panel {
+  margin-bottom: 34px;
+  padding: 28px;
+  border: 1px solid rgba(255,157,28,.18);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top right, rgba(255,157,28,.055), transparent 30%),
+    rgba(8,18,34,.78);
+}
+
+.admin-equipment-history-panel .admin-editor-header p {
+  max-width: 760px;
+  margin: 8px 0 0;
+  color: rgba(205,221,235,.62);
+  line-height: 1.5;
+}
+
+.admin-equipment-history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 24px 0 18px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(143,193,219,.13);
+}
+
+.admin-equipment-history-toolbar > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: rgba(143,213,236,.82);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.admin-equipment-history-form {
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid rgba(143,193,219,.14);
+  border-radius: 11px;
+  background: rgba(255,255,255,.025);
+}
+
+.admin-equipment-history-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  color: #edf7ff;
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(143,193,219,.18);
+  border-radius: 8px;
+  outline: none;
+  font: inherit;
+}
+
+.admin-equipment-history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-equipment-history-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid rgba(143,193,219,.12);
+  border-radius: 10px;
+  background: rgba(255,255,255,.022);
+}
+
+.admin-equipment-history-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: var(--orange);
+  border: 1px solid rgba(255,157,28,.20);
+  border-radius: 10px;
+  background: rgba(255,157,28,.055);
+}
+
+.admin-equipment-history-row small,
+.admin-equipment-history-row strong,
+.admin-equipment-history-row time {
+  display: block;
+}
+
+.admin-equipment-history-row small {
+  color: #8fd5ec;
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+}
+
+.admin-equipment-history-row strong {
+  margin-top: 4px;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.admin-equipment-history-row time {
+  margin-top: 4px;
+  color: rgba(205,221,235,.56);
+  font-size: .74rem;
+}
+
+.admin-equipment-history-row p {
+  margin: 7px 0 0;
+  color: rgba(205,221,235,.72);
+  line-height: 1.48;
+  font-size: .84rem;
+}
+
+html[data-theme="light"] .equipmentHistory {
+  border-top-color: rgba(28,61,98,.13) !important;
+}
+
+html[data-theme="light"] .equipmentHistoryHeading strong,
+html[data-theme="light"] .equipmentHistoryEvent time,
+html[data-theme="light"] .equipmentHistoryEvent p {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .equipmentHistoryEvent > div {
+  background: #f7fafd !important;
+  border-color: rgba(28,61,98,.12) !important;
+}
+
+html[data-theme="light"] .equipmentHistoryEvent strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .equipmentHistoryEvent small {
+  color: #326f95 !important;
+}
+
+html[data-theme="light"] .admin-equipment-history-panel,
+html[data-theme="light"] .admin-equipment-history-form,
+html[data-theme="light"] .admin-equipment-history-row {
+  background: #ffffff !important;
+  border-color: rgba(28,61,98,.14) !important;
+}
+
+html[data-theme="light"] .admin-equipment-history-panel .admin-editor-header p,
+html[data-theme="light"] .admin-equipment-history-row time,
+html[data-theme="light"] .admin-equipment-history-row p {
+  color: #536982 !important;
+}
+
+html[data-theme="light"] .admin-equipment-history-row strong {
+  color: #13243b !important;
+}
+
+html[data-theme="light"] .admin-equipment-history-row small,
+html[data-theme="light"] .admin-equipment-history-toolbar > span {
+  color: #326f95 !important;
+}
+
+html[data-theme="light"] .admin-equipment-history-form select {
+  color: #13243b !important;
+  background: #f5f8fc !important;
+  border-color: rgba(28,61,98,.18) !important;
+}
+
+html[data-theme="observation"] .equipmentHistoryEvent > div,
+html[data-theme="observation"] .admin-equipment-history-panel,
+html[data-theme="observation"] .admin-equipment-history-form,
+html[data-theme="observation"] .admin-equipment-history-row {
+  background: rgba(12,0,0,.94) !important;
+  border-color: rgba(255,48,48,.20) !important;
+}
+
+html[data-theme="observation"] .equipmentHistoryNode,
+html[data-theme="observation"] .admin-equipment-history-icon {
+  color: #130000 !important;
+  background: #ff3434 !important;
+  border-color: rgba(255,72,72,.32) !important;
+  box-shadow: 0 0 16px rgba(110,0,0,.18) !important;
+}
+
+html[data-theme="observation"] .equipmentHistoryTimeline::before {
+  background: linear-gradient(180deg, rgba(255,52,52,.45), rgba(120,0,0,.18)) !important;
+}
+
+html[data-theme="observation"] .equipmentHistoryEvent small,
+html[data-theme="observation"] .equipmentHistoryEvent strong,
+html[data-theme="observation"] .equipmentHistoryEvent time,
+html[data-theme="observation"] .equipmentHistoryEvent p,
+html[data-theme="observation"] .admin-equipment-history-row small,
+html[data-theme="observation"] .admin-equipment-history-row strong,
+html[data-theme="observation"] .admin-equipment-history-row time,
+html[data-theme="observation"] .admin-equipment-history-row p,
+html[data-theme="observation"] .admin-equipment-history-toolbar > span {
+  color: #df6a6a !important;
+}
+
+@media (max-width: 800px) {
+  .admin-equipment-history-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-equipment-history-row {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .admin-equipment-history-row .admin-mission-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-equipment-history-panel {
+    padding: 20px 16px;
+  }
+
+  .equipmentHistoryEvent > div {
+    padding: 10px 11px;
+  }
+}
+
+/* =========================================================
+   CREW TRANSFER: FILE TAGS / SEARCH / FILTERS
+========================================================= */
+
+.admin-transfer-tag-field {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(129, 215, 255, 0.16);
+  border-radius: 14px;
+  background: rgba(5, 18, 34, 0.58);
+}
+
+.admin-transfer-tag-field > span,
+.admin-transfer-filter-heading > span,
+.admin-transfer-tag-editor-heading > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(169, 226, 255, 0.82);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.admin-transfer-tag-field > p {
+  margin: -3px 0 2px;
+  color: rgba(198, 218, 234, 0.68);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.admin-transfer-tag-options,
+.admin-transfer-filter-tags,
+.admin-transfer-file-tags,
+.admin-transfer-selected-tag-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.admin-transfer-tag-options button,
+.admin-transfer-filter-tags button,
+.admin-transfer-file-tags button,
+.admin-transfer-selected-tag-summary i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid rgba(125, 210, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(8, 25, 44, 0.68);
+  color: rgba(204, 231, 247, 0.76);
+  font: inherit;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.admin-transfer-tag-options button,
+.admin-transfer-filter-tags button,
+.admin-transfer-file-tags button {
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.admin-transfer-tag-options button:hover,
+.admin-transfer-filter-tags button:hover,
+.admin-transfer-file-tags button:hover {
+  border-color: rgba(255, 159, 67, 0.56);
+  color: #fff0dc;
+  transform: translateY(-1px);
+}
+
+.admin-transfer-tag-options button.active,
+.admin-transfer-filter-tags button.active,
+.admin-transfer-file-tags button.active,
+.admin-transfer-selected-tag-summary i {
+  border-color: rgba(255, 151, 52, 0.58);
+  background: rgba(255, 133, 32, 0.13);
+  color: #ffd6a8;
+}
+
+.admin-transfer-tag-options button:disabled {
+  cursor: default;
+  opacity: 0.55;
+  transform: none;
+}
+
+.admin-transfer-custom-tag-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid rgba(128, 214, 255, 0.22) !important;
+  border-radius: 10px !important;
+  outline: none;
+  background: rgba(2, 12, 25, 0.76) !important;
+  color: #f5fbff !important;
+  font: inherit;
+  font-size: 0.8rem !important;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.admin-transfer-custom-tag-input:focus {
+  border-color: rgba(255, 153, 62, 0.62) !important;
+  box-shadow: 0 0 0 3px rgba(255, 135, 28, 0.08);
+}
+
+.admin-transfer-organizer {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.6fr);
+  gap: 14px;
+  margin: 18px 0 22px;
+}
+
+.admin-transfer-search,
+.admin-transfer-filter-block {
+  border: 1px solid rgba(126, 212, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(4, 17, 32, 0.62);
+}
+
+.admin-transfer-search {
+  display: flex;
+  align-items: center;
+  align-self: start;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 13px;
+  color: rgba(137, 218, 255, 0.66);
+}
+
+.admin-transfer-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  color: #f3fbff !important;
+  font: inherit;
+  font-size: 0.75rem !important;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.admin-transfer-search input::placeholder {
+  color: rgba(174, 211, 231, 0.43);
+}
+
+.admin-transfer-search > button,
+.admin-transfer-tag-editor-heading > button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(205, 230, 243, 0.62);
+  cursor: pointer;
+}
+
+.admin-transfer-search > button:hover,
+.admin-transfer-tag-editor-heading > button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.admin-transfer-filter-block {
+  display: grid;
+  gap: 10px;
+  padding: 13px 14px;
+}
+
+.admin-transfer-filter-heading,
+.admin-transfer-tag-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-transfer-filter-heading > button {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 173, 94, 0.75);
+  font: inherit;
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.admin-transfer-filter-heading > button:hover {
+  color: #ffd0a1;
+}
+
+.admin-transfer-filter-block > small {
+  color: rgba(173, 207, 225, 0.48);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-transfer-file {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.admin-transfer-file-name {
+  min-width: 0;
+}
+
+.admin-transfer-file-tags {
+  margin-top: 9px;
+}
+
+.admin-transfer-file-tags button {
+  min-height: 23px;
+  padding: 4px 8px;
+  font-size: 0.58rem;
+}
+
+.admin-transfer-tag-edit-button {
+  border-color: rgba(119, 209, 255, 0.26) !important;
+  color: rgba(183, 226, 248, 0.82) !important;
+}
+
+.admin-transfer-tag-editor {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 14px;
+  border: 1px solid rgba(255, 151, 55, 0.22);
+  border-radius: 12px;
+  background: rgba(6, 18, 31, 0.82);
+  box-shadow: inset 3px 0 0 rgba(255, 142, 41, 0.42);
+}
+
+.admin-transfer-tag-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding-top: 2px;
+}
+
+.admin-transfer-tag-editor-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid rgba(126, 211, 255, 0.18);
+  border-radius: 9px;
+  background: rgba(7, 24, 40, 0.72);
+  color: rgba(213, 235, 247, 0.76);
+  font: inherit;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.admin-transfer-tag-editor-actions > button.admin-editor-save {
+  border-color: rgba(255, 151, 55, 0.42);
+  background: rgba(255, 132, 29, 0.13);
+  color: #ffd5a7;
+}
+
+.admin-transfer-filter-empty {
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .admin-transfer-organizer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-transfer-tag-field,
+  .admin-transfer-filter-block,
+  .admin-transfer-tag-editor {
+    padding: 12px;
+  }
+
+  .admin-transfer-file {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .admin-transfer-file-actions,
+  .admin-transfer-tag-editor {
+    grid-column: 1 / -1;
+  }
+
+  .admin-transfer-file-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .admin-transfer-file-actions button {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 8px;
+  }
+
+  .admin-transfer-tag-options button,
+  .admin-transfer-filter-tags button {
+    min-height: 30px;
+  }
+}
+
+/* Crew Transfer tags: light mode */
+html[data-theme="light"] .admin-transfer-tag-field,
+html[data-theme="light"] .admin-transfer-search,
+html[data-theme="light"] .admin-transfer-filter-block,
+html[data-theme="light"] .admin-transfer-tag-editor {
+  border-color: rgba(29, 83, 122, 0.17) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: 0 9px 26px rgba(43, 72, 94, 0.06) !important;
+}
+
+html[data-theme="light"] .admin-transfer-tag-field > span,
+html[data-theme="light"] .admin-transfer-filter-heading > span,
+html[data-theme="light"] .admin-transfer-tag-editor-heading > span {
+  color: #1d567d !important;
+}
+
+html[data-theme="light"] .admin-transfer-tag-field > p,
+html[data-theme="light"] .admin-transfer-filter-block > small {
+  color: #5f7484 !important;
+}
+
+html[data-theme="light"] .admin-transfer-tag-options button,
+html[data-theme="light"] .admin-transfer-filter-tags button,
+html[data-theme="light"] .admin-transfer-file-tags button {
+  border-color: rgba(39, 91, 126, 0.20) !important;
+  background: rgba(239, 247, 252, 0.94) !important;
+  color: #315d79 !important;
+}
+
+html[data-theme="light"] .admin-transfer-tag-options button:hover,
+html[data-theme="light"] .admin-transfer-filter-tags button:hover,
+html[data-theme="light"] .admin-transfer-file-tags button:hover,
+html[data-theme="light"] .admin-transfer-tag-options button.active,
+html[data-theme="light"] .admin-transfer-filter-tags button.active,
+html[data-theme="light"] .admin-transfer-file-tags button.active,
+html[data-theme="light"] .admin-transfer-selected-tag-summary i {
+  border-color: rgba(205, 105, 20, 0.46) !important;
+  background: rgba(244, 128, 26, 0.11) !important;
+  color: #a64f0a !important;
+}
+
+html[data-theme="light"] .admin-transfer-search {
+  color: #3a7ca4 !important;
+}
+
+html[data-theme="light"] .admin-transfer-search input,
+html[data-theme="light"] .admin-transfer-custom-tag-input {
+  color: #173d58 !important;
+}
+
+html[data-theme="light"] .admin-transfer-search input::placeholder,
+html[data-theme="light"] .admin-transfer-custom-tag-input::placeholder {
+  color: #7b8f9d !important;
+}
+
+html[data-theme="light"] .admin-transfer-custom-tag-input {
+  border-color: rgba(39, 91, 126, 0.22) !important;
+  background: #f8fbfd !important;
+}
+
+html[data-theme="light"] .admin-transfer-filter-heading > button {
+  color: #a64f0a !important;
+}
+
+html[data-theme="light"] .admin-transfer-tag-edit-button {
+  border-color: rgba(30, 94, 135, 0.24) !important;
+  color: #245c7f !important;
+}
+
+html[data-theme="light"] .admin-transfer-tag-editor-actions > button {
+  border-color: rgba(37, 89, 124, 0.18) !important;
+  background: #f3f8fb !important;
+  color: #365d75 !important;
+}
+
+html[data-theme="light"] .admin-transfer-tag-editor-actions > button.admin-editor-save {
+  border-color: rgba(205, 105, 20, 0.38) !important;
+  background: rgba(244, 128, 26, 0.11) !important;
+  color: #984807 !important;
+}
+
+/* Crew Transfer tags: observation mode */
+html[data-theme="observation"] .admin-transfer-tag-field,
+html[data-theme="observation"] .admin-transfer-search,
+html[data-theme="observation"] .admin-transfer-filter-block,
+html[data-theme="observation"] .admin-transfer-tag-editor {
+  border-color: rgba(255, 58, 58, 0.18) !important;
+  background: rgba(17, 2, 2, 0.90) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="observation"] .admin-transfer-tag-field > span,
+html[data-theme="observation"] .admin-transfer-filter-heading > span,
+html[data-theme="observation"] .admin-transfer-tag-editor-heading > span,
+html[data-theme="observation"] .admin-transfer-search {
+  color: #e85b5b !important;
+}
+
+html[data-theme="observation"] .admin-transfer-tag-field > p,
+html[data-theme="observation"] .admin-transfer-filter-block > small,
+html[data-theme="observation"] .admin-transfer-search input::placeholder {
+  color: #a84b4b !important;
+}
+
+html[data-theme="observation"] .admin-transfer-tag-options button,
+html[data-theme="observation"] .admin-transfer-filter-tags button,
+html[data-theme="observation"] .admin-transfer-file-tags button,
+html[data-theme="observation"] .admin-transfer-tag-editor-actions > button {
+  border-color: rgba(255, 62, 62, 0.20) !important;
+  background: rgba(30, 2, 2, 0.84) !important;
+  color: #c95b5b !important;
+}
+
+html[data-theme="observation"] .admin-transfer-tag-options button.active,
+html[data-theme="observation"] .admin-transfer-filter-tags button.active,
+html[data-theme="observation"] .admin-transfer-file-tags button.active,
+html[data-theme="observation"] .admin-transfer-selected-tag-summary i,
+html[data-theme="observation"] .admin-transfer-tag-editor-actions > button.admin-editor-save {
+  border-color: rgba(255, 82, 82, 0.48) !important;
+  background: rgba(109, 5, 5, 0.35) !important;
+  color: #ff8e8e !important;
+}
+
+html[data-theme="observation"] .admin-transfer-search input,
+html[data-theme="observation"] .admin-transfer-custom-tag-input {
+  color: #ff8e8e !important;
+}
+
+html[data-theme="observation"] .admin-transfer-custom-tag-input {
+  border-color: rgba(255, 62, 62, 0.24) !important;
+  background: rgba(10, 0, 0, 0.92) !important;
+}

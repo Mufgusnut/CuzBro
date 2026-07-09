@@ -1,9 +1,13 @@
 import {
   ArrowLeft,
+  Check,
   Download,
   File,
   FolderUp,
+  Pencil,
   RefreshCw,
+  Search,
+  Tag,
   Trash2,
   Upload,
   X
@@ -30,6 +34,47 @@ const GALLERY_API =
 
 const MAX_TRANSFER_FILE_BYTES =
   99 * 1024 * 1024;
+
+const TRANSFER_TAG_OPTIONS = [
+  'M51',
+  'RAW',
+  'UNSTACKED',
+  'DAVE',
+  'ASI294MC',
+  'WEBSITE',
+  'LOGO',
+  'APPROVED',
+  'STACKED',
+  'SIRIL',
+  'OTHER'
+];
+
+function normalizeTag(value) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toUpperCase();
+}
+
+function uniqueTags(tags = []) {
+  return Array.from(
+    new Set(
+      tags
+        .map(normalizeTag)
+        .filter(Boolean)
+        .filter((tag) => tag !== 'OTHER')
+    )
+  );
+}
+
+function resolveSelectedTags(selectedTags, customTag) {
+  return uniqueTags([
+    ...selectedTags,
+    selectedTags.includes('OTHER')
+      ? customTag
+      : ''
+  ]);
+}
 
 function formatFileSize(bytes) {
   const size = Number(bytes || 0);
@@ -139,6 +184,33 @@ export default function CrewTransfer() {
   const [isDragging, setIsDragging] =
     useState(false);
 
+  const [fileTags, setFileTags] =
+    useState({});
+
+  const [searchQuery, setSearchQuery] =
+    useState('');
+
+  const [activeTagFilters, setActiveTagFilters] =
+    useState([]);
+
+  const [uploadTags, setUploadTags] =
+    useState([]);
+
+  const [customUploadTag, setCustomUploadTag] =
+    useState('');
+
+  const [editingTagsKey, setEditingTagsKey] =
+    useState('');
+
+  const [editingTags, setEditingTags] =
+    useState([]);
+
+  const [customEditTag, setCustomEditTag] =
+    useState('');
+
+  const [savingTags, setSavingTags] =
+    useState(false);
+
   async function loadTransfers() {
     setStatus('loading');
     setError('');
@@ -167,7 +239,30 @@ export default function CrewTransfer() {
         );
       }
 
-      setFiles(result.files || []);
+      const nextFiles = result.files || [];
+
+      const {
+        data: tagRows,
+        error: tagLoadError
+      } = await supabase
+        .from('crew_transfer_file_tags')
+        .select('file_key, tags');
+
+      if (tagLoadError) {
+        throw new Error(
+          `Crew Transfer tags could not be loaded: ${tagLoadError.message}`
+        );
+      }
+
+      const nextFileTags = Object.fromEntries(
+        (tagRows || []).map((row) => [
+          row.file_key,
+          uniqueTags(row.tags || [])
+        ])
+      );
+
+      setFiles(nextFiles);
+      setFileTags(nextFileTags);
       setStatus('ready');
     } catch (loadError) {
       console.error(loadError);
@@ -199,11 +294,52 @@ export default function CrewTransfer() {
     activeOperation?.designation
   ]);
 
+  const allAvailableTags = useMemo(() => {
+    return uniqueTags([
+      ...TRANSFER_TAG_OPTIONS,
+      ...Object.values(fileTags).flat()
+    ]);
+  }, [fileTags]);
+
+  const filteredFiles = useMemo(() => {
+    const cleanSearch = searchQuery
+      .trim()
+      .toLowerCase();
+
+    return files.filter((file) => {
+      const tags = fileTags[file.key] || [];
+      const matchesSearch = !cleanSearch || [
+        file.fileName,
+        file.transferName,
+        ...tags
+      ]
+        .filter(Boolean)
+        .some((value) =>
+          String(value)
+            .toLowerCase()
+            .includes(cleanSearch)
+        );
+
+      const matchesTags =
+        activeTagFilters.length === 0 ||
+        activeTagFilters.every((tag) =>
+          tags.includes(tag)
+        );
+
+      return matchesSearch && matchesTags;
+    });
+  }, [
+    activeTagFilters,
+    fileTags,
+    files,
+    searchQuery
+  ]);
+
   const groupedTransfers =
     useMemo(() => {
       const groups = new Map();
 
-      files.forEach((file) => {
+      filteredFiles.forEach((file) => {
         const name =
           file.transferName ||
           'Crew Transfer';
@@ -247,7 +383,201 @@ export default function CrewTransfer() {
             new Date(b.uploaded) -
             new Date(a.uploaded)
         );
-    }, [files]);
+    }, [filteredFiles]);
+
+  function toggleTag(tag, setter) {
+    setter((current) =>
+      current.includes(tag)
+        ? current.filter((item) => item !== tag)
+        : [...current, tag]
+    );
+  }
+
+  function toggleTagFilter(tag) {
+    setActiveTagFilters((current) =>
+      current.includes(tag)
+        ? current.filter((item) => item !== tag)
+        : [...current, tag]
+    );
+  }
+
+  function startTagEdit(file) {
+    setEditingTagsKey(file.key);
+    setEditingTags(fileTags[file.key] || []);
+    setCustomEditTag('');
+    setMessage('');
+    setError('');
+  }
+
+  function cancelTagEdit() {
+    setEditingTagsKey('');
+    setEditingTags([]);
+    setCustomEditTag('');
+  }
+
+  async function saveFileTags(file) {
+    const tags = resolveSelectedTags(
+      editingTags,
+      customEditTag
+    );
+
+    setSavingTags(true);
+    setMessage('');
+    setError('');
+
+    try {
+      if (tags.length === 0) {
+        const { error: deleteTagError } =
+          await supabase
+            .from('crew_transfer_file_tags')
+            .delete()
+            .eq('file_key', file.key);
+
+        if (deleteTagError) {
+          throw deleteTagError;
+        }
+      } else {
+        const {
+          data: { session }
+        } = await supabase.auth.getSession();
+
+        const { error: saveTagError } =
+          await supabase
+            .from('crew_transfer_file_tags')
+            .upsert(
+              {
+                file_key: file.key,
+                tags,
+                updated_by_email:
+                  session?.user?.email || '',
+                updated_at:
+                  new Date().toISOString()
+              },
+              {
+                onConflict: 'file_key'
+              }
+            );
+
+        if (saveTagError) {
+          throw saveTagError;
+        }
+      }
+
+      setFileTags((current) => ({
+        ...current,
+        [file.key]: tags
+      }));
+
+      setMessage(
+        `${file.fileName} TAGS UPDATED`
+      );
+
+      cancelTagEdit();
+    } catch (tagError) {
+      console.error(tagError);
+
+      setError(
+        tagError.message ||
+          'Crew Transfer tags could not be saved.'
+      );
+    }
+
+    setSavingTags(false);
+  }
+
+  async function saveUploadedFileTags({
+    accessToken,
+    transferName: uploadedTransferName,
+    uploadedFiles,
+    tags,
+    uploadStartedAt
+  }) {
+    if (!tags.length) {
+      return;
+    }
+
+    const listResponse = await fetch(
+      `${GALLERY_API}/transfer/list`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${accessToken}`
+        }
+      }
+    );
+
+    const listResult =
+      await listResponse.json();
+
+    if (!listResponse.ok) {
+      throw new Error(
+        listResult.error ||
+          'Uploaded files could not be matched for tagging.'
+      );
+    }
+
+    const candidates = (listResult.files || [])
+      .filter((file) =>
+        file.transferName === uploadedTransferName &&
+        new Date(file.uploaded).getTime() >=
+          uploadStartedAt - 5 * 60 * 1000
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.uploaded) -
+          new Date(a.uploaded)
+      );
+
+    const usedKeys = new Set();
+    const rows = uploadedFiles
+      .map((uploadedFile) => {
+        const matchedFile = candidates.find(
+          (file) =>
+            !usedKeys.has(file.key) &&
+            file.fileName === uploadedFile.name
+        );
+
+        if (!matchedFile) {
+          return null;
+        }
+
+        usedKeys.add(matchedFile.key);
+
+        return {
+          file_key: matchedFile.key,
+          tags,
+          updated_at:
+            new Date().toISOString()
+        };
+      })
+      .filter(Boolean);
+
+    if (rows.length !== uploadedFiles.length) {
+      throw new Error(
+        'Files uploaded, but their tag metadata could not be matched completely. Use EDIT TAGS on the files to add them manually.'
+      );
+    }
+
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
+    rows.forEach((row) => {
+      row.updated_by_email =
+        session?.user?.email || '';
+    });
+
+    const { error: tagSaveError } =
+      await supabase
+        .from('crew_transfer_file_tags')
+        .upsert(rows, {
+          onConflict: 'file_key'
+        });
+
+    if (tagSaveError) {
+      throw tagSaveError;
+    }
+  }
 
   function acceptTransferFiles(
     pickedFiles
@@ -345,6 +675,14 @@ export default function CrewTransfer() {
       return;
     }
 
+    const selectedBatchTags =
+      resolveSelectedTags(
+        uploadTags,
+        customUploadTag
+      );
+
+    const uploadStartedAt = Date.now();
+
     setUploading(true);
     setMessage('');
     setError('');
@@ -402,6 +740,14 @@ export default function CrewTransfer() {
         }
       }
 
+      await saveUploadedFileTags({
+        accessToken,
+        transferName: cleanTransferName,
+        uploadedFiles: selectedFiles,
+        tags: selectedBatchTags,
+        uploadStartedAt
+      });
+
       const totalBytes =
         selectedFiles.reduce(
           (total, file) =>
@@ -420,6 +766,7 @@ export default function CrewTransfer() {
             fileCount:
               selectedFiles.length,
             totalBytes,
+            tags: selectedBatchTags,
             files:
               selectedFiles.map(
                 (file) => ({
@@ -456,6 +803,7 @@ export default function CrewTransfer() {
               fileCount:
                 selectedFiles.length,
               totalBytes,
+              tags: selectedBatchTags,
               files:
                 selectedFiles.map(
                   (file) => file.name
@@ -484,6 +832,8 @@ export default function CrewTransfer() {
 
       setTransferName('');
       setSelectedFiles([]);
+      setUploadTags([]);
+      setCustomUploadTag('');
 
       await loadTransfers();
     } catch (uploadError) {
@@ -638,6 +988,19 @@ export default function CrewTransfer() {
         );
       }
 
+      const { error: tagDeleteError } =
+        await supabase
+          .from('crew_transfer_file_tags')
+          .delete()
+          .eq('file_key', file.key);
+
+      if (tagDeleteError) {
+        console.error(
+          'Transfer file deleted, but tag cleanup failed:',
+          tagDeleteError
+        );
+      }
+
       const auditResult =
         await logCrewActivity({
           action:
@@ -717,6 +1080,25 @@ export default function CrewTransfer() {
           throw new Error(
             result.error ||
               `Could not delete ${file.fileName}.`
+          );
+        }
+      }
+
+      const transferKeys = group.files.map(
+        (file) => file.key
+      );
+
+      if (transferKeys.length) {
+        const { error: tagDeleteError } =
+          await supabase
+            .from('crew_transfer_file_tags')
+            .delete()
+            .in('file_key', transferKeys);
+
+        if (tagDeleteError) {
+          console.error(
+            'Transfer deleted, but tag cleanup failed:',
+            tagDeleteError
           );
         }
       }
@@ -922,6 +1304,50 @@ export default function CrewTransfer() {
               />
             </label>
 
+            <div className="admin-transfer-tag-field">
+              <span>TAGS</span>
+
+              <p>
+                Select any tags that apply to this upload batch.
+              </p>
+
+              <div className="admin-transfer-tag-options">
+                {TRANSFER_TAG_OPTIONS.map((tag) => (
+                  <button
+                    type="button"
+                    key={tag}
+                    className={uploadTags.includes(tag) ? 'active' : ''}
+                    onClick={() => toggleTag(tag, setUploadTags)}
+                    disabled={uploading}
+                  >
+                    {uploadTags.includes(tag) && <Check size={13} />}
+                    {tag}
+                  </button>
+                ))}
+              </div>
+
+              {uploadTags.includes('OTHER') && (
+                <input
+                  className="admin-transfer-custom-tag-input"
+                  type="text"
+                  value={customUploadTag}
+                  onChange={(event) =>
+                    setCustomUploadTag(event.target.value)
+                  }
+                  placeholder="CUSTOM TAG"
+                  disabled={uploading}
+                />
+              )}
+
+              {resolveSelectedTags(uploadTags, customUploadTag).length > 0 && (
+                <div className="admin-transfer-selected-tag-summary">
+                  {resolveSelectedTags(uploadTags, customUploadTag).map((tag) => (
+                    <i key={tag}>{tag}</i>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <label className="admin-transfer-file-picker">
               <Upload size={19} />
 
@@ -1052,6 +1478,79 @@ export default function CrewTransfer() {
             </span>
           </div>
 
+          <div className="admin-transfer-organizer">
+            <label className="admin-transfer-search">
+              <Search size={17} />
+
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) =>
+                  setSearchQuery(event.target.value)
+                }
+                placeholder="SEARCH FILES OR TAGS"
+              />
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear Crew Transfer search"
+                >
+                  <X size={15} />
+                </button>
+              )}
+            </label>
+
+            <div className="admin-transfer-filter-block">
+              <div className="admin-transfer-filter-heading">
+                <span>
+                  <Tag size={15} />
+                  FILTER BY TAG
+                </span>
+
+                {(activeTagFilters.length > 0 || searchQuery) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTagFilters([]);
+                      setSearchQuery('');
+                    }}
+                  >
+                    CLEAR FILTERS
+                  </button>
+                )}
+              </div>
+
+              <div className="admin-transfer-filter-tags">
+                <button
+                  type="button"
+                  className={activeTagFilters.length === 0 ? 'active' : ''}
+                  onClick={() => setActiveTagFilters([])}
+                >
+                  ALL
+                </button>
+
+                {allAvailableTags.map((tag) => (
+                  <button
+                    type="button"
+                    key={tag}
+                    className={activeTagFilters.includes(tag) ? 'active' : ''}
+                    onClick={() => toggleTagFilter(tag)}
+                  >
+                    {activeTagFilters.includes(tag) && <Check size={12} />}
+                    {tag}
+                  </button>
+                ))}
+              </div>
+
+              <small>
+                {filteredFiles.length} OF {files.length} FILES SHOWN
+                {activeTagFilters.length > 1 ? ' · ALL SELECTED TAGS REQUIRED' : ''}
+              </small>
+            </div>
+          </div>
+
           {status === 'loading' && (
             <p className="admin-list-status">
               ACCESSING PRIVATE R2 TRANSFERS...
@@ -1070,6 +1569,20 @@ export default function CrewTransfer() {
                 <span>
                   Upload raw captures or mission
                   files to start a crew exchange.
+                </span>
+              </div>
+            )}
+
+          {status === 'ready' &&
+            files.length > 0 &&
+            groupedTransfers.length === 0 && (
+              <div className="admin-transfer-empty admin-transfer-filter-empty">
+                <Search size={34} />
+
+                <strong>NO MATCHING FILES</strong>
+
+                <span>
+                  Try another search or remove one of the active tag filters.
                 </span>
               </div>
             )}
@@ -1158,6 +1671,21 @@ export default function CrewTransfer() {
                                 file.uploaded
                               )}
                             </span>
+
+                            {(fileTags[file.key] || []).length > 0 && (
+                              <div className="admin-transfer-file-tags">
+                                {(fileTags[file.key] || []).map((tag) => (
+                                  <button
+                                    type="button"
+                                    key={tag}
+                                    className={activeTagFilters.includes(tag) ? 'active' : ''}
+                                    onClick={() => toggleTagFilter(tag)}
+                                  >
+                                    {tag}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
 
                           <div className="admin-transfer-file-actions">
@@ -1173,6 +1701,15 @@ export default function CrewTransfer() {
 
                             <button
                               type="button"
+                              className="admin-transfer-tag-edit-button"
+                              onClick={() => startTagEdit(file)}
+                            >
+                              <Pencil size={15} />
+                              EDIT TAGS
+                            </button>
+
+                            <button
+                              type="button"
                               className="admin-delete-button"
                               onClick={() =>
                                 deleteFile(file)
@@ -1182,6 +1719,88 @@ export default function CrewTransfer() {
                               DELETE
                             </button>
                           </div>
+
+                          {editingTagsKey === file.key && (
+                            <div className="admin-transfer-tag-editor">
+                              <div className="admin-transfer-tag-editor-heading">
+                                <span>
+                                  <Tag size={15} />
+                                  EDIT FILE TAGS
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={cancelTagEdit}
+                                  aria-label="Close tag editor"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+
+                              <div className="admin-transfer-tag-options">
+                                {TRANSFER_TAG_OPTIONS.map((tag) => (
+                                  <button
+                                    type="button"
+                                    key={tag}
+                                    className={editingTags.includes(tag) ? 'active' : ''}
+                                    onClick={() => toggleTag(tag, setEditingTags)}
+                                    disabled={savingTags}
+                                  >
+                                    {editingTags.includes(tag) && <Check size={13} />}
+                                    {tag}
+                                  </button>
+                                ))}
+
+                                {allAvailableTags
+                                  .filter((tag) => !TRANSFER_TAG_OPTIONS.includes(tag))
+                                  .map((tag) => (
+                                    <button
+                                      type="button"
+                                      key={tag}
+                                      className={editingTags.includes(tag) ? 'active' : ''}
+                                      onClick={() => toggleTag(tag, setEditingTags)}
+                                      disabled={savingTags}
+                                    >
+                                      {editingTags.includes(tag) && <Check size={13} />}
+                                      {tag}
+                                    </button>
+                                  ))}
+                              </div>
+
+                              {editingTags.includes('OTHER') && (
+                                <input
+                                  className="admin-transfer-custom-tag-input"
+                                  type="text"
+                                  value={customEditTag}
+                                  onChange={(event) =>
+                                    setCustomEditTag(event.target.value)
+                                  }
+                                  placeholder="CUSTOM TAG"
+                                  disabled={savingTags}
+                                />
+                              )}
+
+                              <div className="admin-transfer-tag-editor-actions">
+                                <button
+                                  type="button"
+                                  onClick={cancelTagEdit}
+                                  disabled={savingTags}
+                                >
+                                  CANCEL
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="admin-editor-save"
+                                  onClick={() => saveFileTags(file)}
+                                  disabled={savingTags}
+                                >
+                                  <Check size={15} />
+                                  {savingTags ? 'SAVING...' : 'SAVE TAGS'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )
                     )}

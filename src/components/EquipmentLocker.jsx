@@ -1,5 +1,6 @@
 import {
   Aperture,
+  CalendarClock,
   Camera,
   ChevronDown,
   ChevronUp,
@@ -10,9 +11,11 @@ import {
   ScanSearch,
   Smartphone,
   Telescope,
-  ThermometerSun
+  ThermometerSun,
+  Wrench
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { supabase } from '../supabase.js';
 
 const CATEGORY_ORDER = [
   'Telescope Systems',
@@ -23,6 +26,62 @@ const CATEGORY_ORDER = [
   'Field Support'
 ];
 
+
+const HISTORY_TYPE_LABELS = {
+  ACQUIRED: 'Acquired',
+  UPGRADE: 'System Upgrade',
+  SERVICE: 'Service',
+  MAINTENANCE: 'Maintenance',
+  INCIDENT: 'Incident',
+  REPAIR: 'Repair',
+  NOTE: 'Equipment Note'
+};
+
+function formatHistoryDate(value) {
+  if (!value) return 'Date not recorded';
+
+  const date = new Date(`${value}T12:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  }).format(date);
+}
+
+function EquipmentHistory({ events = [] }) {
+  if (!events.length) return null;
+
+  return (
+    <section className="equipmentHistory">
+      <div className="equipmentHistoryHeading">
+        <span><CalendarClock size={16} /></span>
+        <div>
+          <small>Service &amp; System History</small>
+          <strong>{events.length} {events.length === 1 ? 'recorded event' : 'recorded events'}</strong>
+        </div>
+      </div>
+
+      <div className="equipmentHistoryTimeline">
+        {events.map((event) => (
+          <article className={`equipmentHistoryEvent ${String(event.event_type || 'NOTE').toLowerCase()}`} key={event.id}>
+            <span className="equipmentHistoryNode"><Wrench size={14} /></span>
+            <div>
+              <small>{HISTORY_TYPE_LABELS[event.event_type] || event.event_type || 'Equipment Note'}</small>
+              <strong>{event.title}</strong>
+              <time dateTime={event.occurred_on || undefined}>{formatHistoryDate(event.occurred_on)}</time>
+              {event.description && <p>{event.description}</p>}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
 const CATEGORY_ICONS = {
   'Telescope Systems': Telescope,
   Imaging: Camera,
@@ -49,7 +108,7 @@ function GearIcon({ icon }) {
   return <Icon size={22} />;
 }
 
-function EquipmentCard({ item }) {
+function EquipmentCard({ item, history = [] }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -109,6 +168,8 @@ function EquipmentCard({ item }) {
               <p>{item.fieldNote}</p>
             </div>
           )}
+
+          <EquipmentHistory events={history} />
         </div>
       )}
     </article>
@@ -116,6 +177,57 @@ function EquipmentCard({ item }) {
 }
 
 export default function EquipmentLocker({ equipment = [], status = 'ready' }) {
+  const [historyEvents, setHistoryEvents] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadHistory() {
+      const { data, error } = await supabase
+        .from('equipment_events')
+        .select('*')
+        .order('occurred_on', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Equipment history could not be loaded:', error);
+        return;
+      }
+
+      if (active) {
+        setHistoryEvents(data || []);
+      }
+    }
+
+    loadHistory();
+
+    const channel = supabase
+      .channel('cuzbro-public-equipment-history')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'equipment_events'
+        },
+        loadHistory
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const historyByEquipment = useMemo(() => {
+    return historyEvents.reduce((groups, event) => {
+      const key = String(event.equipment_id || '');
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(event);
+      return groups;
+    }, {});
+  }, [historyEvents]);
   const groupedEquipment = useMemo(() => {
     return CATEGORY_ORDER.map((category) => ({
       category,
@@ -170,7 +282,11 @@ export default function EquipmentLocker({ equipment = [], status = 'ready' }) {
 
             <div className="equipmentGrid">
               {items.map((item) => (
-                <EquipmentCard key={item.id} item={item} />
+                <EquipmentCard
+                  key={item.id}
+                  item={item}
+                  history={historyByEquipment[String(item.id)] || []}
+                />
               ))}
             </div>
           </section>
