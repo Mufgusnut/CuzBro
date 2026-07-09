@@ -1,16 +1,39 @@
 import { supabase } from '../supabase.js';
 
 export const SIGNAL_TOPICS = {
-  mission_reports: 'New Mission Reports',
+  mission_reports: 'Mission Reports',
   telescope_site: 'Telescope Site Changes',
   mission_captures: 'New Mission Captures',
   observatory_updates: 'Observatory Updates'
 };
 
 export async function invokeCuzBroSignals(body) {
+  const invokeOptions = { body };
+
+  if (body?.action === 'notify') {
+    const {
+      data: { session },
+      error: sessionError
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    if (!session?.access_token) {
+      throw new Error(
+        'Crew authentication is required to send CuzBro Signals.'
+      );
+    }
+
+    invokeOptions.headers = {
+      Authorization: `Bearer ${session.access_token}`
+    };
+  }
+
   const { data, error } = await supabase.functions.invoke(
     'cuzbro-signals',
-    { body }
+    invokeOptions
   );
 
   if (error) {

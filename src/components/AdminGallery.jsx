@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import * as tiff from 'tiff';
 import { supabase } from '../supabase.js';
+import { sendCuzBroSignal } from '../lib/signals.js';
 import {
   recordOperationEvent,
   useActiveOperation
@@ -476,18 +477,6 @@ export default function AdminGallery() {
   const [masterFile, setMasterFile] =
     useState(null);
 
-  const [rawComparisonFile, setRawComparisonFile] =
-    useState(null);
-
-  const [stackedComparisonFile, setStackedComparisonFile] =
-    useState(null);
-
-  const [rawComparisonPreviewUrl, setRawComparisonPreviewUrl] =
-    useState('');
-
-  const [stackedComparisonPreviewUrl, setStackedComparisonPreviewUrl] =
-    useState('');
-
   const [previewUrl, setPreviewUrl] =
     useState('');
 
@@ -684,12 +673,6 @@ export default function AdminGallery() {
     setSourceOperation(null);
     setImageFile(null);
     setMasterFile(null);
-    setRawComparisonFile(null);
-    setStackedComparisonFile(null);
-    releaseComparisonPreviewUrl(rawComparisonPreviewUrl);
-    releaseComparisonPreviewUrl(stackedComparisonPreviewUrl);
-    setRawComparisonPreviewUrl('');
-    setStackedComparisonPreviewUrl('');
     setPreviewUrl('');
     setMessage('');
     setError('');
@@ -718,12 +701,6 @@ export default function AdminGallery() {
 
     setImageFile(null);
     setMasterFile(null);
-    setRawComparisonFile(null);
-    setStackedComparisonFile(null);
-    releaseComparisonPreviewUrl(rawComparisonPreviewUrl);
-    releaseComparisonPreviewUrl(stackedComparisonPreviewUrl);
-    setRawComparisonPreviewUrl('');
-    setStackedComparisonPreviewUrl('');
     setPreviewUrl('');
     setMessage('');
     setError('');
@@ -750,16 +727,6 @@ export default function AdminGallery() {
 
     setImageFile(null);
     setMasterFile(null);
-    setRawComparisonFile(null);
-    setStackedComparisonFile(null);
-
-    setRawComparisonPreviewUrl(
-      getCaptureImageUrl(capture.raw_image)
-    );
-
-    setStackedComparisonPreviewUrl(
-      getCaptureImageUrl(capture.stacked_image)
-    );
 
     setPreviewUrl(
       getCaptureImageUrl(capture.image)
@@ -928,80 +895,6 @@ export default function AdminGallery() {
     );
   }
 
-  function releaseComparisonPreviewUrl(value) {
-    if (String(value || '').startsWith('blob:')) {
-      URL.revokeObjectURL(value);
-    }
-  }
-
-  function acceptComparisonFile(file, stage) {
-    if (!file) return;
-
-    const lowerName = file.name.toLowerCase();
-    const supported =
-      lowerName.endsWith('.jpg') ||
-      lowerName.endsWith('.jpeg') ||
-      lowerName.endsWith('.png') ||
-      lowerName.endsWith('.webp');
-
-    if (!supported) {
-      setError(
-        `${stage === 'raw' ? 'Raw' : 'Stacked'} comparison image must be JPG, PNG, or WEBP.`
-      );
-      return;
-    }
-
-    if (stage === 'raw') {
-      releaseComparisonPreviewUrl(rawComparisonPreviewUrl);
-      setRawComparisonFile(file);
-      setRawComparisonPreviewUrl(URL.createObjectURL(file));
-    } else {
-      releaseComparisonPreviewUrl(stackedComparisonPreviewUrl);
-      setStackedComparisonFile(file);
-      setStackedComparisonPreviewUrl(URL.createObjectURL(file));
-    }
-
-    setMessage('');
-    setError('');
-  }
-
-  function handleComparisonSelection(event, stage) {
-    acceptComparisonFile(event.target.files?.[0], stage);
-    event.target.value = '';
-  }
-
-  async function uploadComparisonImage(file) {
-    if (!file) return null;
-
-    const accessToken = await getCrewAccessToken();
-
-    const response = await fetch(
-      `${GALLERY_API}/upload`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': file.type,
-          'X-Filename': file.name
-        },
-        body: file
-      }
-    );
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        result.error || 'R2 comparison image upload failed.'
-      );
-    }
-
-    return {
-      image: result.url,
-      storagePath: result.key
-    };
-  }
-
   async function uploadImage(
     file = imageFile
   ) {
@@ -1143,8 +1036,6 @@ export default function AdminGallery() {
 
     let uploadedImage = null;
     let uploadedMaster = null;
-    let uploadedRawComparison = null;
-    let uploadedStackedComparison = null;
 
     try {
       const requiredFields = [
@@ -1242,16 +1133,6 @@ export default function AdminGallery() {
           await uploadMaster();
       }
 
-      if (rawComparisonFile) {
-        uploadedRawComparison =
-          await uploadComparisonImage(rawComparisonFile);
-      }
-
-      if (stackedComparisonFile) {
-        uploadedStackedComparison =
-          await uploadComparisonImage(stackedComparisonFile);
-      }
-
       const captureRow = {
         title: form.title.trim(),
 
@@ -1297,26 +1178,6 @@ export default function AdminGallery() {
         storage_path:
           uploadedImage?.storagePath ||
           existingCapture?.storage_path ||
-          null,
-
-        raw_image:
-          uploadedRawComparison?.image ||
-          existingCapture?.raw_image ||
-          null,
-
-        raw_storage_path:
-          uploadedRawComparison?.storagePath ||
-          existingCapture?.raw_storage_path ||
-          null,
-
-        stacked_image:
-          uploadedStackedComparison?.image ||
-          existingCapture?.stacked_image ||
-          null,
-
-        stacked_storage_path:
-          uploadedStackedComparison?.storagePath ||
-          existingCapture?.stacked_storage_path ||
           null,
 
         master_file_url:
@@ -1430,18 +1291,6 @@ export default function AdminGallery() {
           );
         }
 
-        if (uploadedRawComparison) {
-          await deleteR2Object(
-            uploadedRawComparison.storagePath
-          );
-        }
-
-        if (uploadedStackedComparison) {
-          await deleteR2Object(
-            uploadedStackedComparison.storagePath
-          );
-        }
-
         throw saveError;
       }
 
@@ -1473,30 +1322,6 @@ export default function AdminGallery() {
       ) {
         await deleteR2Object(
           existingCapture.master_storage_path
-        );
-      }
-
-      if (
-        editingCaptureId !== 'new' &&
-        uploadedRawComparison &&
-        existingCapture?.raw_storage_path &&
-        existingCapture.raw_storage_path !==
-          uploadedRawComparison.storagePath
-      ) {
-        await deleteR2Object(
-          existingCapture.raw_storage_path
-        );
-      }
-
-      if (
-        editingCaptureId !== 'new' &&
-        uploadedStackedComparison &&
-        existingCapture?.stacked_storage_path &&
-        existingCapture.stacked_storage_path !==
-          uploadedStackedComparison.storagePath
-      ) {
-        await deleteR2Object(
-          existingCapture.stacked_storage_path
         );
       }
 
@@ -1577,6 +1402,37 @@ export default function AdminGallery() {
           '',
           '/admin/gallery'
         );
+      }
+
+      if (wasNew && savedCapture?.id) {
+        const signalResult = await sendCuzBroSignal({
+          topic: 'mission_captures',
+          eventKey: `mission-capture:${savedCapture.id}`,
+          subject: `New CuzBro Mission Capture · ${captureRow.title}`,
+          headline: captureRow.title,
+          summary:
+            captureRow.notes ||
+            'A new image has been added to the CuzBro Mission Archive.',
+          detailLines: [
+            captureRow.object_type
+              ? `Object type: ${captureRow.object_type}`
+              : '',
+            captureRow.capture_date
+              ? `Capture date: ${captureRow.capture_date}`
+              : '',
+            captureRow.exposure
+              ? `Exposure: ${captureRow.exposure}`
+              : ''
+          ].filter(Boolean),
+          ctaLabel: 'VIEW MISSION ARCHIVE',
+          ctaUrl: 'https://cuzbro.net/#gallery'
+        });
+
+        if (!signalResult.ok) {
+          setError(
+            `Capture saved, but subscriber notification failed: ${signalResult.error}`
+          );
+        }
       }
 
       await loadCaptures();
@@ -1703,14 +1559,6 @@ export default function AdminGallery() {
 
       await deleteR2Object(
         capture.master_storage_path
-      );
-
-      await deleteR2Object(
-        capture.raw_storage_path
-      );
-
-      await deleteR2Object(
-        capture.stacked_storage_path
       );
 
       if (
@@ -2138,79 +1986,6 @@ export default function AdminGallery() {
                 </div>
               </section>
 
-              <section className="admin-before-after-editor">
-                <div className="admin-before-after-heading">
-                  <div>
-                    <span className="admin-card-eyebrow">PROCESSING COMPARISON</span>
-                    <h4>Raw / Stacked / Final Viewer</h4>
-                    <p>
-                      Optional. Add a raw frame and/or stacked image. The current Mission Capture remains the final image.
-                    </p>
-                  </div>
-                  <span className="admin-before-after-status">
-                    FINAL IMAGE · CURRENT MISSION CAPTURE
-                  </span>
-                </div>
-
-                <div className="admin-before-after-upload-grid">
-                  <label className="admin-comparison-upload">
-                    <span className="admin-card-eyebrow">RAW</span>
-                    <strong>Raw / Unprocessed Frame</strong>
-                    <div className="admin-comparison-preview">
-                      {rawComparisonPreviewUrl ? (
-                        <img src={rawComparisonPreviewUrl} alt="Raw processing comparison preview" />
-                      ) : (
-                        <Camera size={34} />
-                      )}
-                    </div>
-                    <span className="admin-file-button">
-                      <Upload size={17} />
-                      {rawComparisonFile || rawComparisonPreviewUrl ? 'CHANGE RAW IMAGE' : 'SELECT RAW IMAGE'}
-                    </span>
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                      onChange={(event) => handleComparisonSelection(event, 'raw')}
-                    />
-                    <small>
-                      {rawComparisonFile?.name ||
-                        (editingCaptureId !== 'new' &&
-                        captures.find((capture) => capture.id === editingCaptureId)?.raw_image
-                          ? 'RAW COMPARISON STORED'
-                          : 'OPTIONAL')}
-                    </small>
-                  </label>
-
-                  <label className="admin-comparison-upload">
-                    <span className="admin-card-eyebrow">STACKED</span>
-                    <strong>Stacked / Pre-Final Image</strong>
-                    <div className="admin-comparison-preview">
-                      {stackedComparisonPreviewUrl ? (
-                        <img src={stackedComparisonPreviewUrl} alt="Stacked processing comparison preview" />
-                      ) : (
-                        <Camera size={34} />
-                      )}
-                    </div>
-                    <span className="admin-file-button">
-                      <Upload size={17} />
-                      {stackedComparisonFile || stackedComparisonPreviewUrl ? 'CHANGE STACKED IMAGE' : 'SELECT STACKED IMAGE'}
-                    </span>
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                      onChange={(event) => handleComparisonSelection(event, 'stacked')}
-                    />
-                    <small>
-                      {stackedComparisonFile?.name ||
-                        (editingCaptureId !== 'new' &&
-                        captures.find((capture) => capture.id === editingCaptureId)?.stacked_image
-                          ? 'STACKED COMPARISON STORED'
-                          : 'OPTIONAL')}
-                    </small>
-                  </label>
-                </div>
-              </section>
-
               <div className="admin-form-grid">
                 <label>
                   <span>TITLE</span>
@@ -2540,15 +2315,6 @@ export default function AdminGallery() {
                     {' · '}
                     {capture.capture_date}
                   </p>
-
-                  {(capture.raw_image || capture.stacked_image) && (
-                    <small className="admin-comparison-ready">
-                      BEFORE / AFTER READY ·{' '}
-                      {[capture.raw_image ? 'RAW' : null, capture.stacked_image ? 'STACKED' : null, 'FINAL']
-                        .filter(Boolean)
-                        .join(' / ')}
-                    </small>
-                  )}
 
                   {capture.master_file_name && (
                     <small>

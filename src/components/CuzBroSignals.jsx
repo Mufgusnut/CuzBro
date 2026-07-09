@@ -25,7 +25,7 @@ const TOPIC_META = [
     icon: Radio,
     title: SIGNAL_TOPICS.mission_reports,
     description:
-      'Receive a transmission when a new Captain’s Log / Mission Report is published.'
+      'Receive a transmission when a Mission Report is published or updated.'
   },
   {
     key: 'telescope_site',

@@ -102,6 +102,23 @@ function playPrioritySignal(kind = 'PING', userId) {
   }
 }
 
+function getMissionSlug(photo) {
+  return String(photo?.title || photo?.id || 'mission')
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function getMissionUrl(photo, view = 'report') {
+  const url = new URL(window.location.origin + '/');
+  url.searchParams.set('mission', getMissionSlug(photo));
+  url.searchParams.set('view', view);
+  url.hash = 'gallery';
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 function PageNav({ scrolled }) {
   return (
     <header
@@ -545,6 +562,13 @@ export default function App() {
     searchParams.get(
       'reset-password'
     ) === 'true';
+
+
+  const requestedMissionSlug =
+    searchParams.get('mission');
+
+  const requestedMissionView =
+    searchParams.get('view') || 'report';
 
   const isAdminCaptainsLogPage =
     pathname ===
@@ -1126,9 +1150,42 @@ export default function App() {
         ]
       : null;
 
+  useEffect(() => {
+    if (!selectedPhoto) {
+      return;
+    }
+
+    const nextUrl = getMissionUrl(
+      selectedPhoto,
+      viewerMode
+    );
+
+    window.history.replaceState(
+      { mission: selectedPhoto.id, view: viewerMode },
+      '',
+      nextUrl
+    );
+  }, [selectedPhoto?.id, viewerMode]);
+
+  const handleReplayStateChange = (isOpen) => {
+    if (!selectedPhoto) {
+      return;
+    }
+
+    const nextView = isOpen ? 'replay' : viewerMode;
+    const nextUrl = getMissionUrl(selectedPhoto, nextView);
+
+    window.history.replaceState(
+      { mission: selectedPhoto.id, view: nextView },
+      '',
+      nextUrl
+    );
+  };
+
   const closeLightbox = () => {
     setViewerMode('report');
     setSelectedIndex(null);
+    window.history.replaceState({}, '', '/#gallery');
   };
 
   const showNextPhoto = () => {
@@ -1353,6 +1410,23 @@ export default function App() {
         );
 
       setGallery(captures);
+
+      if (requestedMissionSlug) {
+        const requestedIndex = captures.findIndex(
+          (photo) => getMissionSlug(photo) === requestedMissionSlug
+        );
+
+        if (requestedIndex >= 0) {
+          setActiveFilter('All');
+          setViewerMode(
+            requestedMissionView === 'cinema' ||
+            requestedMissionView === 'inspect'
+              ? requestedMissionView
+              : 'report'
+          );
+          setSelectedIndex(requestedIndex);
+        }
+      }
     }
 
     loadGallery();
@@ -1980,6 +2054,13 @@ export default function App() {
         }
         showNextPhoto={
           showNextPhoto
+        }
+        initialReplayOpen={
+          requestedMissionSlug &&
+          requestedMissionView === 'replay'
+        }
+        onReplayStateChange={
+          handleReplayStateChange
         }
       />
 

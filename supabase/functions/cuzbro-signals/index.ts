@@ -91,7 +91,7 @@ function preferenceSummary(
   preferences: Record<string, boolean>
 ) {
   const labels: Record<string, string> = {
-    mission_reports: 'New Mission Reports',
+    mission_reports: 'Mission Reports',
     telescope_site: 'Telescope Site Changes',
     mission_captures: 'New Mission Captures',
     observatory_updates: 'Observatory Updates'
@@ -507,8 +507,10 @@ async function handleNotify(
 
   if (subscriberError) throw subscriberError;
 
+  const eligibleSubscribers = (subscribers || []).length;
   let delivered = 0;
   let failed = 0;
+  let skippedAlreadyDelivered = 0;
 
   for (const subscriber of subscribers || []) {
     const {
@@ -527,7 +529,10 @@ async function handleNotify(
       continue;
     }
 
-    if (existingDelivery) continue;
+    if (existingDelivery) {
+      skippedAlreadyDelivered += 1;
+      continue;
+    }
 
     const manageUrl =
       `${SITE_URL}/?signal=manage&token=${encodeURIComponent(
@@ -593,11 +598,29 @@ async function handleNotify(
     }
   }
 
+  if (
+    eligibleSubscribers > 0 &&
+    delivered === 0 &&
+    failed > 0 &&
+    skippedAlreadyDelivered === 0
+  ) {
+    return json({
+      error: 'Signal delivery failed for every eligible subscriber.',
+      eventId,
+      eligibleSubscribers,
+      delivered,
+      failed,
+      skippedAlreadyDelivered
+    }, 502);
+  }
+
   return json({
     ok: true,
     eventId,
+    eligibleSubscribers,
     delivered,
-    failed
+    failed,
+    skippedAlreadyDelivered
   });
 }
 

@@ -13,6 +13,7 @@ import {
   X
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
+import { sendCuzBroSignal } from '../lib/signals.js';
 
 const HISTORY_EVENT_TYPES = [
   'ACQUIRED',
@@ -302,6 +303,41 @@ export default function AdminEquipment() {
       setError(saveError.message);
       setHistorySaving(false);
       return;
+    }
+
+    const wasNewHistoryEvent =
+      editingHistoryEventId === 'new';
+    const shouldNotifyObservatoryUpdate =
+      wasNewHistoryEvent &&
+      ['ACQUIRED', 'UPGRADE'].includes(
+        historyForm.eventType
+      );
+
+    if (shouldNotifyObservatoryUpdate) {
+      const signalResult = await sendCuzBroSignal({
+        topic: 'observatory_updates',
+        eventKey: `equipment-event:${historyEquipment.id}:${historyForm.occurredOn}:${historyForm.eventType}:${historyForm.title.trim()}`,
+        subject: `CuzBro Observatory Update · ${historyForm.title.trim()}`,
+        headline: historyForm.title.trim(),
+        summary:
+          historyForm.description.trim() ||
+          `${historyEquipment.name} has a new ${historyForm.eventType.toLowerCase()} milestone.`,
+        detailLines: [
+          `Equipment: ${historyEquipment.name}`,
+          `Event: ${historyForm.eventType}`,
+          historyForm.occurredOn
+            ? `Date: ${historyForm.occurredOn}`
+            : ''
+        ].filter(Boolean),
+        ctaLabel: 'VIEW GEAR INVENTORY',
+        ctaUrl: 'https://cuzbro.net/equipment'
+      });
+
+      if (!signalResult.ok) {
+        setError(
+          `Equipment history saved, but subscriber notification failed: ${signalResult.error}`
+        );
+      }
     }
 
     await loadHistoryEvents();

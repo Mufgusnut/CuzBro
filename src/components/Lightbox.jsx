@@ -6,13 +6,16 @@ import {
   Search,
   X,
   ZoomIn,
-  RotateCcw
+  RotateCcw,
+  Play,
+  Link
 } from 'lucide-react';
 
 import {
   TransformWrapper,
   TransformComponent
 } from 'react-zoom-pan-pinch';
+import MissionReplay from './MissionReplay.jsx';
 
 function normalizeMissionTargetName(value) {
   return String(value || '')
@@ -450,8 +453,13 @@ export default function Lightbox({
   setViewerMode,
   closeLightbox,
   showPreviousPhoto,
-  showNextPhoto
+  showNextPhoto,
+  initialReplayOpen = false,
+  onReplayStateChange
 }) {
+  const [missionReplayOpen, setMissionReplayOpen] =
+    useState(Boolean(initialReplayOpen));
+
   if (!selectedPhoto) {
     return null;
   }
@@ -484,6 +492,42 @@ export default function Lightbox({
     selectedPhoto.rawImage || selectedPhoto.stackedImage
   );
 
+  const hasMissionReplay = Boolean(
+    selectedPhoto.rawImage &&
+      selectedPhoto.stackedImage
+  );
+
+  const missionSlug = String(selectedPhoto.title || selectedPhoto.id || 'mission')
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  const copyMissionLink = async (view = 'report') => {
+    const url = new URL(window.location.origin + '/');
+    url.searchParams.set('mission', missionSlug);
+    url.searchParams.set('view', view);
+    url.hash = 'gallery';
+
+    try {
+      await navigator.clipboard.writeText(url.toString());
+    } catch (error) {
+      console.error('Mission link copy failed:', error);
+      window.prompt('Copy this mission link:', url.toString());
+    }
+  };
+
+  const openMissionReplay = () => {
+    setMissionReplayOpen(true);
+    onReplayStateChange?.(true);
+  };
+
+  const closeMissionReplay = () => {
+    setMissionReplayOpen(false);
+    onReplayStateChange?.(false);
+  };
+
   const handleImageClick = () => {
     if (viewerMode === 'report') {
       setViewerMode('cinema');
@@ -495,6 +539,15 @@ export default function Lightbox({
   };
 
   return (
+    <>
+      {missionReplayOpen && (
+        <MissionReplay
+          photo={selectedPhoto}
+          onClose={closeMissionReplay}
+          onCopyLink={() => copyMissionLink('replay')}
+        />
+      )}
+
     <div
       className="lightbox"
       role="dialog"
@@ -702,6 +755,33 @@ export default function Lightbox({
             <h3>
               {selectedPhoto.subtitle}
             </h3>
+
+            {hasMissionReplay && (
+              <section className="missionReplayLaunch">
+                <small>MISSION REPLAY AVAILABLE</small>
+                <strong>Watch the signal emerge.</strong>
+                <p>
+                  Reconstruct this capture sequence from first frame
+                  through final processing.
+                </p>
+                <button
+                  type="button"
+                  onClick={openMissionReplay}
+                >
+                  <Play size={17} />
+                  REPLAY MISSION
+                </button>
+              </section>
+            )}
+
+            <button
+              type="button"
+              className="missionCopyLinkButton"
+              onClick={() => copyMissionLink('report')}
+            >
+              <Link size={16} />
+              COPY MISSION LINK
+            </button>
 
             <div className="missionFacts">
               <div>
@@ -994,5 +1074,6 @@ export default function Lightbox({
         </div>
       </div>
     </div>
+    </>
   );
 }

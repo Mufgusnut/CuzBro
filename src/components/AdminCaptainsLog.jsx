@@ -9,6 +9,7 @@ import {
   X
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
+import { sendCuzBroSignal } from '../lib/signals.js';
 
 const emptyMission = {
   id: '',
@@ -237,11 +238,55 @@ export default function AdminCaptainsLog() {
       return;
     }
 
-    setMessage(
-      editingMission === 'new'
-        ? 'MISSION REPORT CREATED'
-        : 'MISSION REPORT UPDATED'
-    );
+    const wasNewMission = editingMission === 'new';
+    const signalAction = wasNewMission ? 'NEW' : 'UPDATED';
+
+    const signalResult = await sendCuzBroSignal({
+      topic: 'mission_reports',
+      eventKey: `mission-report:${signalAction.toLowerCase()}:${missionRow.id}:${missionRow.updated_at}`,
+      subject: wasNewMission
+        ? `New CuzBro Mission Report · ${missionRow.id}`
+        : `CuzBro Mission Report Updated · ${missionRow.id}`,
+      headline: missionRow.mission || missionRow.id,
+      summary: wasNewMission
+        ? missionRow.summary ||
+          'A new CuzBro mission report has been published.'
+        : missionRow.summary ||
+          'A CuzBro mission report has been revised with new mission information.',
+      detailLines: [
+        `Status: ${signalAction === 'NEW' ? 'NEW MISSION REPORT' : 'MISSION REPORT UPDATED'}`,
+        missionRow.location
+          ? `Location: ${missionRow.location}`
+          : '',
+        targets.length
+          ? `Targets: ${targets.join(', ')}`
+          : '',
+        missionRow.date
+          ? `Mission date: ${missionRow.date}`
+          : ''
+      ].filter(Boolean),
+      ctaLabel: 'VIEW MISSION REPORTS',
+      ctaUrl: 'https://cuzbro.net/captains-log'
+    });
+
+    if (!signalResult.ok) {
+      setError(
+        `${wasNewMission ? 'Mission Report created' : 'Mission Report updated'}, but subscriber notification failed: ${signalResult.error}`
+      );
+      setMessage(
+        wasNewMission
+          ? 'MISSION REPORT CREATED · SIGNAL FAILED'
+          : 'MISSION REPORT UPDATED · SIGNAL FAILED'
+      );
+    } else {
+      const delivered = Number(signalResult.delivered || 0);
+      const failed = Number(signalResult.failed || 0);
+      const eligible = Number(signalResult.eligibleSubscribers || 0);
+
+      setMessage(
+        `${wasNewMission ? 'MISSION REPORT CREATED' : 'MISSION REPORT UPDATED'} · SIGNALS ${delivered}/${eligible} DELIVERED${failed ? ` · ${failed} FAILED` : ''}`
+      );
+    }
 
     await loadMissions();
 

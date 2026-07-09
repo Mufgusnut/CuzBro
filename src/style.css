@@ -26923,3 +26923,522 @@ html[data-theme="observation"] .processingSideSelectors select {
     line-height: 1.45;
   }
 }
+
+/* =========================================================
+   Mission Replay v1
+   ========================================================= */
+
+body.missionReplayOpen {
+  overflow: hidden;
+}
+
+.missionReplayLaunch {
+  margin: 22px 0 24px;
+  padding: 18px;
+  border: 1px solid rgba(106, 217, 255, 0.42);
+  background:
+    linear-gradient(135deg, rgba(44, 180, 224, 0.12), transparent 62%),
+    rgba(4, 13, 23, 0.74);
+  box-shadow: inset 0 0 28px rgba(38, 176, 221, 0.06);
+}
+
+.missionReplayLaunch small,
+.missionReplayLaunch strong,
+.missionReplayLaunch p {
+  display: block;
+}
+
+.missionReplayLaunch small {
+  color: var(--accent, #67d9ff);
+  letter-spacing: 0.16em;
+  font-size: 0.66rem;
+}
+
+.missionReplayLaunch strong {
+  margin-top: 7px;
+  font-size: 1.08rem;
+}
+
+.missionReplayLaunch p {
+  margin: 7px 0 15px;
+  opacity: 0.76;
+  line-height: 1.45;
+}
+
+.missionReplayLaunch button,
+.missionReplayHeader button,
+.missionReplayControls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(106, 217, 255, 0.58);
+  background: rgba(17, 147, 190, 0.14);
+  color: #dff8ff;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  cursor: pointer;
+}
+
+.missionReplayLaunch button {
+  width: 100%;
+  padding: 12px 14px;
+}
+
+.missionReplayLaunch button:hover,
+.missionReplayHeader button:hover,
+.missionReplayControls button:hover {
+  background: rgba(39, 188, 235, 0.24);
+  border-color: rgba(153, 235, 255, 0.9);
+  box-shadow: 0 0 20px rgba(73, 206, 244, 0.14);
+}
+
+.missionReplay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #010407;
+  color: #e5faff;
+  font-family: "JetBrains Mono", "IBM Plex Mono", Consolas, monospace;
+}
+
+.missionReplayScanlines,
+.missionReplayVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.missionReplayScanlines {
+  opacity: 0.13;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgba(127, 225, 255, 0.16) 4px
+  );
+  mix-blend-mode: screen;
+}
+
+.missionReplayVignette {
+  box-shadow: inset 0 0 150px 55px rgba(0, 0, 0, 0.92);
+}
+
+.missionReplayHeader,
+.missionReplayFooter {
+  position: relative;
+  z-index: 12;
+  background: rgba(1, 6, 10, 0.88);
+  backdrop-filter: blur(9px);
+}
+
+.missionReplayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 64px;
+  padding: 12px 24px;
+  border-bottom: 1px solid rgba(105, 221, 255, 0.24);
+}
+
+.missionReplayHeader > div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.missionReplayHeader strong {
+  letter-spacing: 0.14em;
+  font-size: 0.82rem;
+}
+
+.missionReplayHeader span:last-child {
+  color: rgba(184, 232, 244, 0.55);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+
+.missionReplayCrosshair {
+  color: #6fe2ff;
+  font-size: 1.35rem;
+}
+
+.missionReplayHeader button {
+  padding: 9px 12px;
+  font-size: 0.68rem;
+}
+
+.missionReplayStage {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.missionReplayImageShell {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at center, rgba(19, 94, 119, 0.12), transparent 50%),
+    #010407;
+}
+
+.missionReplayImage {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 450ms linear, filter 700ms linear;
+}
+
+.missionReplayNoise {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-radial-gradient(circle at 20% 40%, rgba(255,255,255,0.45) 0 0.55px, transparent 0.9px 5px),
+    repeating-radial-gradient(circle at 70% 60%, rgba(100,210,255,0.35) 0 0.45px, transparent 0.8px 6px);
+  background-size: 7px 7px, 11px 11px;
+  mix-blend-mode: screen;
+  animation: missionReplayNoiseShift 160ms steps(2) infinite;
+  pointer-events: none;
+}
+
+@keyframes missionReplayNoiseShift {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-3px, 2px, 0); }
+  100% { transform: translate3d(2px, -2px, 0); }
+}
+
+.missionReplayReticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(30vw, 330px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(117, 226, 255, 0.18);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.missionReplayReticle::before,
+.missionReplayReticle::after,
+.missionReplayReticle span::before,
+.missionReplayReticle span::after {
+  content: "";
+  position: absolute;
+  background: rgba(117, 226, 255, 0.33);
+}
+
+.missionReplayReticle::before {
+  width: 56px;
+  height: 1px;
+  left: -29px;
+  top: 50%;
+}
+
+.missionReplayReticle::after {
+  width: 56px;
+  height: 1px;
+  right: -29px;
+  top: 50%;
+}
+
+.missionReplayReticle span::before {
+  width: 1px;
+  height: 56px;
+  top: -29px;
+  left: 50%;
+}
+
+.missionReplayReticle span::after {
+  width: 1px;
+  height: 56px;
+  bottom: -29px;
+  left: 50%;
+}
+
+.missionReplayReticle i {
+  position: absolute;
+  inset: 48%;
+  border: 1px solid rgba(117, 226, 255, 0.48);
+  border-radius: 50%;
+}
+
+.missionReplayTelemetry,
+.missionReplayCaptureData {
+  position: absolute;
+  z-index: 10;
+  text-shadow: 0 2px 10px #000, 0 0 18px #000;
+}
+
+.missionReplayTelemetry {
+  top: 6.5%;
+  max-width: min(39vw, 620px);
+}
+
+.missionReplayTelemetryLeft {
+  left: 3.5%;
+}
+
+.missionReplayTelemetryRight {
+  right: 3.5%;
+  text-align: right;
+}
+
+.missionReplayTelemetry small,
+.missionReplayCaptureData small {
+  display: block;
+  margin-bottom: 7px;
+  color: #6fe2ff;
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+}
+
+.missionReplayTelemetry h1 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.5vw, 2.6rem);
+  line-height: 1.04;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.missionReplayTelemetry p {
+  margin: 10px 0 0;
+  color: rgba(220, 247, 255, 0.72);
+  font-size: clamp(0.7rem, 1vw, 0.9rem);
+  letter-spacing: 0.09em;
+}
+
+.missionReplayTelemetryRight strong,
+.missionReplayTelemetryRight span,
+.missionReplayTelemetryRight b {
+  display: block;
+}
+
+.missionReplayTelemetryRight strong {
+  font-size: clamp(1.2rem, 2.5vw, 2.5rem);
+}
+
+.missionReplayTelemetryRight span {
+  margin-top: 4px;
+  color: rgba(224, 248, 255, 0.76);
+}
+
+.missionReplayTelemetryRight b {
+  margin-top: 12px;
+  color: rgba(142, 226, 249, 0.76);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+
+.missionReplayCaptureData {
+  left: 3.5%;
+  right: 3.5%;
+  bottom: 4.5%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.missionReplayCaptureData > div {
+  padding-top: 10px;
+  border-top: 1px solid rgba(111, 226, 255, 0.24);
+}
+
+.missionReplayCaptureData strong {
+  font-size: clamp(0.74rem, 1.2vw, 1rem);
+  letter-spacing: 0.08em;
+}
+
+.missionReplayCaptureData strong.active {
+  color: #6fe2ff;
+}
+
+.missionReplayCaptureData strong.complete {
+  color: #c8f6ff;
+}
+
+.missionReplayFooter {
+  padding: 12px 24px 15px;
+  border-top: 1px solid rgba(105, 221, 255, 0.24);
+}
+
+.missionReplayProgressLabels {
+  display: grid;
+  grid-template-columns: 72fr 10fr 8fr 6fr 4fr;
+  margin-bottom: 7px;
+  color: rgba(188, 232, 244, 0.58);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+}
+
+.missionReplayProgressLabels span:not(:first-child) {
+  text-align: center;
+}
+
+.missionReplayFooter input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: #6fe2ff;
+  cursor: ew-resize;
+}
+
+.missionReplayControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 10px;
+}
+
+.missionReplayControls button {
+  min-width: 146px;
+  padding: 8px 12px;
+  font-size: 0.66rem;
+}
+
+.missionReplayControls > span {
+  color: rgba(188, 232, 244, 0.5);
+  font-size: 0.61rem;
+  letter-spacing: 0.1em;
+}
+
+html[data-theme="light"] .missionReplayLaunch {
+  background: linear-gradient(135deg, rgba(29, 142, 180, 0.1), rgba(255,255,255,0.78));
+}
+
+@media (max-width: 760px) {
+  .missionReplayHeader {
+    min-height: 56px;
+    padding: 9px 12px;
+  }
+
+  .missionReplayHeader strong {
+    font-size: 0.64rem;
+  }
+
+  .missionReplayHeader span:last-child {
+    display: none;
+  }
+
+  .missionReplayHeader button {
+    font-size: 0;
+    padding: 9px;
+  }
+
+  .missionReplayHeader button svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .missionReplayTelemetry {
+    top: 4.5%;
+    max-width: 70vw;
+  }
+
+  .missionReplayTelemetryLeft {
+    left: 4%;
+  }
+
+  .missionReplayTelemetryRight {
+    top: auto;
+    right: 4%;
+    bottom: 23%;
+  }
+
+  .missionReplayTelemetryRight span,
+  .missionReplayTelemetryRight b {
+    display: none;
+  }
+
+  .missionReplayCaptureData {
+    left: 4%;
+    right: 4%;
+    bottom: 4%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 14px;
+  }
+
+  .missionReplayCaptureData > div:nth-child(3),
+  .missionReplayCaptureData > div:nth-child(4) {
+    display: none;
+  }
+
+  .missionReplayReticle {
+    width: 54vw;
+  }
+
+  .missionReplayFooter {
+    padding: 10px 12px 12px;
+  }
+
+  .missionReplayProgressLabels {
+    font-size: 0.48rem;
+  }
+
+  .missionReplayControls > span {
+    display: none;
+  }
+}
+
+/* Mission deep links */
+.missionCopyLinkButton {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin: 0 0 1.1rem;
+  padding: 0.72rem 0.9rem;
+  border: 1px solid rgba(105, 222, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(4, 16, 29, 0.52);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.missionCopyLinkButton:hover {
+  border-color: rgba(105, 222, 255, 0.72);
+  background: rgba(15, 50, 72, 0.7);
+  transform: translateY(-1px);
+}
+
+.missionReplayHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+@media (max-width: 720px) {
+  .missionReplayHeaderActions {
+    gap: 0.35rem;
+  }
+
+  .missionReplayHeaderActions button {
+    padding-inline: 0.65rem;
+  }
+
+  .missionReplayHeaderActions button:first-child {
+    font-size: 0;
+  }
+
+  .missionReplayHeaderActions button:first-child svg {
+    margin: 0;
+  }
+}
