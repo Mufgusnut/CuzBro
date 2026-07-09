@@ -27682,6 +27682,7 @@ html[data-theme="light"] .missionReplayLaunch {
 /* Mission Archive processing comparison: use the same manual target locks as Mission Replay. */
 .processingCompareBase.processingCompareAligned,
 .processingCompareFinal.processingCompareAligned {
+  position: absolute !important;
   inset: auto !important;
   left: var(--processing-align-left) !important;
   top: var(--processing-align-top) !important;
