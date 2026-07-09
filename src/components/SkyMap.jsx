@@ -3371,8 +3371,27 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
 
       targetTraceTimersRef.current.forEach((timer) => clearTimeout(timer));
       document.body.classList.remove('skyTargetTraceOpen');
+      document.body.classList.remove('mobileTargetAcquisitionOpen');
     };
   }, []);
+
+  useEffect(() => {
+    const mobileAcquisitionActive = Boolean(
+      traceMapFocus &&
+      !targetTrace &&
+      typeof window !== 'undefined' &&
+      window.innerWidth <= 700
+    );
+
+    document.body.classList.toggle(
+      'mobileTargetAcquisitionOpen',
+      mobileAcquisitionActive
+    );
+
+    return () => {
+      document.body.classList.remove('mobileTargetAcquisitionOpen');
+    };
+  }, [traceMapFocus, targetTrace]);
 
   const schedulePan = (nextPan) => {
     pendingPanRef.current = nextPan;
@@ -5901,6 +5920,15 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
           </div>
         </section>
       )}
+      {traceMapFocus && !targetTrace && (
+        <div className="mobileAcquireConsoleHeader" aria-live="polite">
+          <small>CUZBRO // TARGET ACQUISITION</small>
+          <strong>{traceMapFocus.targetTitle}</strong>
+          <span>{traceMapFocus.constellation}</span>
+          <b>BEST WINDOW {traceMapFocus.bestTimeLabel}</b>
+        </div>
+      )}
+
       {traceMapFocus && !targetTrace && (
         <div
           className="skyAcquireViewportControl"
