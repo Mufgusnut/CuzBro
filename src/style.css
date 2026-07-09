@@ -25383,3 +25383,395 @@ html[data-theme="observation"] .admin-transfer-custom-tag-input {
   border-color: rgba(255, 62, 62, 0.24) !important;
   background: rgba(10, 0, 0, 0.92) !important;
 }
+
+
+/* =========================================================
+   CUZBRO SIGNALS — PUBLIC SUBSCRIPTION CHANNEL
+========================================================= */
+
+.signalsSection {
+  position: relative;
+  padding: 42px 22px 28px;
+  scroll-margin-top: 110px;
+}
+
+.signalsShell {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(250px, .78fr) minmax(0, 1.45fr);
+  gap: 28px;
+  padding: 28px;
+  border: 1px solid rgba(92, 183, 238, .22);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 0 0, rgba(44, 145, 202, .10), transparent 40%),
+    rgba(8, 20, 34, .84);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .20);
+}
+
+.signalsIntro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.signalsEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #72d5ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+}
+
+.signalsIntro h2 {
+  margin: 12px 0 10px;
+  color: #fff;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: .96;
+}
+
+.signalsIntro > p {
+  margin: 0;
+  color: rgba(219, 235, 246, .76);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.signalsFrequency {
+  margin-top: 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: rgba(168, 201, 222, .72);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.signalsFrequency svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #ff9c50;
+}
+
+.signalsForm {
+  min-width: 0;
+}
+
+.signalsEmailField {
+  display: grid;
+  gap: 8px;
+}
+
+.signalsEmailField > span {
+  color: rgba(145, 209, 243, .82);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+
+.signalsEmailField input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(104, 190, 236, .26);
+  border-radius: 12px;
+  padding: 13px 15px;
+  background: rgba(3, 12, 22, .62);
+  color: #f7fbff;
+  font: inherit;
+  outline: none;
+}
+
+.signalsEmailField input:focus {
+  border-color: rgba(109, 211, 255, .72);
+  box-shadow: 0 0 0 3px rgba(66, 180, 230, .10);
+}
+
+.signalsEmailField input:disabled {
+  opacity: .72;
+  cursor: not-allowed;
+}
+
+.signalsTopicGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.signalsTopic {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid rgba(96, 177, 219, .18);
+  border-radius: 14px;
+  background: rgba(8, 27, 43, .62);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+.signalsTopic:hover {
+  transform: translateY(-1px);
+  border-color: rgba(97, 199, 246, .42);
+}
+
+.signalsTopic.active {
+  border-color: rgba(255, 147, 69, .58);
+  background: rgba(255, 126, 41, .08);
+}
+
+.signalsTopicIcon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #6fd6ff;
+  background: rgba(63, 169, 219, .10);
+}
+
+.signalsTopic.active .signalsTopicIcon {
+  color: #ffad6d;
+  background: rgba(255, 137, 55, .12);
+}
+
+.signalsTopicCopy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.signalsTopicCopy strong {
+  color: #eef9ff;
+  font-size: 13px;
+}
+
+.signalsTopicCopy small {
+  color: rgba(176, 205, 224, .64);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.signalsCheck {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(125, 196, 231, .28);
+  border-radius: 6px;
+  color: #07111d;
+  background: rgba(8, 20, 33, .7);
+}
+
+.signalsTopic.active .signalsCheck {
+  border-color: #ff9a50;
+  background: #ff9a50;
+}
+
+.signalsMessage,
+.signalsError {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .9px;
+}
+
+.signalsMessage {
+  color: #9de8bc;
+  border: 1px solid rgba(105, 219, 150, .30);
+  background: rgba(54, 179, 107, .08);
+}
+
+.signalsError {
+  color: #ffb5ad;
+  border: 1px solid rgba(255, 112, 95, .30);
+  background: rgba(201, 50, 34, .10);
+}
+
+.signalsActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.signalsSubmit,
+.signalsUnsubscribe {
+  border-radius: 999px;
+  padding: 12px 17px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.signalsSubmit {
+  border: 1px solid rgba(255, 159, 87, .64);
+  background: linear-gradient(135deg, #ff8a3d, #ffad65);
+  color: #09121d;
+}
+
+.signalsUnsubscribe {
+  border: 1px solid rgba(124, 185, 218, .28);
+  background: rgba(6, 18, 31, .58);
+  color: rgba(210, 232, 245, .78);
+}
+
+.signalsSubmit:disabled,
+.signalsUnsubscribe:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+html[data-theme="light"] .signalsShell {
+  border-color: rgba(52, 104, 142, .20);
+  background:
+    radial-gradient(circle at 0 0, rgba(80, 164, 208, .12), transparent 40%),
+    rgba(255, 255, 255, .92);
+  box-shadow: 0 22px 60px rgba(32, 70, 96, .12);
+}
+
+html[data-theme="light"] .signalsEyebrow {
+  color: #176e9a;
+}
+
+html[data-theme="light"] .signalsIntro h2,
+html[data-theme="light"] .signalsTopicCopy strong {
+  color: #132f46;
+}
+
+html[data-theme="light"] .signalsIntro > p,
+html[data-theme="light"] .signalsFrequency,
+html[data-theme="light"] .signalsTopicCopy small {
+  color: #5c7486;
+}
+
+html[data-theme="light"] .signalsEmailField > span {
+  color: #356d8d;
+}
+
+html[data-theme="light"] .signalsEmailField input {
+  border-color: rgba(56, 112, 150, .24);
+  background: #f7fbfd;
+  color: #102b40;
+}
+
+html[data-theme="light"] .signalsTopic {
+  border-color: rgba(63, 116, 151, .18);
+  background: #f7fbfd;
+}
+
+html[data-theme="light"] .signalsTopic.active {
+  border-color: rgba(220, 106, 31, .55);
+  background: rgba(255, 137, 55, .09);
+}
+
+html[data-theme="light"] .signalsTopicIcon {
+  color: #247ca6;
+  background: rgba(48, 145, 191, .10);
+}
+
+html[data-theme="light"] .signalsCheck {
+  border-color: rgba(51, 103, 138, .30);
+  background: #fff;
+}
+
+html[data-theme="light"] .signalsUnsubscribe {
+  border-color: rgba(55, 102, 134, .26);
+  background: #f6fafc;
+  color: #42677f;
+}
+
+html[data-theme="observation"] .signalsShell {
+  border-color: rgba(255, 73, 73, .22);
+  background:
+    radial-gradient(circle at 0 0, rgba(132, 0, 0, .16), transparent 42%),
+    rgba(12, 2, 2, .92);
+  box-shadow: none;
+}
+
+html[data-theme="observation"] .signalsEyebrow,
+html[data-theme="observation"] .signalsEmailField > span,
+html[data-theme="observation"] .signalsTopicIcon {
+  color: #ff6969;
+}
+
+html[data-theme="observation"] .signalsIntro h2,
+html[data-theme="observation"] .signalsTopicCopy strong {
+  color: #ff9494;
+}
+
+html[data-theme="observation"] .signalsIntro > p,
+html[data-theme="observation"] .signalsFrequency,
+html[data-theme="observation"] .signalsTopicCopy small {
+  color: #c65f5f;
+}
+
+html[data-theme="observation"] .signalsEmailField input,
+html[data-theme="observation"] .signalsTopic,
+html[data-theme="observation"] .signalsUnsubscribe {
+  border-color: rgba(255, 69, 69, .22);
+  background: rgba(22, 2, 2, .86);
+  color: #ff8b8b;
+}
+
+html[data-theme="observation"] .signalsTopic.active {
+  border-color: rgba(255, 74, 74, .56);
+  background: rgba(130, 0, 0, .14);
+}
+
+html[data-theme="observation"] .signalsTopic.active .signalsTopicIcon {
+  color: #ff8a8a;
+  background: rgba(150, 0, 0, .18);
+}
+
+html[data-theme="observation"] .signalsCheck {
+  border-color: rgba(255, 83, 83, .30);
+  background: #140202;
+}
+
+html[data-theme="observation"] .signalsTopic.active .signalsCheck,
+html[data-theme="observation"] .signalsSubmit {
+  border-color: #d62828;
+  background: #b51f1f;
+  color: #160000;
+}
+
+@media (max-width: 780px) {
+  .signalsSection {
+    padding: 28px 14px 18px;
+  }
+
+  .signalsShell {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .signalsTopicGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .signalsActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .signalsSubmit,
+  .signalsUnsubscribe {
+    width: 100%;
+  }
+}

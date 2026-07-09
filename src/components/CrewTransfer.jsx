@@ -241,6 +241,11 @@ export default function CrewTransfer() {
 
       const nextFiles = result.files || [];
 
+      // The R2 transfer list is the source of truth for whether files exist.
+      // Publish it immediately so a Supabase tag-metadata problem can never
+      // make real Crew Transfer files disappear from the interface.
+      setFiles(nextFiles);
+
       const {
         data: tagRows,
         error: tagLoadError
@@ -249,9 +254,17 @@ export default function CrewTransfer() {
         .select('file_key, tags');
 
       if (tagLoadError) {
-        throw new Error(
-          `Crew Transfer tags could not be loaded: ${tagLoadError.message}`
+        console.error(
+          'Crew Transfer tags could not be loaded:',
+          tagLoadError
         );
+
+        setFileTags({});
+        setError(
+          `Files loaded, but Crew Transfer tags could not be loaded: ${tagLoadError.message}`
+        );
+        setStatus('ready');
+        return;
       }
 
       const nextFileTags = Object.fromEntries(
@@ -261,7 +274,6 @@ export default function CrewTransfer() {
         ])
       );
 
-      setFiles(nextFiles);
       setFileTags(nextFileTags);
       setStatus('ready');
     } catch (loadError) {

@@ -43,6 +43,7 @@ import Hero from './components/Hero.jsx';
 import QuickLinks from './components/QuickLinks.jsx';
 import Gallery from './components/Gallery.jsx';
 import Weather from './components/Weather.jsx';
+import CuzBroSignals from './components/CuzBroSignals.jsx';
 import Lightbox from './components/Lightbox.jsx';
 import {
   OBSERVING_SITES,
@@ -1934,6 +1935,8 @@ export default function App() {
             />
 
             <InfoSections />
+
+            <CuzBroSignals />
 
             <FeaturedCapture
               photo={featuredPhoto}

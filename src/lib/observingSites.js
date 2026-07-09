@@ -5,6 +5,7 @@ import {
   useState
 } from 'react';
 import { supabase } from '../supabase.js';
+import { sendCuzBroSignal } from './signals.js';
 
 export const OBSERVING_SITES = [
   {
@@ -174,15 +175,34 @@ export function useObservingSite(session = null) {
         };
       }
 
+      const previousSite = currentSite;
+
       setSiteKey(nextSite.key);
       setStatus('ready');
+
+      if (previousSite.key !== nextSite.key) {
+        void sendCuzBroSignal({
+          topic: 'telescope_site',
+          eventKey: `telescope-site:${previousSite.key}:${nextSite.key}:${Date.now()}`,
+          subject: `CuzBro Telescope Site Update · ${nextSite.shortName}`,
+          headline: 'The current telescope site has moved',
+          summary:
+            'Sky planning, observatory weather, and live telescope-site displays are now using the new location.',
+          detailLines: [
+            `${previousSite.fullName} → ${nextSite.fullName}`,
+            `Current telescope site: ${nextSite.fullName}`
+          ],
+          ctaLabel: 'OPEN CUZBRO OBSERVATORY',
+          ctaUrl: 'https://cuzbro.net/#observatory'
+        });
+      }
 
       return {
         ok: true,
         site: nextSite
       };
     },
-    [session?.user?.email, session?.user?.id]
+    [currentSite, session?.user?.email, session?.user?.id]
   );
 
   return {
