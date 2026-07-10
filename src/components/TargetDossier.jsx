@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { supabase } from '../supabase.js';
 
 function getCaptureImageUrl(image) {
   if (!image) return '';
@@ -90,6 +91,13 @@ function getStatusLabel(captures) {
   return captures.length ? 'ACQUIRED' : 'UNCAPTURED';
 }
 
+function getTargetPlanSlug(value) {
+  return String(value || 'target')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'target';
+}
+
 export default function TargetDossier({
   target,
   captures = [],
@@ -98,9 +106,40 @@ export default function TargetDossier({
   onAcquire,
   onOpenMission,
   onReplayMission,
-  onCopyLink
+  onCopyLink,
+  onPlanMission
 }) {
   const [copied, setCopied] = useState(false);
+  const [missionPlan, setMissionPlan] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMissionPlan() {
+      const { data, error } = await supabase
+        .from('mission_plans')
+        .select('id, status, primary_objective, observing_window, operation_id, updated_at')
+        .eq('target_slug', getTargetPlanSlug(target?.title))
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!active) return;
+
+      if (error) {
+        console.error('[TARGET DOSSIER] Mission plan lookup failed:', error);
+        return;
+      }
+
+      setMissionPlan(data || null);
+    }
+
+    loadMissionPlan();
+
+    return () => {
+      active = false;
+    };
+  }, [target?.title]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -215,6 +254,19 @@ export default function TargetDossier({
           </div>
         </section>
 
+        {missionPlan && (
+          <section className={`targetDossierMissionPlanStatus ${missionPlan.status === 'ACTIVE' ? 'active' : 'planned'}`}>
+            <div>
+              <small>{missionPlan.status === 'ACTIVE' ? 'ACTIVE MISSION PLANNED' : 'MISSION PLAN SAVED'}</small>
+              <strong>{missionPlan.primary_objective || 'TARGET PURSUIT PLAN'}</strong>
+              <span>{missionPlan.observing_window || 'Planner dependent'}</span>
+            </div>
+            <button type="button" onClick={onPlanMission}>
+              {missionPlan.status === 'ACTIVE' ? 'VIEW ACTIVE PLAN →' : 'OPEN MISSION PLAN →'}
+            </button>
+          </section>
+        )}
+
         <section className="targetDossierGrid">
           <article className="targetDossierCard targetDossierHistory">
             <div className="targetDossierCardHeader">
@@ -286,6 +338,10 @@ export default function TargetDossier({
         <button type="button" className="targetDossierPrimary" onClick={onAcquire}>
           <span>⊕</span>
           ACQUIRE TARGET
+        </button>
+
+        <button type="button" onClick={onPlanMission}>
+          ◫ PLAN MISSION
         </button>
 
         {replayCapture ? (

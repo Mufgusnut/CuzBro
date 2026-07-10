@@ -27682,7 +27682,6 @@ html[data-theme="light"] .missionReplayLaunch {
 /* Mission Archive processing comparison: use the same manual target locks as Mission Replay. */
 .processingCompareBase.processingCompareAligned,
 .processingCompareFinal.processingCompareAligned {
-  position: absolute !important;
   inset: auto !important;
   left: var(--processing-align-left) !important;
   top: var(--processing-align-top) !important;
@@ -29946,5 +29945,516 @@ body.targetDossierOpen {
 
   .targetDossierFooter .targetDossierPrimary {
     grid-column: 1 / -1;
+  }
+}
+
+/* =========================================================
+   MISSION PLANNING BOARD
+========================================================= */
+
+body.missionPlanningBoardOpen {
+  overflow: hidden;
+}
+
+.atlasMissionPlanButton {
+  border-color: rgba(255, 173, 66, 0.42) !important;
+  color: #ffd19a !important;
+  background: rgba(47, 29, 8, 0.5) !important;
+}
+
+.atlasMissionPlanButton:hover {
+  border-color: rgba(255, 173, 66, 0.8) !important;
+  background: rgba(75, 45, 9, 0.72) !important;
+}
+
+.missionPlanningBoard {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  color: #eefaff;
+  background: #030914;
+}
+
+.missionPlanningBackdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 17% 12%, rgba(65, 196, 238, 0.12), transparent 28%),
+    radial-gradient(circle at 83% 16%, rgba(255, 169, 66, 0.1), transparent 24%),
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: auto, auto, 44px 44px, 44px 44px;
+}
+
+.missionPlanningTopbar,
+.missionPlanningFooter {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px clamp(18px, 3vw, 48px);
+  border-color: rgba(127, 222, 249, 0.16);
+  background: rgba(3, 9, 20, 0.94);
+  backdrop-filter: blur(18px);
+}
+
+.missionPlanningTopbar {
+  border-bottom: 1px solid rgba(127, 222, 249, 0.16);
+}
+
+.missionPlanningTopbar > div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  align-items: center;
+}
+
+.missionPlanningTopbar > div > span {
+  grid-row: 1 / span 2;
+  color: #ffad42;
+  font-size: 1.5rem;
+}
+
+.missionPlanningTopbar strong,
+.missionPlanningTopbar small,
+.missionPlanningCardHeader small,
+.missionPlanningIdentity > small,
+.missionPlanningWindow span,
+.missionPlanningBoard label > span {
+  font-family: 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.missionPlanningTopbar strong {
+  font-size: 0.9rem;
+}
+
+.missionPlanningTopbar small {
+  color: rgba(154, 222, 241, 0.7);
+  font-size: 0.66rem;
+}
+
+.missionPlanningTopbar button,
+.missionPlanningFooter button {
+  border: 1px solid rgba(133, 214, 240, 0.28);
+  border-radius: 999px;
+  background: rgba(9, 23, 39, 0.82);
+  color: #e9faff;
+  padding: 13px 20px;
+  font: 700 0.74rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.missionPlanningMain {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: clamp(24px, 4vw, 58px) clamp(18px, 4vw, 64px) 42px;
+}
+
+.missionPlanningIdentity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 26px;
+  align-items: end;
+  max-width: 1500px;
+  margin: 0 auto 26px;
+}
+
+.missionPlanningIdentity > small,
+.missionPlanningIdentity h1,
+.missionPlanningIdentity p {
+  grid-column: 1;
+  margin: 0;
+}
+
+.missionPlanningIdentity > small {
+  color: #ffad42;
+  font-weight: 700;
+}
+
+.missionPlanningIdentity h1 {
+  font-size: clamp(2.2rem, 5vw, 5.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.missionPlanningIdentity p {
+  margin-top: 8px;
+  color: #94def5;
+  font-size: clamp(0.92rem, 1.5vw, 1.22rem);
+  font-weight: 700;
+}
+
+.missionPlanningWindow {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  display: grid;
+  gap: 7px;
+  min-width: min(310px, 31vw);
+  padding: 20px 24px;
+  border: 1px solid rgba(255, 173, 66, 0.38);
+  border-radius: 20px;
+  background: rgba(45, 27, 7, 0.48);
+  box-shadow: inset 0 0 28px rgba(255, 173, 66, 0.06);
+}
+
+.missionPlanningWindow span {
+  color: #dca866;
+  font-size: 0.65rem;
+}
+
+.missionPlanningWindow strong {
+  color: #fff0d8;
+  font-size: clamp(1.2rem, 2vw, 2rem);
+}
+
+.missionPlanningGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  grid-template-areas:
+    'objectives checklist'
+    'objectives notes';
+  gap: 18px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.missionPlanningCard {
+  border: 1px solid rgba(116, 209, 238, 0.18);
+  border-radius: 22px;
+  background: rgba(5, 16, 30, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 0 20px 48px rgba(0,0,0,0.2);
+  padding: clamp(18px, 2.5vw, 30px);
+}
+
+.missionPlanningObjectives { grid-area: objectives; }
+.missionPlanningChecklist { grid-area: checklist; }
+.missionPlanningNotes { grid-area: notes; }
+
+.missionPlanningCardHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 15px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(116, 209, 238, 0.12);
+}
+
+.missionPlanningCardHeader small {
+  color: #ffad42;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.missionPlanningCardHeader strong {
+  color: rgba(218, 244, 252, 0.78);
+  font: 700 0.72rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.08em;
+}
+
+.missionPlanningBoard label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 17px;
+}
+
+.missionPlanningBoard label > span {
+  color: rgba(167, 216, 231, 0.72);
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.missionPlanningBoard input,
+.missionPlanningBoard textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(118, 207, 236, 0.2);
+  border-radius: 13px;
+  outline: none;
+  background: rgba(1, 8, 18, 0.86);
+  color: #eefaff;
+  padding: 13px 15px;
+  font: 600 0.94rem/1.45 inherit;
+  resize: vertical;
+}
+
+.missionPlanningBoard input:focus,
+.missionPlanningBoard textarea:focus {
+  border-color: rgba(111, 226, 255, 0.72);
+  box-shadow: 0 0 0 3px rgba(72, 194, 229, 0.09);
+}
+
+.missionPlanningFieldPair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 14px;
+}
+
+.missionPlanningChecklistRows {
+  display: grid;
+  gap: 9px;
+}
+
+.missionPlanningChecklistRows button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid rgba(131, 201, 224, 0.16);
+  border-radius: 12px;
+  background: rgba(2, 9, 19, 0.66);
+  color: rgba(229, 243, 248, 0.76);
+  padding: 12px 14px;
+  text-align: left;
+  font: 700 0.75rem/1.2 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.missionPlanningChecklistRows button span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border: 1px solid rgba(133, 214, 240, 0.24);
+  border-radius: 7px;
+  color: #9bdff3;
+}
+
+.missionPlanningChecklistRows button.checked {
+  border-color: rgba(95, 222, 181, 0.42);
+  background: rgba(16, 62, 52, 0.38);
+  color: #dffdf3;
+}
+
+.missionPlanningChecklistRows button.checked span {
+  border-color: rgba(95, 222, 181, 0.62);
+  color: #8ef1cc;
+}
+
+.missionPlanningNotes textarea {
+  min-height: 210px;
+}
+
+.missionPlanningMessage {
+  max-width: 1500px;
+  margin: 16px auto 0;
+  padding: 13px 16px;
+  border: 1px solid rgba(132, 207, 231, 0.18);
+  border-radius: 12px;
+  background: rgba(6, 18, 32, 0.72);
+  color: rgba(216, 241, 249, 0.76);
+  font: 700 0.72rem/1.4 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.06em;
+}
+
+.missionPlanningMessage.success {
+  border-color: rgba(95, 222, 181, 0.36);
+  color: #9ef0d1;
+}
+
+.missionPlanningMessage.error {
+  border-color: rgba(255, 117, 117, 0.4);
+  color: #ffb4b4;
+}
+
+.missionPlanningFooter {
+  justify-content: flex-end;
+  border-top: 1px solid rgba(127, 222, 249, 0.16);
+  padding-bottom: max(18px, env(safe-area-inset-bottom));
+}
+
+.missionPlanningFooter button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.missionPlanningFooter .missionPlanningPrimary {
+  border-color: rgba(255, 173, 66, 0.65);
+  background: #f7a64a;
+  color: #07101d;
+  box-shadow: 0 0 26px rgba(247, 166, 74, 0.18);
+}
+
+@media (max-width: 900px) {
+  .missionPlanningGrid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'objectives'
+      'checklist'
+      'notes';
+  }
+
+  .missionPlanningIdentity {
+    grid-template-columns: 1fr;
+  }
+
+  .missionPlanningWindow {
+    grid-column: 1;
+    grid-row: auto;
+    min-width: 0;
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .missionPlanningBoard {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .missionPlanningTopbar {
+    padding: 13px 14px;
+  }
+
+  .missionPlanningTopbar strong {
+    font-size: 0.72rem;
+  }
+
+  .missionPlanningTopbar small {
+    display: none;
+  }
+
+  .missionPlanningTopbar button {
+    padding: 11px 12px;
+    font-size: 0.62rem;
+  }
+
+  .missionPlanningMain {
+    padding: 22px 14px 26px;
+  }
+
+  .missionPlanningIdentity {
+    margin-bottom: 18px;
+  }
+
+  .missionPlanningIdentity h1 {
+    font-size: clamp(2.2rem, 13vw, 4.2rem);
+  }
+
+  .missionPlanningFieldPair {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .missionPlanningCard {
+    border-radius: 17px;
+    padding: 17px;
+  }
+
+  .missionPlanningCardHeader {
+    align-items: start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .missionPlanningFooter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+  }
+
+  .missionPlanningFooter button {
+    min-width: 0;
+    padding: 12px 10px;
+    font-size: 0.62rem;
+  }
+
+  .missionPlanningFooter .missionPlanningPrimary {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .capturedTargetPrimaryActions .atlasMissionPlanButton,
+  .futureTargetPrimaryActions .atlasMissionPlanButton {
+    width: 100% !important;
+  }
+}
+
+.targetDossierMissionPlanStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  border: 1px solid rgba(255, 173, 66, 0.28);
+  border-radius: 18px;
+  background: rgba(54, 33, 7, 0.44);
+}
+
+.targetDossierMissionPlanStatus.active {
+  border-color: rgba(95, 222, 181, 0.42);
+  background: rgba(10, 57, 46, 0.44);
+  box-shadow: inset 0 0 30px rgba(95, 222, 181, 0.045);
+}
+
+.targetDossierMissionPlanStatus > div {
+  display: grid;
+  gap: 5px;
+}
+
+.targetDossierMissionPlanStatus small,
+.targetDossierMissionPlanStatus span {
+  font-family: 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.targetDossierMissionPlanStatus small {
+  color: #ffb75c;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.targetDossierMissionPlanStatus.active small {
+  color: #8ef1cc;
+}
+
+.targetDossierMissionPlanStatus strong {
+  color: #f2fbff;
+  font-size: clamp(1rem, 1.7vw, 1.35rem);
+}
+
+.targetDossierMissionPlanStatus span {
+  color: rgba(185, 224, 237, 0.68);
+  font-size: 0.66rem;
+}
+
+.targetDossierMissionPlanStatus button {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 173, 66, 0.42);
+  border-radius: 999px;
+  background: rgba(17, 26, 38, 0.76);
+  color: #fff0d8;
+  padding: 13px 18px;
+  font: 700 0.7rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.targetDossierMissionPlanStatus.active button {
+  border-color: rgba(95, 222, 181, 0.42);
+  color: #cffff0;
+}
+
+@media (max-width: 700px) {
+  .targetDossierMissionPlanStatus {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .targetDossierMissionPlanStatus button {
+    width: 100%;
   }
 }

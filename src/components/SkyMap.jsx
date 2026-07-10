@@ -11,6 +11,7 @@ import {
   VectorFromSphere
 } from 'astronomy-engine';
 import TargetDossier from './TargetDossier.jsx';
+import MissionPlanningBoard from './MissionPlanningBoard.jsx';
 
 const DEFAULT_SITE = {
   name: 'Eliot, ME',
@@ -3371,6 +3372,7 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const [targetTrace, setTargetTrace] = useState(null);
   const [traceMapFocus, setTraceMapFocus] = useState(null);
   const [dossierTarget, setDossierTarget] = useState(null);
+  const [missionPlanningTarget, setMissionPlanningTarget] = useState(null);
 
   const dragRef = useRef(null);
   const panFrameRef = useRef(null);
@@ -3727,6 +3729,10 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const dossierMissionHistory = useMemo(
     () => getMissionHistoryForTarget(dossierTarget?.title, captainsLog),
     [dossierTarget?.title, captainsLog]
+  );
+  const missionPlanningCaptures = useMemo(
+    () => getArchivedCapturesForTarget(missionPlanningTarget, gallery),
+    [missionPlanningTarget, gallery]
   );
   const traceCaptureUrl = useMemo(
     () => getCaptureImageUrl(targetTrace?.capture?.image || ''),
@@ -4176,6 +4182,18 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
   const openMission = (photo) => {
     const realIndex = gallery.findIndex((item) => item.title === photo.title);
     if (realIndex !== -1) setSelectedIndex(realIndex);
+  };
+
+  const openMissionPlanningBoard = (target) => {
+    if (!target) {
+      return;
+    }
+
+    setMissionPlanningTarget(target);
+  };
+
+  const closeMissionPlanningBoard = () => {
+    setMissionPlanningTarget(null);
   };
 
   const openTargetDossier = (target, { replaceHistory = false } = {}) => {
@@ -5817,6 +5835,14 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                 ▤ TARGET DOSSIER
               </button>
 
+              <button
+                type="button"
+                className="atlasMissionPlanButton"
+                onClick={() => openMissionPlanningBoard(activeObject)}
+              >
+                ◫ PLAN MISSION
+              </button>
+
               <button type="button" onClick={() => openMission(activeObject)}>
                 Open Mission Report →
               </button>
@@ -5928,6 +5954,14 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
                 onClick={() => openTargetDossier(activeFutureTarget)}
               >
                 ▤ TARGET DOSSIER
+              </button>
+
+              <button
+                type="button"
+                className="atlasMissionPlanButton"
+                onClick={() => openMissionPlanningBoard(activeFutureTarget)}
+              >
+                ◫ PLAN MISSION
               </button>
             </div>
 
@@ -6169,6 +6203,19 @@ export default function SkyMap({ gallery, captainsLog = [], equipment = [], setS
           onOpenMission={openDossierMission}
           onReplayMission={replayDossierMission}
           onCopyLink={copyTargetDossierLink}
+          onPlanMission={() => {
+            const target = dossierTarget;
+            closeTargetDossier();
+            window.requestAnimationFrame(() => openMissionPlanningBoard(target));
+          }}
+        />
+      )}
+
+      {missionPlanningTarget && (
+        <MissionPlanningBoard
+          target={missionPlanningTarget}
+          captures={missionPlanningCaptures}
+          onClose={closeMissionPlanningBoard}
         />
       )}
 
