@@ -5,6 +5,7 @@ import { ChevronLeft, X } from 'lucide-react';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Body, Equator, Horizon, Observer } from 'astronomy-engine';
+import { useHolodeckPresence } from '../lib/holodeckPresence.js';
 
 const xrStore = createXRStore();
 
@@ -21,6 +22,17 @@ const SECTION_COLORS = {
   comms: '#39f2b2',
   systems: '#ffb75c',
 };
+
+const CREW_SPAWNS = {
+  dave: [-2.7, 1.72, 4.0],
+  justin: [2.7, 1.72, 4.0],
+  chappy: [0, 1.72, -4.15],
+  unknown: [0, 1.72, 8.6],
+};
+
+function getCrewSpawn(crewKey) {
+  return CREW_SPAWNS[crewKey] || CREW_SPAWNS.unknown;
+}
 
 const HOLODECK_FUTURE_TARGETS = [
   { title: 'Pillars of Creation', shortTitle: 'M16', objectType: 'Emission Nebula', ra: 18.313, dec: -13.781 },
@@ -185,7 +197,67 @@ function FloatingLabel({ position = [0, 0, 0], fontSize = 0.06, color = '#f4ffff
   );
 }
 
-function CameraRig({ enabled, focusRequest, onFocusComplete }) {
+function PillarOccludedHtml({ position, distanceFactor, children, style = {} }) {
+  const anchorRef = useRef();
+  const { camera } = useThree();
+  const [hidden, setHidden] = useState(false);
+  const hiddenRef = useRef(false);
+  const targetWorld = useRef(new THREE.Vector3());
+
+  useFrame(() => {
+    if (!anchorRef.current) return;
+
+    anchorRef.current.getWorldPosition(targetWorld.current);
+    const target = targetWorld.current;
+    const camX = camera.position.x;
+    const camY = camera.position.y;
+    const camZ = camera.position.z;
+    const dx = target.x - camX;
+    const dy = target.y - camY;
+    const dz = target.z - camZ;
+    const horizontalLengthSq = dx * dx + dz * dz;
+
+    let blocked = false;
+    if (horizontalLengthSq > 0.0001) {
+      const rawT = -((camX * dx) + (camZ * dz)) / horizontalLengthSq;
+      const t = THREE.MathUtils.clamp(rawT, 0, 1);
+      const closestX = camX + dx * t;
+      const closestZ = camZ + dz * t;
+      const closestY = camY + dy * t;
+      const distanceFromPillar = Math.hypot(closestX, closestZ);
+
+      blocked = rawT > 0.02
+        && rawT < 0.98
+        && distanceFromPillar < 1.34
+        && closestY > 0.12
+        && closestY < 3.38;
+    }
+
+    if (blocked !== hiddenRef.current) {
+      hiddenRef.current = blocked;
+      setHidden(blocked);
+    }
+  });
+
+  return (
+    <group ref={anchorRef} position={position}>
+      <Html
+        transform
+        distanceFactor={distanceFactor}
+        occlude={false}
+        style={{
+          ...style,
+          pointerEvents: 'none',
+          visibility: hidden ? 'hidden' : 'visible',
+        }}
+      >
+        {children}
+      </Html>
+    </group>
+  );
+}
+
+function CameraRig({ enabled, focusRequest, onFocusComplete, initialPosition, onPose }) {
   const { camera, gl } = useThree();
   const keys = useRef(new Set());
   const yaw = useRef(0);
@@ -197,9 +269,11 @@ function CameraRig({ enabled, focusRequest, onFocusComplete }) {
   const startPosition = useRef(new THREE.Vector3());
   const startQuaternion = useRef(new THREE.Quaternion());
   const targetQuaternion = useRef(new THREE.Quaternion());
+  const lastPoseEmitAt = useRef(0);
 
   useEffect(() => {
-    camera.position.set(0, 1.72, 8.6);
+    const spawn = initialPosition || [0, 1.72, 8.6];
+    camera.position.set(spawn[0], spawn[1], spawn[2]);
 
     const dom = gl.domElement;
     const onKeyDown = (event) => keys.current.add(event.code);
@@ -235,7 +309,7 @@ function CameraRig({ enabled, focusRequest, onFocusComplete }) {
       dom.removeEventListener('pointerdown', onPointerDown);
       dom.removeEventListener('pointermove', onPointerMove);
     };
-  }, [camera, enabled, gl]);
+  }, [camera, enabled, gl, initialPosition]);
 
   useEffect(() => {
     if (!focusRequest?.key || !focusRequest?.preset) return;
@@ -249,7 +323,7 @@ function CameraRig({ enabled, focusRequest, onFocusComplete }) {
     targetQuaternion.current.copy(targetCamera.quaternion);
   }, [camera, focusRequest]);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!enabled) return;
 
     if (activeFocus.current && focusRequest?.preset) {
@@ -263,6 +337,13 @@ function CameraRig({ enabled, focusRequest, onFocusComplete }) {
         pitch.current = euler.x;
         activeFocus.current = null;
         onFocusComplete?.();
+      }
+      if (state.clock.elapsedTime - lastPoseEmitAt.current >= 0.08) {
+        lastPoseEmitAt.current = state.clock.elapsedTime;
+        onPose?.({
+          position: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+          rotation: { yaw: camera.rotation.y, pitch: camera.rotation.x },
+        });
       }
       return;
     }
@@ -323,6 +404,14 @@ function CameraRig({ enabled, focusRequest, onFocusComplete }) {
     camera.position.x = THREE.MathUtils.clamp(camera.position.x, -8.5, 8.5);
     camera.position.z = THREE.MathUtils.clamp(camera.position.z, -8.5, 8.5);
     camera.position.y = 1.72;
+
+    if (state.clock.elapsedTime - lastPoseEmitAt.current >= 0.08) {
+      lastPoseEmitAt.current = state.clock.elapsedTime;
+      onPose?.({
+        position: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+        rotation: { yaw: yaw.current, pitch: pitch.current },
+      });
+    }
   });
 
   return null;
@@ -630,30 +719,52 @@ function MissionWall({ gallery, selectedMission, onMissionSelect, onOpenCapture,
       )}
 
       {selectedMission && previewUrl && (
-        <Html transform position={[0, -0.35, 0.08]} distanceFactor={1.15} occlude={false}>
+        <PillarOccludedHtml position={[0, -0.35, 0.08]} distanceFactor={1.15}>
           <div style={{ width: '300px', height: '170px', border: '1px solid rgba(132,223,241,.26)', background: 'rgba(2,7,13,.92)', boxShadow: '0 0 25px rgba(70,221,255,.12)', overflow: 'hidden' }}>
             <img src={previewUrl} alt={selectedMission?.title || 'Mission preview'} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
-        </Html>
+        </PillarOccludedHtml>
       )}
     </group>
   );
 }
 
-function MissionDetailPanel({ mission, captureOpen, activeSection, previewUrl, onOpenCapture }) {
+function MissionDetailPanel({ mission, gallery, captureOpen, activeSection, previewUrl, onOpenCapture, onMissionSelect }) {
   if (!mission || activeSection !== 'missions') return null;
   const lines = [
     mission.objectType || mission.category || 'MISSION CAPTURE',
     mission.date ? `CAPTURED // ${mission.date}` : 'CUZBRO MISSION ARCHIVE',
     mission.equipment || mission.telescope || 'CPC 800 // PRIMARY OBSERVATION PLATFORM',
   ];
+  const missions = gallery || [];
+  const currentIndex = Math.max(0, missions.findIndex((item) => item.id === mission.id || item.title === mission.title));
+  const cycleMission = (direction) => {
+    if (!missions.length) return;
+    const nextIndex = (currentIndex + direction + missions.length) % missions.length;
+    onMissionSelect?.(missions[nextIndex]);
+  };
   return (
     <group position={[-4.95, 1.95, -7.92]}>
       <mesh>
         <planeGeometry args={[3.8, 2.35]} />
         <meshBasicMaterial color="#06131c" transparent opacity={0.92} />
       </mesh>
-      <Text position={[-1.55, 0.75, 0.02]} fontSize={0.22} color="#eaffff" anchorX="left">{mission.title || 'MISSION CAPTURE'}</Text>
+      <group position={[-1.68, 0.76, 0.03]} onClick={(event) => { event.stopPropagation(); cycleMission(-1); }}>
+        <mesh>
+          <circleGeometry args={[0.18, 36]} />
+          <meshStandardMaterial color="#0d2631" emissive="#46ddff" emissiveIntensity={0.6} metalness={0.55} roughness={0.25} />
+        </mesh>
+        <Text position={[0, 0, 0.015]} fontSize={0.17} color="#eaffff" anchorX="center" anchorY="middle">‹</Text>
+      </group>
+      <Text position={[-1.28, 0.75, 0.02]} fontSize={0.22} color="#eaffff" anchorX="left" maxWidth={2.25}>{mission.title || 'MISSION CAPTURE'}</Text>
+      <group position={[1.58, 0.76, 0.03]} onClick={(event) => { event.stopPropagation(); cycleMission(1); }}>
+        <mesh>
+          <circleGeometry args={[0.18, 36]} />
+          <meshStandardMaterial color="#0d2631" emissive="#46ddff" emissiveIntensity={0.6} metalness={0.55} roughness={0.25} />
+        </mesh>
+        <Text position={[0, 0, 0.015]} fontSize={0.17} color="#eaffff" anchorX="center" anchorY="middle">›</Text>
+      </group>
+      <Text position={[1.46, 0.48, 0.02]} fontSize={0.065} color="#6f9aa5" anchorX="right">{currentIndex + 1} / {missions.length}</Text>
       {lines.map((line, index) => (
         <Text key={`${line}-${index}`} position={[-1.55, 0.34 - index * 0.34, 0.02]} fontSize={0.105} color={index === 0 ? '#63dff5' : '#90b9c3'} anchorX="left">
           {String(line).toUpperCase()}
@@ -672,18 +783,25 @@ function MissionDetailPanel({ mission, captureOpen, activeSection, previewUrl, o
         </Text>
       </group>
       {previewUrl && (
-        <Html transform position={[0.72, 0.28, 0.03]} distanceFactor={1.2} occlude={false}>
+        <PillarOccludedHtml position={[0.72, 0.28, 0.03]} distanceFactor={1.2}>
           <div style={{ width: '170px', height: '110px', border: '1px solid rgba(132,223,241,.24)', background: 'rgba(2,7,13,.92)', overflow: 'hidden' }}>
             <img src={previewUrl} alt={mission?.title || 'Mission preview'} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
-        </Html>
+        </PillarOccludedHtml>
       )}
     </group>
   );
 }
 
-function DeepSkyWindow({ selectedMission, captureOpen, activeSection }) {
+function DeepSkyWindow({ gallery, selectedMission, captureOpen, activeSection, onMissionSelect }) {
   const imageUrl = getImageUrl(getMissionImage(selectedMission));
+  const missions = gallery || [];
+  const currentIndex = Math.max(0, missions.findIndex((item) => item.id === selectedMission?.id || item.title === selectedMission?.title));
+  const cycleMission = (direction) => {
+    if (!missions.length) return;
+    const nextIndex = (currentIndex + direction + missions.length) % missions.length;
+    onMissionSelect?.(missions[nextIndex]);
+  };
 
   return (
     <group position={[0, 3.8, -8.42]}>
@@ -696,12 +814,32 @@ function DeepSkyWindow({ selectedMission, captureOpen, activeSection }) {
         <meshBasicMaterial color="#02070d" />
       </mesh>
 
+      {(captureOpen || activeSection === 'missions') && missions.length > 1 && (
+        <>
+          <group position={[-4.95, 0, 0.08]} onClick={(event) => { event.stopPropagation(); cycleMission(-1); }}>
+            <mesh>
+              <circleGeometry args={[0.24, 40]} />
+              <meshStandardMaterial color="#0d2631" emissive="#46ddff" emissiveIntensity={0.68} metalness={0.55} roughness={0.25} />
+            </mesh>
+            <Text position={[0, 0, 0.02]} fontSize={0.22} color="#eaffff" anchorX="center" anchorY="middle">‹</Text>
+          </group>
+          <group position={[4.95, 0, 0.08]} onClick={(event) => { event.stopPropagation(); cycleMission(1); }}>
+            <mesh>
+              <circleGeometry args={[0.24, 40]} />
+              <meshStandardMaterial color="#0d2631" emissive="#46ddff" emissiveIntensity={0.68} metalness={0.55} roughness={0.25} />
+            </mesh>
+            <Text position={[0, 0, 0.02]} fontSize={0.22} color="#eaffff" anchorX="center" anchorY="middle">›</Text>
+          </group>
+          <Text position={[0, 2.28, 0.06]} fontSize={0.09} color="#6f9aa5" anchorX="center">{currentIndex + 1} / {missions.length}</Text>
+        </>
+      )}
+
       {captureOpen && imageUrl && (
-        <Html transform position={[0, 0, 0.04]} distanceFactor={1} occlude={false} style={{ pointerEvents: 'none' }}>
+        <PillarOccludedHtml position={[0, 0, 0.04]} distanceFactor={1}>
           <div style={{ width: '860px', height: '440px', overflow: 'hidden', background: '#02070d', border: '1px solid rgba(132,223,241,.28)', boxShadow: '0 0 45px rgba(70,221,255,.16)' }}>
             <img src={imageUrl} alt={selectedMission?.title || 'Archived mission capture'} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#02070d' }} />
           </div>
-        </Html>
+        </PillarOccludedHtml>
       )}
 
       {captureOpen && !imageUrl && (
@@ -715,13 +853,228 @@ function DeepSkyWindow({ selectedMission, captureOpen, activeSection }) {
           PROJECTION STANDBY
         </Text>
       )}
-      {(captureOpen || activeSection === 'missions') && (
-        <Text position={[0, -2.42, 0.05]} fontSize={0.15} color="#84dff1">
-          {captureOpen && selectedMission ? `${selectedMission.title} // ARCHIVED MISSION CAPTURE` : 'DEEP SKY WINDOW // PROJECTION STANDBY'}
-        </Text>
-      )}
     </group>
   );
+}
+
+
+function lerpAngle(current, target, factor) {
+  let delta = (target - current + Math.PI) % (Math.PI * 2) - Math.PI;
+  if (delta < -Math.PI) delta += Math.PI * 2;
+  return current + delta * factor;
+}
+
+function RemoteCrewAvatar({ member }) {
+  const rootRef = useRef();
+  const leftArmRef = useRef();
+  const rightArmRef = useRef();
+  const leftLegRef = useRef();
+  const rightLegRef = useRef();
+  const targetPosition = useRef(new THREE.Vector3());
+  const lastPosition = useRef(new THREE.Vector3());
+  const walkPhase = useRef(0);
+  const accent = member.color || '#8feaff';
+
+  useEffect(() => {
+    targetPosition.current.set(
+      Number(member.position?.x) || 0,
+      0,
+      Number(member.position?.z) || 0,
+    );
+
+    if (rootRef.current && rootRef.current.position.lengthSq() === 0) {
+      rootRef.current.position.copy(targetPosition.current);
+      lastPosition.current.copy(targetPosition.current);
+    }
+  }, [member.position?.x, member.position?.z]);
+
+  useFrame((state, delta) => {
+    if (!rootRef.current) return;
+
+    const before = rootRef.current.position.clone();
+    rootRef.current.position.lerp(targetPosition.current, 1 - Math.exp(-delta * 8.5));
+    rootRef.current.rotation.y = lerpAngle(
+      rootRef.current.rotation.y,
+      Number(member.rotation?.yaw) || 0,
+      1 - Math.exp(-delta * 10),
+    );
+
+    const speed = rootRef.current.position.distanceTo(before) / Math.max(delta, 0.001);
+    const walking = speed > 0.08;
+    if (walking) walkPhase.current += delta * Math.min(9, 4 + speed * 1.7);
+
+    const stride = walking ? Math.sin(walkPhase.current) * 0.42 : 0;
+    const armStride = stride * 0.75;
+    if (leftArmRef.current) leftArmRef.current.rotation.x = armStride;
+    if (rightArmRef.current) rightArmRef.current.rotation.x = -armStride;
+    if (leftLegRef.current) leftLegRef.current.rotation.x = -stride;
+    if (rightLegRef.current) rightLegRef.current.rotation.x = stride;
+
+    const idleBob = Math.sin(state.clock.elapsedTime * 2.2 + member.callSign.length) * 0.018;
+    rootRef.current.position.y = idleBob;
+    lastPosition.current.copy(rootRef.current.position);
+  });
+
+  return (
+    <group ref={rootRef}>
+      <group position={[0, 0.92, 0]}>
+        <mesh position={[0, 0.22, 0]}>
+          <boxGeometry args={[0.48, 0.68, 0.28]} />
+          <meshStandardMaterial color="#08131b" emissive={accent} emissiveIntensity={0.46} metalness={0.62} roughness={0.28} transparent opacity={0.9} />
+        </mesh>
+        <mesh position={[0, 0.58, 0]}>
+          <sphereGeometry args={[0.21, 28, 20]} />
+          <meshStandardMaterial color="#0a1720" emissive={accent} emissiveIntensity={0.42} metalness={0.72} roughness={0.22} transparent opacity={0.92} />
+        </mesh>
+        <mesh position={[0, 0.59, -0.19]}>
+          <boxGeometry args={[0.29, 0.105, 0.035]} />
+          <meshBasicMaterial color={accent} transparent opacity={0.96} />
+        </mesh>
+        <mesh position={[0, 0.52, -0.205]}>
+          <planeGeometry args={[0.18, 0.016]} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.62} />
+        </mesh>
+        <mesh position={[0, 0.22, -0.17]}>
+          <circleGeometry args={[0.07, 24]} />
+          <meshBasicMaterial color={accent} transparent opacity={0.92} />
+        </mesh>
+
+        <group ref={leftArmRef} position={[-0.32, 0.44, 0]}>
+          <mesh position={[0, -0.25, 0]}>
+            <cylinderGeometry args={[0.075, 0.065, 0.5, 16]} />
+            <meshStandardMaterial color="#0a1720" emissive={accent} emissiveIntensity={0.25} transparent opacity={0.88} />
+          </mesh>
+        </group>
+        <group ref={rightArmRef} position={[0.32, 0.44, 0]}>
+          <mesh position={[0, -0.25, 0]}>
+            <cylinderGeometry args={[0.075, 0.065, 0.5, 16]} />
+            <meshStandardMaterial color="#0a1720" emissive={accent} emissiveIntensity={0.25} transparent opacity={0.88} />
+          </mesh>
+        </group>
+
+        <group ref={leftLegRef} position={[-0.14, -0.12, 0]}>
+          <mesh position={[0, -0.36, 0]}>
+            <cylinderGeometry args={[0.085, 0.072, 0.72, 16]} />
+            <meshStandardMaterial color="#071018" emissive={accent} emissiveIntensity={0.2} transparent opacity={0.9} />
+          </mesh>
+        </group>
+        <group ref={rightLegRef} position={[0.14, -0.12, 0]}>
+          <mesh position={[0, -0.36, 0]}>
+            <cylinderGeometry args={[0.085, 0.072, 0.72, 16]} />
+            <meshStandardMaterial color="#071018" emissive={accent} emissiveIntensity={0.2} transparent opacity={0.9} />
+          </mesh>
+        </group>
+      </group>
+
+      <Billboard follow position={[0, 2.05, 0]}>
+        <Text fontSize={0.12} color={accent} anchorX="center">{member.callSign}</Text>
+        <Text position={[0, -0.18, 0]} fontSize={0.055} color="#b8d8df" anchorX="center">{String(member.role || 'CREW').toUpperCase()}</Text>
+        {member.activeSection && (
+          <Text position={[0, -0.32, 0]} fontSize={0.05} color={accent} anchorX="center">{`FOCUS // ${String(member.activeSection).toUpperCase()}`}</Text>
+        )}
+      </Billboard>
+
+      <pointLight position={[0, 1.2, 0]} color={accent} intensity={2.6} distance={2.4} />
+    </group>
+  );
+}
+
+function RemoteCrewAvatars({ remoteCrew }) {
+  return remoteCrew.map((member) => (
+    <RemoteCrewAvatar key={member.userId} member={member} />
+  ));
+}
+
+const CREW_STATION_DATA = [
+  { crewKey: 'dave', callSign: 'DAVE', role: 'TELESCOPE OPERATIONS', color: '#43d4ff', position: [-2.6, 0, 1.95], yaw: -0.28 },
+  { crewKey: 'justin', callSign: 'JUSTIN', role: 'TECHNOLOGY LEAD', color: '#ff9a3d', position: [2.6, 0, 1.95], yaw: 0.28 },
+  { crewKey: 'chappy', callSign: 'CHAPPY', role: 'MISSION SUPPORT', color: '#9d7cff', position: [0, 0, -2.9], yaw: Math.PI },
+];
+
+function SleepingCrewAvatar({ crew }) {
+  const rootRef = useRef();
+  const zzzRef = useRef();
+
+  useFrame((state) => {
+    const time = state.clock.elapsedTime;
+    if (rootRef.current) {
+      // Keep the sleeper planted on top of the crew station. The previous
+      // animation accidentally replaced the group's base Y with the bob value,
+      // sinking the avatar into the floor/pillar every frame.
+      rootRef.current.position.y = 1.48 + Math.sin(time * 1.15 + crew.callSign.length) * 0.018;
+    }
+    if (zzzRef.current) {
+      zzzRef.current.position.y = 2.78 + Math.sin(time * 1.8 + crew.callSign.length) * 0.08;
+      zzzRef.current.rotation.z = Math.sin(time * 0.75) * 0.035;
+    }
+  });
+
+  return (
+    <group position={crew.position} rotation={[0, crew.yaw, 0]}>
+      <group ref={rootRef} position={[0, 1.48, 0]} rotation={[0, 0, -0.12]} scale={1.14}>
+        <mesh position={[0, 0.24, 0]} rotation={[0.08, 0, 0]}>
+          <boxGeometry args={[0.42, 0.58, 0.24]} />
+          <meshStandardMaterial color="#071018" emissive={crew.color} emissiveIntensity={0.2} metalness={0.56} roughness={0.36} transparent opacity={0.64} />
+        </mesh>
+        <mesh position={[0.08, 0.56, 0.015]} rotation={[0, 0, -0.18]}>
+          <sphereGeometry args={[0.18, 24, 18]} />
+          <meshStandardMaterial color="#08131b" emissive={crew.color} emissiveIntensity={0.22} metalness={0.65} roughness={0.3} transparent opacity={0.68} />
+        </mesh>
+        <mesh position={[0.11, 0.56, -0.165]} rotation={[0, 0, -0.18]}>
+          <boxGeometry args={[0.24, 0.075, 0.025]} />
+          <meshBasicMaterial color={crew.color} transparent opacity={0.66} />
+        </mesh>
+
+        <group position={[-0.28, 0.37, 0]} rotation={[0, 0, -0.32]}>
+          <mesh position={[0, -0.2, 0]}>
+            <cylinderGeometry args={[0.065, 0.055, 0.4, 14]} />
+            <meshStandardMaterial color="#071018" emissive={crew.color} emissiveIntensity={0.16} transparent opacity={0.58} />
+          </mesh>
+        </group>
+        <group position={[0.28, 0.37, 0]} rotation={[0, 0, 0.18]}>
+          <mesh position={[0, -0.2, 0]}>
+            <cylinderGeometry args={[0.065, 0.055, 0.4, 14]} />
+            <meshStandardMaterial color="#071018" emissive={crew.color} emissiveIntensity={0.16} transparent opacity={0.58} />
+          </mesh>
+        </group>
+
+        <group position={[-0.12, -0.02, 0]} rotation={[0.45, 0, -0.12]}>
+          <mesh position={[0, -0.28, 0]}>
+            <cylinderGeometry args={[0.075, 0.065, 0.56, 14]} />
+            <meshStandardMaterial color="#061018" emissive={crew.color} emissiveIntensity={0.14} transparent opacity={0.6} />
+          </mesh>
+        </group>
+        <group position={[0.12, -0.02, 0]} rotation={[0.45, 0, 0.12]}>
+          <mesh position={[0, -0.28, 0]}>
+            <cylinderGeometry args={[0.075, 0.065, 0.56, 14]} />
+            <meshStandardMaterial color="#061018" emissive={crew.color} emissiveIntensity={0.14} transparent opacity={0.6} />
+          </mesh>
+        </group>
+      </group>
+
+      <Billboard follow position={[0, 2.42, 0]}>
+        <Text fontSize={0.085} color={crew.color} anchorX="center">{crew.callSign}</Text>
+        <Text position={[0, -0.13, 0]} fontSize={0.045} color="#617985" anchorX="center">OFFLINE // STATION IDLE</Text>
+      </Billboard>
+
+      <Billboard ref={zzzRef} follow position={[0.3, 2.78, 0]}>
+        <Text fontSize={0.13} color={crew.color} fillOpacity={0.58} anchorX="center">Z Z Z</Text>
+      </Billboard>
+
+      <pointLight position={[0, 1.72, 0]} color={crew.color} intensity={1.1} distance={2.15} />
+    </group>
+  );
+}
+
+function InactiveCrewAvatars({ activeCrewKey, remoteCrew }) {
+  const onlineCrewKeys = useMemo(
+    () => new Set(remoteCrew.map((member) => String(member.crewKey || '').toLowerCase())),
+    [remoteCrew]
+  );
+
+  return CREW_STATION_DATA
+    .filter((crew) => crew.crewKey !== activeCrewKey && !onlineCrewKeys.has(crew.crewKey))
+    .map((crew) => <SleepingCrewAvatar key={crew.crewKey} crew={crew} />);
 }
 
 function CrewStations({ activeSection, activeCrewKey }) {
@@ -1162,13 +1515,13 @@ function SkyMapOverlay({ gallery, selectedMission, onMissionSelect, activeSectio
   );
 }
 
-function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenFace, activeSection, onSectionSelect, focusRequest, clearFocus, controlsEnabled, captureOpen, setCaptureOpen, skySnapshot, onSkyTimeChange, activeCrewKey }) {
+function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenFace, activeSection, onSectionSelect, focusRequest, clearFocus, controlsEnabled, captureOpen, setCaptureOpen, skySnapshot, onSkyTimeChange, activeCrewKey, initialPosition, onPose, remoteCrew }) {
   const activeColor = SECTION_COLORS[activeSection] || '#1ba8cf';
   const previewUrl = getImageUrl(getMissionImage(selectedMission));
 
   return (
     <>
-      <CameraRig enabled={controlsEnabled} focusRequest={focusRequest} onFocusComplete={clearFocus} />
+      <CameraRig enabled={controlsEnabled} focusRequest={focusRequest} onFocusComplete={clearFocus} initialPosition={initialPosition} onPose={onPose} />
       <color attach="background" args={['#01040a']} />
       <fog attach="fog" args={['#02060b', 11, 28]} />
       <ambientLight intensity={0.38} />
@@ -1181,10 +1534,12 @@ function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenF
 
       <mesh position={[0, 4.9, 0]} rotation={[Math.PI, 0, 0]}><cylinderGeometry args={[9.6, 9.6, 0.12, 96]} /><meshStandardMaterial color="#02060a" metalness={0.65} roughness={0.5} transparent opacity={0.78} /></mesh>
 
-      <DeepSkyWindow selectedMission={selectedMission} captureOpen={captureOpen} activeSection={activeSection} />
-      <MissionDetailPanel mission={selectedMission} captureOpen={captureOpen} activeSection={activeSection} previewUrl={previewUrl} onOpenCapture={() => setCaptureOpen((value) => !value)} />
+      <DeepSkyWindow gallery={gallery} selectedMission={selectedMission} captureOpen={captureOpen} activeSection={activeSection} onMissionSelect={(mission) => { setSelectedMission(mission); }} />
+      <MissionDetailPanel mission={selectedMission} gallery={gallery} captureOpen={captureOpen} activeSection={activeSection} previewUrl={previewUrl} onOpenCapture={() => setCaptureOpen((value) => !value)} onMissionSelect={(mission) => { setSelectedMission(mission); setCaptureOpen(false); }} />
       <MissionWall gallery={gallery} selectedMission={selectedMission} previewUrl={previewUrl} onMissionSelect={(mission) => { setSelectedMission(mission); setCaptureOpen(false); }} onOpenCapture={() => setCaptureOpen((value) => !value)} captureOpen={captureOpen} />
       <CrewStations activeSection={activeSection} activeCrewKey={activeCrewKey} />
+      <RemoteCrewAvatars remoteCrew={remoteCrew} />
+      <InactiveCrewAvatars activeCrewKey={activeCrewKey} remoteCrew={remoteCrew} />
       <TelescopeDisplay activeSection={activeSection} />
       <CommsPanel activeSection={activeSection} />
       <SystemsPanel activeSection={activeSection} />
@@ -1204,6 +1559,13 @@ export default function Holodeck({ gallery = [], session = null, crew = null }) 
   const [xrError, setXrError] = useState('');
   const [captureOpen, setCaptureOpen] = useState(false);
   const [skySnapshot, setSkySnapshot] = useState(() => new Date());
+  const initialPosition = useMemo(() => getCrewSpawn(activeCrewKey), [activeCrewKey]);
+  const { remoteCrew, connectionState, publishPose } = useHolodeckPresence({
+    session,
+    crew,
+    enabled: booted,
+    activeSection,
+  });
 
   useEffect(() => {
     if (!selectedMission && gallery.length) setSelectedMission(gallery[0]);
@@ -1283,6 +1645,9 @@ export default function Holodeck({ gallery = [], session = null, crew = null }) 
                 skySnapshot={skySnapshot}
                 onSkyTimeChange={adjustSkyTime}
                 activeCrewKey={activeCrewKey}
+                initialPosition={initialPosition}
+                onPose={publishPose}
+                remoteCrew={remoteCrew}
               />
             </Suspense>
           </XR>
@@ -1295,6 +1660,7 @@ export default function Holodeck({ gallery = [], session = null, crew = null }) 
           <div className="virtualWatchHelp">WASD TO MOVE · CLICK + DRAG TO LOOK · USE THE CENTER CONTROL PILLAR</div>
           <button type="button" className="virtualWatchVrButton virtualWatchVrStandalone" onClick={enterVR}>ENTER VR</button>
           <div style={{ position: 'fixed', right: '1.4rem', top: '1.4rem', zIndex: 12, padding: '.72rem 1rem', border: '1px solid rgba(255,138,43,.4)', borderRadius: '999px', background: 'rgba(12,6,2,.78)', color: '#ffd6a8', fontFamily: 'monospace', letterSpacing: '.12em', fontSize: '.75rem' }}>CREW // {crew?.callSign || 'UNKNOWN'} · {crew?.role || 'CREW'}</div>
+          <div style={{ position: 'fixed', right: '1.4rem', top: '4.75rem', zIndex: 12, padding: '.58rem .85rem', border: `1px solid ${connectionState === 'ONLINE' ? 'rgba(71,240,167,.5)' : 'rgba(143,234,255,.25)'}`, borderRadius: '999px', background: 'rgba(2,7,13,.78)', color: connectionState === 'ONLINE' ? '#91ffd0' : '#8feaff', fontFamily: 'monospace', letterSpacing: '.1em', fontSize: '.68rem' }}>HOLODECK LINK // {connectionState} · {remoteCrew.length + 1} CREW</div>
           {activeSection && <div className="virtualWatchSectionState"><span style={{ background: SECTION_COLORS[activeSection] }} /> ARRAY FOCUS // {activeSection.toUpperCase()}</div>}
           {xrError && <div className="virtualWatchXrError"><X size={15} /> {xrError}</div>}
         </>
