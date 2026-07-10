@@ -34,6 +34,8 @@ function getAdminPageName(pathname) {
       return 'CREW TASKING';
     case '/admin/watch':
       return 'WATCH FLOOR';
+    case '/admin/holodeck':
+      return 'HOLODECK';
     case '/admin/deployments':
       return 'DEPLOYMENTS';
     default:

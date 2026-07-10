@@ -1,15 +1,16 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Html, Stars, Text } from '@react-three/drei';
+import { Billboard, Html, Stars, Text } from '@react-three/drei';
 import { XR, createXRStore } from '@react-three/xr';
 import { ChevronLeft, X } from 'lucide-react';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { Body, Equator, Horizon, Observer } from 'astronomy-engine';
 
 const xrStore = createXRStore();
 
 const SECTION_PRESETS = {
   missions: { position: [-4.45, 1.72, -1.2], lookAt: [-7.75, 2.18, -1.2] },
-  sky: { position: [0, 1.72, 2.65], lookAt: [0, 5.1, 0] },
+  sky: { position: [0, 1.5, 1.45], lookAt: [0, 5.15, 0] },
   comms: { position: [0.95, 1.72, 4.15], lookAt: [3.35, 2.2, 0.25] },
   systems: { position: [3.45, 1.72, 0.95], lookAt: [6.55, 2.28, 3.85] },
 };
@@ -21,6 +22,149 @@ const SECTION_COLORS = {
   systems: '#ffb75c',
 };
 
+const HOLODECK_FUTURE_TARGETS = [
+  { title: 'Pillars of Creation', shortTitle: 'M16', objectType: 'Emission Nebula', ra: 18.313, dec: -13.781 },
+  { title: 'Cat’s Eye Nebula', shortTitle: 'NGC 6543', objectType: 'Planetary Nebula', ra: 17.972, dec: 66.633 },
+  { title: 'North America Nebula', shortTitle: 'NGC 7000', objectType: 'Emission Nebula', ra: 20.973, dec: 44.317 },
+  { title: 'Veil Nebula', shortTitle: 'Veil', objectType: 'Supernova Remnant', ra: 20.755, dec: 30.75 },
+  { title: 'M31 Andromeda Galaxy', shortTitle: 'M31', objectType: 'Galaxy', ra: 0.712, dec: 41.269 },
+  { title: 'Double Cluster', shortTitle: 'Double Cluster', objectType: 'Open Cluster', ra: 2.333, dec: 57.133 },
+];
+
+const SKY_FALLBACK_COORDS = {
+  'M13': { ra: 16.6949, dec: 36.4602 },
+  'M51': { ra: 13.497, dec: 47.195 },
+  'Whirlpool Galaxy': { ra: 13.497, dec: 47.195 },
+  'M57': { ra: 18.893, dec: 33.03 },
+  'Ring Nebula': { ra: 18.893, dec: 33.03 },
+  'M27': { ra: 19.997, dec: 22.721 },
+  'Dumbbell Nebula': { ra: 19.997, dec: 22.721 },
+  'Albireo': { ra: 19.512, dec: 27.96 },
+  'Moon': { ra: 8.0, dec: 12.0 },
+};
+
+function getSkyCoords(target) {
+  if (!target) return null;
+  const rawRa = Number(target.ra);
+  const rawDec = Number(target.dec);
+  if (Number.isFinite(rawRa) && Number.isFinite(rawDec)) {
+    return { ra: rawRa, dec: rawDec };
+  }
+  return SKY_FALLBACK_COORDS[target.title] || SKY_FALLBACK_COORDS[target.shortTitle] || null;
+}
+
+function projectSkyPoint(ra, dec, radius = 7.2) {
+  const safeRa = Number.isFinite(ra) ? ra : 0;
+  const safeDec = Number.isFinite(dec) ? dec : 0;
+  const angle = (safeRa / 24) * Math.PI * 2 - Math.PI / 2;
+  const radial = THREE.MathUtils.clamp((90 - safeDec) / 180, 0.08, 0.96) * radius;
+  return { x: Math.cos(angle) * radial, z: Math.sin(angle) * radial };
+}
+
+function createCeilingPath(points, y = -0.018) {
+  const values = [];
+  points.forEach((point) => values.push(point[0], y, point[1]));
+  return new Float32Array(values);
+}
+
+const ELIOT_OBSERVER = new Observer(43.1531, -70.7828, 25);
+
+const CURRENT_SKY_BODIES = [
+  ['MERCURY', Body.Mercury, '#d6c7a8'],
+  ['VENUS', Body.Venus, '#fff0b4'],
+  ['MARS', Body.Mars, '#ff8b63'],
+  ['JUPITER', Body.Jupiter, '#ffd0a0'],
+  ['SATURN', Body.Saturn, '#f4dfa4'],
+  ['URANUS', Body.Uranus, '#8ee8ff'],
+  ['NEPTUNE', Body.Neptune, '#7898ff'],
+  ['MOON', Body.Moon, '#e9f7ff'],
+];
+
+const CEILING_STAR_CATALOG = [
+  { id: 'polaris', name: 'Polaris', ra: 2.5303, dec: 89.2641, major: true },
+  { id: 'deneb', name: 'Deneb', ra: 20.6905, dec: 45.2803, major: true },
+  { id: 'sadr', name: 'Sadr', ra: 20.3705, dec: 40.2567, major: false },
+  { id: 'albireo', name: 'Albireo', ra: 19.512, dec: 27.96, major: false },
+  { id: 'vega', name: 'Vega', ra: 18.6156, dec: 38.7837, major: true },
+  { id: 'altair', name: 'Altair', ra: 19.8464, dec: 8.8683, major: true },
+  { id: 'caph', name: 'Caph', ra: 0.1529, dec: 59.1498, major: false },
+  { id: 'schedar', name: 'Schedar', ra: 0.6751, dec: 56.5373, major: false },
+  { id: 'navi', name: 'Navi', ra: 0.9451, dec: 60.7167, major: false },
+  { id: 'ruchbah', name: 'Ruchbah', ra: 1.4303, dec: 60.2353, major: false },
+];
+
+const CEILING_CONSTELLATION_SEGMENTS = [
+  ['deneb', 'sadr'],
+  ['sadr', 'albireo'],
+  ['vega', 'deneb'],
+  ['altair', 'vega'],
+  ['altair', 'deneb'],
+  ['caph', 'schedar'],
+  ['schedar', 'navi'],
+  ['navi', 'ruchbah'],
+];
+
+function projectAltAzPoint(azimuth, altitude, radius = 7.1) {
+  const safeAlt = Number.isFinite(altitude) ? altitude : -90;
+  const safeAz = Number.isFinite(azimuth) ? azimuth : 0;
+  const radial = THREE.MathUtils.clamp((90 - safeAlt) / 90, 0.02, 1.04) * radius;
+  const angle = THREE.MathUtils.degToRad(safeAz);
+  return {
+    x: Math.sin(angle) * radial,
+    z: -Math.cos(angle) * radial,
+    visible: safeAlt > 0,
+  };
+}
+
+function getHorizontalProjection(date, ra, dec, radius = 7.0) {
+  try {
+    const horizon = Horizon(date, ELIOT_OBSERVER, ra, dec, 'normal');
+    return {
+      ra,
+      dec,
+      azimuth: horizon.azimuth,
+      altitude: horizon.altitude,
+      ...projectAltAzPoint(horizon.azimuth, horizon.altitude, radius),
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+function buildProjectedPathFromRaDec(date, sampler, steps = 48, radius = 7.0, minAltitude = -4) {
+  const values = [];
+  for (let index = 0; index <= steps; index += 1) {
+    const { ra, dec } = sampler(index / steps);
+    const projection = getHorizontalProjection(date, ra, dec, radius);
+    if (!projection || projection.altitude < minAltitude) continue;
+    values.push(projection.x, -0.016, projection.z);
+  }
+  return new Float32Array(values);
+}
+
+function getCurrentSkyBodies(date) {
+  return CURRENT_SKY_BODIES.map(([name, body, color]) => {
+    try {
+      const equator = Equator(body, date, ELIOT_OBSERVER, true, true);
+      const projection = getHorizontalProjection(date, equator.ra, equator.dec, 7.0);
+      if (!projection || projection.altitude <= 0) return null;
+      return { name, color, body, ...projection };
+    } catch (error) {
+      console.debug(`Holodeck sky position unavailable for ${name}:`, error);
+      return null;
+    }
+  }).filter(Boolean);
+}
+
+function formatSkySnapshotLabel(date) {
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).toUpperCase();
+}
+
 function getMissionImage(mission) {
   return mission?.image || mission?.stackedImage || mission?.rawImage || '';
 }
@@ -29,6 +173,16 @@ function getImageUrl(image) {
   if (!image) return '';
   if (/^(https?:|blob:|data:)/.test(image)) return image;
   return `${import.meta.env.BASE_URL}${String(image).replace(/^\/+/, '')}`;
+}
+
+function FloatingLabel({ position = [0, 0, 0], fontSize = 0.06, color = '#f4ffff', anchorX = 'center', anchorY = 'middle', maxWidth, children }) {
+  return (
+    <Billboard follow position={position}>
+      <Text fontSize={fontSize} color={color} anchorX={anchorX} anchorY={anchorY} maxWidth={maxWidth}>
+        {children}
+      </Text>
+    </Billboard>
+  );
 }
 
 function CameraRig({ enabled, focusRequest, onFocusComplete }) {
@@ -210,7 +364,11 @@ function BloomOption({ label, sectionKey, angle, selected, onSelect }) {
     >
       <mesh>
         <circleGeometry args={[0.2, 48]} />
-        <meshBasicMaterial color="#071520" transparent opacity={0.82} depthWrite={false} />
+        <meshBasicMaterial color="#120d08" transparent opacity={0.84} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0, -0.001]}>
+        <ringGeometry args={[0.155, 0.165, 48]} />
+        <meshBasicMaterial color="#ff9a3d" transparent opacity={0.42} />
       </mesh>
       <mesh position={[0, 0, 0.003]}>
         <ringGeometry args={[0.185, 0.21, 48]} />
@@ -235,7 +393,48 @@ function BloomOption({ label, sectionKey, angle, selected, onSelect }) {
   );
 }
 
-function ControlPillar({ openFace, activeSection, selectedMission, onFaceToggle, onSectionSelect }) {
+
+function SkyTimeChip({ label, angle, selected, onClick }) {
+  const group = useRef();
+  const width = label.length > 4 ? 0.34 : 0.2;
+  const target = useMemo(
+    () => new THREE.Vector3(Math.cos(angle) * 1.02, Math.sin(angle) * 1.02, 0.09),
+    [angle]
+  );
+
+  useFrame((_, delta) => {
+    if (!group.current) return;
+    group.current.position.lerp(target, 1 - Math.exp(-delta * 11));
+    const nextScale = THREE.MathUtils.lerp(group.current.scale.x, 1, 1 - Math.exp(-delta * 12));
+    group.current.scale.setScalar(nextScale);
+  });
+
+  return (
+    <group
+      ref={group}
+      scale={0.08}
+      position={[0, 0, 0.08]}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+    >
+      <mesh>
+        <planeGeometry args={[width, 0.12]} />
+        <meshBasicMaterial color="#231408" transparent opacity={0.9} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0, 0.002]}>
+        <planeGeometry args={[width - 0.02, 0.092]} />
+        <meshBasicMaterial color="#ff8a2b" transparent opacity={selected ? 0.22 : 0.1} depthWrite={false} />
+      </mesh>
+      <Text position={[0, 0, 0.01]} fontSize={0.04} color={selected ? '#fff1df' : '#ffd6a8'} anchorX="center" anchorY="middle">
+        {label}
+      </Text>
+    </group>
+  );
+}
+
+function ControlPillar({ openFace, activeSection, selectedMission, skySnapshot, activeCrewKey, onFaceToggle, onSectionSelect, onSkyTimeChange }) {
   const options = [
     ['MISSIONS', 'missions', Math.PI],
     ['SKY MAP', 'sky', Math.PI / 2],
@@ -266,66 +465,94 @@ function ControlPillar({ openFace, activeSection, selectedMission, onFaceToggle,
     return new Float32Array(values);
   }, []);
 
+  const skyControls = [
+    { label: 'MIDNIGHT', action: 'midnight', angle: 2.36 },
+    { label: '-1H', action: '-1h', angle: 2.02 },
+    { label: 'NOW', action: 'now', angle: 1.56 },
+    { label: '+1H', action: '+1h', angle: 1.1 },
+  ];
+
+  const skyTimeLabel = useMemo(() => formatSkySnapshotLabel(skySnapshot), [skySnapshot]);
+
   return (
     <group>
       <mesh position={[0, 0.22, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <extrudeGeometry args={[triangleShape, { depth: 3.08, bevelEnabled: false }]} />
-        <meshStandardMaterial color="#08111a" metalness={0.86} roughness={0.22} emissive={openFace ? '#0a3140' : '#02070b'} emissiveIntensity={openFace ? 0.48 : 0.14} />
+        <meshStandardMaterial color="#251006" metalness={0.92} roughness={0.16} emissive={openFace ? '#ff7b1f' : '#5a2108'} emissiveIntensity={openFace ? 0.72 : 0.28} />
       </mesh>
 
       <mesh position={[0, 3.3, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[triangleShape]} />
-        <meshStandardMaterial color="#112531" metalness={0.86} roughness={0.2} />
+        <meshStandardMaterial color="#4b1807" metalness={0.9} roughness={0.18} emissive="#ff8a2b" emissiveIntensity={0.32} />
       </mesh>
       <mesh position={[0, 0.21, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[triangleShape]} />
-        <meshStandardMaterial color="#112531" metalness={0.86} roughness={0.2} />
+        <meshStandardMaterial color="#4b1807" metalness={0.9} roughness={0.18} emissive="#ff8a2b" emissiveIntensity={0.18} />
       </mesh>
 
       {faces.map((face) => {
         const isOpen = openFace === face.key;
+        const isCurrentCrew = activeCrewKey === face.key;
         return (
           <group key={face.key} position={[face.position[0], face.position[1] + 1.72, face.position[2]]} rotation={face.rotation}>
             <mesh position={[0, 0, 0.02]}>
-              <planeGeometry args={[1.46, 2.62]} />
-              <meshStandardMaterial color="#07111a" emissive={isOpen ? '#072534' : '#01060a'} emissiveIntensity={isOpen ? 0.52 : 0.08} metalness={0.55} roughness={0.28} />
+              <planeGeometry args={[1.58, 2.74]} />
+              <meshStandardMaterial color="#1b0c05" emissive={isOpen ? '#ff8a2b' : isCurrentCrew ? '#b7440c' : '#401406'} emissiveIntensity={isOpen ? 0.72 : isCurrentCrew ? 0.46 : 0.22} metalness={0.68} roughness={0.18} />
             </mesh>
-            <mesh position={[0, 0, 0.024]}>
-              <planeGeometry args={[1.28, 2.44]} />
-              <meshBasicMaterial color="#46ddff" transparent opacity={isOpen ? 0.08 : 0.03} depthWrite={false} />
+            <mesh position={[0, 0, 0.023]}>
+              <planeGeometry args={[1.42, 2.58]} />
+              <meshBasicMaterial color="#ff8a2b" transparent opacity={isOpen ? 0.13 : 0.07} depthWrite={false} />
+            </mesh>
+            <mesh position={[0, 0, 0.025]}>
+              <planeGeometry args={[1.34, 2.5]} />
+              <meshBasicMaterial color="#ffd5a5" transparent opacity={isOpen ? 0.045 : 0.02} depthWrite={false} />
             </mesh>
             <mesh position={[0, 0, 0.026]}>
-              <ringGeometry args={[0.62, 0.625, 72]} />
-              <meshBasicMaterial color="#71e8ff" transparent opacity={isOpen ? 0.2 : 0.08} />
+              <ringGeometry args={[0.62, 0.628, 72]} />
+              <meshBasicMaterial color="#ffb263" transparent opacity={isOpen ? 0.26 : 0.12} />
             </mesh>
 
-            <Text position={[0, 1.02, 0.05]} fontSize={0.1} color="#8cc9da" letterSpacing={0.14}>
-              {face.label}
+            <Text position={[0, 1.06, 0.05]} fontSize={0.105} color={isCurrentCrew ? '#fff6eb' : '#ffe4c6'} letterSpacing={0.14}>
+              {face.label}{isCurrentCrew ? ' // YOU' : ''}
             </Text>
 
             {isOpen && (
               <>
                 <mesh position={[0, 0, 0.045]}>
-                  <circleGeometry args={[0.78, 72]} />
-                  <meshBasicMaterial color="#071722" transparent opacity={0.22} depthWrite={false} />
+                  <circleGeometry args={[0.8, 72]} />
+                  <meshBasicMaterial color="#110b07" transparent opacity={0.28} depthWrite={false} />
                 </mesh>
                 <mesh position={[0, 0, 0.048]}>
-                  <ringGeometry args={[0.58, 0.585, 72]} />
-                  <meshBasicMaterial color="#71e8ff" transparent opacity={0.34} />
+                  <ringGeometry args={[0.58, 0.592, 72]} />
+                  <meshBasicMaterial color="#ff9a3d" transparent opacity={0.5} />
                 </mesh>
                 <mesh position={[0, 0, 0.049]}>
-                  <ringGeometry args={[0.77, 0.775, 96]} />
-                  <meshBasicMaterial color="#71e8ff" transparent opacity={0.16} />
+                  <ringGeometry args={[0.77, 0.782, 96]} />
+                  <meshBasicMaterial color="#ff9a3d" transparent opacity={0.22} />
                 </mesh>
                 <lineSegments>
                   <bufferGeometry>
                     <bufferAttribute attach="attributes-position" args={[connectorPositions, 3]} />
                   </bufferGeometry>
-                  <lineBasicMaterial color="#71e8ff" transparent opacity={0.42} />
+                  <lineBasicMaterial color="#ffb263" transparent opacity={0.48} />
                 </lineSegments>
                 {options.map(([label, key, angle]) => (
                   <BloomOption key={key} label={label} sectionKey={key} angle={angle} selected={activeSection === key} onSelect={onSectionSelect} />
                 ))}
+                {activeSection === 'sky' && (
+                  <>
+                    {skyControls.map((control) => (
+                      <SkyTimeChip
+                        key={control.action}
+                        label={control.label}
+                        angle={control.angle}
+                        selected={control.action === 'now'}
+                        onClick={() => onSkyTimeChange(control.action)}
+                      />
+                    ))}
+                    <Text position={[0, -1.02, 0.08]} fontSize={0.05} color="#ffd6a8" anchorX="center">SKY TIME // {skyTimeLabel}</Text>
+                  </>
+                )}
               </>
             )}
 
@@ -336,14 +563,14 @@ function ControlPillar({ openFace, activeSection, selectedMission, onFaceToggle,
               }}
             >
               <mesh position={[0, 0, 0.04]}>
-                <circleGeometry args={[0.2, 56]} />
-                <meshStandardMaterial color="#0a1923" emissive="#46ddff" emissiveIntensity={isOpen ? 1.25 : 0.82} metalness={0.68} roughness={0.24} />
+                <circleGeometry args={[0.205, 56]} />
+                <meshStandardMaterial color="#2d1307" emissive="#ff8a2b" emissiveIntensity={isOpen ? 1.6 : 1.05} metalness={0.82} roughness={0.18} />
               </mesh>
               <mesh position={[0, 0, 0.043]}>
-                <ringGeometry args={[0.175, 0.202, 56]} />
-                <meshBasicMaterial color="#b6fbff" transparent opacity={0.78} />
+                <ringGeometry args={[0.175, 0.208, 56]} />
+                <meshBasicMaterial color="#ffe7c7" transparent opacity={0.84} />
               </mesh>
-              <Text position={[0, 0, 0.048]} fontSize={0.045} color="#f3feff" anchorX="center" anchorY="middle">
+              <Text position={[0, 0, 0.048]} fontSize={0.045} color="#fff6eb" anchorX="center" anchorY="middle">
                 {isOpen ? 'CLOSE' : 'ACTIVATE'}
               </Text>
             </group>
@@ -351,11 +578,11 @@ function ControlPillar({ openFace, activeSection, selectedMission, onFaceToggle,
         );
       })}
 
-      <pointLight position={[0, 2.2, 0]} color={activeSection ? SECTION_COLORS[activeSection] : '#46ddff'} intensity={openFace ? 7 : 1.8} distance={4.8} />
+      <pointLight position={[0, 2.2, 0]} color={openFace ? '#ff8a2b' : '#ff6f1a'} intensity={openFace ? 9 : 3.2} distance={5.4} />
       {selectedMission && (
-        <Text position={[0, 3.36, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.11} color="#8feaff" anchorX="center">
+        <FloatingLabel position={[0, 3.36, 0]} fontSize={0.11} color="#8feaff">
           {selectedMission.title}
-        </Text>
+        </FloatingLabel>
       )}
     </group>
   );
@@ -497,7 +724,7 @@ function DeepSkyWindow({ selectedMission, captureOpen, activeSection }) {
   );
 }
 
-function CrewStations({ activeSection }) {
+function CrewStations({ activeSection, activeCrewKey }) {
   const crew = [
     ['DAVE', -2.6, 1.95],
     ['JUSTIN', 2.6, 1.95],
@@ -512,7 +739,7 @@ function CrewStations({ activeSection }) {
       <Text position={[0, 0.95, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.16} color="#a9efff">{name}</Text>
       <mesh position={[0, 1.07, 0]}>
         <sphereGeometry args={[0.045, 16, 16]} />
-        <meshBasicMaterial color={name === 'DAVE' ? '#47f0a7' : '#56707a'} />
+        <meshBasicMaterial color={name.toLowerCase() === activeCrewKey ? '#47f0a7' : '#56707a'} />
       </mesh>
     </group>
   ));
@@ -603,113 +830,339 @@ function SystemsPanel({ activeSection }) {
   );
 }
 
-function SkyMapOverlay({ gallery, selectedMission, onMissionSelect, activeSection }) {
-  const targets = gallery.slice(0, 12);
+function SkyMapOverlay({ gallery, selectedMission, onMissionSelect, activeSection, skySnapshot }) {
   const visible = activeSection === 'sky';
-  const points = useMemo(() =>
-    targets.map((mission, index) => {
-      const angle = (index / Math.max(targets.length, 1)) * Math.PI * 2 + (index % 3) * 0.18;
-      const radius = 1.7 + (index % 4) * 1.35;
-      return {
-        mission,
-        x: Math.cos(angle) * radius,
-        z: Math.sin(angle) * radius,
-        drop: 0.16 + (index % 5) * 0.11,
-      };
-    }),
-  [targets]);
 
-  const linePositions = useMemo(() => {
+  const snapshotLabel = useMemo(() => skySnapshot.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  }).toUpperCase(), [skySnapshot]);
+
+  const capturedTargets = useMemo(() => (gallery || [])
+    .slice(0, 16)
+    .map((mission) => {
+      const coords = getSkyCoords(mission);
+      if (!coords) return null;
+      const projection = getHorizontalProjection(skySnapshot, coords.ra, coords.dec, 7.0);
+      if (!projection || projection.altitude <= 0) return null;
+      return { ...mission, ...projection };
+    })
+    .filter(Boolean), [gallery, skySnapshot]);
+
+  const futureTargets = useMemo(() => HOLODECK_FUTURE_TARGETS
+    .map((target) => {
+      const projection = getHorizontalProjection(skySnapshot, target.ra, target.dec, 7.0);
+      if (!projection || projection.altitude <= 0) return null;
+      return { ...target, ...projection };
+    })
+    .filter(Boolean), [skySnapshot]);
+
+  const visibleConstellationStars = useMemo(() => CEILING_STAR_CATALOG
+    .map((star) => {
+      const projection = getHorizontalProjection(skySnapshot, star.ra, star.dec, 7.0);
+      if (!projection || projection.altitude <= 0) return null;
+      return { ...star, ...projection };
+    })
+    .filter(Boolean), [skySnapshot]);
+
+  const starMap = useMemo(() => Object.fromEntries(visibleConstellationStars.map((star) => [star.id, star])), [visibleConstellationStars]);
+
+  const constellationLineData = useMemo(() => {
     const values = [];
-    for (let i = 0; i < points.length - 1; i += 1) {
-      if (i % 4 === 3) continue;
-      values.push(points[i].x, -0.035, points[i].z, points[i + 1].x, -0.035, points[i + 1].z);
-    }
+    CEILING_CONSTELLATION_SEGMENTS.forEach(([from, to]) => {
+      const a = starMap[from];
+      const b = starMap[to];
+      if (!a || !b) return;
+      values.push(a.x, -0.02, a.z, b.x, -0.02, b.z);
+    });
     return new Float32Array(values);
-  }, [points]);
+  }, [starMap]);
+
+  const eclipticPathData = useMemo(() => buildProjectedPathFromRaDec(
+    skySnapshot,
+    (t) => ({ ra: t * 24, dec: 23 * Math.sin(t * Math.PI * 2 - 0.85) }),
+    72,
+    7.0,
+    -2,
+  ), [skySnapshot]);
+
+  const lunarPathData = useMemo(() => buildProjectedPathFromRaDec(
+    skySnapshot,
+    (t) => ({ ra: t * 24, dec: 28 * Math.sin(t * Math.PI * 2 - 0.35) + 5 }),
+    72,
+    7.0,
+    -2,
+  ), [skySnapshot]);
+
+  const currentBodies = useMemo(() => getCurrentSkyBodies(skySnapshot), [skySnapshot]);
+  const skyBackdropStars = useMemo(() => {
+    const rand = (seed) => {
+      const value = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+      return value - Math.floor(value);
+    };
+
+    const overlayPoints = [
+      ...capturedTargets.map((target) => ({ x: target.x, z: target.z })),
+      ...futureTargets.map((target) => ({ x: target.x, z: target.z })),
+      ...currentBodies.map((body) => ({ x: body.x, z: body.z })),
+    ];
+
+    return Array.from({ length: 164 }, (_, index) => {
+      const laneBias = rand(index + 4.2);
+      const alongBand = (rand(index + 11.4) - 0.5) * 15.5;
+      const bandNoise = (rand(index + 19.7) - 0.5) * (laneBias > 0.55 ? 1.5 : 6.4);
+      const bandAngle = -0.48;
+      const bandX = alongBand;
+      const bandZ = bandNoise + Math.sin(alongBand * 0.32) * 0.42;
+      const rotatedX = bandX * Math.cos(bandAngle) - bandZ * Math.sin(bandAngle);
+      const rotatedZ = bandX * Math.sin(bandAngle) + bandZ * Math.cos(bandAngle);
+
+      const randomAngle = rand(index + 27.1) * Math.PI * 2;
+      const randomRadius = Math.pow(rand(index + 35.8), 0.76) * 7.76;
+      const x = laneBias > 0.55 ? rotatedX : Math.cos(randomAngle) * randomRadius;
+      const z = laneBias > 0.55 ? rotatedZ : Math.sin(randomAngle) * randomRadius;
+
+      const radius = Math.hypot(x, z);
+      if (radius > 7.8) return null;
+
+      const brightness = rand(index + 51.3);
+      const nearestOverlay = overlayPoints.reduce((closest, point) => {
+        const distance = Math.hypot(x - point.x, z - point.z);
+        return Math.min(closest, distance);
+      }, Infinity);
+      const overlayFade = nearestOverlay < 0.7 ? 0.2 : nearestOverlay < 1.2 ? 0.48 : 1;
+      const bandBoost = laneBias > 0.55 ? 1.08 : 0.86;
+
+      return {
+        x,
+        z,
+        size: brightness > 0.96 ? 0.036 : brightness > 0.82 ? 0.027 : brightness > 0.5 ? 0.019 : 0.013,
+        opacity: Math.min(0.82, (brightness > 0.9 ? 0.78 : brightness > 0.62 ? 0.52 : 0.28) * overlayFade * bandBoost),
+      };
+    }).filter(Boolean);
+  }, [capturedTargets, currentBodies, futureTargets]);
+  const polaris = starMap.polaris;
+  const selectedCoords = getSkyCoords(selectedMission);
 
   if (!visible) return null;
 
   return (
     <group position={[0, 4.74, 0]}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[8.5, 120]} />
-        <meshBasicMaterial color="#07061a" transparent opacity={0.7} depthWrite={false} />
+        <circleGeometry args={[8.55, 160]} />
+        <meshBasicMaterial color="#090918" transparent opacity={0.14} depthWrite={false} />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-        <ringGeometry args={[8.15, 8.35, 160]} />
-        <meshBasicMaterial color="#ac9dff" transparent opacity={0.38} />
+      <mesh position={[0, -0.03, 0]} rotation={[Math.PI / 2, 0, -0.48]}>
+        <planeGeometry args={[15.8, 2.1]} />
+        <meshBasicMaterial color="#8278cf" transparent opacity={0.045} depthWrite={false} />
       </mesh>
-      {[1.7, 3.4, 5.1, 6.8].map((radius) => (
-        <mesh key={radius} rotation={[Math.PI / 2, 0, 0]} position={[0, -0.024, 0]}>
-          <ringGeometry args={[radius - 0.015, radius + 0.015, 128]} />
-          <meshBasicMaterial color="#8f78ff" transparent opacity={0.28} />
+      <mesh position={[0, -0.031, 0]} rotation={[Math.PI / 2, 0, -0.48]}>
+        <planeGeometry args={[15.3, 0.9]} />
+        <meshBasicMaterial color="#b5a8ff" transparent opacity={0.028} depthWrite={false} />
+      </mesh>
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.012, 0]}>
+        <ringGeometry args={[8.18, 8.34, 180]} />
+        <meshBasicMaterial color="#c0b5ff" transparent opacity={0.18} />
+      </mesh>
+      {[2.4, 4.8, 7.2].map((radius) => (
+        <mesh key={radius} rotation={[Math.PI / 2, 0, 0]} position={[0, -0.022, 0]}>
+          <ringGeometry args={[radius - 0.012, radius + 0.012, 128]} />
+          <meshBasicMaterial color="#9482eb" transparent opacity={0.04} />
         </mesh>
       ))}
-      {Array.from({ length: 12 }).map((_, index) => {
-        const rotation = (index / 12) * Math.PI * 2;
-        return (
-          <mesh key={index} position={[0, -0.026, 0]} rotation={[Math.PI / 2, 0, rotation]}>
-            <planeGeometry args={[15.8, 0.018]} />
-            <meshBasicMaterial color="#8f78ff" transparent opacity={0.2} />
-          </mesh>
-        );
-      })}
 
       <lineSegments>
         <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[linePositions, 3]} />
+          <bufferAttribute attach="attributes-position" args={[new Float32Array([
+            0, -0.024, -7.95, 0, -0.024, 7.95,
+            -7.95, -0.024, 0, 7.95, -0.024, 0,
+          ]), 3]} />
         </bufferGeometry>
-        <lineBasicMaterial color="#c6bcff" transparent opacity={0.34} />
+        <lineBasicMaterial color="#8d7af0" transparent opacity={0.05} />
       </lineSegments>
 
-      {points.map(({ mission, x, z, drop }) => {
-        const active = selectedMission?.id === mission.id;
+      {constellationLineData.length > 0 && (
+        <lineSegments>
+          <bufferGeometry>
+            <bufferAttribute attach="attributes-position" args={[constellationLineData, 3]} />
+          </bufferGeometry>
+          <lineBasicMaterial color="#dce8ff" transparent opacity={0.72} />
+        </lineSegments>
+      )}
+
+      {eclipticPathData.length > 0 && (
+        <line>
+          <bufferGeometry>
+            <bufferAttribute attach="attributes-position" args={[eclipticPathData, 3]} />
+          </bufferGeometry>
+          <lineBasicMaterial color="#ffb75c" transparent opacity={0.24} />
+        </line>
+      )}
+      {lunarPathData.length > 0 && (
+        <line>
+          <bufferGeometry>
+            <bufferAttribute attach="attributes-position" args={[lunarPathData, 3]} />
+          </bufferGeometry>
+          <lineBasicMaterial color="#cfefff" transparent opacity={0.22} />
+        </line>
+      )}
+
+      {skyBackdropStars.map((star, index) => (
+        <mesh key={`backdrop-${index}`} position={[star.x, -0.027, star.z]}>
+          <sphereGeometry args={[star.size, 10, 10]} />
+          <meshBasicMaterial color="#e8eeff" transparent opacity={star.opacity} />
+        </mesh>
+      ))}
+
+      {['N', 'E', 'S', 'W'].map((label, index) => {
+        const angle = (index / 4) * Math.PI * 2;
+        const x = Math.sin(angle) * 7.88;
+        const z = -Math.cos(angle) * 7.88;
         return (
-          <group key={mission.id || mission.title} position={[x, -drop, z]} onClick={(event) => { event.stopPropagation(); onMissionSelect(mission); }}>
-            <mesh position={[0, drop / 2, 0]}>
-              <cylinderGeometry args={[0.008, 0.008, drop, 8]} />
-              <meshBasicMaterial color="#9e8bff" transparent opacity={0.35} />
-            </mesh>
+          <group key={label} position={[x, -0.034, z]}>
             <mesh rotation={[Math.PI / 2, 0, 0]}>
-              <ringGeometry args={[active ? 0.16 : 0.085, active ? 0.235 : 0.14, 32]} />
-              <meshBasicMaterial color={active ? '#ffb75c' : '#d1c7ff'} transparent opacity={0.96} />
+              <ringGeometry args={[0.28, 0.38, 40]} />
+              <meshBasicMaterial color="#ff9a3d" transparent opacity={0.72} />
             </mesh>
-            <mesh position={[0, -0.02, 0]}>
-              <sphereGeometry args={[0.042, 16, 16]} />
-              <meshBasicMaterial color={active ? '#ffd39a' : '#f0ebff'} />
+            <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.002, 0]}>
+              <ringGeometry args={[0.2, 0.22, 40]} />
+              <meshBasicMaterial color="#ffd8a6" transparent opacity={0.52} />
             </mesh>
-            <Text position={[0.2, -0.02, 0]} rotation={[Math.PI / 2, 0, 0]} fontSize={0.09} color={active ? '#ffd39a' : '#ddd7ff'} anchorX="left">
-              {mission.title || 'TARGET'}
-            </Text>
+            <mesh position={[0, -0.004, 0]}>
+              <circleGeometry args={[0.2, 32]} />
+              <meshBasicMaterial color="#1d1007" transparent opacity={0.82} depthWrite={false} />
+            </mesh>
+            <FloatingLabel position={[0, -0.28, 0]} fontSize={0.29} color="#fff0dc">{label}</FloatingLabel>
           </group>
         );
       })}
 
-      {selectedMission && (
-        <group position={[0, -0.88, -0.2]}>
+      {visibleConstellationStars.map((star) => (
+        <group key={star.id} position={[star.x, -0.03, star.z]}>
           <mesh>
-            <planeGeometry args={[4.2, 1.2]} />
-            <meshBasicMaterial color="#0b0920" transparent opacity={0.88} />
+            <sphereGeometry args={[star.id === 'polaris' ? 0.05 : 0.038, 16, 16]} />
+            <meshBasicMaterial color={star.id === 'polaris' ? '#fff8d8' : '#f6f7ff'} />
           </mesh>
-          <mesh position={[0, 0, 0.01]}>
-            <planeGeometry args={[3.95, 0.96]} />
-            <meshBasicMaterial color="#8f78ff" transparent opacity={0.06} />
+          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.002, 0]}>
+            <ringGeometry args={[star.id === 'polaris' ? 0.08 : 0.05, star.id === 'polaris' ? 0.13 : 0.075, 24]} />
+            <meshBasicMaterial color={star.id === 'polaris' ? '#fff3c4' : '#d4e3ff'} transparent opacity={star.id === 'polaris' ? 0.72 : 0.34} />
           </mesh>
-          <Text position={[0, 0.24, 0.02]} fontSize={0.17} color="#efeaff" anchorX="center">{selectedMission.title || 'TARGET SELECTED'}</Text>
-          <Text position={[0, -0.02, 0.02]} fontSize={0.085} color="#b7a9ff" anchorX="center">{String(selectedMission.objectType || selectedMission.category || 'Mission target').toUpperCase()}</Text>
-          <Text position={[0, -0.28, 0.02]} fontSize={0.075} color="#887ae0" anchorX="center">LINKED TO MISSION ARCHIVE // CEILING CELESTIAL OVERLAY</Text>
+          {(star.major || star.id === 'polaris') && (
+            <FloatingLabel position={[0.18, 0.05, 0]} fontSize={star.id === 'polaris' ? 0.075 : 0.06} color={star.id === 'polaris' ? '#fff3c4' : '#d8e7ff'} anchorX="left">
+              {star.name.toUpperCase()}
+            </FloatingLabel>
+          )}
+        </group>
+      ))}
+
+      {currentBodies.map((body) => (
+        <group key={body.name} position={[body.x, -0.28, body.z]}>
+          <mesh position={[0, 0.14, 0]}>
+            <cylinderGeometry args={[0.008, 0.008, 0.28, 8]} />
+            <meshBasicMaterial color={body.color} transparent opacity={0.42} />
+          </mesh>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[body.name === 'MOON' ? 0.11 : 0.09, body.name === 'MOON' ? 0.16 : 0.13, 36]} />
+            <meshBasicMaterial color={body.color} transparent opacity={0.92} />
+          </mesh>
+          <mesh position={[0, -0.018, 0]}>
+            <sphereGeometry args={[body.name === 'MOON' ? 0.055 : 0.04, 16, 16]} />
+            <meshBasicMaterial color={body.color} />
+          </mesh>
+          <FloatingLabel position={[0.17, 0.05, 0]} fontSize={0.055} color={body.color} anchorX="left">
+            {body.name}
+          </FloatingLabel>
+        </group>
+      ))}
+
+      {capturedTargets.map((target) => {
+        const active = selectedMission?.id === target.id || selectedMission?.title === target.title;
+        return (
+          <group key={target.id || target.title} position={[target.x, -0.22, target.z]} onClick={(event) => { event.stopPropagation(); onMissionSelect(target); }}>
+            <mesh position={[0, 0.11, 0]}>
+              <cylinderGeometry args={[0.01, 0.01, 0.22, 8]} />
+              <meshBasicMaterial color="#43d4ff" transparent opacity={0.4} />
+            </mesh>
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[active ? 0.15 : 0.095, active ? 0.21 : 0.14, 32]} />
+              <meshBasicMaterial color={active ? '#ffffff' : '#43d4ff'} transparent opacity={0.96} />
+            </mesh>
+            <mesh position={[0, -0.02, 0]}>
+              <sphereGeometry args={[0.042, 16, 16]} />
+              <meshBasicMaterial color={active ? '#ffd39a' : '#a5f1ff'} />
+            </mesh>
+            <FloatingLabel position={[0.18, 0.05, 0]} fontSize={0.07} color={active ? '#ffffff' : '#b4efff'} anchorX="left">
+              {target.shortTitle || target.title}
+            </FloatingLabel>
+          </group>
+        );
+      })}
+
+      {futureTargets.map((target) => (
+        <group key={target.title} position={[target.x, -0.18, target.z]}>
+          <mesh position={[0, 0.09, 0]}>
+            <cylinderGeometry args={[0.008, 0.008, 0.18, 8]} />
+            <meshBasicMaterial color="#ffb75c" transparent opacity={0.34} />
+          </mesh>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.07, 0.11, 28]} />
+            <meshBasicMaterial color="#ffb75c" transparent opacity={0.82} />
+          </mesh>
+          <mesh position={[0, -0.015, 0]}>
+            <sphereGeometry args={[0.028, 14, 14]} />
+            <meshBasicMaterial color="#ffd49f" />
+          </mesh>
+          <FloatingLabel position={[0.13, 0.045, 0]} fontSize={0.055} color="#ffd39c" anchorX="left">
+            {target.shortTitle || target.title}
+          </FloatingLabel>
+        </group>
+      ))}
+
+      <group position={[5.65, -0.58, -4.7]}>
+        <mesh>
+          <planeGeometry args={[3.3, 1.95]} />
+          <meshBasicMaterial color="#090918" transparent opacity={0.88} />
+        </mesh>
+        <Text position={[-1.22, 0.66, 0.02]} fontSize={0.12} color="#ece7ff" anchorX="left">HOLODECK SKY MAP</Text>
+        <Text position={[-1.22, 0.42, 0.02]} fontSize={0.07} color="#8f78ff" anchorX="left">LIVE SKY SNAPSHOT // ELIOT, MAINE</Text>
+        <mesh position={[-1.13, 0.1, 0.01]}><circleGeometry args={[0.045, 18]} /><meshBasicMaterial color="#43d4ff" /></mesh>
+        <Text position={[-1.0, 0.1, 0.02]} fontSize={0.06} color="#bcefff" anchorX="left">Captured missions</Text>
+        <mesh position={[-1.13, -0.14, 0.01]}><circleGeometry args={[0.045, 18]} /><meshBasicMaterial color="#ffb75c" /></mesh>
+        <Text position={[-1.0, -0.14, 0.02]} fontSize={0.06} color="#ffd9b0" anchorX="left">Future targets</Text>
+        <mesh position={[0.38, 0.1, 0.01]}><planeGeometry args={[0.17, 0.012]} /><meshBasicMaterial color="#ffb75c" /></mesh>
+        <Text position={[0.56, 0.1, 0.02]} fontSize={0.06} color="#fff0c8" anchorX="left">Planetary path</Text>
+        <mesh position={[0.38, -0.14, 0.01]}><planeGeometry args={[0.17, 0.012]} /><meshBasicMaterial color="#cfefff" /></mesh>
+        <Text position={[0.56, -0.14, 0.02]} fontSize={0.06} color="#d3f7ff" anchorX="left">Lunar path</Text>
+        <mesh position={[0.38, -0.38, 0.01]}><circleGeometry args={[0.045, 18]} /><meshBasicMaterial color="#fff3c4" /></mesh>
+        <Text position={[0.56, -0.38, 0.02]} fontSize={0.06} color="#fff6d9" anchorX="left">Polaris</Text>
+        <Text position={[-1.22, -0.62, 0.02]} fontSize={0.05} color="#7369b8" anchorX="left">{snapshotLabel}</Text>
+        <Text position={[-1.22, -0.82, 0.02]} fontSize={0.05} color="#7369b8" anchorX="left">MIDNIGHT / ±1H / NOW ON CONTROL PILLAR</Text>
+      </group>
+
+      {selectedMission && selectedCoords && (
+        <group position={[-5.0, -0.68, -4.8]}>
+          <mesh>
+            <planeGeometry args={[4.4, 1.85]} />
+            <meshBasicMaterial color="#090918" transparent opacity={0.9} />
+          </mesh>
+          <Text position={[-1.82, 0.58, 0.02]} fontSize={0.15} color="#f6f1ff" anchorX="left">{selectedMission.title || 'TARGET SELECTED'}</Text>
+          <Text position={[-1.82, 0.26, 0.02]} fontSize={0.075} color="#b6a7ff" anchorX="left">{String(selectedMission.objectType || selectedMission.category || 'Mission target').toUpperCase()}</Text>
+          <Text position={[-1.82, -0.04, 0.02]} fontSize={0.065} color="#90dff2" anchorX="left">RA {selectedCoords.ra.toFixed(3)}h // DEC {selectedCoords.dec.toFixed(2)}°</Text>
+          <Text position={[-1.82, -0.32, 0.02]} fontSize={0.065} color="#8679dc" anchorX="left">CURRENT SKY SNAPSHOT // ABOVE-HORIZON CEILING VIEW</Text>
+          <Text position={[-1.82, -0.58, 0.02]} fontSize={0.06} color="#7369b8" anchorX="left">VISIBLE TARGETS ONLY ARE RENDERED IN THE CEILING MAP</Text>
         </group>
       )}
 
-      <Text position={[0, -0.06, -7.7]} rotation={[Math.PI / 2, 0, 0]} fontSize={0.25} color="#b5a8ff">CUZBRO SKY MAP // CEILING HOLOGRAM</Text>
-      <Text position={[0, -0.06, 7.55]} rotation={[Math.PI / 2, Math.PI, 0]} fontSize={0.1} color="#8f78ff">SELECT TARGET MARKER TO LINK MISSION RECORD</Text>
-      <pointLight position={[0, -0.78, 0]} color="#8f78ff" intensity={18} distance={11} />
+      <pointLight position={[0, -0.82, 0]} color="#8f78ff" intensity={18} distance={11.5} />
     </group>
   );
 }
 
-function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenFace, activeSection, onSectionSelect, focusRequest, clearFocus, controlsEnabled, captureOpen, setCaptureOpen }) {
+function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenFace, activeSection, onSectionSelect, focusRequest, clearFocus, controlsEnabled, captureOpen, setCaptureOpen, skySnapshot, onSkyTimeChange, activeCrewKey }) {
   const activeColor = SECTION_COLORS[activeSection] || '#1ba8cf';
   const previewUrl = getImageUrl(getMissionImage(selectedMission));
 
@@ -731,33 +1184,61 @@ function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenF
       <DeepSkyWindow selectedMission={selectedMission} captureOpen={captureOpen} activeSection={activeSection} />
       <MissionDetailPanel mission={selectedMission} captureOpen={captureOpen} activeSection={activeSection} previewUrl={previewUrl} onOpenCapture={() => setCaptureOpen((value) => !value)} />
       <MissionWall gallery={gallery} selectedMission={selectedMission} previewUrl={previewUrl} onMissionSelect={(mission) => { setSelectedMission(mission); setCaptureOpen(false); }} onOpenCapture={() => setCaptureOpen((value) => !value)} captureOpen={captureOpen} />
-      <CrewStations activeSection={activeSection} />
+      <CrewStations activeSection={activeSection} activeCrewKey={activeCrewKey} />
       <TelescopeDisplay activeSection={activeSection} />
       <CommsPanel activeSection={activeSection} />
       <SystemsPanel activeSection={activeSection} />
-      <ControlPillar openFace={openFace} activeSection={activeSection} selectedMission={selectedMission} onFaceToggle={(faceKey) => setOpenFace((current) => current === faceKey ? null : faceKey)} onSectionSelect={onSectionSelect} />
-      <SkyMapOverlay gallery={gallery} selectedMission={selectedMission} onMissionSelect={(mission) => { setSelectedMission(mission); setCaptureOpen(false); }} activeSection={activeSection} />
+      <ControlPillar openFace={openFace} activeSection={activeSection} selectedMission={selectedMission} skySnapshot={skySnapshot} activeCrewKey={activeCrewKey} onFaceToggle={(faceKey) => setOpenFace((current) => current === faceKey ? null : faceKey)} onSectionSelect={onSectionSelect} onSkyTimeChange={onSkyTimeChange} />
+      <SkyMapOverlay gallery={gallery} selectedMission={selectedMission} onMissionSelect={(mission) => { setSelectedMission(mission); setCaptureOpen(false); }} activeSection={activeSection} skySnapshot={skySnapshot} />
     </>
   );
 }
 
-export default function Holodeck({ gallery = [] }) {
+export default function Holodeck({ gallery = [], session = null, crew = null }) {
+  const activeCrewKey = String(crew?.callSign || '').toLowerCase();
   const [booted, setBooted] = useState(false);
-  const [openFace, setOpenFace] = useState(null);
+  const [openFace, setOpenFace] = useState(activeCrewKey || null);
   const [selectedMission, setSelectedMission] = useState(gallery[0] || null);
   const [activeSection, setActiveSection] = useState(null);
   const [focusRequest, setFocusRequest] = useState(null);
   const [xrError, setXrError] = useState('');
   const [captureOpen, setCaptureOpen] = useState(false);
+  const [skySnapshot, setSkySnapshot] = useState(() => new Date());
 
   useEffect(() => {
     if (!selectedMission && gallery.length) setSelectedMission(gallery[0]);
   }, [gallery, selectedMission]);
 
+  useEffect(() => {
+    if (activeCrewKey) setOpenFace(activeCrewKey);
+  }, [activeCrewKey]);
+
   function selectSection(key) {
     setActiveSection(key);
-    setOpenFace(null);
+    if (key !== 'sky') setOpenFace(null);
     setFocusRequest({ key: `${key}-${Date.now()}`, preset: SECTION_PRESETS[key] });
+  }
+
+  function adjustSkyTime(action) {
+    setSkySnapshot((current) => {
+      const next = new Date(current);
+      if (action === 'now') return new Date();
+      if (action === 'midnight') {
+        next.setHours(0, 0, 0, 0);
+        return next;
+      }
+      if (action === '+1h') {
+        next.setHours(next.getHours() + 1);
+        return next;
+      }
+      if (action === '-1h') {
+        next.setHours(next.getHours() - 1);
+        return next;
+      }
+      return current;
+    });
+    setActiveSection('sky');
+    setFocusRequest({ key: `sky-${Date.now()}`, preset: SECTION_PRESETS.sky });
   }
 
   async function enterVR() {
@@ -775,10 +1256,10 @@ export default function Holodeck({ gallery = [] }) {
       {!booted && (
         <div className="virtualWatchBoot">
           <div className="virtualWatchBootMark">∞</div>
-          <p>CUZBRO OBSERVATORY</p>
+          <p>CREW AUTHENTICATED // {crew?.callSign || 'UNKNOWN'}</p>
           <h1>THE HOLODECK</h1>
-          <span>ELIOT, MAINE // IMMERSIVE OPERATIONS ENVIRONMENT</span>
-          <button type="button" onClick={() => setBooted(true)}>ENTER HOLODECK</button>
+          <span>{crew?.role || 'CUZBRO CREW'} // SESSION {session?.user?.id ? 'VERIFIED' : 'UNVERIFIED'}</span>
+          <button type="button" onClick={() => setBooted(true)}>ENTER AS {crew?.callSign || 'CREW'}</button>
         </div>
       )}
 
@@ -799,6 +1280,9 @@ export default function Holodeck({ gallery = [] }) {
                 controlsEnabled={booted}
                 captureOpen={captureOpen}
                 setCaptureOpen={setCaptureOpen}
+                skySnapshot={skySnapshot}
+                onSkyTimeChange={adjustSkyTime}
+                activeCrewKey={activeCrewKey}
               />
             </Suspense>
           </XR>
@@ -807,9 +1291,10 @@ export default function Holodeck({ gallery = [] }) {
 
       {booted && (
         <>
-          <a href="/" className="virtualWatchExit"><ChevronLeft size={18} /> EXIT HOLODECK</a>
+          <a href="/admin" className="virtualWatchExit"><ChevronLeft size={18} /> EXIT HOLODECK</a>
           <div className="virtualWatchHelp">WASD TO MOVE · CLICK + DRAG TO LOOK · USE THE CENTER CONTROL PILLAR</div>
           <button type="button" className="virtualWatchVrButton virtualWatchVrStandalone" onClick={enterVR}>ENTER VR</button>
+          <div style={{ position: 'fixed', right: '1.4rem', top: '1.4rem', zIndex: 12, padding: '.72rem 1rem', border: '1px solid rgba(255,138,43,.4)', borderRadius: '999px', background: 'rgba(12,6,2,.78)', color: '#ffd6a8', fontFamily: 'monospace', letterSpacing: '.12em', fontSize: '.75rem' }}>CREW // {crew?.callSign || 'UNKNOWN'} · {crew?.role || 'CREW'}</div>
           {activeSection && <div className="virtualWatchSectionState"><span style={{ background: SECTION_COLORS[activeSection] }} /> ARRAY FOCUS // {activeSection.toUpperCase()}</div>}
           {xrError && <div className="virtualWatchXrError"><X size={15} /> {xrError}</div>}
         </>

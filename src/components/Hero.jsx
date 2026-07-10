@@ -70,7 +70,6 @@ export default function Hero({
             </div>
           </div>
 
-          <a href="/holodeck">Holodeck</a>
 
           <div className="navDropdown">
             <button type="button" className="navDropdownTrigger">

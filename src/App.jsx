@@ -200,17 +200,6 @@ function PageNav({ scrolled }) {
           </div>
         </div>
 
-        <a
-          href="/holodeck"
-          className={
-            pathname === '/holodeck'
-              ? 'active'
-              : ''
-          }
-        >
-          Holodeck
-        </a>
-
         <div className="navDropdown">
           <button
             type="button"
@@ -379,6 +368,18 @@ function AdminTopNav({
           onClick={closeDropdown}
         >
           Admin Home
+        </a>
+
+        <a
+          href="/admin/holodeck"
+          className={
+            isActive(['/admin/holodeck'])
+              ? 'active'
+              : ''
+          }
+          onClick={closeDropdown}
+        >
+          Holodeck
         </a>
 
         <div
@@ -596,9 +597,9 @@ export default function App() {
   const requestedMissionView =
     searchParams.get('view') || 'report';
 
-  const isHolodeckPage =
-    pathname === '/holodeck' ||
-    pathname === '/holodeck/';
+  const isAdminHolodeckPage =
+    pathname === '/admin/holodeck' ||
+    pathname === '/admin/holodeck/';
 
   const isAdminCaptainsLogPage =
     pathname ===
@@ -670,6 +671,7 @@ export default function App() {
     isAdminIncidentsPage ||
     isAdminTasksPage ||
     isAdminWatchPage ||
+    isAdminHolodeckPage ||
     isAdminSystemPage ||
     isAdminStoragePage ||
     isAdminBlackBoxPage ||
@@ -1777,14 +1779,6 @@ export default function App() {
     lightboxGallery.length
   ]);
 
-  if (isHolodeckPage) {
-    return (
-      <Suspense fallback={<div className="virtualWatchRouteLoading">INITIALIZING HOLODECK...</div>}>
-        <Holodeck gallery={gallery} />
-      </Suspense>
-    );
-  }
-
   if (
     isPasswordRecovery ||
     isPasswordResetPage
@@ -1801,6 +1795,20 @@ export default function App() {
 
     if (!session) {
       return <Login />;
+    }
+
+    if (isAdminHolodeckPage) {
+      const holodeckCrew = getCrewMember(session.user?.email);
+
+      return (
+        <Suspense fallback={<div className="virtualWatchRouteLoading">AUTHENTICATING CREW // INITIALIZING HOLODECK...</div>}>
+          <Holodeck
+            gallery={gallery}
+            session={session}
+            crew={holodeckCrew}
+          />
+        </Suspense>
+      );
     }
 
     let adminContent = null;
