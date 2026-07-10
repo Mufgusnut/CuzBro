@@ -7,8 +7,8 @@ const BROADCAST_INTERVAL_MS = 100;
 
 const CREW_AVATAR_COLORS = {
   dave: '#43d4ff',
-  justin: '#9d7cff',
-  chappy: '#ff9a3d',
+  justin: '#ff9a3d',
+  chappy: '#9d7cff',
 };
 
 function normalizePose(pose) {

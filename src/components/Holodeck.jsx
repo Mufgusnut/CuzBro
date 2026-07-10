@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Billboard, Html, Stars, Text } from '@react-three/drei';
+import { Billboard, Html, Stars, Text, useGLTF } from '@react-three/drei';
 import { XR, createXRStore } from '@react-three/xr';
 import { ChevronLeft, X } from 'lucide-react';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -8,6 +8,12 @@ import { Body, Equator, Horizon, Observer } from 'astronomy-engine';
 import { useHolodeckPresence } from '../lib/holodeckPresence.js';
 
 const xrStore = createXRStore();
+
+// Runtime-only foreground blockers used by browser-image overlays. Drei Html lives
+// above the WebGL canvas, so mission images need a manual camera-to-image test
+// for crew bodies in addition to the center control prism.
+const HOLODECK_AVATAR_BLOCKERS = new Map();
+
 
 const SECTION_PRESETS = {
   missions: { position: [-4.45, 1.72, -1.2], lookAt: [-7.75, 2.18, -1.2] },
@@ -231,6 +237,29 @@ function PillarOccludedHtml({ position, distanceFactor, children, style = {} }) 
         && distanceFromPillar < 1.34
         && closestY > 0.12
         && closestY < 3.38;
+
+      if (!blocked) {
+        for (const blocker of HOLODECK_AVATAR_BLOCKERS.values()) {
+          const bx = Number(blocker?.x) || 0;
+          const bz = Number(blocker?.z) || 0;
+          const radius = Number(blocker?.radius) || 0.52;
+          const minY = Number(blocker?.minY) || 0.38;
+          const maxY = Number(blocker?.maxY) || 2.55;
+          const blockerT = (((bx - camX) * dx) + ((bz - camZ) * dz)) / horizontalLengthSq;
+
+          if (blockerT <= 0.02 || blockerT >= 0.98) continue;
+
+          const lineX = camX + dx * blockerT;
+          const lineZ = camZ + dz * blockerT;
+          const lineY = camY + dy * blockerT;
+          const horizontalDistance = Math.hypot(lineX - bx, lineZ - bz);
+
+          if (horizontalDistance < radius && lineY > minY && lineY < maxY) {
+            blocked = true;
+            break;
+          }
+        }
+      }
     }
 
     if (blocked !== hiddenRef.current) {
@@ -864,6 +893,155 @@ function lerpAngle(current, target, factor) {
   return current + delta * factor;
 }
 
+
+
+
+function GusGLBModel({ accent = '#8feaff', sleeping = false }) {
+  const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/gus.glb`);
+  const model = useMemo(() => scene.clone(true), [scene]);
+
+  useEffect(() => {
+    model.traverse((child) => {
+      if (!child.isMesh || !child.material) return;
+      child.castShadow = false;
+      child.receiveShadow = false;
+      child.frustumCulled = true;
+
+      if (child.material.name === 'Holodeck_Cyan_Rim') {
+        child.material = child.material.clone();
+        child.material.emissive = new THREE.Color(accent);
+        child.material.emissiveIntensity = sleeping ? 0.42 : 0.9;
+        child.material.opacity = sleeping ? 0.1 : 0.2;
+        child.material.transparent = true;
+        child.material.depthWrite = false;
+      }
+    });
+  }, [model, accent, sleeping]);
+
+  return <primitive object={model} />;
+}
+
+useGLTF.preload(`${import.meta.env.BASE_URL}models/gus.glb`);
+
+function BeauGLBModel({ accent = '#ff9a3d', sleeping = false }) {
+  const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/beau.glb`);
+  const model = useMemo(() => scene.clone(true), [scene]);
+
+  useEffect(() => {
+    model.traverse((child) => {
+      if (!child.isMesh || !child.material) return;
+      child.castShadow = false;
+      child.receiveShadow = false;
+      child.frustumCulled = true;
+
+      if (child.material.name === 'Holodeck_Orange_Rim') {
+        child.material = child.material.clone();
+        child.material.color = new THREE.Color(accent);
+        child.material.emissive = new THREE.Color(accent);
+        child.material.emissiveIntensity = sleeping ? 0.55 : 1.25;
+        child.material.opacity = sleeping ? 0.16 : 0.34;
+        child.material.transparent = true;
+        child.material.depthWrite = false;
+        child.material.roughness = 0.08;
+        child.material.metalness = 0.0;
+        child.material.side = THREE.BackSide;
+      }
+    });
+  }, [model, accent, sleeping]);
+
+  return <primitive object={model} />;
+}
+
+useGLTF.preload(`${import.meta.env.BASE_URL}models/beau.glb`);
+
+function EchoGLBModel({ accent = '#9d7cff', sleeping = false }) {
+  const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/echo.glb`);
+  const model = useMemo(() => scene.clone(true), [scene]);
+
+  useEffect(() => {
+    model.traverse((child) => {
+      if (!child.isMesh || !child.material) return;
+      child.castShadow = false;
+      child.receiveShadow = false;
+      child.frustumCulled = true;
+
+      if (child.material.name === 'Holodeck_Purple_Rim') {
+        child.material = child.material.clone();
+        child.material.emissive = new THREE.Color(accent);
+        child.material.emissiveIntensity = sleeping ? 0.4 : 0.9;
+        child.material.opacity = sleeping ? 0.1 : 0.17;
+        child.material.transparent = true;
+        child.material.depthWrite = false;
+      }
+    });
+  }, [model, accent, sleeping]);
+
+  return <primitive object={model} />;
+}
+
+useGLTF.preload(`${import.meta.env.BASE_URL}models/echo.glb`);
+
+function CrewCompanion({ crewKey, accent = '#8feaff', sleeping = false }) {
+  const rootRef = useRef();
+
+  useFrame((state) => {
+    if (!rootRef.current) return;
+    const t = state.clock.elapsedTime;
+
+    let bobSpeed = 2.0;
+    let bobAmount = 0.018;
+    let swayAmount = 0.04;
+
+    if (crewKey === 'dave') {
+      bobSpeed = 1.45;
+      bobAmount = 0.022;
+      swayAmount = 0.025;
+    } else if (crewKey === 'justin') {
+      bobSpeed = 2.55;
+      bobAmount = 0.012;
+      swayAmount = 0.05;
+    } else if (crewKey === 'chappy') {
+      bobSpeed = 2.8;
+      bobAmount = 0.02;
+      swayAmount = 0.045;
+    }
+
+    if (sleeping) {
+      bobSpeed *= 0.45;
+      bobAmount *= 0.45;
+      swayAmount *= 0.35;
+    }
+
+    rootRef.current.position.y = (sleeping ? 1.08 : 0.28) + Math.sin(t * bobSpeed + crewKey.length) * bobAmount;
+    rootRef.current.rotation.y = Math.sin(t * bobSpeed * 0.6 + crewKey.length) * swayAmount;
+  });
+
+  if (crewKey === 'dave') {
+    return (
+      <group ref={rootRef} position={[0.9, sleeping ? 1.08 : 0.28, -0.96]} scale={0.62}>
+        <GusGLBModel accent={accent} sleeping={sleeping} />
+        <pointLight position={[0.0, 0.95, 0]} color={accent} intensity={sleeping ? 0.4 : 0.78} distance={1.6} />
+      </group>
+    );
+  }
+
+  if (crewKey === 'justin') {
+    return (
+      <group ref={rootRef} position={[0.86, sleeping ? 1.08 : 0.28, -0.8]} scale={0.46}>
+        <BeauGLBModel accent={accent} sleeping={sleeping} />
+        <pointLight position={[0.15, 0.72, 0]} color={accent} intensity={sleeping ? 0.38 : 0.72} distance={1.25} />
+      </group>
+    );
+  }
+
+  return (
+    <group ref={rootRef} position={[0.88, sleeping ? 1.08 : 0.28, -0.86]} scale={0.52}>
+      <EchoGLBModel accent={accent} sleeping={sleeping} />
+      <pointLight position={[0.12, 0.9, 0]} color={accent} intensity={sleeping ? 0.42 : 0.78} distance={1.3} />
+    </group>
+  );
+}
+
 function RemoteCrewAvatar({ member }) {
   const rootRef = useRef();
   const leftArmRef = useRef();
@@ -912,8 +1090,19 @@ function RemoteCrewAvatar({ member }) {
 
     const idleBob = Math.sin(state.clock.elapsedTime * 2.2 + member.callSign.length) * 0.018;
     rootRef.current.position.y = idleBob;
+    HOLODECK_AVATAR_BLOCKERS.set(`live-${member.userId}`, {
+      x: rootRef.current.position.x,
+      z: rootRef.current.position.z,
+      radius: 0.74,
+      minY: 0.18,
+      maxY: 2.82,
+    });
     lastPosition.current.copy(rootRef.current.position);
   });
+
+  useEffect(() => () => {
+    HOLODECK_AVATAR_BLOCKERS.delete(`live-${member.userId}`);
+  }, [member.userId]);
 
   return (
     <group ref={rootRef}>
@@ -966,6 +1155,8 @@ function RemoteCrewAvatar({ member }) {
         </group>
       </group>
 
+      <CrewCompanion crewKey={String(member.crewKey || '').toLowerCase()} accent={accent} />
+
       <Billboard follow position={[0, 2.05, 0]}>
         <Text fontSize={0.12} color={accent} anchorX="center">{member.callSign}</Text>
         <Text position={[0, -0.18, 0]} fontSize={0.055} color="#b8d8df" anchorX="center">{String(member.role || 'CREW').toUpperCase()}</Text>
@@ -994,6 +1185,17 @@ const CREW_STATION_DATA = [
 function SleepingCrewAvatar({ crew }) {
   const rootRef = useRef();
   const zzzRef = useRef();
+
+  useEffect(() => {
+    HOLODECK_AVATAR_BLOCKERS.set(`sleep-${crew.crewKey}`, {
+      x: crew.position[0],
+      z: crew.position[2],
+      radius: 0.86,
+      minY: 0.2,
+      maxY: 3.22,
+    });
+    return () => HOLODECK_AVATAR_BLOCKERS.delete(`sleep-${crew.crewKey}`);
+  }, [crew]);
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;
@@ -1051,6 +1253,8 @@ function SleepingCrewAvatar({ crew }) {
           </mesh>
         </group>
       </group>
+
+      <CrewCompanion crewKey={crew.crewKey} accent={crew.color} sleeping />
 
       <Billboard follow position={[0, 2.42, 0]}>
         <Text fontSize={0.085} color={crew.color} anchorX="center">{crew.callSign}</Text>
