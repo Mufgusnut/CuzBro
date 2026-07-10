@@ -629,6 +629,12 @@ export default function Lightbox({
   const [missionReplayOpen, setMissionReplayOpen] =
     useState(Boolean(initialReplayOpen));
 
+  useEffect(() => {
+    if (initialReplayOpen) {
+      setMissionReplayOpen(true);
+    }
+  }, [initialReplayOpen, selectedPhoto?.id]);
+
   if (!selectedPhoto) {
     return null;
   }

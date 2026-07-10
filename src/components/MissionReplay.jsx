@@ -358,51 +358,48 @@ function useShellSize(ref) {
   return size;
 }
 
-function getFrameStyle(shellSize, imageMeta, focus, zoom = 1) {
-  if (!imageMeta?.width || !imageMeta?.height || !shellSize.width || !shellSize.height) {
+function getFrameStyle(shellSize, imageMeta, focus) {
+  if (
+    !imageMeta?.width ||
+    !imageMeta?.height ||
+    !shellSize.width ||
+    !shellSize.height
+  ) {
     return {
-      width: `${zoom * 100}%`,
-      height: `${zoom * 100}%`,
-      left: `${50 - zoom * 50}%`,
-      top: `${50 - zoom * 50}%`
+      left: '50%',
+      top: '50%',
+      width: '78%',
+      height: 'auto',
+      transform: 'translate(-50%, -50%)'
     };
   }
 
-  const shellWidth = shellSize.width;
-  const shellHeight = shellSize.height;
+  const safeFocusX = clamp(focus?.x ?? 0.5, 0.001, 0.999);
+  const safeFocusY = clamp(focus?.y ?? 0.5, 0.001, 0.999);
   const imageWidth = imageMeta.width;
   const imageHeight = imageMeta.height;
-  const safeFocusX = clamp(focus.x, 0.001, 0.999);
-  const safeFocusY = clamp(focus.y, 0.001, 0.999);
 
-  const coverScale = Math.max(
-    shellWidth / imageWidth,
-    shellHeight / imageHeight
+  // Fit the complete image inside the replay stage without distortion.
+  // A small reduction leaves cinematic breathing room around the capture.
+  const containScale = Math.min(
+    shellSize.width / imageWidth,
+    shellSize.height / imageHeight
   );
+  const replayScale = containScale * 0.78;
 
-  // Exact target-lock framing: find the minimum scale that allows the
-  // selected image coordinate to sit at viewport center without exposing
-  // empty space on any edge. This avoids the old clamp that left the target
-  // visibly off the reticle.
-  const exactCenterScale = Math.max(
-    coverScale,
-    shellWidth / (2 * safeFocusX * imageWidth),
-    shellWidth / (2 * (1 - safeFocusX) * imageWidth),
-    shellHeight / (2 * safeFocusY * imageHeight),
-    shellHeight / (2 * (1 - safeFocusY) * imageHeight)
-  );
+  const renderedWidth = imageWidth * replayScale;
+  const renderedHeight = imageHeight * replayScale;
 
-  const scale = exactCenterScale * zoom * 1.002;
-  const renderedWidth = imageWidth * scale;
-  const renderedHeight = imageHeight * scale;
-  const left = shellWidth / 2 - safeFocusX * renderedWidth;
-  const top = shellHeight / 2 - safeFocusY * renderedHeight;
+  // Translate the exact admin-selected image coordinate to the reticle center.
+  const left = shellSize.width / 2 - safeFocusX * renderedWidth;
+  const top = shellSize.height / 2 - safeFocusY * renderedHeight;
 
   return {
+    left: `${left}px`,
+    top: `${top}px`,
     width: `${renderedWidth}px`,
     height: `${renderedHeight}px`,
-    left: `${left}px`,
-    top: `${top}px`
+    transform: 'none'
   };
 }
 
@@ -510,30 +507,64 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
   };
 
   const captureFraction = Math.min(1, progress / 72);
-  const rawOpacity = replayState.imageStage === 'raw' ? 1 : Math.max(0, 1 - captureFraction * 1.08);
-  const stackedOpacity =
-    replayState.imageStage === 'capture'
-      ? Math.max(0, Math.min(0.82, (captureFraction - 0.08) * 0.92))
-      : replayState.imageStage === 'stacked' || replayState.imageStage === 'transition'
-        ? 1
-        : replayState.imageStage === 'final'
-          ? 0
-          : 0;
-  const finalOpacity = progress < 88 ? 0 : Math.min(1, (progress - 88) / 10);
   const captureNoise = Math.max(0, 0.72 - captureFraction * 0.62);
   const isComplete = progress >= 96;
+
   const rawStyle = useMemo(
-    () => getFrameStyle(shellSize, rawStage.imageMeta, rawStage.focus, 1),
+    () => getFrameStyle(shellSize, rawStage.imageMeta, rawStage.focus),
     [shellSize, rawStage.imageMeta, rawStage.focus]
   );
   const stackedStyle = useMemo(
-    () => getFrameStyle(shellSize, stackedStage.imageMeta, stackedStage.focus, 1),
+    () => getFrameStyle(shellSize, stackedStage.imageMeta, stackedStage.focus),
     [shellSize, stackedStage.imageMeta, stackedStage.focus]
   );
   const finalStyle = useMemo(
-    () => getFrameStyle(shellSize, finalStage.imageMeta, finalStage.focus, 1),
+    () => getFrameStyle(shellSize, finalStage.imageMeta, finalStage.focus),
     [shellSize, finalStage.imageMeta, finalStage.focus]
   );
+
+  // Render exactly one positioned foreground image at a time. This prevents
+  // a previous replay phase from showing through with a different target-lock
+  // coordinate and makes the visible image/focus pair unambiguous.
+  const activeFrame = useMemo(() => {
+    if (progress >= 88) {
+      return {
+        key: 'final',
+        url: finalUrl,
+        style: finalStyle,
+        alt: `${photo.title} final capture`,
+        filter: 'none'
+      };
+    }
+
+    if (progress >= 8) {
+      return {
+        key: 'stacked',
+        url: stackedUrl,
+        style: stackedStyle,
+        alt: '',
+        filter: `brightness(${0.58 + captureFraction * 0.34}) saturate(${0.55 + captureFraction * 0.45}) contrast(1.12)`
+      };
+    }
+
+    return {
+      key: 'raw',
+      url: rawUrl,
+      style: rawStyle,
+      alt: '',
+      filter: `brightness(${0.48 + captureFraction * 0.34}) contrast(${1.22 - captureFraction * 0.12})`
+    };
+  }, [
+    progress,
+    finalUrl,
+    finalStyle,
+    stackedUrl,
+    stackedStyle,
+    rawUrl,
+    rawStyle,
+    photo.title,
+    captureFraction
+  ]);
 
   const targetLockLabel =
     rawStage.status === 'manual' ||
@@ -572,34 +603,14 @@ export default function MissionReplay({ photo, onClose, onCopyLink }) {
       <main className="missionReplayStage">
         <div ref={shellRef} className="missionReplayImageShell">
           <img
-            className="missionReplayImage missionReplayRaw"
-            src={rawUrl}
-            alt=""
+            key={activeFrame.key}
+            className={`missionReplayImage missionReplay${activeFrame.key[0].toUpperCase()}${activeFrame.key.slice(1)}`}
+            src={activeFrame.url}
+            alt={activeFrame.alt}
             style={{
-              ...rawStyle,
-              opacity: rawOpacity,
-              filter: `brightness(${0.48 + captureFraction * 0.34}) contrast(${1.22 - captureFraction * 0.12})`
-            }}
-          />
-
-          <img
-            className="missionReplayImage missionReplayStacked"
-            src={stackedUrl}
-            alt=""
-            style={{
-              ...stackedStyle,
-              opacity: stackedOpacity,
-              filter: `brightness(${0.58 + captureFraction * 0.34}) saturate(${0.55 + captureFraction * 0.45}) contrast(1.12)`
-            }}
-          />
-
-          <img
-            className="missionReplayImage missionReplayFinal"
-            src={finalUrl}
-            alt={`${photo.title} final capture`}
-            style={{
-              ...finalStyle,
-              opacity: finalOpacity
+              ...activeFrame.style,
+              opacity: 1,
+              filter: activeFrame.filter
             }}
           />
 

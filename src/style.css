@@ -1119,7 +1119,7 @@ main {
   object-fit: cover;
   border-radius: 7px;
   display: block;
-  margin-bottom: 7px;
+  margin-bottom: 3px;
 }
 
 .filmCard strong {
@@ -3533,7 +3533,7 @@ footer p {
 .skyControlSplit {
   display: grid;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .inlineModeControls {
@@ -27075,8 +27075,8 @@ body.missionReplayOpen {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  min-height: 64px;
-  padding: 12px 24px;
+  min-height: 52px;
+  padding: 7px 18px;
   border-bottom: 1px solid rgba(105, 221, 255, 0.24);
 }
 
@@ -27104,8 +27104,8 @@ body.missionReplayOpen {
 }
 
 .missionReplayHeader button {
-  padding: 9px 12px;
-  font-size: 0.68rem;
+  padding: 7px 10px;
+  font-size: 0.65rem;
 }
 
 .missionReplayStage {
@@ -27125,22 +27125,46 @@ body.missionReplayOpen {
     #010407;
 }
 
+/* Keep the full replay viewport available to the target-lock math.
+   The admin-selected point is positioned at the exact shell center; compact
+   header/footer chrome gives the image more vertical room without changing
+   the stored X/Y coordinates. */
+.missionReplayStage,
+.missionReplayImageShell {
+  margin-block: 0;
+  padding-block: 0;
+}
+
+.missionReplayImage {
+  max-width: none;
+  max-height: none;
+}
+
+.missionReplayBackdrop {
+  position: absolute;
+  inset: -20px;
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.04);
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 450ms linear, filter 700ms linear;
+}
+
 .missionReplayImage {
   position: absolute;
   object-fit: cover;
   object-position: center;
-  transition:
-    opacity 450ms linear,
-    filter 700ms linear,
-    left 1200ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    top 1200ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    width 1200ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    height 1200ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  will-change: left, top, width, height, opacity, filter;
+  transition: opacity 220ms linear, filter 350ms linear;
+  will-change: opacity, filter;
+  z-index: 1;
 }
 
 .missionReplayNoise {
   position: absolute;
+  z-index: 2;
   inset: 0;
   background-image:
     repeating-radial-gradient(circle at 20% 40%, rgba(255,255,255,0.45) 0 0.55px, transparent 0.9px 5px),
@@ -27159,6 +27183,7 @@ body.missionReplayOpen {
 
 .missionReplayReticle {
   position: absolute;
+  z-index: 3;
   left: 50%;
   top: 50%;
   width: min(30vw, 330px);
@@ -27221,7 +27246,7 @@ body.missionReplayOpen {
 }
 
 .missionReplayTelemetry {
-  top: 6.5%;
+  top: 4.25%;
   max-width: min(39vw, 620px);
 }
 
@@ -27283,7 +27308,7 @@ body.missionReplayOpen {
 .missionReplayCaptureData {
   left: 3.5%;
   right: 3.5%;
-  bottom: 4.5%;
+  bottom: 2.5%;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
@@ -27308,14 +27333,14 @@ body.missionReplayOpen {
 }
 
 .missionReplayFooter {
-  padding: 12px 24px 15px;
+  padding: 5px 18px 7px;
   border-top: 1px solid rgba(105, 221, 255, 0.24);
 }
 
 .missionReplayProgressLabels {
   display: grid;
   grid-template-columns: 72fr 10fr 8fr 6fr 4fr;
-  margin-bottom: 7px;
+  margin-bottom: 3px;
   color: rgba(188, 232, 244, 0.58);
   font-size: 0.58rem;
   letter-spacing: 0.12em;
@@ -27336,13 +27361,13 @@ body.missionReplayOpen {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  margin-top: 10px;
+  gap: 14px;
+  margin-top: 4px;
 }
 
 .missionReplayControls button {
-  min-width: 146px;
-  padding: 8px 12px;
+  min-width: 132px;
+  padding: 6px 10px;
   font-size: 0.66rem;
 }
 
@@ -27358,8 +27383,8 @@ html[data-theme="light"] .missionReplayLaunch {
 
 @media (max-width: 760px) {
   .missionReplayHeader {
-    min-height: 56px;
-    padding: 9px 12px;
+    min-height: 48px;
+    padding: 6px 9px;
   }
 
   .missionReplayHeader strong {
@@ -27381,7 +27406,7 @@ html[data-theme="light"] .missionReplayLaunch {
   }
 
   .missionReplayTelemetry {
-    top: 4.5%;
+    top: 3%;
     max-width: 70vw;
   }
 
@@ -27392,7 +27417,7 @@ html[data-theme="light"] .missionReplayLaunch {
   .missionReplayTelemetryRight {
     top: auto;
     right: 4%;
-    bottom: 23%;
+    bottom: 20%;
   }
 
   .missionReplayTelemetryRight span,
@@ -27403,7 +27428,7 @@ html[data-theme="light"] .missionReplayLaunch {
   .missionReplayCaptureData {
     left: 4%;
     right: 4%;
-    bottom: 4%;
+    bottom: 2.5%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px 14px;
   }
@@ -27418,7 +27443,7 @@ html[data-theme="light"] .missionReplayLaunch {
   }
 
   .missionReplayFooter {
-    padding: 10px 12px 12px;
+    padding: 5px 9px 7px;
   }
 
   .missionReplayProgressLabels {
@@ -30456,5 +30481,485 @@ body.missionPlanningBoardOpen {
 
   .targetDossierMissionPlanStatus button {
     width: 100%;
+  }
+}
+
+/* Public mission replay launch */
+.heroDashboard:has(.heroReplayCard) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.heroReplayCard {
+  position: relative;
+  grid-column: 1 / -1;
+  overflow: hidden;
+  min-height: 150px;
+  padding-right: min(34%, 240px);
+  border-color: rgba(255, 179, 71, .45);
+  background:
+    radial-gradient(circle at 88% 50%, rgba(74, 140, 255, .24), transparent 24%),
+    linear-gradient(135deg, rgba(19, 35, 66, .96), rgba(4, 12, 25, .96));
+}
+
+.heroReplayCard::before,
+.heroReplayCard::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.heroReplayCard::before {
+  width: 170px;
+  height: 170px;
+  right: 34px;
+  top: 50%;
+  translate: 0 -50%;
+  border: 1px solid rgba(114, 217, 255, .32);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 24px rgba(114, 217, 255, .05),
+    0 0 50px rgba(74, 140, 255, .22);
+}
+
+.heroReplayCard::after {
+  right: 118px;
+  top: 24px;
+  bottom: 24px;
+  width: 1px;
+  background: linear-gradient(transparent, var(--cyan), transparent);
+  opacity: .65;
+  animation: heroReplayScan 3.2s ease-in-out infinite;
+}
+
+.heroReplayCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.heroReplayCard:hover {
+  border-color: var(--orange);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .45), 0 0 34px rgba(255, 179, 71, .14);
+}
+
+.heroReplayPulse {
+  position: absolute;
+  right: 105px;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  translate: 0 -50%;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  box-shadow: 0 0 22px var(--orange);
+  animation: heroReplayPulse 1.8s ease-out infinite;
+}
+
+@keyframes heroReplayPulse {
+  0% { transform: scale(.55); opacity: 1; }
+  75%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+@keyframes heroReplayScan {
+  0%, 100% { transform: translateX(-50px); opacity: .15; }
+  50% { transform: translateX(50px); opacity: .85; }
+}
+
+@media (max-width: 720px) {
+  .heroReplayCard {
+    grid-column: auto;
+    min-height: 0;
+    padding-right: 22px;
+  }
+
+  .heroReplayCard::before,
+  .heroReplayCard::after,
+  .heroReplayPulse {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroReplayCard::after,
+  .heroReplayPulse {
+    animation: none;
+  }
+}
+
+/* =========================================================
+   PROCESSING COMPARISON: EXACT ADMIN TARGET-LOCK CENTERING
+   The X/Y point selected in Capture Control is translated to the
+   mathematical center of each comparison half. Keep this block last so
+   mobile, portrait, and cinema object-fit rules cannot override it.
+========================================================= */
+.processingCompareStage .processingCompareBase.processingCompareAligned,
+.processingCompareStage .processingCompareFinal.processingCompareAligned {
+  position: absolute !important;
+  inset: auto !important;
+  left: var(--processing-align-left) !important;
+  top: var(--processing-align-top) !important;
+  width: var(--processing-align-width) !important;
+  height: var(--processing-align-height) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: fill !important;
+  object-position: 0 0 !important;
+  transform: none !important;
+}
+
+.processingCompareFinalClip {
+  overflow: hidden !important;
+}
+
+
+/* =========================================================
+   MISSION REPLAY: SINGLE-SOURCE TARGET LOCK
+   The foreground image is the only visible astronomy image. JavaScript
+   sizes it with contain-style framing and translates the saved X/Y point
+   directly beneath the center reticle. No cover backdrop or CSS variable
+   override is allowed to create a second enlarged target.
+========================================================= */
+.missionReplayImageShell {
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(19, 94, 119, 0.11), transparent 48%),
+    #010407 !important;
+}
+
+.missionReplayImageShell > .missionReplayBackdrop {
+  display: none !important;
+}
+
+.missionReplayImageShell > img.missionReplayImage {
+  position: absolute !important;
+  right: auto !important;
+  bottom: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  /* left, top, width/height, and transform come exclusively from MissionReplay.jsx */
+}
+
+.missionReplayReticle {
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* =========================================================
+   THE WATCH FLOOR — IMMERSIVE PUBLIC EXPERIENCE
+========================================================= */
+.virtualWatchFloor {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  overflow: hidden;
+  background: #01040a;
+  color: #eafcff;
+  font-family: 'Courier New', ui-monospace, monospace;
+}
+
+.virtualWatchCanvas,
+.virtualWatchCanvas canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.virtualWatchCanvas canvas { cursor: grab; }
+.virtualWatchCanvas canvas:active { cursor: grabbing; }
+
+.virtualWatchBoot {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 30px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(29, 175, 214, .18), transparent 24%),
+    linear-gradient(rgba(1, 4, 10, .86), rgba(1, 4, 10, .96));
+  backdrop-filter: blur(8px);
+}
+
+.virtualWatchBootMark {
+  width: 86px;
+  height: 86px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(99, 223, 245, .55);
+  border-radius: 50%;
+  color: #63dff5;
+  font: 400 3.5rem/1 Georgia, serif;
+  box-shadow: 0 0 55px rgba(29, 175, 214, .24), inset 0 0 30px rgba(29, 175, 214, .12);
+}
+
+.virtualWatchBoot p,
+.virtualWatchBoot span {
+  margin: 0;
+  color: rgba(187, 235, 245, .7);
+  font-size: .72rem;
+  letter-spacing: .2em;
+}
+
+.virtualWatchBoot h1 {
+  margin: 4px 0;
+  font-size: clamp(2.1rem, 6vw, 5.4rem);
+  letter-spacing: .08em;
+}
+
+.virtualWatchBoot button,
+.virtualWatchVrButton {
+  border: 1px solid rgba(99, 223, 245, .65);
+  border-radius: 999px;
+  background: rgba(6, 27, 38, .85);
+  color: #e8fcff;
+  padding: 14px 24px;
+  font: 700 .72rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: .14em;
+  cursor: pointer;
+  box-shadow: 0 0 28px rgba(29, 175, 214, .12);
+}
+
+.virtualWatchExit,
+.virtualWatchHelp,
+.virtualWatchXrError {
+  position: absolute;
+  z-index: 10;
+  border: 1px solid rgba(104, 209, 230, .2);
+  background: rgba(2, 10, 16, .74);
+  backdrop-filter: blur(10px);
+  color: #bdeef7;
+  font-size: .66rem;
+  letter-spacing: .1em;
+}
+
+.virtualWatchExit {
+  top: 22px;
+  left: 22px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 15px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.virtualWatchHelp {
+  left: 50%;
+  bottom: 18px;
+  translate: -50% 0;
+  padding: 9px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.virtualWatchXrError {
+  top: 22px;
+  right: 22px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  max-width: 360px;
+  padding: 11px 14px;
+  border-color: rgba(255, 183, 92, .45);
+  color: #ffd7a5;
+  border-radius: 12px;
+}
+
+.virtualWatchRadial {
+  --radial-distance: 118px;
+  position: absolute;
+  z-index: 12;
+  right: 44px;
+  bottom: 42px;
+  width: 128px;
+  height: 128px;
+}
+
+.virtualWatchRadialCore {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 4px;
+  width: 128px;
+  height: 128px;
+  border: 1px solid rgba(99, 223, 245, .7);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(14, 61, 77, .97), rgba(3, 15, 22, .97) 66%);
+  color: #eaffff;
+  cursor: pointer;
+  box-shadow: 0 0 0 9px rgba(99, 223, 245, .035), 0 0 42px rgba(32, 195, 225, .25);
+}
+
+.virtualWatchRadialCore strong {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .79rem;
+  letter-spacing: .08em;
+}
+
+.virtualWatchRadialCore small {
+  color: #75d9eb;
+  font-size: .52rem;
+  letter-spacing: .13em;
+}
+
+.virtualWatchRadialPulse {
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(99, 223, 245, .25);
+  border-radius: 50%;
+  animation: virtualWatchPulse 2.2s ease-out infinite;
+}
+
+.virtualWatchRadialItem {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  width: 72px;
+  height: 72px;
+  margin: -36px;
+  border: 1px solid rgba(99, 223, 245, .42);
+  border-radius: 50%;
+  background: rgba(4, 22, 31, .94);
+  color: #c7f6ff;
+  text-decoration: none;
+  opacity: 0;
+  transform: translate(0, 0) scale(.4);
+  transition: transform .34s cubic-bezier(.2, .86, .25, 1.2), opacity .2s ease, background .2s ease;
+}
+
+.virtualWatchRadialItem span { font-size: .48rem; letter-spacing: .08em; }
+.virtualWatchRadialItem:hover { background: rgba(15, 70, 86, .98); }
+.virtualWatchRadial.open .item1 { transform: translate(0, calc(var(--radial-distance) * -1)) scale(1); opacity: 1; }
+.virtualWatchRadial.open .item2 { transform: translate(calc(var(--radial-distance) * -1), 0) scale(1); opacity: 1; }
+.virtualWatchRadial.open .item3 { transform: translate(0, var(--radial-distance)) scale(1); opacity: 1; }
+.virtualWatchRadial.open .item4 { transform: translate(var(--radial-distance), 0) scale(1); opacity: 1; }
+
+.virtualWatchVrButton {
+  position: absolute;
+  top: -52px;
+  left: 50%;
+  translate: -50% 0;
+  min-width: 96px;
+  padding: 9px 12px;
+  font-size: .55rem;
+}
+
+@keyframes virtualWatchPulse {
+  0% { transform: scale(.78); opacity: 0; }
+  35% { opacity: .75; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
+@media (max-width: 720px) {
+  .virtualWatchHelp { bottom: 10px; max-width: calc(100vw - 24px); white-space: normal; text-align: center; line-height: 1.5; }
+  .virtualWatchExit { top: 12px; left: 12px; }
+  .virtualWatchRadial { right: 20px; bottom: 86px; transform: scale(.82); transform-origin: bottom right; }
+  .virtualWatchXrError { top: 68px; left: 12px; right: 12px; max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .virtualWatchRadialPulse { animation: none; }
+  .virtualWatchRadialItem { transition: none; }
+}
+
+.virtualWatchRouteLoading {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-items: center;
+  background: #01040a;
+  color: #8ee8f7;
+  font: 700 .74rem/1 'Courier New', ui-monospace, monospace;
+  letter-spacing: .18em;
+}
+
+/* =========================================================
+   WATCH FLOOR v12.1 — ARRAY FOCUS + CINEMATIC STATIONS
+========================================================= */
+.virtualWatchRadialItem {
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.virtualWatchRadialItem.active {
+  background: rgba(20, 78, 96, .98);
+  border-color: rgba(219, 250, 255, .92);
+  box-shadow: 0 0 28px rgba(99, 223, 245, .28), inset 0 0 18px rgba(99, 223, 245, .12);
+}
+
+.virtualWatchSectionState {
+  position: absolute;
+  z-index: 10;
+  top: 22px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid rgba(104, 209, 230, .2);
+  border-radius: 999px;
+  background: rgba(2, 10, 16, .74);
+  backdrop-filter: blur(10px);
+  color: #bdeef7;
+  font-size: .62rem;
+  letter-spacing: .12em;
+  pointer-events: none;
+}
+
+.virtualWatchSectionState span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 12px currentColor;
+}
+
+@media (max-width: 720px) {
+  .virtualWatchSectionState {
+    top: 64px;
+    max-width: calc(100vw - 24px);
+    white-space: nowrap;
+  }
+}
+
+/* Holodeck v12.3: room-first controls; VR remains a compact utility action. */
+.virtualWatchVrButton.virtualWatchVrStandalone {
+  position: absolute;
+  top: auto;
+  right: 22px;
+  bottom: 22px;
+  left: auto;
+  translate: none;
+  z-index: 12;
+  min-width: 110px;
+}
+
+@media (max-width: 720px) {
+  .virtualWatchVrButton.virtualWatchVrStandalone {
+    right: 12px;
+    bottom: 72px;
   }
 }

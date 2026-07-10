@@ -35,6 +35,8 @@ import EquipmentLocker from './components/EquipmentLocker.jsx';
 import FeaturedCapture from './components/FeaturedCapture.jsx';
 import MissionTimeline from './components/MissionTimeline.jsx';
 import React, {
+  lazy,
+  Suspense,
   useEffect,
   useRef,
   useState
@@ -51,6 +53,10 @@ import {
 } from './lib/observingSites.js';
 
 const locations = OBSERVING_SITES;
+
+const Holodeck = lazy(() =>
+  import('./components/Holodeck.jsx')
+);
 
 function isPrioritySoundEnabled(userId) {
   return localStorage.getItem(
@@ -120,6 +126,8 @@ function getMissionUrl(photo, view = 'report') {
 }
 
 function PageNav({ scrolled }) {
+  const pathname = window.location.pathname;
+
   return (
     <header
       className={
@@ -154,7 +162,11 @@ function PageNav({ scrolled }) {
         <div className="navDropdown">
           <button
             type="button"
-            className="navDropdownTrigger"
+            className={`navDropdownTrigger ${
+              pathname === '/captains-log' || pathname === '/skymap'
+                ? 'active'
+                : ''
+            }`}
           >
             Missions <span>⌄</span>
           </button>
@@ -167,8 +179,7 @@ function PageNav({ scrolled }) {
             <a
               href="/captains-log"
               className={
-                window.location.pathname ===
-                '/captains-log'
+                pathname === '/captains-log'
                   ? 'active'
                   : ''
               }
@@ -179,8 +190,7 @@ function PageNav({ scrolled }) {
             <a
               href="/skymap"
               className={
-                window.location.pathname ===
-                '/skymap'
+                pathname === '/skymap'
                   ? 'active'
                   : ''
               }
@@ -190,24 +200,53 @@ function PageNav({ scrolled }) {
           </div>
         </div>
 
+        <a
+          href="/holodeck"
+          className={
+            pathname === '/holodeck'
+              ? 'active'
+              : ''
+          }
+        >
+          Holodeck
+        </a>
+
         <div className="navDropdown">
           <button
             type="button"
-            className="navDropdownTrigger"
+            className={`navDropdownTrigger ${
+              pathname === '/equipment' || pathname === '/mission-support'
+                ? 'active'
+                : ''
+            }`}
           >
-            Crew <span>⌄</span>
+            About <span>⌄</span>
           </button>
 
           <div className="navDropdownMenu">
+            <a href="/#about">
+              About CuzBro
+            </a>
+
             <a href="/#crew">
               Crew Dossiers
             </a>
 
             <a
+              href="/equipment"
+              className={
+                pathname === '/equipment'
+                  ? 'active'
+                  : ''
+              }
+            >
+              Gear
+            </a>
+
+            <a
               href="/mission-support"
               className={
-                window.location.pathname ===
-                '/mission-support'
+                pathname === '/mission-support'
                   ? 'active'
                   : ''
               }
@@ -216,22 +255,6 @@ function PageNav({ scrolled }) {
             </a>
           </div>
         </div>
-
-        <a
-          href="/equipment"
-          className={
-            window.location.pathname ===
-            '/equipment'
-              ? 'active'
-              : ''
-          }
-        >
-          Gear
-        </a>
-
-        <a href="/#about">
-          About
-        </a>
       </nav>
 
       <ThemeToggle />
@@ -517,6 +540,9 @@ export default function App() {
     setViewerMode
   ] = useState('report');
 
+  const [launchFeaturedReplay, setLaunchFeaturedReplay] =
+    useState(false);
+
   const [scrolled, setScrolled] =
     useState(false);
 
@@ -569,6 +595,10 @@ export default function App() {
 
   const requestedMissionView =
     searchParams.get('view') || 'report';
+
+  const isHolodeckPage =
+    pathname === '/holodeck' ||
+    pathname === '/holodeck/';
 
   const isAdminCaptainsLogPage =
     pathname ===
@@ -1117,6 +1147,17 @@ export default function App() {
     setSelectedIndex(missionIndex);
   };
 
+  const openFeaturedReplay = () => {
+    if (featuredPhotoIndex < 0) {
+      return;
+    }
+
+    setActiveFilter('All');
+    setViewerMode('report');
+    setLaunchFeaturedReplay(true);
+    setSelectedIndex(featuredPhotoIndex);
+  };
+
   const openFeaturedPhoto = () => {
     if (featuredPhotoIndex < 0) {
       return;
@@ -1184,6 +1225,7 @@ export default function App() {
 
   const closeLightbox = () => {
     setViewerMode('report');
+    setLaunchFeaturedReplay(false);
     setSelectedIndex(null);
     window.history.replaceState({}, '', '/#gallery');
   };
@@ -1735,6 +1777,14 @@ export default function App() {
     lightboxGallery.length
   ]);
 
+  if (isHolodeckPage) {
+    return (
+      <Suspense fallback={<div className="virtualWatchRouteLoading">INITIALIZING HOLODECK...</div>}>
+        <Holodeck gallery={gallery} />
+      </Suspense>
+    );
+  }
+
   if (
     isPasswordRecovery ||
     isPasswordResetPage
@@ -1994,6 +2044,7 @@ export default function App() {
             weather[currentSite.name]
           }
           currentSite={currentSite}
+          onReplayFeatured={openFeaturedReplay}
         />
       )}
 
@@ -2109,12 +2160,14 @@ export default function App() {
           showNextPhoto
         }
         initialReplayOpen={
-          requestedMissionSlug &&
-          requestedMissionView === 'replay'
+          launchFeaturedReplay ||
+          (requestedMissionSlug &&
+            requestedMissionView === 'replay')
         }
-        onReplayStateChange={
-          handleReplayStateChange
-        }
+        onReplayStateChange={(isOpen) => {
+          setLaunchFeaturedReplay(isOpen);
+          handleReplayStateChange(isOpen);
+        }}
       />
 
       <footer>

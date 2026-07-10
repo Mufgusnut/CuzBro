@@ -1,4 +1,4 @@
-import { Camera, Telescope, Star } from "lucide-react";
+import { Camera, Play, Telescope, Star } from "lucide-react";
 
 function scoreWeather(weather) {
   if (!weather) {
@@ -40,7 +40,8 @@ export default function HeroDashboard({
   featuredPhoto,
   setSelectedIndex,
   weather,
-  currentSite
+  currentSite,
+  onReplayFeatured
 }) {
   const score = scoreWeather(weather);
 
@@ -83,7 +84,7 @@ export default function HeroDashboard({
       {/* Featured Mission Card */}
       <button
         className="heroDashCard"
-        onClick={() => setSelectedIndex(0)}
+        onClick={setSelectedIndex}
         type="button"
       >
         <Camera size={26} />
@@ -96,6 +97,28 @@ export default function HeroDashboard({
 
         <span>Open Mission Report →</span>
       </button>
+
+      {featuredPhoto?.rawImage && featuredPhoto?.stackedImage && (
+        <button
+          className="heroDashCard heroReplayCard"
+          onClick={onReplayFeatured}
+          type="button"
+        >
+          <span className="heroReplayPulse" aria-hidden="true" />
+          <Play size={26} />
+
+          <small>CINEMATIC EXPERIENCE</small>
+
+          <h3>Replay the Mission</h3>
+
+          <p>
+            Watch raw signal become a finished deep-sky image through
+            acquisition, stacking, calibration, and final processing.
+          </p>
+
+          <span>Launch Mission Replay →</span>
+        </button>
+      )}
 
     </div>
   );

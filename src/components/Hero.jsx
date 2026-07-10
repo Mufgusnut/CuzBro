@@ -35,7 +35,8 @@ export default function Hero({
   featuredPhoto,
   setSelectedIndex,
   weather,
-  currentSite
+  currentSite,
+  onReplayFeatured
 }) {
   return (
     <>
@@ -69,18 +70,19 @@ export default function Hero({
             </div>
           </div>
 
+          <a href="/holodeck">Holodeck</a>
+
           <div className="navDropdown">
             <button type="button" className="navDropdownTrigger">
-              Crew <span>⌄</span>
+              About <span>⌄</span>
             </button>
             <div className="navDropdownMenu">
+              <a href="/#about">About CuzBro</a>
               <a href="/#crew">Crew Dossiers</a>
+              <a href="/equipment">Gear</a>
               <a href="/mission-support">Mission Support</a>
             </div>
           </div>
-
-          <a href="/equipment">Gear</a>
-          <a href="/#about">About</a>
         </nav>
 
         <ThemeToggle />
@@ -108,6 +110,7 @@ export default function Hero({
             setSelectedIndex={setSelectedIndex}
             weather={weather}
             currentSite={currentSite}
+            onReplayFeatured={onReplayFeatured}
           />
         </div>
 
