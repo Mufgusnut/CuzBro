@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Camera,
@@ -683,6 +683,7 @@ async function getCrewAccessToken() {
 }
 
 export default function AdminGallery() {
+  const editorRef = useRef(null);
   const {
     activeOperation
   } = useActiveOperation();
@@ -761,6 +762,21 @@ export default function AdminGallery() {
     stackedDragActive,
     setStackedDragActive
   ] = useState(false);
+
+  useEffect(() => {
+    if (editingCaptureId === null) {
+      return undefined;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      editorRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [editingCaptureId]);
 
   const editingCapture =
     editingCaptureId === 'new'
@@ -2169,7 +2185,7 @@ export default function AdminGallery() {
         )}
 
         {editingCaptureId !== null && (
-          <section className="admin-mission-editor">
+          <section ref={editorRef} className="admin-mission-editor">
             <div className="admin-editor-header">
               <div>
                 <span className="admin-card-eyebrow">
