@@ -455,248 +455,191 @@ function RingLight({ radius, y = 0.03, opacity = 0.32, color = '#61dff4' }) {
   );
 }
 
-function BloomOption({ label, sectionKey, angle, selected, onSelect }) {
-  const group = useRef();
-  const radius = 0.64;
-  const target = useMemo(
-    () => new THREE.Vector3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0.06),
-    [angle]
+function LcarsRoundedBlock({ width = 0.7, height = 0.14, color = '#7fbbe8', opacity = 1 }) {
+  const bodyWidth = Math.max(width - height, 0.02);
+  const radius = height / 2;
+  return (
+    <group>
+      <mesh position={[-bodyWidth / 2, 0, 0]}>
+        <circleGeometry args={[radius, 28]} />
+        <meshBasicMaterial color={color} transparent opacity={opacity} />
+      </mesh>
+      <mesh position={[bodyWidth / 2, 0, 0]}>
+        <circleGeometry args={[radius, 28]} />
+        <meshBasicMaterial color={color} transparent opacity={opacity} />
+      </mesh>
+      <mesh>
+        <planeGeometry args={[bodyWidth, height]} />
+        <meshBasicMaterial color={color} transparent opacity={opacity} />
+      </mesh>
+    </group>
   );
+}
 
-  useFrame((_, delta) => {
-    if (!group.current) return;
-    group.current.position.lerp(target, 1 - Math.exp(-delta * 11));
-    const nextScale = THREE.MathUtils.lerp(group.current.scale.x, 1, 1 - Math.exp(-delta * 12));
-    group.current.scale.setScalar(nextScale);
-  });
-
+function LcarsButton({ label, color, selected, width = 0.86, height = 0.15, position = [0, 0, 0], onClick }) {
+  const fill = selected ? '#efe3b6' : color;
+  const labelColor = selected ? '#151312' : '#101214';
   return (
     <group
-      ref={group}
-      scale={0.08}
-      position={[0, 0, 0.06]}
+      position={position}
       onClick={(event) => {
         event.stopPropagation();
-        onSelect(sectionKey);
+        onClick?.();
       }}
     >
-      <mesh>
-        <circleGeometry args={[0.2, 48]} />
-        <meshBasicMaterial color="#120d08" transparent opacity={0.84} depthWrite={false} />
+      <LcarsRoundedBlock width={width} height={height} color={fill} opacity={1} />
+      <mesh position={[0, 0, 0.004]}>
+        <planeGeometry args={[Math.max(width - 0.14, 0.12), Math.max(height - 0.05, 0.03)]} />
+        <meshBasicMaterial color={selected ? '#fff6da' : '#f3dfc6'} transparent opacity={selected ? 0.16 : 0.08} depthWrite={false} />
       </mesh>
-      <mesh position={[0, 0, -0.001]}>
-        <ringGeometry args={[0.155, 0.165, 48]} />
-        <meshBasicMaterial color="#ff9a3d" transparent opacity={0.42} />
-      </mesh>
-      <mesh position={[0, 0, 0.003]}>
-        <ringGeometry args={[0.185, 0.21, 48]} />
-        <meshBasicMaterial color={SECTION_COLORS[sectionKey]} transparent opacity={selected ? 1 : 0.78} />
-      </mesh>
-      <mesh position={[0, 0, -0.002]}>
-        <circleGeometry args={[0.17, 48]} />
-        <meshBasicMaterial color={SECTION_COLORS[sectionKey]} transparent opacity={selected ? 0.22 : 0.12} depthWrite={false} />
-      </mesh>
-      <Text
-        position={[0, 0, 0.01]}
-        fontSize={0.05}
-        maxWidth={0.28}
-        textAlign="center"
-        color="#f0fdff"
-        anchorX="center"
-        anchorY="middle"
-      >
+      <Text position={[0, 0, 0.01]} fontSize={height * 0.34} color={labelColor} anchorX="center" anchorY="middle" letterSpacing={0.06}>
         {label}
       </Text>
     </group>
   );
 }
 
-
-function SkyTimeChip({ label, angle, selected, onClick }) {
-  const group = useRef();
-  const width = label.length > 4 ? 0.34 : 0.2;
-  const target = useMemo(
-    () => new THREE.Vector3(Math.cos(angle) * 1.02, Math.sin(angle) * 1.02, 0.09),
-    [angle]
-  );
-
-  useFrame((_, delta) => {
-    if (!group.current) return;
-    group.current.position.lerp(target, 1 - Math.exp(-delta * 11));
-    const nextScale = THREE.MathUtils.lerp(group.current.scale.x, 1, 1 - Math.exp(-delta * 12));
-    group.current.scale.setScalar(nextScale);
-  });
-
+function LcarsMiniButton({ label, color, selected, width = 0.36, position = [0, 0, 0], onClick }) {
   return (
-    <group
-      ref={group}
-      scale={0.08}
-      position={[0, 0, 0.08]}
-      onClick={(event) => {
-        event.stopPropagation();
-        onClick();
-      }}
-    >
-      <mesh>
-        <planeGeometry args={[width, 0.12]} />
-        <meshBasicMaterial color="#231408" transparent opacity={0.9} depthWrite={false} />
-      </mesh>
-      <mesh position={[0, 0, 0.002]}>
-        <planeGeometry args={[width - 0.02, 0.092]} />
-        <meshBasicMaterial color="#ff8a2b" transparent opacity={selected ? 0.22 : 0.1} depthWrite={false} />
-      </mesh>
-      <Text position={[0, 0, 0.01]} fontSize={0.04} color={selected ? '#fff1df' : '#ffd6a8'} anchorX="center" anchorY="middle">
+    <LcarsButton
+      label={label}
+      color={color}
+      selected={selected}
+      width={width}
+      height={0.11}
+      position={position}
+      onClick={onClick}
+    />
+  );
+}
+
+function LcarsReadout({ label, value, position = [0, 0, 0], width = 0.96, color = '#6ca1d8' }) {
+  return (
+    <group position={position}>
+      <LcarsRoundedBlock width={width} height={0.12} color={color} opacity={0.96} />
+      <Text position={[-width * 0.34, 0, 0.008]} fontSize={0.04} color="#121314" anchorX="left" anchorY="middle" letterSpacing={0.05}>
         {label}
+      </Text>
+      <Text position={[width * 0.36, 0, 0.008]} fontSize={0.04} color="#121314" anchorX="right" anchorY="middle" letterSpacing={0.05}>
+        {value}
       </Text>
     </group>
   );
 }
 
 function ControlPillar({ openFace, activeSection, selectedMission, skySnapshot, activeCrewKey, onFaceToggle, onSectionSelect, onSkyTimeChange }) {
-  const options = [
-    ['MISSIONS', 'missions', Math.PI],
-    ['SKY MAP', 'sky', Math.PI / 2],
-    ['CREW COMMS', 'comms', 0],
-    ['LIVE SYSTEMS', 'systems', -Math.PI / 2],
-  ];
+  const crewAccent = {
+    dave: '#87cfff',
+    justin: '#ffb75c',
+    chappy: '#ba92ff',
+  }[activeCrewKey] || '#87cfff';
 
-  const faces = [
-    { key: 'dave', label: 'DAVE', rotation: [0, 0, 0], position: [0, 0, 0.72] },
-    { key: 'justin', label: 'JUSTIN', rotation: [0, (Math.PI * 2) / 3, 0], position: [0.624, 0, -0.36] },
-    { key: 'chappy', label: 'CHAPPY', rotation: [0, -(Math.PI * 2) / 3, 0], position: [-0.624, 0, -0.36] },
-  ];
-
-  const triangleShape = useMemo(() => {
-    const shape = new THREE.Shape();
-    shape.moveTo(0, 0.82);
-    shape.lineTo(-0.71, -0.41);
-    shape.lineTo(0.71, -0.41);
-    shape.closePath();
-    return shape;
-  }, []);
-
-  const connectorPositions = useMemo(() => {
-    const values = [];
-    options.forEach(([, , angle]) => {
-      values.push(0, 0, 0.05, Math.cos(angle) * 0.53, Math.sin(angle) * 0.53, 0.05);
-    });
-    return new Float32Array(values);
-  }, []);
-
+  const currentCrewLabel = activeCrewKey ? activeCrewKey.toUpperCase() : 'CREW';
   const skyControls = [
-    { label: 'MIDNIGHT', action: 'midnight', angle: 2.36 },
-    { label: '-1H', action: '-1h', angle: 2.02 },
-    { label: 'NOW', action: 'now', angle: 1.56 },
-    { label: '+1H', action: '+1h', angle: 1.1 },
+    { label: 'MID', action: 'midnight', color: '#c5b647' },
+    { label: '-1H', action: '-1h', color: '#7bc7ea' },
+    { label: 'NOW', action: 'now', color: '#e87513' },
+    { label: '+1H', action: '+1h', color: '#4b87ee' },
   ];
-
   const skyTimeLabel = useMemo(() => formatSkySnapshotLabel(skySnapshot), [skySnapshot]);
+  const missionLabel = selectedMission?.shortTitle || selectedMission?.title || 'NONE';
+  const sectionLabel = {
+    missions: 'MISSIONS',
+    sky: 'SKY MAP',
+    comms: 'CREW COMMS',
+    systems: 'LIVE SYSTEMS',
+  }[activeSection] || 'MISSIONS';
 
   return (
     <group>
-      <mesh position={[0, 0.22, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <extrudeGeometry args={[triangleShape, { depth: 3.08, bevelEnabled: false }]} />
-        <meshStandardMaterial color="#251006" metalness={0.92} roughness={0.16} emissive={openFace ? '#ff7b1f' : '#5a2108'} emissiveIntensity={openFace ? 0.72 : 0.28} />
+      <mesh position={[0, 0.11, 0]}>
+        <cylinderGeometry args={[0.7, 0.8, 0.16, 32]} />
+        <meshStandardMaterial color="#0f1117" metalness={0.55} roughness={0.5} emissive="#253448" emissiveIntensity={0.32} />
+      </mesh>
+      <mesh position={[0, 0.74, 0]}>
+        <boxGeometry args={[0.42, 1.12, 0.42]} />
+        <meshStandardMaterial color="#1b1e27" metalness={0.7} roughness={0.28} emissive="#304153" emissiveIntensity={0.24} />
+      </mesh>
+      <mesh position={[0, 1.12, 0.36]} rotation={[-0.28, 0, 0]}>
+        <boxGeometry args={[2.35, 3.05, 0.14]} />
+        <meshStandardMaterial color="#10121a" metalness={0.78} roughness={0.2} emissive="#1d2d3f" emissiveIntensity={0.34} />
+      </mesh>
+      <mesh position={[0, 1.12, 0.44]} rotation={[-0.28, 0, 0]}>
+        <planeGeometry args={[2.18, 2.88]} />
+        <meshBasicMaterial color="#06090f" transparent opacity={0.95} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 2.28, 0.46]} rotation={[-0.28, 0, 0]}>
+        <planeGeometry args={[2.06, 0.18]} />
+        <meshBasicMaterial color="#2d3954" transparent opacity={0.88} depthWrite={false} />
+      </mesh>
+      <mesh position={[-0.82, 1.1, 0.465]} rotation={[-0.28, 0, 0]}>
+        <planeGeometry args={[0.14, 2.66]} />
+        <meshBasicMaterial color="#4c85e8" transparent opacity={0.96} depthWrite={false} />
+      </mesh>
+      <mesh position={[0.89, 1.1, 0.465]} rotation={[-0.28, 0, 0]}>
+        <planeGeometry args={[0.11, 2.66]} />
+        <meshBasicMaterial color="#accbe2" transparent opacity={0.9} depthWrite={false} />
       </mesh>
 
-      <mesh position={[0, 3.3, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <shapeGeometry args={[triangleShape]} />
-        <meshStandardMaterial color="#4b1807" metalness={0.9} roughness={0.18} emissive="#ff8a2b" emissiveIntensity={0.32} />
-      </mesh>
-      <mesh position={[0, 0.21, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <shapeGeometry args={[triangleShape]} />
-        <meshStandardMaterial color="#4b1807" metalness={0.9} roughness={0.18} emissive="#ff8a2b" emissiveIntensity={0.18} />
-      </mesh>
+      <group position={[0, 1.12, 0.485]} rotation={[-0.28, 0, 0]}>
+        <LcarsButton label="HOLODECK CONTROL" color="#4b87ee" selected width={1.14} height={0.16} position={[-0.38, 1.16, 0]} />
+        <LcarsButton label={`CREW // ${currentCrewLabel}`} color={crewAccent} width={0.82} height={0.16} position={[0.67, 1.16, 0]} />
 
-      {faces.map((face) => {
-        const isOpen = openFace === face.key;
-        const isCurrentCrew = activeCrewKey === face.key;
-        return (
-          <group key={face.key} position={[face.position[0], face.position[1] + 1.72, face.position[2]]} rotation={face.rotation}>
-            <mesh position={[0, 0, 0.02]}>
-              <planeGeometry args={[1.58, 2.74]} />
-              <meshStandardMaterial color="#1b0c05" emissive={isOpen ? '#ff8a2b' : isCurrentCrew ? '#b7440c' : '#401406'} emissiveIntensity={isOpen ? 0.72 : isCurrentCrew ? 0.46 : 0.22} metalness={0.68} roughness={0.18} />
-            </mesh>
-            <mesh position={[0, 0, 0.023]}>
-              <planeGeometry args={[1.42, 2.58]} />
-              <meshBasicMaterial color="#ff8a2b" transparent opacity={isOpen ? 0.13 : 0.07} depthWrite={false} />
-            </mesh>
-            <mesh position={[0, 0, 0.025]}>
-              <planeGeometry args={[1.34, 2.5]} />
-              <meshBasicMaterial color="#ffd5a5" transparent opacity={isOpen ? 0.045 : 0.02} depthWrite={false} />
-            </mesh>
-            <mesh position={[0, 0, 0.026]}>
-              <ringGeometry args={[0.62, 0.628, 72]} />
-              <meshBasicMaterial color="#ffb263" transparent opacity={isOpen ? 0.26 : 0.12} />
-            </mesh>
+        <mesh position={[-0.48, 0.91, 0]}>
+          <planeGeometry args={[1.24, 0.26]} />
+          <meshBasicMaterial color="#120f18" transparent opacity={0.96} />
+        </mesh>
+        <Text position={[-0.99, 0.97, 0.01]} fontSize={0.045} color="#79b8ff" anchorX="left" anchorY="middle" letterSpacing={0.04}>
+          TACTICAL ARRAY
+        </Text>
+        <Text position={[-0.99, 0.86, 0.01]} fontSize={0.07} color="#ffcf68" anchorX="left" anchorY="middle" letterSpacing={0.08}>
+          {missionLabel}
+        </Text>
+        <Text position={[-0.1, 0.86, 0.01]} fontSize={0.038} color="#79b8ff" anchorX="right" anchorY="middle" letterSpacing={0.04}>
+          ACTIVE TARGET
+        </Text>
 
-            <Text position={[0, 1.06, 0.05]} fontSize={0.105} color={isCurrentCrew ? '#fff6eb' : '#ffe4c6'} letterSpacing={0.14}>
-              {face.label}{isCurrentCrew ? ' // YOU' : ''}
+        <LcarsReadout label="SECTION" value={sectionLabel} position={[0.53, 0.9, 0]} width={0.96} color="#7cc7ec" />
+        <LcarsReadout label="TIME" value={skyTimeLabel} position={[0.53, 0.72, 0]} width={0.96} color="#5f8ecf" />
+
+        <LcarsButton label="MISSIONS" color="#7cc7ec" selected={activeSection === 'missions'} width={1.1} position={[-0.45, 0.55, 0]} onClick={() => onSectionSelect('missions')} />
+        <LcarsButton label="SKY MAP" color="#4b87ee" selected={activeSection === 'sky'} width={1.1} position={[-0.45, 0.34, 0]} onClick={() => onSectionSelect('sky')} />
+        <LcarsButton label="CREW COMMS" color="#accbe2" selected={activeSection === 'comms'} width={1.1} position={[-0.45, 0.13, 0]} onClick={() => onSectionSelect('comms')} />
+        <LcarsButton label="LIVE SYSTEMS" color="#e87513" selected={activeSection === 'systems'} width={1.1} position={[-0.45, -0.08, 0]} onClick={() => onSectionSelect('systems')} />
+
+        <LcarsReadout label="OBS SITE" value="ELIOT, ME" position={[0.49, 0.44, 0]} width={1.03} color="#b1a43d" />
+        <LcarsReadout label="STATUS" value="ONLINE" position={[0.49, 0.26, 0]} width={1.03} color="#677f8f" />
+        <LcarsReadout label="HOLODECK" value="READY" position={[0.49, 0.08, 0]} width={1.03} color="#4b87ee" />
+        <LcarsReadout label="FOCUS" value={sectionLabel} position={[0.49, -0.1, 0]} width={1.03} color="#7cc7ec" />
+
+        <LcarsButton label="SELECT MODE" color="#e7d39f" width={0.56} height={0.14} position={[-0.72, -0.38, 0]} />
+        <LcarsButton label="INITIATE" color="#e87513" width={0.48} height={0.14} position={[-0.05, -0.38, 0]} />
+        <LcarsButton label="LCARS" color="#4b87ee" width={0.33} height={0.14} position={[0.52, -0.38, 0]} />
+        <LcarsButton label="OPS" color="#b1a43d" width={0.28} height={0.14} position={[0.89, -0.38, 0]} />
+
+        {activeSection === 'sky' && (
+          <>
+            <Text position={[-0.98, -0.61, 0.01]} fontSize={0.04} color="#79b8ff" anchorX="left" anchorY="middle" letterSpacing={0.05}>
+              SKY SNAPSHOT CONTROLS
             </Text>
+            {skyControls.map((control, index) => (
+              <LcarsMiniButton
+                key={control.action}
+                label={control.label}
+                color={control.color}
+                selected={control.action === 'now'}
+                width={index === 0 ? 0.36 : 0.28}
+                position={[-0.74 + index * 0.36, -0.79, 0]}
+                onClick={() => onSkyTimeChange(control.action)}
+              />
+            ))}
+            <LcarsReadout label="SNAPSHOT" value={skyTimeLabel} position={[0.45, -0.79, 0]} width={1.1} color="#7cc7ec" />
+          </>
+        )}
+      </group>
 
-            {isOpen && (
-              <>
-                <mesh position={[0, 0, 0.045]}>
-                  <circleGeometry args={[0.8, 72]} />
-                  <meshBasicMaterial color="#110b07" transparent opacity={0.28} depthWrite={false} />
-                </mesh>
-                <mesh position={[0, 0, 0.048]}>
-                  <ringGeometry args={[0.58, 0.592, 72]} />
-                  <meshBasicMaterial color="#ff9a3d" transparent opacity={0.5} />
-                </mesh>
-                <mesh position={[0, 0, 0.049]}>
-                  <ringGeometry args={[0.77, 0.782, 96]} />
-                  <meshBasicMaterial color="#ff9a3d" transparent opacity={0.22} />
-                </mesh>
-                <lineSegments>
-                  <bufferGeometry>
-                    <bufferAttribute attach="attributes-position" args={[connectorPositions, 3]} />
-                  </bufferGeometry>
-                  <lineBasicMaterial color="#ffb263" transparent opacity={0.48} />
-                </lineSegments>
-                {options.map(([label, key, angle]) => (
-                  <BloomOption key={key} label={label} sectionKey={key} angle={angle} selected={activeSection === key} onSelect={onSectionSelect} />
-                ))}
-                {activeSection === 'sky' && (
-                  <>
-                    {skyControls.map((control) => (
-                      <SkyTimeChip
-                        key={control.action}
-                        label={control.label}
-                        angle={control.angle}
-                        selected={control.action === 'now'}
-                        onClick={() => onSkyTimeChange(control.action)}
-                      />
-                    ))}
-                    <Text position={[0, -1.02, 0.08]} fontSize={0.05} color="#ffd6a8" anchorX="center">SKY TIME // {skyTimeLabel}</Text>
-                  </>
-                )}
-              </>
-            )}
-
-            <group
-              onClick={(event) => {
-                event.stopPropagation();
-                onFaceToggle(face.key);
-              }}
-            >
-              <mesh position={[0, 0, 0.04]}>
-                <circleGeometry args={[0.205, 56]} />
-                <meshStandardMaterial color="#2d1307" emissive="#ff8a2b" emissiveIntensity={isOpen ? 1.6 : 1.05} metalness={0.82} roughness={0.18} />
-              </mesh>
-              <mesh position={[0, 0, 0.043]}>
-                <ringGeometry args={[0.175, 0.208, 56]} />
-                <meshBasicMaterial color="#ffe7c7" transparent opacity={0.84} />
-              </mesh>
-              <Text position={[0, 0, 0.048]} fontSize={0.045} color="#fff6eb" anchorX="center" anchorY="middle">
-                {isOpen ? 'CLOSE' : 'ACTIVATE'}
-              </Text>
-            </group>
-          </group>
-        );
-      })}
-
-      <pointLight position={[0, 2.2, 0]} color={openFace ? '#ff8a2b' : '#ff6f1a'} intensity={openFace ? 9 : 3.2} distance={5.4} />
+      <pointLight position={[0, 2.15, 1.1]} color={crewAccent} intensity={4.2} distance={6.8} />
+      <pointLight position={[0, 1.65, 1.1]} color="#87cfff" intensity={2.4} distance={4.6} />
       {selectedMission && (
         <FloatingLabel position={[0, 3.36, 0]} fontSize={0.11} color="#8feaff">
           {selectedMission.title}
