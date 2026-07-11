@@ -713,7 +713,19 @@ export default function AdminGallery() {
   const [masterFile, setMasterFile] =
     useState(null);
 
+  const [rawFile, setRawFile] =
+    useState(null);
+
+  const [stackedFile, setStackedFile] =
+    useState(null);
+
   const [previewUrl, setPreviewUrl] =
+    useState('');
+
+  const [rawPreviewUrl, setRawPreviewUrl] =
+    useState('');
+
+  const [stackedPreviewUrl, setStackedPreviewUrl] =
     useState('');
 
   const [saving, setSaving] =
@@ -738,6 +750,16 @@ export default function AdminGallery() {
   const [
     masterDragActive,
     setMasterDragActive
+  ] = useState(false);
+
+  const [
+    rawDragActive,
+    setRawDragActive
+  ] = useState(false);
+
+  const [
+    stackedDragActive,
+    setStackedDragActive
   ] = useState(false);
 
   const editingCapture =
@@ -876,6 +898,10 @@ export default function AdminGallery() {
 
     setImageFile(null);
     setMasterFile(null);
+    setRawFile(null);
+    setStackedFile(null);
+    setRawPreviewUrl(getCaptureImageUrl(capture?.raw_image));
+    setStackedPreviewUrl(getCaptureImageUrl(capture?.stacked_image));
     setMessage(
       `OPERATION HANDOFF LOADED · ${String(
         handoff.operation.designation || 'OPERATION'
@@ -886,13 +912,11 @@ export default function AdminGallery() {
 
   useEffect(() => {
     return () => {
-      if (
-        previewUrl.startsWith('blob:')
-      ) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      [previewUrl, rawPreviewUrl, stackedPreviewUrl]
+        .filter((url) => url.startsWith('blob:'))
+        .forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [previewUrl]);
+  }, [previewUrl, rawPreviewUrl, stackedPreviewUrl]);
 
   function updateForm(field, value) {
     setForm((current) => ({
@@ -909,6 +933,16 @@ export default function AdminGallery() {
     }
   }
 
+  function releaseStagePreviewUrl(stage) {
+    const url = stage === 'raw'
+      ? rawPreviewUrl
+      : stackedPreviewUrl;
+
+    if (url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+    }
+  }
+
   function resetEditor() {
     releasePreviewUrl();
 
@@ -917,7 +951,11 @@ export default function AdminGallery() {
     setSourceOperation(null);
     setImageFile(null);
     setMasterFile(null);
+    setRawFile(null);
+    setStackedFile(null);
     setPreviewUrl('');
+    setRawPreviewUrl('');
+    setStackedPreviewUrl('');
     setMessage('');
     setError('');
   }
@@ -945,7 +983,11 @@ export default function AdminGallery() {
 
     setImageFile(null);
     setMasterFile(null);
+    setRawFile(null);
+    setStackedFile(null);
     setPreviewUrl('');
+    setRawPreviewUrl('');
+    setStackedPreviewUrl('');
     setMessage('');
     setError('');
   }
@@ -971,9 +1013,17 @@ export default function AdminGallery() {
 
     setImageFile(null);
     setMasterFile(null);
+    setRawFile(null);
+    setStackedFile(null);
 
     setPreviewUrl(
       getCaptureImageUrl(capture.image)
+    );
+    setRawPreviewUrl(
+      getCaptureImageUrl(capture.raw_image)
+    );
+    setStackedPreviewUrl(
+      getCaptureImageUrl(capture.stacked_image)
     );
 
     setMessage('');
@@ -1139,6 +1189,74 @@ export default function AdminGallery() {
     );
   }
 
+  async function acceptReplayStageFile(file, stage) {
+    if (!file) {
+      return;
+    }
+
+    const lowerName = file.name.toLowerCase();
+    const isTiff = lowerName.endsWith('.tif') || lowerName.endsWith('.tiff');
+    const isWebImage = /\.(jpe?g|png|webp)$/i.test(lowerName);
+
+    if (!isTiff && !isWebImage) {
+      setError('Mission Replay stage images must be JPG, PNG, WEBP, or TIFF files.');
+      return;
+    }
+
+    if (isTiff && file.size > MAX_MASTER_UPLOAD_BYTES) {
+      setError('Mission Replay TIFF is too large for browser conversion. Keep it under 99 MB.');
+      return;
+    }
+
+    setMessage('');
+    setError('');
+
+    try {
+      const stageFile = isTiff
+        ? await generateWebJpegFromTiff(file)
+        : file;
+
+      releaseStagePreviewUrl(stage);
+      const nextPreviewUrl = URL.createObjectURL(stageFile);
+
+      if (stage === 'raw') {
+        setRawFile(stageFile);
+        setRawPreviewUrl(nextPreviewUrl);
+      } else {
+        setStackedFile(stageFile);
+        setStackedPreviewUrl(nextPreviewUrl);
+      }
+
+      if (isTiff) {
+        setMessage(`${stage.toUpperCase()} WEB JPEG GENERATED FROM TIFF · ${stageFile.name} · ${formatFileSize(stageFile.size)}`);
+      }
+    } catch (stageError) {
+      console.error(stageError);
+      setError(stageError.message || `Could not prepare the ${stage} stage image.`);
+    }
+  }
+
+  async function handleReplayStageSelection(event, stage) {
+    await acceptReplayStageFile(event.target.files?.[0], stage);
+    event.target.value = '';
+  }
+
+  function handleReplayStageDrop(event, stage) {
+    event.preventDefault();
+
+    if (stage === 'raw') {
+      setRawDragActive(false);
+    } else {
+      setStackedDragActive(false);
+    }
+
+    if (saving || convertingMaster) {
+      return;
+    }
+
+    acceptReplayStageFile(event.dataTransfer.files?.[0], stage);
+  }
+
   async function uploadImage(
     file = imageFile
   ) {
@@ -1280,6 +1398,8 @@ export default function AdminGallery() {
 
     let uploadedImage = null;
     let uploadedMaster = null;
+    let uploadedRaw = null;
+    let uploadedStacked = null;
 
     try {
       const requiredFields = [
@@ -1377,6 +1497,14 @@ export default function AdminGallery() {
           await uploadMaster();
       }
 
+      if (rawFile) {
+        uploadedRaw = await uploadImage(rawFile);
+      }
+
+      if (stackedFile) {
+        uploadedStacked = await uploadImage(stackedFile);
+      }
+
       const captureRow = {
         title: form.title.trim(),
 
@@ -1422,6 +1550,26 @@ export default function AdminGallery() {
         storage_path:
           uploadedImage?.storagePath ||
           existingCapture?.storage_path ||
+          null,
+
+        raw_image:
+          uploadedRaw?.image ||
+          existingCapture?.raw_image ||
+          null,
+
+        raw_storage_path:
+          uploadedRaw?.storagePath ||
+          existingCapture?.raw_storage_path ||
+          null,
+
+        stacked_image:
+          uploadedStacked?.image ||
+          existingCapture?.stacked_image ||
+          null,
+
+        stacked_storage_path:
+          uploadedStacked?.storagePath ||
+          existingCapture?.stacked_storage_path ||
           null,
 
         master_file_url:
@@ -1585,6 +1733,14 @@ export default function AdminGallery() {
           );
         }
 
+        if (uploadedRaw) {
+          await deleteR2Object(uploadedRaw.storagePath);
+        }
+
+        if (uploadedStacked) {
+          await deleteR2Object(uploadedStacked.storagePath);
+        }
+
         throw saveError;
       }
 
@@ -1617,6 +1773,24 @@ export default function AdminGallery() {
         await deleteR2Object(
           existingCapture.master_storage_path
         );
+      }
+
+      if (
+        editingCaptureId !== 'new' &&
+        uploadedRaw &&
+        existingCapture?.raw_storage_path &&
+        existingCapture.raw_storage_path !== uploadedRaw.storagePath
+      ) {
+        await deleteR2Object(existingCapture.raw_storage_path);
+      }
+
+      if (
+        editingCaptureId !== 'new' &&
+        uploadedStacked &&
+        existingCapture?.stacked_storage_path &&
+        existingCapture.stacked_storage_path !== uploadedStacked.storagePath
+      ) {
+        await deleteR2Object(existingCapture.stacked_storage_path);
       }
 
       const wasNew =
@@ -1738,7 +1912,11 @@ export default function AdminGallery() {
       setSourceOperation(null);
       setImageFile(null);
       setMasterFile(null);
+      setRawFile(null);
+      setStackedFile(null);
       setPreviewUrl('');
+      setRawPreviewUrl('');
+      setStackedPreviewUrl('');
 
       setMessage(
         uploadedMaster
@@ -2260,6 +2438,92 @@ export default function AdminGallery() {
                 </div>
               </section>
 
+              <section className="admin-replay-stage-upload-section">
+                <div className="admin-replay-focus-section-header">
+                  <div>
+                    <span className="admin-card-eyebrow">MISSION REPLAY IMAGES</span>
+                    <h4>Raw and stacked stages</h4>
+                  </div>
+                  <p>Upload one representative raw frame and the stacked result. JPG, PNG, WEBP, and TIFF are accepted; TIFF files are converted to web JPEGs in your browser.</p>
+                </div>
+
+                <div className="admin-replay-stage-upload-grid">
+                  {[
+                    {
+                      stage: 'raw',
+                      label: 'RAW',
+                      description: 'One untouched light frame from the camera.',
+                      file: rawFile,
+                      preview: rawPreviewUrl || getCaptureImageUrl(editingCapture?.raw_image),
+                      dragActive: rawDragActive,
+                      setDragActive: setRawDragActive
+                    },
+                    {
+                      stage: 'stacked',
+                      label: 'STACKED',
+                      description: 'The combined stack before final processing.',
+                      file: stackedFile,
+                      preview: stackedPreviewUrl || getCaptureImageUrl(editingCapture?.stacked_image),
+                      dragActive: stackedDragActive,
+                      setDragActive: setStackedDragActive
+                    }
+                  ].map((stageConfig) => (
+                    <article
+                      key={stageConfig.stage}
+                      className={`admin-replay-stage-uploader admin-drop-zone${stageConfig.dragActive ? ' admin-drop-zone-active' : ''}`}
+                      onDragEnter={(event) => {
+                        event.preventDefault();
+                        stageConfig.setDragActive(true);
+                      }}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        stageConfig.setDragActive(true);
+                      }}
+                      onDragLeave={(event) => {
+                        event.preventDefault();
+                        if (!event.currentTarget.contains(event.relatedTarget)) {
+                          stageConfig.setDragActive(false);
+                        }
+                      }}
+                      onDrop={(event) => handleReplayStageDrop(event, stageConfig.stage)}
+                    >
+                      <div className="admin-replay-stage-preview">
+                        {stageConfig.preview ? (
+                          <img src={stageConfig.preview} alt={`${stageConfig.label} Mission Replay stage`} />
+                        ) : (
+                          <>
+                            <ImagePlus size={38} />
+                            <span>NO {stageConfig.label} IMAGE</span>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="admin-replay-stage-controls">
+                        <span className="admin-card-eyebrow">MISSION REPLAY</span>
+                        <h4>{stageConfig.label}</h4>
+                        <p>{stageConfig.description}</p>
+                        <strong className="admin-drop-zone-hint">
+                          {stageConfig.dragActive ? `RELEASE ${stageConfig.label} IMAGE` : `DROP ${stageConfig.label} IMAGE HERE`}
+                        </strong>
+                        <label className="admin-file-button">
+                          <Upload size={18} />
+                          {stageConfig.file || stageConfig.preview ? `CHANGE ${stageConfig.label}` : `SELECT ${stageConfig.label}`}
+                          <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.webp,.tif,.tiff,image/jpeg,image/png,image/webp,image/tiff"
+                            onChange={(event) => handleReplayStageSelection(event, stageConfig.stage)}
+                            disabled={saving || convertingMaster}
+                          />
+                        </label>
+                        {stageConfig.file && (
+                          <small>{stageConfig.file.name} · {formatFileSize(stageConfig.file.size)}</small>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
               <section className="admin-replay-focus-section">
                 <div className="admin-replay-focus-section-header">
                   <div>
@@ -2317,9 +2581,10 @@ export default function AdminGallery() {
                   <ReplayFocusPickerCard
                     label="RAW"
                     description="Used at the opening of Mission Replay. Existing raw stage image required."
-                    imageUrl={getCaptureImageUrl(
-                      editingCapture?.raw_image
-                    )}
+                    imageUrl={
+                      rawPreviewUrl ||
+                      getCaptureImageUrl(editingCapture?.raw_image)
+                    }
                     xValue={form.replayRawFocusX}
                     yValue={form.replayRawFocusY}
                     onCoordinateChange={(
@@ -2350,9 +2615,10 @@ export default function AdminGallery() {
                   <ReplayFocusPickerCard
                     label="STACKED"
                     description="Used for signal accumulation / stacking. Existing stacked stage image required."
-                    imageUrl={getCaptureImageUrl(
-                      editingCapture?.stacked_image
-                    )}
+                    imageUrl={
+                      stackedPreviewUrl ||
+                      getCaptureImageUrl(editingCapture?.stacked_image)
+                    }
                     xValue={form.replayStackedFocusX}
                     yValue={form.replayStackedFocusY}
                     onCoordinateChange={(
