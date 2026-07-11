@@ -11313,6 +11313,37 @@ footer p {
   transition: width 0.2s ease;
 }
 
+
+.admin-transfer-progress > small {
+  display: block;
+  margin-top: 6px;
+  color: rgba(225, 238, 247, 0.7);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.admin-transfer-cancel-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px 12px;
+  color: #ffb85c;
+  background: rgba(255, 157, 28, 0.07);
+  border: 1px solid rgba(255, 157, 28, 0.22);
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.admin-transfer-cancel-upload:hover {
+  background: rgba(255, 157, 28, 0.14);
+}
+
 .admin-transfer-upload-button {
   align-self: stretch;
   justify-content: center;

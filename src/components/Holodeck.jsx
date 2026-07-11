@@ -961,9 +961,9 @@ function CrewCompanion({ crewKey, accent = '#8feaff', sleeping = false }) {
 
   if (crewKey === 'dave') {
     return (
-      <group ref={rootRef} position={[1.08, sleeping ? 1.08 : 0.28, -1.12]} scale={1.18}>
+      <group ref={rootRef} position={[1.14, sleeping ? 1.02 : 0.22, -1.18]} scale={1.32}>
         <GusGLBModel accent={accent} sleeping={sleeping} />
-        <pointLight position={[0.0, 0.95, 0]} color={accent} intensity={sleeping ? 0.4 : 0.78} distance={1.6} />
+        <pointLight position={[0.08, 1.08, 0]} color={accent} intensity={sleeping ? 0.42 : 0.86} distance={1.9} />
       </group>
     );
   }

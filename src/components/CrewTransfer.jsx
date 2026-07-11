@@ -15,6 +15,7 @@ import {
 import {
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react';
 import { supabase } from '../supabase.js';
@@ -33,7 +34,12 @@ const GALLERY_API =
   'https://cuzbro-gallery-api.dve-hffman.workers.dev';
 
 const MAX_TRANSFER_FILE_BYTES =
-  99 * 1024 * 1024;
+  20 * 1024 * 1024 * 1024;
+
+const MULTIPART_CHUNK_BYTES =
+  64 * 1024 * 1024;
+
+const MULTIPART_RETRY_LIMIT = 3;
 
 const TRANSFER_TAG_OPTIONS = [
   'M51',
@@ -148,10 +154,86 @@ async function getCrewAccessToken() {
   return session.access_token;
 }
 
+
+async function readJsonResponse(response) {
+  let result = {};
+
+  try {
+    result = await response.json();
+  } catch {
+    // Some Cloudflare errors may be plain text.
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      result.error ||
+        `Crew Transfer request failed (${response.status}).`
+    );
+  }
+
+  return result;
+}
+
+async function uploadMultipartPart({
+  accessToken,
+  key,
+  uploadId,
+  partNumber,
+  chunk,
+  signal
+}) {
+  let lastError = null;
+
+  for (
+    let attempt = 1;
+    attempt <= MULTIPART_RETRY_LIMIT;
+    attempt += 1
+  ) {
+    try {
+      const response = await fetch(
+        `${GALLERY_API}/transfer/multipart/part?` +
+          new URLSearchParams({
+            key,
+            uploadId,
+            partNumber: String(partNumber)
+          }),
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/octet-stream'
+          },
+          body: chunk,
+          signal
+        }
+      );
+
+      return await readJsonResponse(response);
+    } catch (partError) {
+      if (partError.name === 'AbortError') {
+        throw partError;
+      }
+
+      lastError = partError;
+
+      if (attempt < MULTIPART_RETRY_LIMIT) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, attempt * 1000)
+        );
+      }
+    }
+  }
+
+  throw lastError || new Error('Multipart part upload failed.');
+}
+
 export default function CrewTransfer() {
   const {
     activeOperation
   } = useActiveOperation();
+
+  const uploadAbortController =
+    useRef(null);
 
   const [transferName, setTransferName] =
     useState('');
@@ -172,7 +254,11 @@ export default function CrewTransfer() {
     useState({
       current: 0,
       total: 0,
-      fileName: ''
+      fileName: '',
+      uploadedBytes: 0,
+      totalBytes: 0,
+      partCurrent: 0,
+      partTotal: 0
     });
 
   const [message, setMessage] =
@@ -498,86 +584,25 @@ export default function CrewTransfer() {
   }
 
   async function saveUploadedFileTags({
-    accessToken,
-    transferName: uploadedTransferName,
     uploadedFiles,
-    tags,
-    uploadStartedAt
+    tags
   }) {
     if (!tags.length) {
       return;
-    }
-
-    const listResponse = await fetch(
-      `${GALLERY_API}/transfer/list`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${accessToken}`
-        }
-      }
-    );
-
-    const listResult =
-      await listResponse.json();
-
-    if (!listResponse.ok) {
-      throw new Error(
-        listResult.error ||
-          'Uploaded files could not be matched for tagging.'
-      );
-    }
-
-    const candidates = (listResult.files || [])
-      .filter((file) =>
-        file.transferName === uploadedTransferName &&
-        new Date(file.uploaded).getTime() >=
-          uploadStartedAt - 5 * 60 * 1000
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.uploaded) -
-          new Date(a.uploaded)
-      );
-
-    const usedKeys = new Set();
-    const rows = uploadedFiles
-      .map((uploadedFile) => {
-        const matchedFile = candidates.find(
-          (file) =>
-            !usedKeys.has(file.key) &&
-            file.fileName === uploadedFile.name
-        );
-
-        if (!matchedFile) {
-          return null;
-        }
-
-        usedKeys.add(matchedFile.key);
-
-        return {
-          file_key: matchedFile.key,
-          tags,
-          updated_at:
-            new Date().toISOString()
-        };
-      })
-      .filter(Boolean);
-
-    if (rows.length !== uploadedFiles.length) {
-      throw new Error(
-        'Files uploaded, but their tag metadata could not be matched completely. Use EDIT TAGS on the files to add them manually.'
-      );
     }
 
     const {
       data: { session }
     } = await supabase.auth.getSession();
 
-    rows.forEach((row) => {
-      row.updated_by_email =
-        session?.user?.email || '';
-    });
+    const rows = uploadedFiles.map((uploadedFile) => ({
+      file_key: uploadedFile.key,
+      tags,
+      updated_by_email:
+        session?.user?.email || '',
+      updated_at:
+        new Date().toISOString()
+    }));
 
     const { error: tagSaveError } =
       await supabase
@@ -610,7 +635,7 @@ export default function CrewTransfer() {
 
     if (tooLarge) {
       setError(
-        `${tooLarge.name} is over the current 99 MB per-file upload limit.`
+        `${tooLarge.name} is over the 20 GB per-file upload limit.`
       );
 
       return;
@@ -672,18 +697,12 @@ export default function CrewTransfer() {
       transferName.trim();
 
     if (!cleanTransferName) {
-      setError(
-        'Enter a transfer name.'
-      );
-
+      setError('Enter a transfer name.');
       return;
     }
 
     if (!selectedFiles.length) {
-      setError(
-        'Select at least one file.'
-      );
-
+      setError('Select at least one file.');
       return;
     }
 
@@ -693,7 +712,17 @@ export default function CrewTransfer() {
         customUploadTag
       );
 
-    const uploadStartedAt = Date.now();
+    const totalBatchBytes = selectedFiles.reduce(
+      (total, file) => total + Number(file.size || 0),
+      0
+    );
+
+    const controller = new AbortController();
+    uploadAbortController.current = controller;
+
+    let batchUploadedBytes = 0;
+    let currentMultipart = null;
+    const uploadedFiles = [];
 
     setUploading(true);
     setMessage('');
@@ -708,65 +737,135 @@ export default function CrewTransfer() {
         index < selectedFiles.length;
         index += 1
       ) {
-        const file =
-          selectedFiles[index];
+        const file = selectedFiles[index];
+        const partTotal = Math.ceil(
+          file.size / MULTIPART_CHUNK_BYTES
+        );
 
         setUploadProgress({
           current: index + 1,
           total: selectedFiles.length,
-          fileName: file.name
+          fileName: file.name,
+          uploadedBytes: batchUploadedBytes,
+          totalBytes: totalBatchBytes,
+          partCurrent: 0,
+          partTotal
         });
 
-        const response = await fetch(
-          `${GALLERY_API}/transfer/upload`,
+        const createResponse = await fetch(
+          `${GALLERY_API}/transfer/multipart/create`,
           {
             method: 'POST',
-
             headers: {
-              Authorization:
-                `Bearer ${accessToken}`,
-
-              'Content-Type':
-                file.type ||
-                'application/octet-stream',
-
-              'X-Filename':
-                file.name,
-
-              'X-Transfer-Name':
-                cleanTransferName
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
             },
-
-            body: file
+            body: JSON.stringify({
+              fileName: file.name,
+              transferName: cleanTransferName,
+              fileSize: file.size,
+              contentType:
+                file.type || 'application/octet-stream'
+            }),
+            signal: controller.signal
           }
         );
 
-        const result =
-          await response.json();
+        const created =
+          await readJsonResponse(createResponse);
 
-        if (!response.ok) {
-          throw new Error(
-            result.error ||
-              `Upload failed for ${file.name}.`
+        currentMultipart = {
+          key: created.key,
+          uploadId: created.uploadId,
+          accessToken
+        };
+
+        const parts = [];
+
+        for (
+          let partIndex = 0;
+          partIndex < partTotal;
+          partIndex += 1
+        ) {
+          const startByte =
+            partIndex * MULTIPART_CHUNK_BYTES;
+          const endByte = Math.min(
+            startByte + MULTIPART_CHUNK_BYTES,
+            file.size
           );
+          const chunk = file.slice(startByte, endByte);
+
+          setUploadProgress({
+            current: index + 1,
+            total: selectedFiles.length,
+            fileName: file.name,
+            uploadedBytes: batchUploadedBytes + startByte,
+            totalBytes: totalBatchBytes,
+            partCurrent: partIndex + 1,
+            partTotal
+          });
+
+          const uploadedPart =
+            await uploadMultipartPart({
+              accessToken,
+              key: created.key,
+              uploadId: created.uploadId,
+              partNumber: partIndex + 1,
+              chunk,
+              signal: controller.signal
+            });
+
+          parts.push({
+            partNumber: uploadedPart.partNumber,
+            etag: uploadedPart.etag
+          });
+
+          setUploadProgress({
+            current: index + 1,
+            total: selectedFiles.length,
+            fileName: file.name,
+            uploadedBytes: batchUploadedBytes + endByte,
+            totalBytes: totalBatchBytes,
+            partCurrent: partIndex + 1,
+            partTotal
+          });
         }
+
+        const completeResponse = await fetch(
+          `${GALLERY_API}/transfer/multipart/complete`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              key: created.key,
+              uploadId: created.uploadId,
+              parts
+            }),
+            signal: controller.signal
+          }
+        );
+
+        const completed =
+          await readJsonResponse(completeResponse);
+
+        uploadedFiles.push({
+          key: completed.key,
+          name: file.name,
+          size: file.size,
+          type: file.type || 'application/octet-stream'
+        });
+
+        batchUploadedBytes += file.size;
+        currentMultipart = null;
       }
 
       await saveUploadedFileTags({
-        accessToken,
-        transferName: cleanTransferName,
-        uploadedFiles: selectedFiles,
-        tags: selectedBatchTags,
-        uploadStartedAt
+        uploadedFiles,
+        tags: selectedBatchTags
       });
-
-      const totalBytes =
-        selectedFiles.reduce(
-          (total, file) =>
-            total +
-            Number(file.size || 0),
-          0
-        );
 
       const auditResult =
         await logCrewActivity({
@@ -775,20 +874,14 @@ export default function CrewTransfer() {
           resourceType: 'crew_transfer',
           resourceName: cleanTransferName,
           details: {
-            fileCount:
-              selectedFiles.length,
-            totalBytes,
+            fileCount: selectedFiles.length,
+            totalBytes: totalBatchBytes,
             tags: selectedBatchTags,
-            files:
-              selectedFiles.map(
-                (file) => ({
-                  name: file.name,
-                  size: file.size,
-                  type:
-                    file.type ||
-                    'application/octet-stream'
-                })
-              )
+            files: uploadedFiles.map((file) => ({
+              name: file.name,
+              size: file.size,
+              type: file.type
+            }))
           }
         });
 
@@ -803,23 +896,15 @@ export default function CrewTransfer() {
         const operationEventResult =
           await recordOperationEvent({
             operation: activeOperation,
-            eventType:
-              'TRANSFER_UPLOAD',
-            eventLabel:
-              'CREW TRANSFER UPLOAD',
-            resourceType:
-              'crew_transfer',
-            resourceName:
-              cleanTransferName,
+            eventType: 'TRANSFER_UPLOAD',
+            eventLabel: 'CREW TRANSFER UPLOAD',
+            resourceType: 'crew_transfer',
+            resourceName: cleanTransferName,
             details: {
-              fileCount:
-                selectedFiles.length,
-              totalBytes,
+              fileCount: selectedFiles.length,
+              totalBytes: totalBatchBytes,
               tags: selectedBatchTags,
-              files:
-                selectedFiles.map(
-                  (file) => file.name
-                )
+              files: uploadedFiles.map((file) => file.name)
             }
           });
 
@@ -836,9 +921,7 @@ export default function CrewTransfer() {
 
       setMessage(
         `${selectedFiles.length} ${
-          selectedFiles.length === 1
-            ? 'FILE'
-            : 'FILES'
+          selectedFiles.length === 1 ? 'FILE' : 'FILES'
         } UPLOADED TO PRIVATE CREW TRANSFER`
       );
 
@@ -851,19 +934,54 @@ export default function CrewTransfer() {
     } catch (uploadError) {
       console.error(uploadError);
 
+      if (currentMultipart) {
+        try {
+          await fetch(
+            `${GALLERY_API}/transfer/multipart/abort?` +
+              new URLSearchParams({
+                key: currentMultipart.key,
+                uploadId: currentMultipart.uploadId
+              }),
+            {
+              method: 'DELETE',
+              headers: {
+                Authorization:
+                  `Bearer ${currentMultipart.accessToken}`
+              }
+            }
+          );
+        } catch (abortError) {
+          console.error(
+            'Could not abort incomplete multipart upload:',
+            abortError
+          );
+        }
+      }
+
       setError(
-        uploadError.message ||
-          'Crew Transfer upload failed.'
+        uploadError.name === 'AbortError'
+          ? 'Crew Transfer upload cancelled.'
+          : uploadError.message ||
+              'Crew Transfer upload failed.'
       );
+    } finally {
+      setUploadProgress({
+        current: 0,
+        total: 0,
+        fileName: '',
+        uploadedBytes: 0,
+        totalBytes: 0,
+        partCurrent: 0,
+        partTotal: 0
+      });
+
+      uploadAbortController.current = null;
+      setUploading(false);
     }
+  }
 
-    setUploadProgress({
-      current: 0,
-      total: 0,
-      fileName: ''
-    });
-
-    setUploading(false);
+  function cancelUpload() {
+    uploadAbortController.current?.abort();
   }
 
   async function downloadFile(file) {
@@ -1285,7 +1403,8 @@ export default function CrewTransfer() {
               manually. Each file is stored
               privately in R2 and requires an
               authenticated CuzBro session to
-              list or download.
+              list or download. Files up to 20 GB
+              are uploaded in resilient 64 MB parts.
             </p>
 
             <strong className="admin-transfer-drop-hint">
@@ -1438,29 +1557,42 @@ export default function CrewTransfer() {
             {uploading && (
               <div className="admin-transfer-progress">
                 <span>
-                  UPLOADING{' '}
-                  {uploadProgress.current}
-                  {' / '}
-                  {uploadProgress.total}
+                  FILE {uploadProgress.current} / {uploadProgress.total}
+                  {' · '}
+                  PART {uploadProgress.partCurrent} / {uploadProgress.partTotal}
                 </span>
 
                 <strong>
                   {uploadProgress.fileName}
                 </strong>
 
+                <small>
+                  {formatFileSize(uploadProgress.uploadedBytes)} of{' '}
+                  {formatFileSize(uploadProgress.totalBytes)}
+                </small>
+
                 <div>
                   <i
                     style={{
-                      width:
-                        uploadProgress.total
-                          ? `${(
-                              uploadProgress.current /
-                              uploadProgress.total
-                            ) * 100}%`
-                          : '0%'
+                      width: uploadProgress.totalBytes
+                        ? `${Math.min(
+                            100,
+                            (uploadProgress.uploadedBytes /
+                              uploadProgress.totalBytes) * 100
+                          )}%`
+                        : '0%'
                     }}
                   />
                 </div>
+
+                <button
+                  type="button"
+                  className="admin-transfer-cancel-upload"
+                  onClick={cancelUpload}
+                >
+                  <X size={15} />
+                  CANCEL UPLOAD
+                </button>
               </div>
             )}
 
