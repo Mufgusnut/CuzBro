@@ -286,7 +286,7 @@ function PillarOccludedHtml({ position, distanceFactor, children, style = {} }) 
   );
 }
 
-function CameraRig({ enabled, focusRequest, onFocusComplete, initialPosition, onPose }) {
+function CameraRig({ enabled, focusRequest, onFocusComplete, initialPosition, onPose, viewMode, localPoseRef }) {
   const { camera, gl } = useThree();
   const keys = useRef(new Set());
   const yaw = useRef(0);
@@ -298,11 +298,16 @@ function CameraRig({ enabled, focusRequest, onFocusComplete, initialPosition, on
   const startPosition = useRef(new THREE.Vector3());
   const startQuaternion = useRef(new THREE.Quaternion());
   const targetQuaternion = useRef(new THREE.Quaternion());
+  const playerPosition = useRef(new THREE.Vector3());
   const lastPoseEmitAt = useRef(0);
+  const initialized = useRef(false);
+  const previousViewMode = useRef(viewMode);
 
   useEffect(() => {
     const spawn = initialPosition || [0, 1.72, 8.6];
+    playerPosition.current.set(spawn[0], 0, spawn[2]);
     camera.position.set(spawn[0], spawn[1], spawn[2]);
+    initialized.current = true;
 
     const dom = gl.domElement;
     const onKeyDown = (event) => keys.current.add(event.code);
@@ -319,11 +324,9 @@ function CameraRig({ enabled, focusRequest, onFocusComplete, initialPosition, on
       const dy = event.clientY - lastPoint.current.y;
       lastPoint.current = { x: event.clientX, y: event.clientY };
       yaw.current -= dx * 0.004;
-      pitch.current = THREE.MathUtils.clamp(pitch.current - dy * 0.003, -1.15, 1.05);
+      pitch.current = THREE.MathUtils.clamp(pitch.current - dy * 0.003, -0.78, 0.72);
     };
-    const onPointerUp = () => {
-      dragging.current = false;
-    };
+    const onPointerUp = () => { dragging.current = false; };
 
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
@@ -353,7 +356,12 @@ function CameraRig({ enabled, focusRequest, onFocusComplete, initialPosition, on
   }, [camera, focusRequest]);
 
   useFrame((state, delta) => {
-    if (!enabled) return;
+    if (!enabled || !initialized.current) return;
+
+    if (previousViewMode.current !== viewMode) {
+      previousViewMode.current = viewMode;
+      activeFocus.current = null;
+    }
 
     if (activeFocus.current && focusRequest?.preset) {
       focusProgress.current = Math.min(1, focusProgress.current + delta / 0.72);
@@ -364,80 +372,73 @@ function CameraRig({ enabled, focusRequest, onFocusComplete, initialPosition, on
         const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
         yaw.current = euler.y;
         pitch.current = euler.x;
+        playerPosition.current.set(camera.position.x, 0, camera.position.z);
         activeFocus.current = null;
         onFocusComplete?.();
-      }
-      if (state.clock.elapsedTime - lastPoseEmitAt.current >= 0.08) {
-        lastPoseEmitAt.current = state.clock.elapsedTime;
-        onPose?.({
-          position: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
-          rotation: { yaw: camera.rotation.y, pitch: camera.rotation.x },
-        });
       }
       return;
     }
 
-    camera.rotation.order = 'YXZ';
-    camera.rotation.y = yaw.current;
-    camera.rotation.x = pitch.current;
-
+    const flatForward = new THREE.Vector3(-Math.sin(yaw.current), 0, -Math.cos(yaw.current)).normalize();
+    const right = new THREE.Vector3(Math.cos(yaw.current), 0, -Math.sin(yaw.current)).normalize();
     const speed = 4.25 * delta;
-    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-    forward.y = 0;
-    forward.normalize();
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-    right.y = 0;
-    right.normalize();
 
     const moving =
-      keys.current.has('KeyW') ||
-      keys.current.has('ArrowUp') ||
-      keys.current.has('KeyS') ||
-      keys.current.has('ArrowDown') ||
-      keys.current.has('KeyA') ||
-      keys.current.has('ArrowLeft') ||
-      keys.current.has('KeyD') ||
-      keys.current.has('ArrowRight');
+      keys.current.has('KeyW') || keys.current.has('ArrowUp') ||
+      keys.current.has('KeyS') || keys.current.has('ArrowDown') ||
+      keys.current.has('KeyA') || keys.current.has('ArrowLeft') ||
+      keys.current.has('KeyD') || keys.current.has('ArrowRight');
     if (moving) activeFocus.current = null;
 
     const movement = new THREE.Vector3();
-    if (keys.current.has('KeyW') || keys.current.has('ArrowUp')) movement.addScaledVector(forward, speed);
-    if (keys.current.has('KeyS') || keys.current.has('ArrowDown')) movement.addScaledVector(forward, -speed);
+    if (keys.current.has('KeyW') || keys.current.has('ArrowUp')) movement.addScaledVector(flatForward, speed);
+    if (keys.current.has('KeyS') || keys.current.has('ArrowDown')) movement.addScaledVector(flatForward, -speed);
     if (keys.current.has('KeyA') || keys.current.has('ArrowLeft')) movement.addScaledVector(right, -speed);
     if (keys.current.has('KeyD') || keys.current.has('ArrowRight')) movement.addScaledVector(right, speed);
 
     if (movement.lengthSq() > 0) {
-      const next = camera.position.clone().add(movement);
+      const next = playerPosition.current.clone().add(movement);
       const centerDistance = Math.hypot(next.x, next.z);
       const controlBoundary = 1.28;
-
       if (centerDistance < controlBoundary) {
-        const currentDistance = Math.hypot(camera.position.x, camera.position.z);
-        if (currentDistance >= controlBoundary) {
-          const normal = new THREE.Vector2(next.x, next.z);
-          if (normal.lengthSq() < 0.0001) normal.set(camera.position.x || 1, camera.position.z);
-          normal.normalize().multiplyScalar(controlBoundary);
-          next.x = normal.x;
-          next.z = normal.y;
-        } else {
-          const normal = new THREE.Vector2(camera.position.x || 1, camera.position.z);
-          normal.normalize().multiplyScalar(controlBoundary);
-          next.x = normal.x;
-          next.z = normal.y;
-        }
+        const normal = new THREE.Vector2(next.x || playerPosition.current.x || 1, next.z || playerPosition.current.z);
+        normal.normalize().multiplyScalar(controlBoundary);
+        next.x = normal.x;
+        next.z = normal.y;
       }
-
-      camera.position.copy(next);
+      next.x = THREE.MathUtils.clamp(next.x, -8.5, 8.5);
+      next.z = THREE.MathUtils.clamp(next.z, -8.5, 8.5);
+      playerPosition.current.copy(next);
     }
 
-    camera.position.x = THREE.MathUtils.clamp(camera.position.x, -8.5, 8.5);
-    camera.position.z = THREE.MathUtils.clamp(camera.position.z, -8.5, 8.5);
-    camera.position.y = 1.72;
+    camera.rotation.order = 'YXZ';
+    if (viewMode === 'third') {
+      const target = new THREE.Vector3(playerPosition.current.x, 1.35, playerPosition.current.z);
+      const horizontalDistance = 3.25;
+      const cameraHeight = 1.25 + Math.sin(pitch.current) * 1.65;
+      const desired = target.clone()
+        .addScaledVector(flatForward, -horizontalDistance * Math.cos(pitch.current))
+        .add(new THREE.Vector3(0, cameraHeight, 0));
+      camera.position.lerp(desired, 1 - Math.exp(-delta * 12));
+      camera.lookAt(target.clone().addScaledVector(flatForward, 0.65));
+    } else {
+      camera.position.set(playerPosition.current.x, 1.72, playerPosition.current.z);
+      camera.rotation.y = yaw.current;
+      camera.rotation.x = pitch.current;
+    }
+
+    const pose = {
+      position: { x: playerPosition.current.x, y: 0, z: playerPosition.current.z },
+      rotation: { yaw: yaw.current, pitch: pitch.current },
+      moving,
+      viewMode,
+    };
+    if (localPoseRef) localPoseRef.current = pose;
 
     if (state.clock.elapsedTime - lastPoseEmitAt.current >= 0.08) {
       lastPoseEmitAt.current = state.clock.elapsedTime;
       onPose?.({
-        position: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+        position: { x: playerPosition.current.x, y: 1.72, z: playerPosition.current.z },
         rotation: { yaw: yaw.current, pitch: pitch.current },
       });
     }
@@ -845,23 +846,68 @@ function GusGLBModel({ accent = '#8feaff', sleeping = false }) {
 
   useEffect(() => {
     model.traverse((child) => {
-      if (!child.isMesh || !child.material) return;
+      if (!child.isMesh) return;
       child.castShadow = false;
       child.receiveShadow = false;
       child.frustumCulled = true;
 
-      if (child.material.name === 'Holodeck_Cyan_Rim') {
-        child.material = child.material.clone();
-        child.material.emissive = new THREE.Color(accent);
-        child.material.emissiveIntensity = sleeping ? 0.42 : 0.9;
-        child.material.opacity = sleeping ? 0.1 : 0.2;
-        child.material.transparent = true;
-        child.material.depthWrite = false;
+      const meshName = String(child.name || '');
+      const materialName = String(child.material?.name || '');
+
+      if (meshName === 'Gus_Rim' || materialName === 'Gus_Rim') {
+        child.visible = false;
+        return;
       }
+
+      if (meshName === 'Gus_Collar' || meshName === 'Gus_Collar_Strap') {
+        child.material = new THREE.MeshStandardMaterial({
+          color: meshName === 'Gus_Collar' ? '#3b8587' : '#285f60',
+          roughness: 0.58,
+          metalness: 0.12,
+        });
+        return;
+      }
+
+      if (meshName === 'Gus_Tag') {
+        child.material = new THREE.MeshStandardMaterial({
+          color: '#c1464a',
+          roughness: 0.72,
+          metalness: 0.08,
+        });
+        return;
+      }
+
+      if (meshName.includes('Cube-Mesh_1') || materialName.includes('Material.002')) {
+        child.material = new THREE.MeshStandardMaterial({
+          color: '#2f221e',
+          roughness: 0.82,
+          metalness: 0.02,
+        });
+        return;
+      }
+
+      if (meshName.includes('Cube-Mesh_2') || materialName.includes('Material.003')) {
+        child.material = new THREE.MeshStandardMaterial({
+          color: '#eee8df',
+          roughness: 0.88,
+          metalness: 0.01,
+        });
+        return;
+      }
+
+      child.material = new THREE.MeshStandardMaterial({
+        color: '#a96f3f',
+        roughness: 0.78,
+        metalness: 0.03,
+      });
     });
   }, [model, accent, sleeping]);
 
-  return <primitive object={model} />;
+  return (
+    <group rotation={[0, 1.08, 0]} scale={[1.08, 1.0, 1.28]}>
+      <primitive object={model} />
+    </group>
+  );
 }
 
 useGLTF.preload(`${import.meta.env.BASE_URL}models/gus.glb`);
@@ -924,7 +970,7 @@ function EchoGLBModel({ accent = '#9d7cff', sleeping = false }) {
 
 useGLTF.preload(`${import.meta.env.BASE_URL}models/echo.glb`);
 
-function CrewCompanion({ crewKey, accent = '#8feaff', sleeping = false }) {
+function CrewCompanion({ crewKey, accent = '#8feaff', sleeping = false, viewMode = 'third', isLocal = false }) {
   const rootRef = useRef();
 
   useFrame((state) => {
@@ -934,11 +980,13 @@ function CrewCompanion({ crewKey, accent = '#8feaff', sleeping = false }) {
     let bobSpeed = 2.0;
     let bobAmount = 0.018;
     let swayAmount = 0.04;
+    let hoverY = sleeping ? 1.08 : 0.28;
 
     if (crewKey === 'dave') {
       bobSpeed = 1.45;
-      bobAmount = 0.022;
-      swayAmount = 0.025;
+      bobAmount = 0.014;
+      swayAmount = 0.018;
+      hoverY = sleeping ? 0.9 : 0.06;
     } else if (crewKey === 'justin') {
       bobSpeed = 2.55;
       bobAmount = 0.012;
@@ -955,15 +1003,17 @@ function CrewCompanion({ crewKey, accent = '#8feaff', sleeping = false }) {
       swayAmount *= 0.35;
     }
 
-    rootRef.current.position.y = (sleeping ? 1.08 : 0.28) + Math.sin(t * bobSpeed + crewKey.length) * bobAmount;
-    rootRef.current.rotation.y = Math.sin(t * bobSpeed * 0.6 + crewKey.length) * swayAmount;
+    const baseRotationY = crewKey === 'dave' ? (isLocal && viewMode === 'first' ? 0.35 : 0.52) : 0;
+    rootRef.current.position.y = hoverY + Math.sin(t * bobSpeed + crewKey.length) * bobAmount;
+    rootRef.current.rotation.y = baseRotationY + Math.sin(t * bobSpeed * 0.6 + crewKey.length) * swayAmount;
   });
 
   if (crewKey === 'dave') {
     return (
-      <group ref={rootRef} position={[1.14, sleeping ? 1.02 : 0.22, -1.18]} scale={1.32}>
+      <group ref={rootRef} position={isLocal && viewMode === 'first' ? [0.9, sleeping ? 0.92 : 0.06, -0.74] : [1.02, sleeping ? 0.92 : 0.06, -0.96]} rotation={[0, isLocal && viewMode === 'first' ? 0.35 : 0.52, 0]} scale={sleeping ? 0.42 : isLocal && viewMode === 'first' ? 0.4 : 0.46}>
         <GusGLBModel accent={accent} sleeping={sleeping} />
-        <pointLight position={[0.08, 1.08, 0]} color={accent} intensity={sleeping ? 0.42 : 0.86} distance={1.9} />
+        <pointLight position={[0.14, 1.16, 0.22]} color={accent} intensity={sleeping ? 0.42 : 0.9} distance={2.1} />
+        <pointLight position={[-0.18, 0.9, -0.22]} color={'#ffffff'} intensity={sleeping ? 0.0 : 0.22} distance={1.6} />
       </group>
     );
   }
@@ -981,6 +1031,72 @@ function CrewCompanion({ crewKey, accent = '#8feaff', sleeping = false }) {
     <group ref={rootRef} position={[0.88, sleeping ? 1.08 : 0.28, -0.86]} scale={0.52}>
       <EchoGLBModel accent={accent} sleeping={sleeping} />
       <pointLight position={[0.12, 0.9, 0]} color={accent} intensity={sleeping ? 0.42 : 0.78} distance={1.3} />
+    </group>
+  );
+}
+
+function LocalCrewAvatar({ crewKey, callSign, role, viewMode, poseRef }) {
+  const rootRef = useRef();
+  const leftArmRef = useRef();
+  const rightArmRef = useRef();
+  const leftLegRef = useRef();
+  const rightLegRef = useRef();
+  const walkPhase = useRef(0);
+  const accent = crewKey === 'justin' ? '#ff9a3d' : crewKey === 'chappy' ? '#9d7cff' : '#43d4ff';
+
+  useFrame((state, delta) => {
+    if (!rootRef.current || !poseRef?.current) return;
+    const pose = poseRef.current;
+    rootRef.current.position.set(Number(pose.position?.x) || 0, 0, Number(pose.position?.z) || 0);
+    rootRef.current.rotation.y = Number(pose.rotation?.yaw) || 0;
+
+    if (pose.moving) walkPhase.current += delta * 7.2;
+    const stride = pose.moving ? Math.sin(walkPhase.current) * 0.42 : 0;
+    if (leftArmRef.current) leftArmRef.current.rotation.x = stride * 0.75;
+    if (rightArmRef.current) rightArmRef.current.rotation.x = -stride * 0.75;
+    if (leftLegRef.current) leftLegRef.current.rotation.x = -stride;
+    if (rightLegRef.current) rightLegRef.current.rotation.x = stride;
+    rootRef.current.position.y = Math.sin(state.clock.elapsedTime * 2.2) * 0.014;
+
+    HOLODECK_AVATAR_BLOCKERS.set('local-player', {
+      x: rootRef.current.position.x,
+      z: rootRef.current.position.z,
+      radius: viewMode === 'third' ? 0.74 : 0.48,
+      minY: 0.18,
+      maxY: 2.82,
+    });
+  });
+
+  useEffect(() => () => HOLODECK_AVATAR_BLOCKERS.delete('local-player'), []);
+
+  return (
+    <group ref={rootRef}>
+      {viewMode === 'third' && (
+        <>
+          <group position={[0, 0.92, 0]}>
+            <mesh position={[0, 0.22, 0]}>
+              <boxGeometry args={[0.48, 0.68, 0.28]} />
+              <meshStandardMaterial color="#08131b" emissive={accent} emissiveIntensity={0.46} metalness={0.62} roughness={0.28} transparent opacity={0.9} />
+            </mesh>
+            <mesh position={[0, 0.58, 0]}>
+              <sphereGeometry args={[0.21, 28, 20]} />
+              <meshStandardMaterial color="#0a1720" emissive={accent} emissiveIntensity={0.42} metalness={0.72} roughness={0.22} transparent opacity={0.92} />
+            </mesh>
+            <mesh position={[0, 0.59, -0.19]}><boxGeometry args={[0.29, 0.105, 0.035]} /><meshBasicMaterial color={accent} /></mesh>
+            <mesh position={[0, 0.22, -0.17]}><circleGeometry args={[0.07, 24]} /><meshBasicMaterial color={accent} /></mesh>
+            <group ref={leftArmRef} position={[-0.32, 0.44, 0]}><mesh position={[0, -0.25, 0]}><cylinderGeometry args={[0.075, 0.065, 0.5, 16]} /><meshStandardMaterial color="#0a1720" emissive={accent} emissiveIntensity={0.25} /></mesh></group>
+            <group ref={rightArmRef} position={[0.32, 0.44, 0]}><mesh position={[0, -0.25, 0]}><cylinderGeometry args={[0.075, 0.065, 0.5, 16]} /><meshStandardMaterial color="#0a1720" emissive={accent} emissiveIntensity={0.25} /></mesh></group>
+            <group ref={leftLegRef} position={[-0.14, -0.12, 0]}><mesh position={[0, -0.36, 0]}><cylinderGeometry args={[0.085, 0.072, 0.72, 16]} /><meshStandardMaterial color="#071018" emissive={accent} emissiveIntensity={0.2} /></mesh></group>
+            <group ref={rightLegRef} position={[0.14, -0.12, 0]}><mesh position={[0, -0.36, 0]}><cylinderGeometry args={[0.085, 0.072, 0.72, 16]} /><meshStandardMaterial color="#071018" emissive={accent} emissiveIntensity={0.2} /></mesh></group>
+          </group>
+          <Billboard follow position={[0, 2.05, 0]}>
+            <Text fontSize={0.12} color={accent} anchorX="center">{callSign}</Text>
+            <Text position={[0, -0.18, 0]} fontSize={0.055} color="#b8d8df" anchorX="center">{String(role || 'CREW').toUpperCase()}</Text>
+          </Billboard>
+        </>
+      )}
+      <CrewCompanion crewKey={crewKey} accent={accent} viewMode={viewMode} isLocal />
+      <pointLight position={[0, 1.2, 0]} color={accent} intensity={viewMode === 'third' ? 2.6 : 1.7} distance={2.4} />
     </group>
   );
 }
@@ -1662,13 +1778,19 @@ function SkyMapOverlay({ gallery, selectedMission, onMissionSelect, activeSectio
   );
 }
 
-function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenFace, activeSection, onSectionSelect, focusRequest, clearFocus, controlsEnabled, captureOpen, setCaptureOpen, skySnapshot, onSkyTimeChange, activeCrewKey, initialPosition, onPose, remoteCrew }) {
+function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenFace, activeSection, onSectionSelect, focusRequest, clearFocus, controlsEnabled, captureOpen, setCaptureOpen, skySnapshot, onSkyTimeChange, activeCrewKey, initialPosition, onPose, remoteCrew, viewMode, crew }) {
   const activeColor = SECTION_COLORS[activeSection] || '#1ba8cf';
   const previewUrl = getImageUrl(getMissionImage(selectedMission));
+  const localPoseRef = useRef({
+    position: { x: initialPosition?.[0] || 0, y: 0, z: initialPosition?.[2] || 8.6 },
+    rotation: { yaw: 0, pitch: 0 },
+    moving: false,
+    viewMode,
+  });
 
   return (
     <>
-      <CameraRig enabled={controlsEnabled} focusRequest={focusRequest} onFocusComplete={clearFocus} initialPosition={initialPosition} onPose={onPose} />
+      <CameraRig enabled={controlsEnabled} focusRequest={focusRequest} onFocusComplete={clearFocus} initialPosition={initialPosition} onPose={onPose} viewMode={viewMode} localPoseRef={localPoseRef} />
       <color attach="background" args={['#01040a']} />
       <fog attach="fog" args={['#02060b', 11, 28]} />
       <ambientLight intensity={0.38} />
@@ -1685,6 +1807,7 @@ function Room({ gallery, selectedMission, setSelectedMission, openFace, setOpenF
       <MissionDetailPanel mission={selectedMission} gallery={gallery} captureOpen={captureOpen} activeSection={activeSection} previewUrl={previewUrl} onOpenCapture={() => setCaptureOpen((value) => !value)} onMissionSelect={(mission) => { setSelectedMission(mission); setCaptureOpen(false); }} />
       <MissionWall gallery={gallery} selectedMission={selectedMission} previewUrl={previewUrl} onMissionSelect={(mission) => { setSelectedMission(mission); setCaptureOpen(false); }} onOpenCapture={() => setCaptureOpen((value) => !value)} captureOpen={captureOpen} />
       <CrewStations activeSection={activeSection} activeCrewKey={activeCrewKey} />
+      <LocalCrewAvatar crewKey={activeCrewKey || 'dave'} callSign={crew?.callSign || 'CREW'} role={crew?.role || 'CUZBRO CREW'} viewMode={viewMode} poseRef={localPoseRef} />
       <RemoteCrewAvatars remoteCrew={remoteCrew} />
       <InactiveCrewAvatars activeCrewKey={activeCrewKey} remoteCrew={remoteCrew} />
       <TelescopeDisplay activeSection={activeSection} />
@@ -1706,6 +1829,7 @@ export default function Holodeck({ gallery = [], session = null, crew = null }) 
   const [xrError, setXrError] = useState('');
   const [captureOpen, setCaptureOpen] = useState(false);
   const [skySnapshot, setSkySnapshot] = useState(() => new Date());
+  const [viewMode, setViewMode] = useState('first');
   const initialPosition = useMemo(() => getCrewSpawn(activeCrewKey), [activeCrewKey]);
   const { remoteCrew, connectionState, publishPose } = useHolodeckPresence({
     session,
@@ -1721,6 +1845,18 @@ export default function Holodeck({ gallery = [], session = null, crew = null }) 
   useEffect(() => {
     if (activeCrewKey) setOpenFace(activeCrewKey);
   }, [activeCrewKey]);
+
+  useEffect(() => {
+    if (!booted) return undefined;
+    const onViewKey = (event) => {
+      if (event.code !== 'KeyV' || event.repeat) return;
+      const tag = String(event.target?.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+      setViewMode((current) => current === 'first' ? 'third' : 'first');
+    };
+    window.addEventListener('keydown', onViewKey);
+    return () => window.removeEventListener('keydown', onViewKey);
+  }, [booted]);
 
   function selectSection(key) {
     setActiveSection(key);
@@ -1795,6 +1931,8 @@ export default function Holodeck({ gallery = [], session = null, crew = null }) 
                 initialPosition={initialPosition}
                 onPose={publishPose}
                 remoteCrew={remoteCrew}
+                viewMode={viewMode}
+                crew={crew}
               />
             </Suspense>
           </XR>
@@ -1804,7 +1942,12 @@ export default function Holodeck({ gallery = [], session = null, crew = null }) 
       {booted && (
         <>
           <a href="/admin" className="virtualWatchExit"><ChevronLeft size={18} /> EXIT HOLODECK</a>
-          <div className="virtualWatchHelp">WASD TO MOVE · CLICK + DRAG TO LOOK · USE THE CENTER CONTROL PILLAR</div>
+          <div className="virtualWatchHelp">WASD TO MOVE · CLICK + DRAG TO LOOK · V TO CHANGE VIEW · USE THE CENTER CONTROL PILLAR</div>
+          <div className="virtualWatchViewToggle" role="group" aria-label="Holodeck camera view">
+            <span>VIEW</span>
+            <button type="button" className={viewMode === 'first' ? 'active' : ''} onClick={() => setViewMode('first')}>FIRST PERSON</button>
+            <button type="button" className={viewMode === 'third' ? 'active' : ''} onClick={() => setViewMode('third')}>THIRD PERSON</button>
+          </div>
           <button type="button" className="virtualWatchVrButton virtualWatchVrStandalone" onClick={enterVR}>ENTER VR</button>
           <div style={{ position: 'fixed', right: '1.4rem', top: '1.4rem', zIndex: 12, padding: '.72rem 1rem', border: '1px solid rgba(255,138,43,.4)', borderRadius: '999px', background: 'rgba(12,6,2,.78)', color: '#ffd6a8', fontFamily: 'monospace', letterSpacing: '.12em', fontSize: '.75rem' }}>CREW // {crew?.callSign || 'UNKNOWN'} · {crew?.role || 'CREW'}</div>
           <div style={{ position: 'fixed', right: '1.4rem', top: '4.75rem', zIndex: 12, padding: '.58rem .85rem', border: `1px solid ${connectionState === 'ONLINE' ? 'rgba(71,240,167,.5)' : 'rgba(143,234,255,.25)'}`, borderRadius: '999px', background: 'rgba(2,7,13,.78)', color: connectionState === 'ONLINE' ? '#91ffd0' : '#8feaff', fontFamily: 'monospace', letterSpacing: '.1em', fontSize: '.68rem' }}>HOLODECK LINK // {connectionState} · {remoteCrew.length + 1} CREW</div>
