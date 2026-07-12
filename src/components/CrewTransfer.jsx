@@ -73,12 +73,19 @@ function uniqueTags(tags = []) {
   );
 }
 
+function parseCustomTags(value) {
+  return String(value || '')
+    .split(/[,;]+/)
+    .map(normalizeTag)
+    .filter(Boolean);
+}
+
 function resolveSelectedTags(selectedTags, customTag) {
   return uniqueTags([
     ...selectedTags,
-    selectedTags.includes('OTHER')
-      ? customTag
-      : ''
+    ...(selectedTags.includes('OTHER')
+      ? parseCustomTags(customTag)
+      : [])
   ]);
 }
 
@@ -1439,7 +1446,7 @@ export default function CrewTransfer() {
               <span>TAGS</span>
 
               <p>
-                Select any tags that apply to this upload batch.
+                Select any tags that apply to this upload batch. For multiple custom tags, separate them with commas.
               </p>
 
               <div className="admin-transfer-tag-options">
@@ -1465,7 +1472,7 @@ export default function CrewTransfer() {
                   onChange={(event) =>
                     setCustomUploadTag(event.target.value)
                   }
-                  placeholder="CUSTOM TAG"
+                  placeholder="CUSTOM TAGS — SEPARATE WITH COMMAS"
                   disabled={uploading}
                 />
               )}
@@ -1919,7 +1926,7 @@ export default function CrewTransfer() {
                                   onChange={(event) =>
                                     setCustomEditTag(event.target.value)
                                   }
-                                  placeholder="CUSTOM TAG"
+                                  placeholder="CUSTOM TAGS — SEPARATE WITH COMMAS"
                                   disabled={savingTags}
                                 />
                               )}
