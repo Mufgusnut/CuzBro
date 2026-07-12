@@ -13,6 +13,7 @@ import StorageControl from './components/StorageControl.jsx';
 import BlackBox from './components/BlackBox.jsx';
 import DeploymentControl from './components/DeploymentControl.jsx';
 import OpenMissions from './components/OpenMissions.jsx';
+import MissionConsole from './components/MissionConsole.jsx';
 import AdminCommandPalette from './components/AdminCommandPalette.jsx';
 import EasterEggs from './components/EasterEggs.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
@@ -440,7 +441,8 @@ function AdminTopNav({
                 '/admin/captains-log',
                 '/admin/equipment',
                 '/admin/transfers',
-                '/admin/missions'
+                '/admin/missions',
+                '/admin/console'
               ])
                 ? 'active'
                 : ''
@@ -455,6 +457,9 @@ function AdminTopNav({
           <div className="admin-top-dropdown-menu">
             <a href="/admin/missions" onClick={closeDropdown}>
               Open Missions
+            </a>
+            <a href="/admin/console" onClick={closeDropdown}>
+              Mission Console
             </a>
             <a href="/admin/gallery" onClick={closeDropdown}>
               Capture Control
@@ -668,6 +673,10 @@ export default function App() {
     pathname === '/admin/missions' ||
     pathname === '/admin/missions/';
 
+  const isAdminConsolePage =
+    pathname === '/admin/console' ||
+    pathname === '/admin/console/';
+
   const isAdminPage =
     pathname === '/admin' ||
     pathname === '/admin/' ||
@@ -685,7 +694,8 @@ export default function App() {
     isAdminStoragePage ||
     isAdminBlackBoxPage ||
     isAdminDeploymentsPage ||
-    isAdminMissionsPage;
+    isAdminMissionsPage ||
+    isAdminConsolePage;
 
   useCrewPresence({
     session,
@@ -1393,6 +1403,18 @@ export default function App() {
             exposure:
               capture.exposure,
 
+            exposureSeconds:
+              capture.exposure_seconds,
+
+            frameCount:
+              capture.frame_count,
+
+            gain:
+              capture.gain,
+
+            totalIntegrationSeconds:
+              capture.total_integration_seconds,
+
             processing:
               capture.processing,
 
@@ -1919,6 +1941,16 @@ export default function App() {
           adminMode
         />
       );
+    } else if (
+      isAdminConsolePage
+    ) {
+      adminContent = (
+        <MissionConsole
+          session={session}
+          activeSite={currentSite}
+          weather={weather[currentSite?.name]}
+        />
+      );
     } else {
       adminContent = (
         <AdminDashboard
@@ -1943,7 +1975,7 @@ export default function App() {
           onLogout={handleLogout}
         />
 
-        <div className="admin-shell">
+        <div className={`admin-shell${isAdminConsolePage ? ' admin-shell-console' : ''}`}>
           {adminContent}
         </div>
 

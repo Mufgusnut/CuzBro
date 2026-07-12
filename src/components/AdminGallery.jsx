@@ -574,6 +574,9 @@ const emptyCapture = {
   distance: '',
   captureDate: '',
   exposure: '',
+  exposureSeconds: '',
+  frameCount: '',
+  gain: '',
   processing: '',
   equipment: '',
   notes: '',
@@ -604,6 +607,9 @@ function databaseRowToForm(capture) {
     captureDate:
       capture.capture_date || '',
     exposure: capture.exposure || '',
+    exposureSeconds: capture.exposure_seconds === null || capture.exposure_seconds === undefined ? '' : String(capture.exposure_seconds),
+    frameCount: capture.frame_count === null || capture.frame_count === undefined ? '' : String(capture.frame_count),
+    gain: capture.gain === null || capture.gain === undefined ? '' : String(capture.gain),
     processing:
       capture.processing || '',
     equipment: capture.equipment || '',
@@ -690,6 +696,11 @@ export default function AdminGallery() {
 
   const [captures, setCaptures] =
     useState([]);
+
+  const [captureSearch, setCaptureSearch] = useState('');
+  const [gainFilter, setGainFilter] = useState('');
+  const [exposureFilter, setExposureFilter] = useState('');
+  const [framesFilter, setFramesFilter] = useState('');
 
   const [status, setStatus] =
     useState('loading');
@@ -1426,7 +1437,10 @@ export default function AdminGallery() {
         ['Constellation', form.constellation],
         ['Distance', form.distance],
         ['Capture Date', form.captureDate],
-        ['Exposure', form.exposure],
+        ['Exposure Summary', form.exposure],
+        ['Exposure per Frame', form.exposureSeconds],
+        ['Frames Captured', form.frameCount],
+        ['Gain', form.gain],
         ['Processing', form.processing],
         ['Equipment', form.equipment],
         ['Sort Order', form.sortOrder],
@@ -1545,6 +1559,18 @@ export default function AdminGallery() {
 
         exposure:
           form.exposure.trim(),
+
+        exposure_seconds:
+          Number(form.exposureSeconds),
+
+        frame_count:
+          Number(form.frameCount),
+
+        gain:
+          Number(form.gain),
+
+        total_integration_seconds:
+          Number(form.exposureSeconds) * Number(form.frameCount),
 
         processing:
           form.processing.trim(),
@@ -2086,6 +2112,19 @@ export default function AdminGallery() {
       );
     }
   }
+
+  const filteredCaptures = captures.filter((capture) => {
+    const query = captureSearch.trim().toLowerCase();
+    const matchesText = !query || [
+      capture.title, capture.subtitle, capture.object_type, capture.constellation,
+      capture.equipment, capture.processing, capture.notes, capture.exposure
+    ].some((value) => String(value || '').toLowerCase().includes(query));
+
+    const matchesGain = !gainFilter || Number(capture.gain) === Number(gainFilter);
+    const matchesExposure = !exposureFilter || Number(capture.exposure_seconds) === Number(exposureFilter);
+    const matchesFrames = !framesFilter || Number(capture.frame_count) === Number(framesFilter);
+    return matchesText && matchesGain && matchesExposure && matchesFrames;
+  });
 
   return (
     <div className="admin-page admin-gallery-page">
@@ -2786,7 +2825,7 @@ export default function AdminGallery() {
                 </label>
 
                 <label>
-                  <span>EXPOSURE</span>
+                  <span>EXPOSURE SUMMARY</span>
 
                   <input
                     type="text"
@@ -2797,6 +2836,46 @@ export default function AdminGallery() {
                         event.target.value
                       )
                     }
+                    placeholder="500 × 10 sec (legacy display label)"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>EXPOSURE PER FRAME (SECONDS)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    value={form.exposureSeconds}
+                    onChange={(event) => updateForm('exposureSeconds', event.target.value)}
+                    placeholder="10"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>FRAMES CAPTURED</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={form.frameCount}
+                    onChange={(event) => updateForm('frameCount', event.target.value)}
+                    placeholder="500"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span>CAMERA GAIN</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={form.gain}
+                    onChange={(event) => updateForm('gain', event.target.value)}
+                    placeholder="120"
                     required
                   />
                 </label>
@@ -2958,6 +3037,25 @@ export default function AdminGallery() {
             </span>
           </div>
 
+          <div className="captureDataFilters">
+            <label>
+              <span>SEARCH CAPTURE DATA</span>
+              <input value={captureSearch} onChange={(event) => setCaptureSearch(event.target.value)} placeholder="Target, equipment, notes, processing…" />
+            </label>
+            <label>
+              <span>GAIN</span>
+              <input type="number" min="0" value={gainFilter} onChange={(event) => setGainFilter(event.target.value)} placeholder="Any" />
+            </label>
+            <label>
+              <span>EXPOSURE (SEC)</span>
+              <input type="number" min="0" step="0.001" value={exposureFilter} onChange={(event) => setExposureFilter(event.target.value)} placeholder="Any" />
+            </label>
+            <label>
+              <span>FRAMES</span>
+              <input type="number" min="1" step="1" value={framesFilter} onChange={(event) => setFramesFilter(event.target.value)} placeholder="Any" />
+            </label>
+          </div>
+
           {status === 'loading' && (
             <p className="admin-list-status">
               ACCESSING MISSION ARCHIVE...
@@ -2965,7 +3063,7 @@ export default function AdminGallery() {
           )}
 
           {status === 'ready' &&
-            captures.map((capture) => (
+            filteredCaptures.map((capture) => (
               <article
                 className="admin-capture-row"
                 key={capture.id}
@@ -2993,6 +3091,13 @@ export default function AdminGallery() {
                     {' · '}
                     {capture.capture_date}
                   </p>
+
+                  <div className="captureDataChips">
+                    <span>{capture.exposure_seconds ?? '—'} SEC / FRAME</span>
+                    <span>{capture.frame_count ?? '—'} FRAMES</span>
+                    <span>GAIN {capture.gain ?? '—'}</span>
+                    <span>{capture.total_integration_seconds ? `${Math.round(capture.total_integration_seconds / 60)} MIN TOTAL` : 'TOTAL TBD'}</span>
+                  </div>
 
                   {capture.master_file_name && (
                     <small>
