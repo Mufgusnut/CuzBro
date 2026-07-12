@@ -841,7 +841,7 @@ function lerpAngle(current, target, factor) {
 
 
 function GusGLBModel({ accent = '#8feaff', sleeping = false }) {
-  const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/gus.glb`);
+  const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/gus-v2.glb`);
   const model = useMemo(() => scene.clone(true), [scene]);
 
   useEffect(() => {
@@ -910,7 +910,7 @@ function GusGLBModel({ accent = '#8feaff', sleeping = false }) {
   );
 }
 
-useGLTF.preload(`${import.meta.env.BASE_URL}models/gus.glb`);
+useGLTF.preload(`${import.meta.env.BASE_URL}models/gus-v2.glb`);
 
 function BeauGLBModel({ accent = '#ff9a3d', sleeping = false }) {
   const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/beau.glb`);
