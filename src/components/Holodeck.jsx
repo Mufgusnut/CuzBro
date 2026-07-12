@@ -841,7 +841,7 @@ function lerpAngle(current, target, factor) {
 
 
 function GusGLBModel({ accent = '#8feaff', sleeping = false }) {
-  const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/gus-v2.glb`);
+  const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/gus-v3.glb`);
   const model = useMemo(() => scene.clone(true), [scene]);
 
   useEffect(() => {
@@ -850,58 +850,14 @@ function GusGLBModel({ accent = '#8feaff', sleeping = false }) {
       child.castShadow = false;
       child.receiveShadow = false;
       child.frustumCulled = true;
-
-      const meshName = String(child.name || '');
-      const materialName = String(child.material?.name || '');
-
-      if (meshName === 'Gus_Rim' || materialName === 'Gus_Rim') {
-        child.visible = false;
-        return;
+      if (child.name === 'Gus_Rim') child.visible = false;
+      if (child.material) {
+        child.material = child.material.clone();
+        child.material.roughness = 0.82;
+        child.material.metalness = 0.02;
       }
-
-      if (meshName === 'Gus_Collar' || meshName === 'Gus_Collar_Strap') {
-        child.material = new THREE.MeshStandardMaterial({
-          color: meshName === 'Gus_Collar' ? '#3b8587' : '#285f60',
-          roughness: 0.58,
-          metalness: 0.12,
-        });
-        return;
-      }
-
-      if (meshName === 'Gus_Tag') {
-        child.material = new THREE.MeshStandardMaterial({
-          color: '#c1464a',
-          roughness: 0.72,
-          metalness: 0.08,
-        });
-        return;
-      }
-
-      if (meshName.includes('Cube-Mesh_1') || materialName.includes('Material.002')) {
-        child.material = new THREE.MeshStandardMaterial({
-          color: '#2f221e',
-          roughness: 0.82,
-          metalness: 0.02,
-        });
-        return;
-      }
-
-      if (meshName.includes('Cube-Mesh_2') || materialName.includes('Material.003')) {
-        child.material = new THREE.MeshStandardMaterial({
-          color: '#eee8df',
-          roughness: 0.88,
-          metalness: 0.01,
-        });
-        return;
-      }
-
-      child.material = new THREE.MeshStandardMaterial({
-        color: '#a96f3f',
-        roughness: 0.78,
-        metalness: 0.03,
-      });
     });
-  }, [model, accent, sleeping]);
+  }, [model]);
 
   return (
     <group rotation={[0, 1.08, 0]} scale={[1.08, 1.0, 1.28]}>
@@ -910,7 +866,7 @@ function GusGLBModel({ accent = '#8feaff', sleeping = false }) {
   );
 }
 
-useGLTF.preload(`${import.meta.env.BASE_URL}models/gus-v2.glb`);
+useGLTF.preload(`${import.meta.env.BASE_URL}models/gus-v3.glb`);
 
 function BeauGLBModel({ accent = '#ff9a3d', sleeping = false }) {
   const { scene } = useGLTF(`${import.meta.env.BASE_URL}models/beau.glb`);
