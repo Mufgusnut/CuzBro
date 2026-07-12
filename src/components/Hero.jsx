@@ -35,8 +35,7 @@ export default function Hero({
   featuredPhoto,
   setSelectedIndex,
   weather,
-  currentSite,
-  onReplayFeatured
+  currentSite
 }) {
   return (
     <>
@@ -109,7 +108,6 @@ export default function Hero({
             setSelectedIndex={setSelectedIndex}
             weather={weather}
             currentSite={currentSite}
-            onReplayFeatured={onReplayFeatured}
           />
         </div>
 

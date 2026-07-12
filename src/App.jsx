@@ -12,6 +12,7 @@ import SystemStatus from './components/SystemStatus.jsx';
 import StorageControl from './components/StorageControl.jsx';
 import BlackBox from './components/BlackBox.jsx';
 import DeploymentControl from './components/DeploymentControl.jsx';
+import OpenMissions from './components/OpenMissions.jsx';
 import AdminCommandPalette from './components/AdminCommandPalette.jsx';
 import EasterEggs from './components/EasterEggs.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
@@ -438,7 +439,8 @@ function AdminTopNav({
                 '/admin/gallery',
                 '/admin/captains-log',
                 '/admin/equipment',
-                '/admin/transfers'
+                '/admin/transfers',
+                '/admin/missions'
               ])
                 ? 'active'
                 : ''
@@ -451,6 +453,9 @@ function AdminTopNav({
           </button>
 
           <div className="admin-top-dropdown-menu">
+            <a href="/admin/missions" onClick={closeDropdown}>
+              Open Missions
+            </a>
             <a href="/admin/gallery" onClick={closeDropdown}>
               Capture Control
             </a>
@@ -659,6 +664,10 @@ export default function App() {
     pathname === '/admin/deployments' ||
     pathname === '/admin/deployments/';
 
+  const isAdminMissionsPage =
+    pathname === '/admin/missions' ||
+    pathname === '/admin/missions/';
+
   const isAdminPage =
     pathname === '/admin' ||
     pathname === '/admin/' ||
@@ -675,7 +684,8 @@ export default function App() {
     isAdminSystemPage ||
     isAdminStoragePage ||
     isAdminBlackBoxPage ||
-    isAdminDeploymentsPage;
+    isAdminDeploymentsPage ||
+    isAdminMissionsPage;
 
   useCrewPresence({
     session,
@@ -1149,16 +1159,6 @@ export default function App() {
     setSelectedIndex(missionIndex);
   };
 
-  const openFeaturedReplay = () => {
-    if (featuredPhotoIndex < 0) {
-      return;
-    }
-
-    setActiveFilter('All');
-    setViewerMode('report');
-    setLaunchFeaturedReplay(true);
-    setSelectedIndex(featuredPhotoIndex);
-  };
 
   const openFeaturedPhoto = () => {
     if (featuredPhotoIndex < 0) {
@@ -1909,6 +1909,16 @@ export default function App() {
           session={session}
         />
       );
+    } else if (
+      isAdminMissionsPage
+    ) {
+      adminContent = (
+        <OpenMissions
+          activeSite={currentSite}
+          session={session}
+          adminMode
+        />
+      );
     } else {
       adminContent = (
         <AdminDashboard
@@ -2052,7 +2062,6 @@ export default function App() {
             weather[currentSite.name]
           }
           currentSite={currentSite}
-          onReplayFeatured={openFeaturedReplay}
         />
       )}
 
@@ -2112,6 +2121,10 @@ export default function App() {
             <Weather
               locations={locations}
               weather={weather}
+              activeSite={currentSite}
+            />
+
+            <OpenMissions
               activeSite={currentSite}
             />
 
