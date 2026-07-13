@@ -31766,7 +31766,7 @@ body.missionPlanningBoardOpen {
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 960px) and (orientation: portrait) {
   .missionConsoleFrame {
     grid-template-columns: 1fr;
   }
@@ -31951,7 +31951,7 @@ body.missionPlanningBoardOpen {
   font-size: 1.05rem;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .captureDataFilters,
   .missionConsoleHistoryGrid {
     grid-template-columns: 1fr;
@@ -32167,7 +32167,7 @@ body.missionPlanningBoardOpen {
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 960px) and (orientation: portrait) {
   .missionConsoleBridgeMenu {
     margin-inline: 14px;
   }
@@ -32297,7 +32297,7 @@ body.missionPlanningBoardOpen {
   flex: 0 0 auto;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 960px) and (orientation: portrait) {
   .missionConsoleRecommendationGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -32484,7 +32484,7 @@ body.missionPlanningBoardOpen {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .missionConsoleLcarsStrip {
     margin-inline: 14px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -32953,7 +32953,7 @@ body.missionPlanningBoardOpen {
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 960px) and (orientation: portrait) {
   .missionConsoleFrame {
     grid-template-columns: 1fr;
   }
@@ -33041,7 +33041,7 @@ body.missionPlanningBoardOpen {
   margin-top: 12px;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 960px) and (orientation: portrait) {
   .missionConsoleFrame {
     padding-top: 6px;
   }
@@ -33199,7 +33199,7 @@ body.missionPlanningBoardOpen {
   color: #ffb0a8 !important;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 960px) and (orientation: portrait) {
   .missionConsoleLocalLinkHeader,
   .missionConsoleSystemsGrid {
     grid-template-columns: 1fr;
@@ -33576,7 +33576,7 @@ body.missionPlanningBoardOpen {
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .missionConsoleRecommendationHeader {
     align-items: stretch;
     flex-direction: column;
@@ -33751,7 +33751,7 @@ body.missionPlanningBoardOpen {
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 700px) and (orientation: portrait) {
   .missionConsoleStandaloneTopbar {
     align-items: stretch;
     flex-direction: column;
@@ -34411,7 +34411,7 @@ body.missionPlanningBoardOpen {
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 700px) and (orientation: portrait) {
   .missionConsoleLcarsStrip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -34453,7 +34453,7 @@ body.missionPlanningBoardOpen {
   line-height: 1.05;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .missionConsolePanelSubcategory {
     width: calc(100% - 14px);
     margin-left: 14px;
@@ -34477,7 +34477,7 @@ body.missionPlanningBoardOpen {
   border-radius: 44px !important;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .missionConsoleLcarsStrip .missionConsoleLcarsTab {
     border-radius: 30px !important;
     padding-left: 20px;
@@ -34524,7 +34524,7 @@ body.missionPlanningBoardOpen {
   letter-spacing: 0.12em;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .missionConsoleGrid {
     gap: 6px;
   }
@@ -34588,7 +34588,7 @@ body.missionPlanningBoardOpen {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .missionConsoleGrid {
     gap: 8px;
   }
@@ -34639,7 +34639,7 @@ body.missionPlanningBoardOpen {
   height: 54px !important;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .missionConsoleGrid {
     row-gap: 8px !important;
   }
@@ -34648,5 +34648,38 @@ body.missionPlanningBoardOpen {
   .missionConsolePanelSubcategory.is-collapsed .missionConsolePanelTop {
     min-height: 52px !important;
     height: 52px !important;
+  }
+}
+
+
+/* Mission Console landscape mode: preserve the desktop LCARS left rail. */
+@media (orientation: landscape) and (min-width: 650px) {
+  .missionConsoleFrame {
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 18px;
+    padding-top: 10px;
+  }
+
+  .missionConsoleLeftRail {
+    display: flex !important;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .missionConsolePanelTop {
+    padding-left: 168px;
+  }
+
+  .missionConsolePanelTop::before {
+    width: 145px;
+  }
+
+  .missionConsolePanel.is-open > :not(.missionConsolePanelTop) {
+    margin-left: 153px;
+    margin-right: 8px;
+  }
+
+  .missionConsoleFooterBar {
+    padding-left: 153px;
   }
 }
