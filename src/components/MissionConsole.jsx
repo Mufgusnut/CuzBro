@@ -1645,25 +1645,45 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
             <section className={`missionConsolePanel missionConsolePanelOperations ${openPanels.operations ? 'is-open' : 'is-collapsed'}`}>
               <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('operations')} aria-expanded={openPanels.operations}>
                 <span>LIVE IMAGING</span>
-                <div className="missionConsolePanelBadge">TELEMETRY</div><ChevronDown className="missionConsolePanelChevron" size={18} />
+                <div className="missionConsolePanelBadge">VIEWSCREEN</div><ChevronDown className="missionConsolePanelChevron" size={18} />
               </button>
 
-              <div className="missionConsoleOpsTop">
-                <div className="missionConsoleTimerBlock">
-                  <small>SESSION ELAPSED</small>
-                  <strong>{activeOperation?.started_at || missionPlan?.started_at ? missionElapsed : '00:00:00'}</strong>
-                </div>
-                <div className="missionConsoleTimerBlock missionConsoleTimerBlockSecondary">
-                  <small>CAPTURE ELAPSED</small>
-                  <strong>{consoleState.captureStartedAt ? captureElapsed : '00:00:00'}</strong>
-                </div>
-                <div className="missionConsoleTimerBlock missionConsoleTimerBlockStatus">
-                  <small>CAPTURE STATE</small>
-                  <strong>{asiimgOnline ? (asiimgStalled ? 'STALLED' : asiimgState) : String(consoleState.captureStatus || 'idle').toUpperCase()}</strong>
-                </div>
-              </div>
-
               <div className={`missionConsoleAsiimgPanel ${asiimgStalled ? 'is-stalled' : ''}`}>
+                <div className="missionConsoleAsiimgPreview">
+                  <div className="missionConsoleAsiimgPreviewHeader">
+                    <span>VIEWSCREEN</span>
+                    <strong>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong>
+                  </div>
+                  {nudgeControls('imaging')}
+                  {asiimgPreviewUrl ? (
+                    <a href={asiimgPreviewUrl} target="_blank" rel="noreferrer" title="Open the latest FITS preview at full size">
+                      <img src={asiimgPreviewUrl} alt={`Latest imaging FITS preview${asiimgPayload.latest_file ? `: ${asiimgPayload.latest_file}` : ''}`} />
+                      <span className="missionConsoleAsiimgPreviewOpen">OPEN PREVIEW</span>
+                    </a>
+                  ) : (
+                    <div className="missionConsoleAsiimgPreviewEmpty">
+                      <span>NO PREVIEW AVAILABLE</span>
+                      <small>The next FITS frame detected by the bridge will appear here automatically.</small>
+                    </div>
+                  )}
+                  {asiimgPayload.preview_error ? <p className="missionConsoleAsiimgPreviewError">Preview generator: {asiimgPayload.preview_error}</p> : null}
+                </div>
+
+                <div className="missionConsoleOpsTop">
+                  <div className="missionConsoleTimerBlock">
+                    <small>SESSION ELAPSED</small>
+                    <strong>{activeOperation?.started_at || missionPlan?.started_at ? missionElapsed : '00:00:00'}</strong>
+                  </div>
+                  <div className="missionConsoleTimerBlock missionConsoleTimerBlockSecondary">
+                    <small>CAPTURE ELAPSED</small>
+                    <strong>{consoleState.captureStartedAt ? captureElapsed : '00:00:00'}</strong>
+                  </div>
+                  <div className="missionConsoleTimerBlock missionConsoleTimerBlockStatus">
+                    <small>CAPTURE STATE</small>
+                    <strong>{asiimgOnline ? (asiimgStalled ? 'STALLED' : asiimgState) : String(consoleState.captureStatus || 'idle').toUpperCase()}</strong>
+                  </div>
+                </div>
+
                 <div className="missionConsoleAsiimgHeader">
                   <div>
                     <small>IMAGING LINK</small>
@@ -1682,26 +1702,6 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                   <div><span>GAIN</span><strong>{asiimgPayload.gain ?? '—'}</strong></div>
                   <div><span>LAST FRAME</span><strong>{asiimgPayload.last_frame_at ? formatClock(asiimgPayload.last_frame_at) : '—'}</strong></div>
                   <div><span>LATEST FILE</span><strong title={asiimgPayload.latest_file || ''}>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong></div>
-                </div>
-
-                <div className="missionConsoleAsiimgPreview">
-                  <div className="missionConsoleAsiimgPreviewHeader">
-                    <span>LATEST FRAME PREVIEW</span>
-                    <strong>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong>
-                  </div>
-                  {nudgeControls('imaging')}
-                  {asiimgPreviewUrl ? (
-                    <a href={asiimgPreviewUrl} target="_blank" rel="noreferrer" title="Open the latest FITS preview at full size">
-                      <img src={asiimgPreviewUrl} alt={`Latest imaging FITS preview${asiimgPayload.latest_file ? `: ${asiimgPayload.latest_file}` : ''}`} />
-                      <span className="missionConsoleAsiimgPreviewOpen">OPEN PREVIEW</span>
-                    </a>
-                  ) : (
-                    <div className="missionConsoleAsiimgPreviewEmpty">
-                      <span>NO PREVIEW AVAILABLE</span>
-                      <small>The next FITS frame detected by the bridge will appear here automatically.</small>
-                    </div>
-                  )}
-                  {asiimgPayload.preview_error ? <p className="missionConsoleAsiimgPreviewError">Preview generator: {asiimgPayload.preview_error}</p> : null}
                 </div>
                 {asiimgError ? <p className="missionConsoleAsiimgError">{asiimgError}</p> : null}
                 {!asiimgOnline ? <p className="missionConsoleAsiimgHint">Start the imaging monitor bridge before beginning a capture. The current source is ASIImg; ASIAIR support can use the same panel later.</p> : null}
