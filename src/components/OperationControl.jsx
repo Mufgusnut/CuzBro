@@ -1015,15 +1015,8 @@ export default function OperationControl({
 
             <p>
               Initiate, monitor, and complete
-              active CuzBro operations. Dave,
-              Justin, and Chappy have equal
-              operation authority.
+              active CuzBro operations.
             </p>
-          </div>
-
-          <div className="operation-equal-crew">
-            <Users size={18} />
-            EQUAL CREW AUTHORITY
           </div>
         </section>
 

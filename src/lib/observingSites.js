@@ -94,8 +94,17 @@ export function useObservingSite(session = null) {
 
     refresh();
 
+    // Use a unique channel topic for each mount. In React Strict Mode, an effect
+    // can mount again before Supabase finishes removing the previous channel.
+    // Reusing the same topic can return an already-subscribed channel, and then
+    // adding postgres_changes handlers throws before the page can render.
+    const channelTopic = `cuzbro-observatory-state-${
+      globalThis.crypto?.randomUUID?.() ||
+      `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    }`;
+
     const channel = supabase
-      .channel('cuzbro-observatory-state')
+      .channel(channelTopic)
       .on(
         'postgres_changes',
         {
