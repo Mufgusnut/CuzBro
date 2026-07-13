@@ -34038,3 +34038,93 @@ body.missionPlanningBoardOpen {
     display: none;
   }
 }
+
+/* ChatGPT target metadata autofill */
+.target-autofill-panel {
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(248, 153, 57, 0.45);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(27, 16, 40, 0.94), rgba(10, 16, 30, 0.96));
+}
+.target-autofill-header,
+.target-autofill-match,
+.target-autofill-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.target-autofill-header { justify-content: space-between; }
+.target-autofill-header h3 { margin: .15rem 0; }
+.target-autofill-header p { margin: 0; opacity: .72; }
+.target-autofill-header small,
+.target-autofill-grid span,
+.target-autofill-match small { letter-spacing: .12em; opacity: .7; }
+.target-autofill-scan,
+.target-autofill-actions button {
+  border: 0;
+  border-radius: 999px;
+  padding: .78rem 1rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  cursor: pointer;
+}
+.target-autofill-scan:disabled { opacity: .5; cursor: not-allowed; }
+.target-autofill-result { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.12); }
+.target-autofill-match svg { flex: 0 0 auto; }
+.target-autofill-match > div { display: grid; gap: .12rem; flex: 1; }
+.target-autofill-match b { font-size: .72rem; letter-spacing: .14em; }
+.target-autofill-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .7rem;
+  margin: 1rem 0;
+}
+.target-autofill-grid > div {
+  display: grid;
+  gap: .3rem;
+  padding: .75rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,.055);
+}
+.target-autofill-grid strong { overflow-wrap: anywhere; }
+.target-autofill-caution,
+.target-autofill-error {
+  padding: .75rem;
+  border-radius: 10px;
+  background: rgba(236, 94, 94, .12);
+}
+.target-autofill-error { margin-top: 1rem; }
+.target-autofill-actions { justify-content: flex-end; flex-wrap: wrap; }
+.target-autofill-actions .is-destructive { background: rgba(236, 94, 94, .22); }
+@media (max-width: 760px) {
+  .target-autofill-header { align-items: stretch; flex-direction: column; }
+  .target-autofill-grid { grid-template-columns: 1fr; }
+  .target-autofill-actions button { width: 100%; }
+}
+/* Add separation between the purple LCARS elbow and yellow band */
+.missionConsoleHeaderCompact .missionConsoleHeaderBlockPrimary {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+/* Pull the yellow strip down so black shows between them */
+.missionConsoleHeaderCompact .missionConsoleHeaderBlockSecondary {
+  margin-top: 14px;
+}
+.missionConsoleHeaderCompact {
+  row-gap: 14px;
+}
+/* Mission Console: black separation between purple elbow and gold rail.
+   The gold rail is the primary block's bottom border, so margins cannot
+   separate it from the elbow. Shorten the elbow inside the same block. */
+.missionConsoleHeaderCompact .missionConsoleHeaderBlockPrimary {
+  margin-bottom: 0;
+}
+
+.missionConsoleHeaderCompact .missionConsoleHeaderBlockPrimary::before {
+  bottom: 14px;
+}

@@ -8,6 +8,9 @@ import {
   ImagePlus,
   Pencil,
   Save,
+  Sparkles,
+  RefreshCw,
+  CheckCircle2,
   Star,
   Trash2,
   Upload,
@@ -754,6 +757,10 @@ export default function AdminGallery() {
   const [error, setError] =
     useState('');
 
+  const [targetScanBusy, setTargetScanBusy] = useState(false);
+  const [targetScanError, setTargetScanError] = useState('');
+  const [targetScanResult, setTargetScanResult] = useState(null);
+
   const [
     imageDragActive,
     setImageDragActive
@@ -950,6 +957,76 @@ export default function AdminGallery() {
       ...current,
       [field]: value
     }));
+  }
+
+  async function scanTargetMetadata() {
+    const target = form.title.trim();
+
+    if (!target) {
+      setTargetScanError('Enter a target name or catalog designation first.');
+      return;
+    }
+
+    setTargetScanBusy(true);
+    setTargetScanError('');
+    setTargetScanResult(null);
+
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('target-autofill', {
+        body: {
+          target,
+          existingValues: {
+            subtitle: form.subtitle,
+            objectType: form.objectType,
+            constellation: form.constellation,
+            distance: form.distance,
+            ra: form.ra,
+            dec: form.dec,
+            notes: form.notes
+          }
+        }
+      });
+
+      if (invokeError) throw invokeError;
+      if (!data?.target) throw new Error(data?.error || 'Target scanner returned no match.');
+
+      setTargetScanResult(data.target);
+    } catch (scanError) {
+      console.error('[TARGET AUTOFILL] Scan failed:', scanError);
+      setTargetScanError(scanError.message || 'Target metadata scan failed.');
+    } finally {
+      setTargetScanBusy(false);
+    }
+  }
+
+  function applyTargetScan(overwrite = false) {
+    if (!targetScanResult) return;
+
+    const proposed = {
+      title: targetScanResult.displayName,
+      subtitle: targetScanResult.subtitle,
+      objectType: targetScanResult.objectType,
+      constellation: targetScanResult.constellation,
+      distance: targetScanResult.distance,
+      ra: targetScanResult.rightAscensionHours,
+      dec: targetScanResult.declinationDegrees,
+      notes: targetScanResult.notes
+    };
+
+    setForm((current) => {
+      const next = { ...current };
+
+      Object.entries(proposed).forEach(([field, value]) => {
+        if (value === null || value === undefined || value === '') return;
+        if (overwrite || !String(current[field] ?? '').trim()) next[field] = String(value);
+      });
+
+      return next;
+    });
+
+    setMessage(overwrite
+      ? 'TARGET DATA APPLIED · EXISTING METADATA REPLACED'
+      : 'TARGET DATA APPLIED · EXISTING ENTRIES PRESERVED');
   }
 
   function releasePreviewUrl() {
@@ -2701,6 +2778,58 @@ export default function AdminGallery() {
                     }}
                   />
                 </div>
+              </section>
+
+              <section className="target-autofill-panel">
+                <div className="target-autofill-header">
+                  <div>
+                    <small>CHATGPT TARGET INTELLIGENCE</small>
+                    <h3>SCAN ASTRONOMY METADATA</h3>
+                    <p>Uses the title above as the target query. Suggestions remain separate until you apply them.</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="target-autofill-scan"
+                    onClick={scanTargetMetadata}
+                    disabled={targetScanBusy || !form.title.trim()}
+                  >
+                    {targetScanBusy ? <RefreshCw size={18} className="is-spinning" /> : <Sparkles size={18} />}
+                    {targetScanBusy ? 'SCANNING TARGET' : 'SCAN TARGET DATA'}
+                  </button>
+                </div>
+
+                {targetScanError ? <div className="target-autofill-error">{targetScanError}</div> : null}
+
+                {targetScanResult ? (
+                  <div className="target-autofill-result">
+                    <div className="target-autofill-match">
+                      <CheckCircle2 size={22} />
+                      <div>
+                        <small>MATCHED TARGET</small>
+                        <strong>{targetScanResult.displayName}</strong>
+                        <span>{targetScanResult.catalogNames?.join(' · ')}</span>
+                      </div>
+                      <b>{String(targetScanResult.confidence || 'review').toUpperCase()}</b>
+                    </div>
+
+                    <div className="target-autofill-grid">
+                      <div><span>OBJECT TYPE</span><strong>{targetScanResult.objectType || '—'}</strong></div>
+                      <div><span>CONSTELLATION</span><strong>{targetScanResult.constellation || '—'}</strong></div>
+                      <div><span>DISTANCE</span><strong>{targetScanResult.distance || '—'}</strong></div>
+                      <div><span>RIGHT ASCENSION</span><strong>{targetScanResult.rightAscensionDisplay || '—'}</strong></div>
+                      <div><span>DECLINATION</span><strong>{targetScanResult.declinationDisplay || '—'}</strong></div>
+                      <div><span>MAGNITUDE / SIZE</span><strong>{targetScanResult.magnitude ?? '—'} · {targetScanResult.angularSize || '—'}</strong></div>
+                    </div>
+
+                    {targetScanResult.caution ? <p className="target-autofill-caution">{targetScanResult.caution}</p> : null}
+
+                    <div className="target-autofill-actions">
+                      <button type="button" onClick={() => applyTargetScan(false)}>FILL EMPTY FIELDS</button>
+                      <button type="button" className="is-destructive" onClick={() => applyTargetScan(true)}>REPLACE METADATA</button>
+                    </div>
+                  </div>
+                ) : null}
               </section>
 
               <div className="admin-form-grid">
