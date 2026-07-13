@@ -33778,3 +33778,263 @@ body.missionPlanningBoardOpen {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* =========================================================
+   COMPACT MISSION CONTROL NAVIGATION
+   ========================================================= */
+.admin-top-nav {
+  min-height: 64px;
+  padding: 8px clamp(18px, 2.5vw, 42px);
+  gap: clamp(12px, 1.5vw, 24px);
+}
+
+.admin-top-nav-small {
+  min-height: 54px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.admin-top-brand {
+  min-width: 210px;
+  gap: 10px;
+}
+
+.admin-top-brand img,
+.admin-top-nav-small .admin-top-brand img {
+  width: 76px;
+}
+
+.admin-top-brand strong {
+  font-size: 0.68rem;
+  letter-spacing: 0.17em;
+}
+
+.admin-top-brand em {
+  font-size: 0.48rem;
+  letter-spacing: 0.16em;
+}
+
+.admin-top-menu {
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.admin-top-menu > a,
+.admin-top-dropdown > button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.51rem;
+  letter-spacing: 0.12em;
+}
+
+.admin-top-dropdown-menu a.active {
+  color: #fff;
+  background: rgba(143, 213, 236, 0.12);
+}
+
+.admin-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.admin-nav-crew {
+  display: grid;
+  gap: 1px;
+  min-width: 96px;
+  text-align: right;
+}
+
+.admin-nav-crew span {
+  color: rgba(239, 247, 252, 0.92);
+  font-size: 0.57rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-nav-crew em {
+  max-width: 120px;
+  overflow: hidden;
+  color: rgba(143, 193, 219, 0.62);
+  font-size: 0.45rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-nav-logout,
+.admin-mobile-menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: rgba(229, 239, 247, 0.82);
+  background: rgba(255, 255, 255, 0.026);
+  border: 1px solid rgba(143, 193, 219, 0.18);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.admin-nav-logout:hover,
+.admin-mobile-menu-button:hover {
+  color: #fff;
+  border-color: rgba(143, 213, 236, 0.52);
+  background: rgba(143, 213, 236, 0.09);
+}
+
+.admin-mobile-menu-button {
+  display: none;
+}
+
+/* The separate authentication strip is superseded by the compact crew control. */
+.admin-crew-strip {
+  display: none;
+}
+
+@media (max-width: 1120px) {
+  .admin-top-nav {
+    flex-wrap: nowrap;
+  }
+
+  .admin-top-brand {
+    order: initial;
+    min-width: 178px;
+  }
+
+  .admin-top-menu {
+    order: initial;
+    flex-basis: auto;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .admin-top-controls {
+    order: initial;
+  }
+
+  .admin-nav-crew em {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-top-nav,
+  .admin-top-nav-small {
+    flex-wrap: wrap;
+    min-height: 60px;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 14px 8px;
+  }
+
+  .admin-top-brand {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .admin-top-brand img,
+  .admin-top-nav-small .admin-top-brand img {
+    width: 68px;
+  }
+
+  .admin-top-brand strong {
+    font-size: 0.61rem;
+  }
+
+  .admin-top-brand em {
+    display: none;
+  }
+
+  .admin-mobile-menu-button {
+    display: inline-flex;
+    order: 3;
+  }
+
+  .admin-top-controls {
+    margin-left: 0;
+  }
+
+  .admin-nav-crew {
+    display: none;
+  }
+
+  .admin-top-menu {
+    display: none;
+    order: 4;
+    flex: 1 0 100%;
+    width: 100%;
+    padding: 8px 0 4px;
+    border-top: 1px solid rgba(143, 193, 219, 0.13);
+  }
+
+  .admin-menu-open .admin-top-menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .admin-top-menu > a,
+  .admin-top-dropdown > button {
+    width: 100%;
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 0.53rem;
+  }
+
+  .admin-top-dropdown {
+    position: static;
+    width: 100%;
+  }
+
+  .admin-top-dropdown::after {
+    display: none;
+  }
+
+  .admin-top-dropdown-menu {
+    position: static;
+    display: none;
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    margin-top: 6px;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    box-shadow: none;
+  }
+
+  .admin-top-dropdown.open .admin-top-dropdown-menu {
+    display: grid;
+  }
+
+  .admin-top-dropdown:hover .admin-top-dropdown-menu,
+  .admin-top-dropdown:focus-within .admin-top-dropdown-menu {
+    display: none;
+  }
+
+  .admin-top-dropdown.open:hover .admin-top-dropdown-menu,
+  .admin-top-dropdown.open:focus-within .admin-top-dropdown-menu {
+    display: grid;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-top-brand span {
+    display: none;
+  }
+
+  .admin-menu-open .admin-top-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-top-controls .theme-toggle button span {
+    display: none;
+  }
+}

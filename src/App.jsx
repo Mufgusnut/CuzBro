@@ -19,7 +19,7 @@ import EasterEggs from './components/EasterEggs.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import Login from './components/Login.jsx';
 import { supabase } from './supabase.js';
-import { LogOut } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
 import { getCrewMember } from './lib/crew.js';
 import {
   useCrewPresence
@@ -258,10 +258,9 @@ function AdminTopNav({
   session,
   onLogout
 }) {
-  const crew = getCrewMember(
-    session?.user?.email
-  );
+  const crew = getCrewMember(session?.user?.email);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const adminMenuRef = useRef(null);
 
   useEffect(() => {
@@ -277,6 +276,7 @@ function AdminTopNav({
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setOpenDropdown(null);
+        setMobileMenuOpen(false);
       }
     };
 
@@ -289,225 +289,198 @@ function AdminTopNav({
     };
   }, []);
 
-  const toggleDropdown = (name) => {
-    setOpenDropdown((current) =>
-      current === name ? null : name
-    );
-  };
-
-  const closeDropdown = () => {
-    setOpenDropdown(null);
-  };
-
-  const pathname =
-    window.location.pathname;
-
+  const pathname = window.location.pathname;
   const isActive = (paths) =>
-    paths.some(
-      (path) =>
-        pathname === path ||
-        pathname === `${path}/`
-    );
+    paths.some((path) => pathname === path || pathname === `${path}/`);
+
+  const toggleDropdown = (name) => {
+    setOpenDropdown((current) => (current === name ? null : name));
+  };
+
+  const closeNavigation = () => {
+    setOpenDropdown(null);
+    setMobileMenuOpen(false);
+  };
+
+  const navGroups = [
+    {
+      id: 'operations',
+      label: 'Operations',
+      paths: [
+        '/admin/watch',
+        '/admin/missions',
+        '/admin/operation',
+        '/admin/tasks',
+        '/admin/comms',
+        '/admin/incidents',
+        '/admin/holodeck'
+      ],
+      links: [
+        ['/admin/watch', 'Watch Floor'],
+        ['/admin/missions', 'Open Missions'],
+        ['/admin/operation', 'Operation Control'],
+        ['/admin/tasks', 'Crew Tasking'],
+        ['/admin/comms', 'Crew Comms'],
+        ['/admin/incidents', 'Incident Command'],
+        ['/admin/holodeck', 'Holodeck']
+      ]
+    },
+    {
+      id: 'observatory',
+      label: 'Observatory',
+      paths: [
+        '/admin/gallery',
+        '/admin/captains-log',
+        '/admin/equipment',
+        '/admin/transfers'
+      ],
+      links: [
+        ['/admin/gallery', 'Capture Control'],
+        ['/admin/captains-log', 'Mission Reports'],
+        ['/admin/equipment', 'Gear Inventory'],
+        ['/admin/transfers', 'Crew Transfer']
+      ]
+    },
+    {
+      id: 'systems',
+      label: 'Systems',
+      paths: [
+        '/admin/system',
+        '/admin/storage',
+        '/admin/black-box',
+        '/admin/deployments'
+      ],
+      links: [
+        ['/admin/system', 'System Status'],
+        ['/admin/storage', 'Storage Control'],
+        ['/admin/black-box', 'Black Box'],
+        ['/admin/deployments', 'Deployments']
+      ],
+      external: [
+        ['https://dns.cuzbro.net', 'DNS Portal']
+      ]
+    }
+  ];
 
   return (
-    <>
-      <div className="admin-crew-strip">
-        <div className="admin-crew-strip-inner">
-          <div className="admin-top-auth">
-            <span>CREW AUTHENTICATED</span>
-            <strong>{crew.callSign}</strong>
-            <em>{crew.role}</em>
-          </div>
-
-          <button
-            type="button"
-            className="admin-crew-strip-logout"
-            onClick={onLogout}
-          >
-            <LogOut size={16} />
-            Log Out
-          </button>
-        </div>
-      </div>
-
-      <header
-      className={
-        scrolled
-          ? 'admin-top-nav admin-top-nav-small'
-          : 'admin-top-nav'
-      }
+    <header
+      className={`admin-top-nav ${
+        scrolled ? 'admin-top-nav-small' : ''
+      } ${mobileMenuOpen ? 'admin-menu-open' : ''}`}
     >
       <a
         href="/admin"
         className="admin-top-brand"
         aria-label="CuzBro admin home"
+        onClick={closeNavigation}
       >
         <img
-          src={
-            import.meta.env.BASE_URL +
-            'assets/cuzbro-logo.png'
-          }
+          src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'}
           alt="CuzBro logo"
         />
-
         <span>
-          <strong>Admin</strong>
-          <em>Mission Control</em>
+          <strong>Mission Control</strong>
+          <em>CuzBro Observatory</em>
         </span>
       </a>
 
+      <button
+        type="button"
+        className="admin-mobile-menu-button"
+        aria-label={mobileMenuOpen ? 'Close navigation' : 'Open navigation'}
+        aria-expanded={mobileMenuOpen}
+        aria-controls="admin-primary-navigation"
+        onClick={() => {
+          setMobileMenuOpen((current) => !current);
+          setOpenDropdown(null);
+        }}
+      >
+        {mobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
+      </button>
+
       <nav
+        id="admin-primary-navigation"
         className="admin-top-menu"
         ref={adminMenuRef}
+        aria-label="Mission Control navigation"
       >
         <a
           href="/admin"
-          className={
-            isActive(['/admin'])
-              ? 'active'
-              : ''
-          }
-          onClick={closeDropdown}
+          className={isActive(['/admin']) ? 'active' : ''}
+          onClick={closeNavigation}
         >
-          Admin Home
+          Home
         </a>
 
         <a
-          href="/admin/holodeck"
-          className={
-            isActive(['/admin/holodeck'])
-              ? 'active'
-              : ''
-          }
-          onClick={closeDropdown}
+          href="/admin/console"
+          className={isActive(['/admin/console']) ? 'active' : ''}
+          onClick={closeNavigation}
         >
-          Holodeck
+          Console
         </a>
 
-        <div
-          className={`admin-top-dropdown ${
-            openDropdown === 'live' ? 'open' : ''
-          }`}
-        >
-          <button
-            type="button"
-            className={
-              isActive([
-                '/admin/watch',
-                '/admin/system',
-                '/admin/storage',
-                '/admin/black-box',
-                '/admin/deployments'
-              ])
-                ? 'active'
-                : ''
-            }
-            aria-expanded={openDropdown === 'live'}
-            aria-haspopup="true"
-            onClick={() => toggleDropdown('live')}
+        {navGroups.map((group) => (
+          <div
+            className={`admin-top-dropdown ${
+              openDropdown === group.id ? 'open' : ''
+            }`}
+            key={group.id}
           >
-            Live Systems <span aria-hidden="true">⌄</span>
-          </button>
-
-          <div className="admin-top-dropdown-menu">
-            <a href="/admin/watch" onClick={closeDropdown}>
-              Watch Floor
-            </a>
-            <a href="/admin/system" onClick={closeDropdown}>
-              System Status
-            </a>
-            <a href="/admin/storage" onClick={closeDropdown}>
-              Storage Control
-            </a>
-            <a href="/admin/black-box" onClick={closeDropdown}>
-              Black Box
-            </a>
-            <a href="/admin/deployments" onClick={closeDropdown}>
-              Deployments
-            </a>
-          </div>
-        </div>
-
-        <div
-          className={`admin-top-dropdown ${
-            openDropdown === 'observatory' ? 'open' : ''
-          }`}
-        >
-          <button
-            type="button"
-            className={
-              isActive([
-                '/admin/gallery',
-                '/admin/captains-log',
-                '/admin/equipment',
-                '/admin/transfers',
-                '/admin/missions',
-                '/admin/console'
-              ])
-                ? 'active'
-                : ''
-            }
-            aria-expanded={openDropdown === 'observatory'}
-            aria-haspopup="true"
-            onClick={() => toggleDropdown('observatory')}
-          >
-            Observatory Tools <span aria-hidden="true">⌄</span>
-          </button>
-
-          <div className="admin-top-dropdown-menu">
-            <a href="/admin/missions" onClick={closeDropdown}>
-              Open Missions
-            </a>
-            <a href="/admin/console" onClick={closeDropdown}>
-              Mission Console
-            </a>
-            <a href="/admin/gallery" onClick={closeDropdown}>
-              Capture Control
-            </a>
-            <a href="/admin/captains-log" onClick={closeDropdown}>
-              Mission Reports
-            </a>
-            <a href="/admin/equipment" onClick={closeDropdown}>
-              Gear Inventory
-            </a>
-            <a href="/admin/transfers" onClick={closeDropdown}>
-              Crew Transfer
-            </a>
-          </div>
-        </div>
-
-        <div
-          className={`admin-top-dropdown ${
-            openDropdown === 'links' ? 'open' : ''
-          }`}
-        >
-          <button
-            type="button"
-            aria-expanded={openDropdown === 'links'}
-            aria-haspopup="true"
-            onClick={() => toggleDropdown('links')}
-          >
-            Admin Links <span aria-hidden="true">⌄</span>
-          </button>
-
-          <div className="admin-top-dropdown-menu">
-            <a
-              href="https://dns.cuzbro.net"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={closeDropdown}
+            <button
+              type="button"
+              className={isActive(group.paths) ? 'active' : ''}
+              aria-expanded={openDropdown === group.id}
+              aria-haspopup="true"
+              onClick={() => toggleDropdown(group.id)}
             >
-              DNS Portal
-            </a>
+              {group.label} <span aria-hidden="true">⌄</span>
+            </button>
+
+            <div className="admin-top-dropdown-menu">
+              {group.links.map(([href, label]) => (
+                <a
+                  href={href}
+                  className={isActive([href]) ? 'active' : ''}
+                  onClick={closeNavigation}
+                  key={href}
+                >
+                  {label}
+                </a>
+              ))}
+              {group.external?.map(([href, label]) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={closeNavigation}
+                  key={href}
+                >
+                  {label} <span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
+        ))}
       </nav>
 
       <div className="admin-top-controls">
+        <div className="admin-nav-crew" title={crew.role}>
+          <span>{crew.callSign}</span>
+          <em>{crew.role}</em>
+        </div>
         <ThemeToggle />
+        <button
+          type="button"
+          className="admin-nav-logout"
+          onClick={onLogout}
+          aria-label="Log out"
+          title="Log out"
+        >
+          <LogOut size={17} />
+        </button>
       </div>
-      </header>
-    </>
+    </header>
   );
 }
 
