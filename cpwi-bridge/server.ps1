@@ -2,7 +2,7 @@ param([string]$DriverId = "")
 $ErrorActionPreference = "Stop"
 $script:Telescope = $null
 $script:StartedAt = Get-Date
-$script:Version = "2.0.0"
+$script:Version = "2.1.0"
 
 function Load-DotEnv {
   $path = Join-Path $PSScriptRoot ".env"
@@ -39,7 +39,7 @@ function Get-Status {
     driver=$DriverId; connected=$connected; tracking=if($connected){Safe-Get{[bool]$scope.Tracking}}else{$null}; slewing=if($connected){Safe-Get{[bool]$scope.Slewing}}else{$null}; parked=if($connected){Safe-Get{[bool]$scope.AtPark}}else{$null}; atHome=if($connected){Safe-Get{[bool]$scope.AtHome}}else{$null}; rightAscensionHours=if($connected){Safe-Get{[double]$scope.RightAscension}}else{$null}; declinationDegrees=if($connected){Safe-Get{[double]$scope.Declination}}else{$null}; altitudeDegrees=if($connected){Safe-Get{[double]$scope.Altitude}}else{$null}; azimuthDegrees=if($connected){Safe-Get{[double]$scope.Azimuth}}else{$null}; siderealTimeHours=if($connected){Safe-Get{[double]$scope.SiderealTime}}else{$null}; siteLatitude=if($connected){Safe-Get{[double]$scope.SiteLatitude}}else{$null}; siteLongitude=if($connected){Safe-Get{[double]$scope.SiteLongitude}}else{$null}; canPark=if($scope){Safe-Get{[bool]$scope.CanPark}}else{$null}; canUnpark=if($scope){Safe-Get{[bool]$scope.CanUnpark}}else{$null}; canSetTracking=if($scope){Safe-Get{[bool]$scope.CanSetTracking}}else{$null}; canSlew=if($scope){Safe-Get{[bool]$scope.CanSlew}}else{$null}
   }; warnings=$warnings }
 }
-function Invoke-Control([string]$action) {
+function Invoke-Control([string]$action, $arguments=$null) {
   $scope=Ensure-Telescope
   switch($action){
     'connect'{$scope.Connected=$true}; 'disconnect'{$scope.Connected=$false};
@@ -48,6 +48,16 @@ function Invoke-Control([string]$action) {
     'park'{if(-not $scope.Connected){throw 'Mount is not connected.'};$scope.Park()};
     'unpark'{if(-not $scope.Connected){throw 'Mount is not connected.'};if(-not $scope.CanUnpark){throw 'The CPWI driver does not support Unpark.'};$scope.Unpark()};
     'abortSlew'{if(-not $scope.Connected){throw 'Mount is not connected.'};$scope.AbortSlew()};
+    'slewRaDec'{
+      if(-not $scope.Connected){throw 'Mount is not connected.'}
+      if([bool](Safe-Get{$scope.AtPark})){throw 'Mount is parked. Unpark it before slewing.'}
+      if(-not [bool](Safe-Get{$scope.CanSlew})){throw 'The CPWI driver does not support equatorial slewing.'}
+      if($null -eq $arguments){throw 'Slew coordinates were not supplied.'}
+      $ra=[double]$arguments.rightAscensionHours; $dec=[double]$arguments.declinationDegrees
+      if($ra -lt 0 -or $ra -ge 24){throw 'Right ascension must be between 0 and less than 24 hours.'}
+      if($dec -lt -90 -or $dec -gt 90){throw 'Declination must be between -90 and +90 degrees.'}
+      $scope.SlewToCoordinatesAsync($ra,$dec)
+    };
     default{throw "Unknown control action: $action"}
   }
   Start-Sleep -Milliseconds 250
@@ -68,7 +78,7 @@ function Process-Commands {
   foreach($cmd in @($items)){
     try {
       Invoke-Supa PATCH "cpwi_commands?id=eq.$($cmd.id)&status=eq.pending" @{status='processing';started_at=(Get-Date).ToUniversalTime().ToString('o')} @{Prefer='return=minimal'}|Out-Null
-      $result=Invoke-Control ([string]$cmd.action)
+      $result=Invoke-Control ([string]$cmd.action) $cmd.arguments
       Invoke-Supa PATCH "cpwi_commands?id=eq.$($cmd.id)" @{status='completed';completed_at=(Get-Date).ToUniversalTime().ToString('o');result=$result;error=$null} @{Prefer='return=minimal'}|Out-Null
       Write-Host "COMMAND COMPLETE | $($cmd.action)" -ForegroundColor Green
     } catch {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
+  ArrowLeft,
   Archive,
   CheckCircle2,
   ChevronDown,
@@ -9,11 +10,14 @@ import {
   Cloud,
   Compass,
   Cpu,
+  Crosshair,
   DatabaseZap,
   Droplets,
   Gauge,
   PauseCircle,
   Radio,
+  RefreshCw,
+  Sparkles,
   PlayCircle,
   Radar,
   Settings2,
@@ -44,6 +48,19 @@ const DEFAULT_SITE = {
   lat: 43.1531,
   lon: -70.7828
 };
+
+const CPWI_SLEW_TARGETS = [
+  { id: 'm13', name: 'M13 // Hercules Cluster', ra: 16.6949, dec: 36.4602 },
+  { id: 'm27', name: 'M27 // Dumbbell Nebula', ra: 19.9934, dec: 22.7210 },
+  { id: 'm57', name: 'M57 // Ring Nebula', ra: 18.8931, dec: 33.0292 },
+  { id: 'm31', name: 'M31 // Andromeda Galaxy', ra: 0.7123, dec: 41.2692 },
+  { id: 'm42', name: 'M42 // Orion Nebula', ra: 5.5881, dec: -5.3911 },
+  { id: 'm51', name: 'M51 // Whirlpool Galaxy', ra: 13.4979, dec: 47.1952 },
+  { id: 'm8', name: 'M8 // Lagoon Nebula', ra: 18.0615, dec: -24.3867 },
+  { id: 'ngc6543', name: "NGC 6543 // Cat's Eye Nebula", ra: 17.9759, dec: 66.6332 },
+  { id: 'albireo', name: 'Albireo // Beta Cygni', ra: 19.5120, dec: 27.9597 },
+  { id: 'manual', name: 'MANUAL COORDINATES', ra: null, dec: null }
+];
 
 const STORAGE_PREFIX = 'cuzbro-mission-console-v1';
 
@@ -470,8 +487,17 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [localSystemsUpdatedAt, setLocalSystemsUpdatedAt] = useState(null);
   const [cpwiControlBusy, setCpwiControlBusy] = useState('');
   const [cpwiControlError, setCpwiControlError] = useState('');
+  const [cpwiMountTab, setCpwiMountTab] = useState('status');
+  const [selectedSlewTarget, setSelectedSlewTarget] = useState('m13');
+  const [manualSlewRa, setManualSlewRa] = useState('');
+  const [manualSlewDec, setManualSlewDec] = useState('');
+  const [slewClearanceConfirmed, setSlewClearanceConfirmed] = useState(false);
   const [hbg3Record, setHbg3Record] = useState(null);
   const [hbg3Error, setHbg3Error] = useState('');
+  const [aiRecommendation, setAiRecommendation] = useState(null);
+  const [aiRecommendationBusy, setAiRecommendationBusy] = useState(false);
+  const [aiRecommendationError, setAiRecommendationError] = useState('');
+  const [aiRecommendationUpdatedAt, setAiRecommendationUpdatedAt] = useState(null);
   const [openPanels, setOpenPanels] = useState({
     target: false,
     conditions: false,
@@ -582,13 +608,13 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     return () => { active = false; window.clearInterval(interval); };
   }, []);
 
-  async function runCpwiControl(action) {
+  async function runCpwiControl(action, argumentsPayload = null) {
     setCpwiControlBusy(action);
     setCpwiControlError('');
     try {
       const { data, error: insertError } = await supabase
         .from('cpwi_commands')
-        .insert({ station: 'eliot', action, requested_by: session?.user?.id || null })
+.insert({ station: 'eliot', action, arguments: argumentsPayload, requested_by: session?.user?.id || null })
         .select('id')
         .single();
       if (insertError) throw insertError;
@@ -602,15 +628,50 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
           .eq('id', data.id)
           .single();
         if (commandError) throw commandError;
-        if (command.status === 'completed') return;
+        if (command.status === 'completed') return true;
         if (command.status === 'failed') throw new Error(command.error || 'CPWI command failed.');
       }
       throw new Error('CPWI command timed out waiting for the observatory bridge.');
     } catch (controlError) {
       setCpwiControlError(controlError.message || 'CPWI command failed.');
+      return false;
     } finally {
       setCpwiControlBusy('');
     }
+  }
+
+
+  const selectedSlewRecord = CPWI_SLEW_TARGETS.find((target) => target.id === selectedSlewTarget) || CPWI_SLEW_TARGETS[0];
+  const selectedSlewRaHours = selectedSlewTarget === 'manual' ? Number(manualSlewRa) : selectedSlewRecord.ra;
+  const selectedSlewDecDegrees = selectedSlewTarget === 'manual' ? Number(manualSlewDec) : selectedSlewRecord.dec;
+  const selectedSlewAltitude = Number.isFinite(selectedSlewRaHours) && Number.isFinite(selectedSlewDecDegrees)
+    ? altitudeForCoords(selectedSlewRaHours, selectedSlewDecDegrees, new Date(now), DEFAULT_SITE)
+    : null;
+
+  async function slewToSelectedTarget() {
+    setCpwiControlError('');
+    if (!localSystems?.cpwi?.connected) {
+      setCpwiControlError('Connect CPWI before issuing a slew command.');
+      return;
+    }
+    if (!Number.isFinite(selectedSlewRaHours) || selectedSlewRaHours < 0 || selectedSlewRaHours >= 24) {
+      setCpwiControlError('Right ascension must be a decimal-hour value from 0 up to, but not including, 24.');
+      return;
+    }
+    if (!Number.isFinite(selectedSlewDecDegrees) || selectedSlewDecDegrees < -90 || selectedSlewDecDegrees > 90) {
+      setCpwiControlError('Declination must be between -90 and +90 degrees.');
+      return;
+    }
+    if (!slewClearanceConfirmed) {
+      setCpwiControlError('Confirm telescope and cable clearance before slewing.');
+      return;
+    }
+    const ok = await runCpwiControl('slewRaDec', {
+      rightAscensionHours: selectedSlewRaHours,
+      declinationDegrees: selectedSlewDecDegrees,
+      targetName: selectedSlewRecord.name
+    });
+    if (ok) setSlewClearanceConfirmed(false);
   }
 
   useEffect(() => {
@@ -772,7 +833,91 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   );
   const progressPercent = frameTarget ? Math.min(100, Math.round((Number(consoleState.completedFrames || 0) / frameTarget) * 100)) : 0;
   const captureHistorySummary = useMemo(() => summarizeCaptureHistory(captureHistory), [captureHistory]);
-  const missionRecommendation = useMemo(() => getMissionRecommendation({ missionPlan, targetReference, weather, lastCapture }), [missionPlan, targetReference, weather, lastCapture]);
+  const baselineRecommendation = useMemo(() => getMissionRecommendation({ missionPlan, targetReference, weather, lastCapture }), [missionPlan, targetReference, weather, lastCapture]);
+  const missionRecommendation = aiRecommendation || baselineRecommendation;
+
+  useEffect(() => {
+    setAiRecommendation(null);
+    setAiRecommendationError('');
+    setAiRecommendationUpdatedAt(null);
+  }, [missionPlan?.id]);
+
+  async function refreshAiRecommendation() {
+    if (!missionPlan && !targetReference) {
+      setAiRecommendationError('Accept or activate a mission before requesting a recommendation.');
+      return;
+    }
+
+    setAiRecommendationBusy(true);
+    setAiRecommendationError('');
+
+    try {
+      const requestContext = {
+        requestedAt: new Date().toISOString(),
+        site: activeSite || DEFAULT_SITE,
+        target: {
+          title: missionPlan?.target_title || targetReference?.title || 'Unknown target',
+          type: missionPlan?.target_type || targetReference?.objectType || 'Unknown',
+          rightAscensionHours: targetReference?.ra ?? missionPlan?.ra ?? null,
+          declinationDegrees: targetReference?.dec ?? missionPlan?.dec ?? null,
+          altitudeDegrees: telemetry?.altitude ?? null,
+          azimuthDegrees: telemetry?.azimuth ?? null,
+          capturePlan: missionPlan?.capture_plan || targetReference?.capturePlan || null,
+          objective: missionPlan?.primary_objective || targetReference?.objective || null
+        },
+        equipment: {
+          telescope: 'Celestron CPC 800, 8-inch SCT',
+          mount: 'Alt-az fork mount, no wedge',
+          camera: 'ZWO ASI294MC one-shot color',
+          reducerAvailable: true,
+          reducer: 'f/6.3 reducer',
+          filters: ['Celestron UHC/LPR', 'variable polarizing'],
+          currentPlanEquipment: missionPlan?.equipment || targetReference?.equipment || null
+        },
+        weather: weather || null,
+        hbg3: {
+          online: hbg3Online,
+          ambientC: hbg3Environment?.ambientC ?? null,
+          humidityPercent: hbg3Environment?.humidityPercent ?? null,
+          dewPointC: hbg3Environment?.dewPointC ?? null,
+          dewMarginC: hbg3Environment?.dewMarginC ?? null,
+          supplyVolts: hbg3Environment?.supplyVolts ?? null,
+          heaterTemperatureC: hbg3Channel1?.temperatureC ?? null,
+          heaterOutputPercent: hbg3Channel1?.pwmPercent ?? null
+        },
+        mount: localSystems?.cpwi || null,
+        lastCapture: lastCapture || null,
+        captureHistorySummary,
+        deterministicBaseline: baselineRecommendation
+      };
+
+      const { data, error: invokeError } = await supabase.functions.invoke('mission-recommendation', {
+        body: requestContext
+      });
+
+      if (invokeError) throw invokeError;
+      if (!data?.recommendation) throw new Error(data?.error || 'The recommendation service returned no recommendation.');
+
+      setAiRecommendation({
+        ...baselineRecommendation,
+        ...data.recommendation,
+        adjustments: Array.isArray(data.recommendation.adjustments) ? data.recommendation.adjustments : [],
+        totalIntegrationSeconds: Number(data.recommendation.totalIntegrationSeconds) ||
+          Number(data.recommendation.exposureSeconds || 0) * Number(data.recommendation.frameCount || 0),
+        differsFromLast: Boolean(lastCapture) && (
+          Number(lastCapture.exposure_seconds) !== Number(data.recommendation.exposureSeconds) ||
+          Number(lastCapture.frame_count) !== Number(data.recommendation.frameCount) ||
+          Number(lastCapture.gain) !== Number(data.recommendation.gain)
+        )
+      });
+      setAiRecommendationUpdatedAt(data.generatedAt || new Date().toISOString());
+    } catch (refreshError) {
+      console.error('[MISSION RECOMMENDATION] Refresh failed:', refreshError);
+      setAiRecommendationError(refreshError.message || 'ChatGPT recommendation refresh failed.');
+    } finally {
+      setAiRecommendationBusy(false);
+    }
+  }
 
   async function handleInitiateMission() {
     if (!session?.user?.id || !missionPlan?.id) return;
@@ -1033,7 +1178,19 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
         </div>
 
         <div className="missionConsoleMain">
-          <header className="missionConsoleHeader">
+          <div className="missionConsoleStandaloneTopbar">
+            <a href="/admin" className="missionConsoleReturnAdmin">
+              <ArrowLeft size={18} />
+              <span>RETURN TO ADMIN</span>
+            </a>
+            <div className="missionConsoleQuickStatus" aria-label="Mission console quick status">
+              <span>{activeSite?.name || DEFAULT_SITE.name}</span>
+              <strong>{missionPlan?.status || 'STANDBY'}</strong>
+              <span>{new Date(now).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+            </div>
+          </div>
+
+          <header className="missionConsoleHeader missionConsoleHeaderCompact">
             <div className="missionConsoleAccessHeader">
               <div className="missionConsoleAccessCode">
                 <span>LCARS 40274</span>
@@ -1223,26 +1380,64 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               <div className="missionConsoleSystemsGrid">
                 <article className="missionConsoleSystemNode">
                   <div className="missionConsoleSystemNodeTitle"><Cpu size={18} /><span>CPWI / ASCOM MOUNT</span></div>
-                  <div className="missionConsoleSystemMetrics">
-                    <div><span>CONNECTION</span><strong>{localSystems?.cpwi?.connected ? 'ONLINE' : 'OFFLINE'}</strong></div>
-                    <div><span>TRACKING</span><strong>{bridgeBoolean(localSystems?.cpwi?.tracking)}</strong></div>
-                    <div><span>SLEWING</span><strong>{bridgeBoolean(localSystems?.cpwi?.slewing)}</strong></div>
-                    <div><span>PARKED</span><strong>{bridgeBoolean(localSystems?.cpwi?.parked)}</strong></div>
-                    <div><span>RA</span><strong>{bridgeNumber(localSystems?.cpwi?.rightAscensionHours, 4, 'h')}</strong></div>
-                    <div><span>DEC</span><strong>{bridgeNumber(localSystems?.cpwi?.declinationDegrees, 3, '°')}</strong></div>
-                    <div><span>ALTITUDE</span><strong>{bridgeNumber(localSystems?.cpwi?.altitudeDegrees, 2, '°')}</strong></div>
-                    <div><span>AZIMUTH</span><strong>{bridgeNumber(localSystems?.cpwi?.azimuthDegrees, 2, '°')}</strong></div>
+                  <div className="missionConsoleMountTabs" role="tablist" aria-label="CPWI mount views">
+                    <button type="button" role="tab" aria-selected={cpwiMountTab === 'status'} className={cpwiMountTab === 'status' ? 'is-active' : ''} onClick={() => setCpwiMountTab('status')}>STATUS / CONTROL</button>
+                    <button type="button" role="tab" aria-selected={cpwiMountTab === 'slew'} className={cpwiMountTab === 'slew' ? 'is-active' : ''} onClick={() => setCpwiMountTab('slew')}><Crosshair size={16} /> SLEW / TARGET</button>
                   </div>
 
-                  <div className="missionConsoleMountControls" aria-label="CPWI mount controls">
-                    <button type="button" disabled={Boolean(cpwiControlBusy) || localSystems?.cpwi?.connected} onClick={() => runCpwiControl('connect')}>CONNECT</button>
-                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected} onClick={() => runCpwiControl('disconnect')}>DISCONNECT</button>
-                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.tracking === true} onClick={() => runCpwiControl('trackingOn')}>TRACKING ON</button>
-                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.tracking === false} onClick={() => runCpwiControl('trackingOff')}>TRACKING OFF</button>
-                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.slewing} onClick={() => runCpwiControl('park')}>PARK</button>
-                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || !localSystems?.cpwi?.parked} onClick={() => runCpwiControl('unpark')}>UNPARK</button>
-                    <button type="button" className="is-emergency" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected} onClick={() => runCpwiControl('abortSlew')}>ABORT SLEW</button>
-                  </div>
+                  {cpwiMountTab === 'status' ? <>
+                    <div className="missionConsoleSystemMetrics">
+                      <div><span>CONNECTION</span><strong>{localSystems?.cpwi?.connected ? 'ONLINE' : 'OFFLINE'}</strong></div>
+                      <div><span>TRACKING</span><strong>{bridgeBoolean(localSystems?.cpwi?.tracking)}</strong></div>
+                      <div><span>SLEWING</span><strong>{bridgeBoolean(localSystems?.cpwi?.slewing)}</strong></div>
+                      <div><span>PARKED</span><strong>{bridgeBoolean(localSystems?.cpwi?.parked)}</strong></div>
+                      <div><span>RA</span><strong>{bridgeNumber(localSystems?.cpwi?.rightAscensionHours, 4, 'h')}</strong></div>
+                      <div><span>DEC</span><strong>{bridgeNumber(localSystems?.cpwi?.declinationDegrees, 3, '°')}</strong></div>
+                      <div><span>ALTITUDE</span><strong>{bridgeNumber(localSystems?.cpwi?.altitudeDegrees, 2, '°')}</strong></div>
+                      <div><span>AZIMUTH</span><strong>{bridgeNumber(localSystems?.cpwi?.azimuthDegrees, 2, '°')}</strong></div>
+                    </div>
+
+                    <div className="missionConsoleMountControls" aria-label="CPWI mount controls">
+                      <button type="button" disabled={Boolean(cpwiControlBusy) || localSystems?.cpwi?.connected} onClick={() => runCpwiControl('connect')}>CONNECT</button>
+                      <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected} onClick={() => runCpwiControl('disconnect')}>DISCONNECT</button>
+                      <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.tracking === true} onClick={() => runCpwiControl('trackingOn')}>TRACKING ON</button>
+                      <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.tracking === false} onClick={() => runCpwiControl('trackingOff')}>TRACKING OFF</button>
+                      <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.slewing} onClick={() => runCpwiControl('park')}>PARK</button>
+                      <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || !localSystems?.cpwi?.parked} onClick={() => runCpwiControl('unpark')}>UNPARK</button>
+                      <button type="button" className="is-emergency" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected} onClick={() => runCpwiControl('abortSlew')}>ABORT SLEW</button>
+                    </div>
+                  </> : <div className="missionConsoleSlewPanel">
+                    <label className="missionConsoleSlewField">
+                      <span>TARGET DATABASE</span>
+                      <select value={selectedSlewTarget} onChange={(event) => { setSelectedSlewTarget(event.target.value); setSlewClearanceConfirmed(false); }}>
+                        {CPWI_SLEW_TARGETS.map((target) => <option key={target.id} value={target.id}>{target.name}</option>)}
+                      </select>
+                    </label>
+
+                    {selectedSlewTarget === 'manual' ? <div className="missionConsoleSlewCoordinateInputs">
+                      <label className="missionConsoleSlewField"><span>RA // DECIMAL HOURS</span><input type="number" min="0" max="23.999999" step="0.0001" value={manualSlewRa} onChange={(event) => setManualSlewRa(event.target.value)} placeholder="16.6949" /></label>
+                      <label className="missionConsoleSlewField"><span>DEC // DEGREES</span><input type="number" min="-90" max="90" step="0.0001" value={manualSlewDec} onChange={(event) => setManualSlewDec(event.target.value)} placeholder="36.4602" /></label>
+                    </div> : null}
+
+                    <div className="missionConsoleSlewReadout">
+                      <div><span>SELECTED TARGET</span><strong>{selectedSlewRecord.name}</strong></div>
+                      <div><span>RIGHT ASCENSION</span><strong>{Number.isFinite(selectedSlewRaHours) ? `${selectedSlewRaHours.toFixed(4)}h` : '—'}</strong></div>
+                      <div><span>DECLINATION</span><strong>{Number.isFinite(selectedSlewDecDegrees) ? `${selectedSlewDecDegrees.toFixed(4)}°` : '—'}</strong></div>
+                      <div><span>EST. ALTITUDE NOW</span><strong className={selectedSlewAltitude !== null && selectedSlewAltitude < 10 ? 'is-danger' : ''}>{selectedSlewAltitude === null ? '—' : `${selectedSlewAltitude.toFixed(1)}°`}</strong></div>
+                    </div>
+
+                    <label className="missionConsoleSlewClearance">
+                      <input type="checkbox" checked={slewClearanceConfirmed} onChange={(event) => setSlewClearanceConfirmed(event.target.checked)} />
+                      <span>I VERIFIED TUBE, CAMERA, DEW, POWER, AND FORK CLEARANCE</span>
+                    </label>
+
+                    <div className="missionConsoleSlewActions">
+                      <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.slewing || localSystems?.cpwi?.parked || !slewClearanceConfirmed} onClick={slewToSelectedTarget}><Crosshair size={18} /> SLEW TO TARGET</button>
+                      <button type="button" className="is-emergency" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected} onClick={() => runCpwiControl('abortSlew')}>ABORT SLEW</button>
+                    </div>
+                    <p className="missionConsoleSlewNotice">Catalog coordinates are fixed equatorial coordinates. Verify the selected target is above local obstructions before commanding the mount.</p>
+                  </div>}
+
                   {cpwiControlBusy ? <div className="missionConsoleMountControlMessage">COMMAND IN PROGRESS // {cpwiControlBusy.toUpperCase()}</div> : null}
                   {cpwiControlError ? <div className="missionConsoleMountControlMessage is-error">{cpwiControlError}</div> : null}
                 </article>
@@ -1284,9 +1479,28 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               </button>
 
               <div className="missionConsoleSettingsSource missionConsoleRecommendationHeader">
-                <span>CHATGPT MISSION RECOMMENDATION</span>
-                <strong>RECOMMENDED BASELINE FOR THIS TARGET, EQUIPMENT, MOUNT, AND CURRENT CONDITIONS</strong>
+                <div>
+                  <span>CHATGPT MISSION RECOMMENDATION</span>
+                  <strong>{aiRecommendation ? 'LIVE AI PROFILE GENERATED FROM CURRENT CONSOLE TELEMETRY' : 'LOCAL BASELINE READY // REFRESH FOR A LIVE CHATGPT PROFILE'}</strong>
+                  {aiRecommendationUpdatedAt ? <small>UPDATED {formatClock(aiRecommendationUpdatedAt)}</small> : null}
+                </div>
+                <button
+                  type="button"
+                  className="missionConsoleAiRefreshButton"
+                  onClick={refreshAiRecommendation}
+                  disabled={aiRecommendationBusy || (!missionPlan && !targetReference)}
+                >
+                  {aiRecommendationBusy ? <RefreshCw size={17} className="is-spinning" /> : <Sparkles size={17} />}
+                  {aiRecommendationBusy ? 'CONSULTING CHATGPT' : aiRecommendation ? 'REFRESH RECOMMENDATION' : 'GENERATE RECOMMENDATION'}
+                </button>
               </div>
+
+              {aiRecommendationError ? (
+                <div className="missionConsoleAiRecommendationError">
+                  <AlertTriangle size={17} />
+                  <span>{aiRecommendationError}</span>
+                </div>
+              ) : null}
 
               <div className="missionConsoleRecommendationGrid">
                 <div><span>EXPOSURE / FRAME</span><strong>{missionRecommendation.exposureSeconds} SEC</strong></div>
@@ -1313,6 +1527,18 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                   <small>RECOMMENDED EQUIPMENT CONFIGURATION</small>
                   <strong>{missionRecommendation.equipment}</strong>
                 </div>
+                {missionRecommendation.targetAssessment ? (
+                  <div className="missionConsoleStackItem">
+                    <small>TARGET ASSESSMENT</small>
+                    <strong>{missionRecommendation.targetAssessment}</strong>
+                  </div>
+                ) : null}
+                {missionRecommendation.dewAdvisory ? (
+                  <div className="missionConsoleStackItem">
+                    <small>DEW / CONDITIONS ADVISORY</small>
+                    <strong>{missionRecommendation.dewAdvisory}</strong>
+                  </div>
+                ) : null}
               </div>
 
               {lastCapture ? (

@@ -33503,3 +33503,278 @@ body.missionPlanningBoardOpen {
 .missionConsoleMountControlMessage.is-error {
   color: #ff9a8e;
 }
+
+
+/* CPWI target and slew controls */
+.missionConsoleMountTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 0;background:#000}.missionConsoleMountTabs button{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(232,222,174,.35);background:#171717;color:#b9dcff;padding:12px 10px;font:800 .78rem/1.1 inherit;letter-spacing:.12em;cursor:pointer}.missionConsoleMountTabs button.is-active{background:#e8deae;color:#050505;border-color:#e8deae}.missionConsoleSlewPanel{padding:16px;background:#000;display:grid;gap:14px}.missionConsoleSlewField{display:grid;gap:7px}.missionConsoleSlewField>span{color:#b9dcff;font-size:.72rem;font-weight:800;letter-spacing:.12em}.missionConsoleSlewField select,.missionConsoleSlewField input{width:100%;box-sizing:border-box;border:1px solid rgba(185,220,255,.55);background:#191919;color:#f8f2d3;padding:13px 14px;font:700 .95rem/1.2 inherit}.missionConsoleSlewCoordinateInputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}.missionConsoleSlewReadout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;background:#000}.missionConsoleSlewReadout>div{min-width:0;background:#191919;padding:13px}.missionConsoleSlewReadout span{display:block;color:#b9dcff;font-size:.68rem;letter-spacing:.1em;margin-bottom:7px}.missionConsoleSlewReadout strong{display:block;color:#f8f2d3;font-size:.92rem;overflow-wrap:anywhere}.missionConsoleSlewReadout strong.is-danger{color:#ff9a8e}.missionConsoleSlewClearance{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid rgba(255,208,119,.45);background:rgba(255,208,119,.08);color:#f8e6b5;font-size:.72rem;font-weight:800;letter-spacing:.08em;line-height:1.45}.missionConsoleSlewClearance input{margin-top:2px;accent-color:#e8deae}.missionConsoleSlewActions{display:grid;grid-template-columns:2fr 1fr;gap:10px}.missionConsoleSlewActions button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;background:#e8deae;color:#050505;padding:14px;font:900 .9rem/1 inherit;letter-spacing:.08em;cursor:pointer}.missionConsoleSlewActions button.is-emergency{background:#65443c;color:#fff}.missionConsoleSlewActions button:disabled{opacity:.38;cursor:not-allowed}.missionConsoleSlewNotice{margin:0;color:#c6bc91;font-size:.7rem;line-height:1.5}@media(max-width:700px){.missionConsoleSlewCoordinateInputs,.missionConsoleSlewReadout{grid-template-columns:1fr}.missionConsoleSlewActions{grid-template-columns:1fr}.missionConsoleMountTabs button{font-size:.67rem;letter-spacing:.07em}}
+
+/* Live ChatGPT mission recommendation */
+.missionConsoleRecommendationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.missionConsoleRecommendationHeader > div:first-child {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.missionConsoleRecommendationHeader small {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  opacity: 0.72;
+}
+
+.missionConsoleAiRefreshButton {
+  border: 2px solid currentColor;
+  background: #101319;
+  color: #b7c4ff;
+  border-radius: 999px;
+  padding: 11px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.missionConsoleAiRefreshButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
+}
+
+.missionConsoleAiRefreshButton:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.missionConsoleAiRecommendationError {
+  margin: 14px 0;
+  padding: 12px 15px;
+  border: 2px solid #ff8f7e;
+  background: rgba(92, 34, 27, 0.7);
+  color: #ffd7d0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 800;
+}
+
+.missionConsoleAiRefreshButton .is-spinning {
+  animation: missionConsoleSpin 0.9s linear infinite;
+}
+
+@keyframes missionConsoleSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 760px) {
+  .missionConsoleRecommendationHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .missionConsoleAiRefreshButton {
+    width: 100%;
+    white-space: normal;
+  }
+}
+
+
+/* Mission Console standalone / streamlined layout */
+.admin-shell-console-standalone {
+  padding-top: 0 !important;
+  min-height: 100vh;
+}
+
+.missionConsoleStandaloneTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 8px 10px 0;
+  border-bottom: 8px solid #000;
+  background: #000;
+}
+
+.missionConsoleReturnAdmin {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 26px 0 18px;
+  border-radius: 0 999px 999px 0;
+  background: #ea9c69;
+  color: #090909;
+  text-decoration: none;
+  font-weight: 950;
+  letter-spacing: .09em;
+  box-shadow: inset -8px 0 0 #000;
+}
+
+.missionConsoleReturnAdmin:hover {
+  filter: brightness(1.08);
+  transform: translateX(2px);
+}
+
+.missionConsoleQuickStatus {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.missionConsoleQuickStatus span,
+.missionConsoleQuickStatus strong {
+  padding: 9px 13px;
+  border-radius: 999px;
+  color: #080808;
+  white-space: nowrap;
+}
+
+.missionConsoleQuickStatus span:first-child { background: #a6d7f3; }
+.missionConsoleQuickStatus strong { background: #e6dcae; }
+.missionConsoleQuickStatus span:last-child { background: #958ff0; }
+
+/* Remove decorative header noise while preserving LCARS identity. */
+.missionConsoleHeaderCompact .missionConsoleAccessHeader {
+  display: none;
+}
+
+.missionConsoleHeaderCompact {
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 8px;
+  padding-bottom: 8px;
+}
+
+.missionConsoleHeaderCompact .missionConsoleHeaderBlockPrimary {
+  min-height: 82px;
+  padding-top: 17px;
+  padding-bottom: 12px;
+}
+
+.missionConsoleHeaderCompact .missionConsoleHeaderBlockPrimary p,
+.missionConsoleHeaderCompact .missionConsoleEyebrow {
+  display: none;
+}
+
+.missionConsoleHeaderCompact .missionConsoleHeaderBlockMeta {
+  min-width: 330px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-block: 4px;
+}
+
+.missionConsoleHeaderCompact .missionConsoleMetaPill {
+  min-height: 54px;
+  padding: 8px 12px;
+}
+
+.missionConsoleHeaderCompact .missionConsoleMetaPill strong {
+  font-size: .88rem;
+}
+
+.missionConsoleHeaderCompact .missionConsoleMetaPill span {
+  font-size: .57rem;
+}
+
+/* Reduce repetition and vertical bulk. */
+.missionConsoleBridgeMenu {
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.missionConsoleBridgeMenu.is-collapsed .missionConsoleBridgeIntro {
+  min-height: 50px;
+  padding-block: 9px;
+}
+
+.missionConsoleBridgeMenu.is-collapsed .missionConsoleBridgeIntro em {
+  display: none;
+}
+
+.missionConsoleLcarsStrip {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  grid-template-columns: repeat(6, minmax(115px, 1fr));
+}
+
+.missionConsoleLcarsMaster {
+  display: none !important;
+}
+
+.missionConsoleLcarsStrip button {
+  min-height: 48px;
+  font-size: .72rem;
+}
+
+.missionConsolePanelTop {
+  min-height: 58px;
+}
+
+.missionConsolePanel.is-collapsed {
+  min-height: 58px;
+}
+
+.missionConsolePanel.is-open > :not(.missionConsolePanelTop) {
+  margin-top: 0;
+}
+
+.missionConsoleFooterBar {
+  display: none;
+}
+
+.missionConsoleSystemDiagnostics {
+  font-size: .7rem;
+}
+
+@media (max-width: 1100px) {
+  .missionConsoleHeaderCompact {
+    grid-template-columns: 1fr;
+  }
+  .missionConsoleHeaderCompact .missionConsoleHeaderBlockMeta {
+    min-width: 0;
+  }
+  .missionConsoleLcarsStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .missionConsoleStandaloneTopbar {
+    align-items: stretch;
+    flex-direction: column;
+    padding-right: 0;
+  }
+  .missionConsoleReturnAdmin {
+    align-self: flex-start;
+  }
+  .missionConsoleQuickStatus {
+    justify-content: stretch;
+    padding: 0 8px;
+  }
+  .missionConsoleQuickStatus span,
+  .missionConsoleQuickStatus strong {
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .missionConsoleHeaderCompact .missionConsoleHeaderBlockMeta {
+    grid-template-columns: 1fr;
+  }
+  .missionConsoleLcarsStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

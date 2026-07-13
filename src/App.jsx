@@ -1969,13 +1969,15 @@ export default function App() {
       <>
         <EasterEggs />
 
-        <AdminTopNav
-          scrolled={scrolled}
-          session={session}
-          onLogout={handleLogout}
-        />
+        {!isAdminConsolePage && (
+          <AdminTopNav
+            scrolled={scrolled}
+            session={session}
+            onLogout={handleLogout}
+          />
+        )}
 
-        <div className={`admin-shell${isAdminConsolePage ? ' admin-shell-console' : ''}`}>
+        <div className={`admin-shell${isAdminConsolePage ? ' admin-shell-console admin-shell-console-standalone' : ''}`}>
           {adminContent}
         </div>
 
