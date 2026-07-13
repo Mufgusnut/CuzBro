@@ -7,7 +7,9 @@ import {
 import {
   ArrowLeft,
   GitBranch,
+  Clock3,
   GitCommitHorizontal,
+  Globe2,
   RefreshCw,
   Rocket,
   ShieldCheck
@@ -38,6 +40,10 @@ const APP_VERSION =
   import.meta.env.VITE_APP_VERSION ||
   packageInfo.version ||
   '0.0.0';
+
+const DEPLOY_ENVIRONMENT =
+  import.meta.env.VITE_DEPLOY_ENVIRONMENT ||
+  (import.meta.env.PROD ? 'PRODUCTION' : 'DEVELOPMENT');
 
 function shortSha(value) {
   return value
@@ -249,64 +255,72 @@ export default function DeploymentControl({
 
   const deploymentState =
     useMemo(() => {
+      if (status === 'error') {
+        return {
+          tone: 'different',
+          eyebrow: 'SYSTEM STATUS',
+          label: 'DEGRADED',
+          detail:
+            'The site is online, but repository telemetry could not be verified.'
+        };
+      }
+
       if (!DEPLOYED_SHA) {
         return {
           tone: 'unknown',
-          label: 'BUILD METADATA MISSING',
+          eyebrow: 'SYSTEM STATUS',
+          label: 'ONLINE',
           detail:
-            'Deploy again with the updated workflow to stamp the live Git SHA into the Vite build.'
+            'The live site is operational. Build identity is unavailable until deployment metadata is stamped into the Vite build.'
         };
       }
 
       if (!latestCommit) {
         return {
           tone: 'unknown',
-          label: 'UNKNOWN',
+          eyebrow: 'SYSTEM STATUS',
+          label: 'ONLINE',
           detail:
-            'Repository HEAD is unavailable.'
+            'The live site is operational. Repository HEAD is temporarily unavailable.'
         };
       }
 
-      if (
-        latestCommit.sha ===
-        DEPLOYED_SHA
-      ) {
+      if (latestCommit.sha === DEPLOYED_SHA) {
         return {
           tone: 'current',
-          label: 'CURRENT',
+          eyebrow: 'SYSTEM STATUS',
+          label: 'ONLINE',
           detail:
-            'The live site matches repository HEAD.'
+            'Production is healthy and the live build matches repository HEAD.'
         };
       }
 
-      const aheadBy =
-        Number(
-          compareData?.ahead_by || 0
-        );
+      const aheadBy = Number(compareData?.ahead_by || 0);
 
       if (aheadBy > 0) {
         return {
           tone: 'behind',
-          label: `BEHIND ${aheadBy} ${
-            aheadBy === 1
-              ? 'COMMIT'
-              : 'COMMITS'
-          }`,
-          detail:
-            'Repository HEAD contains changes that are not in the live deployment.'
+          eyebrow: 'SYSTEM STATUS',
+          label: 'UPDATE AVAILABLE',
+          detail: `Production is healthy. Repository HEAD is ${aheadBy} ${
+            aheadBy === 1 ? 'commit' : 'commits'
+          } ahead of the live deployment.`
         };
       }
 
       return {
         tone: 'different',
-        label: 'SHA DIVERGENCE',
+        eyebrow: 'SYSTEM STATUS',
+        label: 'VERIFY BUILD',
         detail:
-          'The deployed SHA differs from repository HEAD.'
+          'The live deployment is operational, but its Git history differs from repository HEAD.'
       };
-    }, [
-      compareData,
-      latestCommit
-    ]);
+    }, [compareData, latestCommit, status]);
+
+  const deploymentHost =
+    typeof window !== 'undefined'
+      ? window.location.host
+      : 'cuzbro.net';
 
   return (
     <div className="admin-page deployment-page">
@@ -480,12 +494,16 @@ export default function DeploymentControl({
           <article
             className={`deployment-state-card deployment-state-${deploymentState.tone}`}
           >
-            <div className="deployment-state-icon">
-              <ShieldCheck size={28} />
+            <div className="deployment-state-topline">
+              <div className="deployment-state-icon">
+                <ShieldCheck size={28} />
+              </div>
+
+              <span className={`deployment-health-dot deployment-health-${deploymentState.tone}`} />
             </div>
 
             <span>
-              DEPLOYMENT STATE
+              {deploymentState.eyebrow}
             </span>
 
             <strong>
@@ -500,24 +518,43 @@ export default function DeploymentControl({
                 : deploymentState.detail}
             </p>
 
-            <div>
-              <span>
-                REPOSITORY HEAD
-              </span>
+            <div className="deployment-status-grid">
+              <div>
+                <span>BUILD</span>
+                <strong>{DEPLOYED_SHA ? shortSha(DEPLOYED_SHA) : 'UNSTAMPED'}</strong>
+              </div>
 
-              <strong>
-                {shortSha(
-                  latestCommit?.sha
-                )}
-              </strong>
+              <div>
+                <span>BRANCH</span>
+                <strong>{DEPLOY_BRANCH}</strong>
+              </div>
+
+              <div>
+                <span>ENVIRONMENT</span>
+                <strong>{DEPLOY_ENVIRONMENT}</strong>
+              </div>
+
+              <div>
+                <span>AGE</span>
+                <strong>{BUILD_TIME ? formatAge(BUILD_TIME) : 'UNKNOWN'}</strong>
+              </div>
+
+              <div>
+                <span>HOST</span>
+                <strong><Globe2 size={14} />{deploymentHost}</strong>
+              </div>
+
+              <div>
+                <span>REPOSITORY HEAD</span>
+                <strong>{shortSha(latestCommit?.sha)}</strong>
+              </div>
             </div>
 
             <small>
+              <Clock3 size={13} />
               LAST CHECK{' '}
               {refreshedAt
-                ? formatAge(
-                    refreshedAt
-                  )
+                ? formatAge(refreshedAt)
                 : 'PENDING'}
             </small>
           </article>
