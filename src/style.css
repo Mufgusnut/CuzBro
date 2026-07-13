@@ -34344,3 +34344,309 @@ body.missionPlanningBoardOpen {
     min-height: 180px;
   }
 }
+
+/* Observatory Console cleanup — v13.6.0 */
+.missionConsoleStandaloneTopbar {
+  justify-content: flex-start;
+  min-height: 44px;
+}
+
+.missionConsoleHeaderCompact {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.missionConsoleHeaderCompact .missionConsoleAccessHeader {
+  grid-column: 1 / -1;
+}
+
+.missionConsoleHeaderCompact .missionConsoleHeaderBlockPrimary {
+  min-height: 118px;
+}
+
+.missionConsoleLcarsStrip {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsMaster {
+  min-width: 0;
+}
+
+.missionConsoleGrid {
+  gap: 16px;
+}
+
+.missionConsolePanelDrawer {
+  border-left-width: 8px;
+  margin-left: 18px;
+  margin-right: 18px;
+}
+
+.missionConsolePanelDrawer .missionConsolePanelTop {
+  min-height: 48px;
+}
+
+.missionConsolePanelDrawer.is-collapsed {
+  opacity: .92;
+}
+
+.missionConsolePanelDrawer.is-collapsed:hover {
+  opacity: 1;
+}
+
+.missionConsoleActionGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.missionConsoleAsiimgHint {
+  max-width: 760px;
+}
+
+@media (max-width: 1050px) {
+  .missionConsoleHeaderCompact {
+    grid-template-columns: 1fr;
+  }
+
+  .missionConsoleLcarsStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .missionConsoleLcarsStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .missionConsolePanelDrawer {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .missionConsoleActionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* LCARS console hierarchy polish: imaging configuration/history are subordinate to Imaging Session. */
+.missionConsolePanelSubcategory {
+  width: calc(100% - 28px);
+  margin-left: 28px;
+  position: relative;
+}
+
+.missionConsolePanelSubcategory::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  border-radius: 8px 0 0 8px;
+  background: rgba(255, 204, 102, 0.68);
+}
+
+.missionConsolePanelSubcategory .missionConsolePanelTop {
+  min-height: 48px;
+}
+
+.missionConsoleLcarsTab span {
+  white-space: normal;
+  line-height: 1.05;
+}
+
+@media (max-width: 760px) {
+  .missionConsolePanelSubcategory {
+    width: calc(100% - 14px);
+    margin-left: 14px;
+  }
+
+  .missionConsolePanelSubcategory::before {
+    left: -10px;
+    width: 5px;
+  }
+}
+
+
+/* LCARS primary tab consistency — v13.6.2 */
+.missionConsoleLcarsStrip .missionConsoleLcarsTab {
+  border-radius: 44px !important;
+  padding-left: 32px;
+  padding-right: 28px;
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsOperations {
+  border-radius: 44px !important;
+}
+
+@media (max-width: 760px) {
+  .missionConsoleLcarsStrip .missionConsoleLcarsTab {
+    border-radius: 30px !important;
+    padding-left: 20px;
+    padding-right: 18px;
+  }
+}
+
+/* LCARS compact section spacing — v13.6.4 */
+.missionConsoleGrid {
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+.missionConsolePanelTop {
+  min-height: 64px;
+}
+
+.missionConsolePanel.is-collapsed {
+  min-height: 64px;
+}
+
+.missionConsolePanelDrawer {
+  margin-left: 12px;
+  margin-right: 12px;
+}
+
+.missionConsolePanelDrawer .missionConsolePanelTop,
+.missionConsolePanelSubcategory .missionConsolePanelTop {
+  min-height: 56px;
+}
+
+.missionConsolePanelSubcategory {
+  width: calc(100% - 18px);
+  margin-left: 18px;
+}
+
+.missionConsolePanelSubcategory::before {
+  left: -12px;
+  width: 6px;
+}
+
+.missionConsolePanelTop > span,
+.missionConsolePanel.is-collapsed .missionConsolePanelTop > span {
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 760px) {
+  .missionConsoleGrid {
+    gap: 6px;
+  }
+
+  .missionConsolePanelTop,
+  .missionConsolePanel.is-collapsed {
+    min-height: 58px;
+  }
+
+  .missionConsolePanelDrawer,
+  .missionConsolePanelSubcategory {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .missionConsolePanelSubcategory::before {
+    display: none;
+  }
+}
+
+/* LCARS spacing + compact imaging sub-tabs — v13.6.5 */
+.missionConsoleGrid {
+  gap: 10px;
+}
+
+.missionConsoleGrid > .missionConsolePanel {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.missionConsolePanelDrawer,
+.missionConsolePanelSubcategory {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Configuration and Capture History stay visibly subordinate to Live Imaging. */
+.missionConsolePanelSubcategory {
+  width: min(76%, 1180px);
+  margin-left: 48px;
+  margin-right: auto;
+}
+
+.missionConsolePanelSubcategory .missionConsolePanelTop {
+  min-height: 54px;
+}
+
+.missionConsolePanelSubcategory .missionConsolePanelTop::before {
+  width: 118px;
+}
+
+.missionConsolePanelSubcategory .missionConsolePanelTop {
+  padding-left: 140px;
+}
+
+@media (max-width: 1100px) {
+  .missionConsolePanelSubcategory {
+    width: calc(100% - 72px);
+    margin-left: 36px;
+  }
+}
+
+@media (max-width: 760px) {
+  .missionConsoleGrid {
+    gap: 8px;
+  }
+
+  .missionConsolePanelSubcategory {
+    width: calc(100% - 24px);
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .missionConsolePanelSubcategory .missionConsolePanelTop::before {
+    width: 86px;
+  }
+
+  .missionConsolePanelSubcategory .missionConsolePanelTop {
+    padding-left: 104px;
+  }
+}
+
+
+/* LCARS imaging sub-tab rhythm fix — v13.6.6 */
+.missionConsoleGrid {
+  row-gap: 12px !important;
+}
+
+.missionConsoleGrid > .missionConsolePanel,
+.missionConsoleGrid > .missionConsolePanelDrawer,
+.missionConsoleGrid > .missionConsolePanelSubcategory {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Remove inherited spacing so every black channel between collapsed rows is identical. */
+.missionConsolePanelSubcategory + .missionConsolePanelSubcategory,
+.missionConsolePanelDrawer + .missionConsolePanelDrawer,
+.missionConsolePanelDrawer + .missionConsolePanelSubcategory,
+.missionConsolePanelSubcategory + .missionConsolePanelDrawer {
+  margin-top: 0 !important;
+}
+
+.missionConsolePanelSubcategory.is-collapsed {
+  min-height: 54px !important;
+  height: 54px !important;
+}
+
+.missionConsolePanelSubcategory.is-collapsed .missionConsolePanelTop {
+  min-height: 54px !important;
+  height: 54px !important;
+}
+
+@media (max-width: 760px) {
+  .missionConsoleGrid {
+    row-gap: 8px !important;
+  }
+
+  .missionConsolePanelSubcategory.is-collapsed,
+  .missionConsolePanelSubcategory.is-collapsed .missionConsolePanelTop {
+    min-height: 52px !important;
+    height: 52px !important;
+  }
+}

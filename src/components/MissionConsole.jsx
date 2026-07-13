@@ -499,7 +499,6 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [error, setError] = useState('');
   const [busyAction, setBusyAction] = useState('');
   const [now, setNow] = useState(Date.now());
-  const [bridgeMenuOpen, setBridgeMenuOpen] = useState(false);
   const [localSystems, setLocalSystems] = useState(null);
   const [localSystemsStatus, setLocalSystemsStatus] = useState('connecting');
   const [localSystemsError, setLocalSystemsError] = useState('');
@@ -1186,7 +1185,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
       announceOperationChange();
       setActiveOperation(operation);
       setMissionPlan((current) => current ? { ...current, status: 'ACTIVE', operation_id: operation.id, started_at: new Date().toISOString() } : current);
-      setMessage(`MISSION ACTIVE // ${designation.toUpperCase()}`);
+      setMessage(`SESSION ACTIVE // ${designation.toUpperCase()}`);
     } catch (actionError) {
       console.error('[MISSION CONSOLE] Initiate failed:', actionError);
       setError(actionError.message || 'Mission could not be initiated.');
@@ -1299,7 +1298,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
       await recordOperationEvent({
         operation: completedOperation,
         eventType: 'MISSION_CONSOLE_COMPLETE',
-        eventLabel: 'MISSION COMPLETE',
+        eventLabel: 'COMPLETE SESSION',
         resourceType: 'mission_console',
         resourceId: missionPlan?.id || completedOperation.id,
         resourceName: missionPlan?.target_title || completedOperation.target || 'Mission Console',
@@ -1333,7 +1332,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
       announceOperationChange();
       setActiveOperation(completedOperation);
       setMissionPlan((current) => current ? { ...current, status: 'COMPLETE' } : current);
-      setMessage(`MISSION COMPLETE // ${completedOperation.designation.toUpperCase()}`);
+      setMessage(`COMPLETE SESSION // ${completedOperation.designation.toUpperCase()}`);
     } catch (actionError) {
       console.error('[MISSION CONSOLE] Complete failed:', actionError);
       setError(actionError.message || 'Mission could not be completed.');
@@ -1378,11 +1377,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               <ArrowLeft size={18} />
               <span>RETURN TO ADMIN</span>
             </a>
-            <div className="missionConsoleQuickStatus" aria-label="Mission console quick status">
-              <span>{activeSite?.name || DEFAULT_SITE.name}</span>
-              <strong>{missionPlan?.status || 'STANDBY'}</strong>
-              <span>{new Date(now).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
-            </div>
+
           </div>
 
           <header className="missionConsoleHeader missionConsoleHeaderCompact">
@@ -1391,11 +1386,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                 <span>LCARS 40274</span>
                 <strong>CZB-01</strong>
               </div>
-              <div className="missionConsoleAccessMatrix" aria-hidden="true">
-                <span>2385 8578232 5789 3882 5893 9885 3489 3465</span>
-                <span>2064 2064962 7976 626 1276 7812 126 97</span>
-                <span>4768 8967248 79798 8969 476 9047 8476</span>
-              </div>
+
               <div className="missionConsoleAccessTitle">
                 <small>CUZBRO OBSERVATORY</small>
                 <strong>LCARS ACCESS 44</strong>
@@ -1403,10 +1394,10 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
             </div>
 
             <div className="missionConsoleHeaderBlock missionConsoleHeaderBlockPrimary">
-              <span className="missionConsoleEyebrow">LCARS // CZB-01 // MISSION CONSOLE</span>
-              <h1>Mission Console</h1>
+              <span className="missionConsoleEyebrow">LCARS // CZB-01 // OBSERVATORY CONSOLE</span>
+              <h1>Observatory Console</h1>
               <p>
-                Select a subsystem below. All data nodes initialize in compact mode.
+                Target, conditions, observatory systems, and imaging telemetry in one place.
               </p>
             </div>
 
@@ -1429,28 +1420,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
           {message ? <div className="missionConsoleNotice missionConsoleNoticeSuccess">{message}</div> : null}
           {error ? <div className="missionConsoleNotice missionConsoleNoticeError">{error}</div> : null}
 
-          <section className={`missionConsoleBridgeMenu ${bridgeMenuOpen ? 'is-open' : 'is-collapsed'}`}>
-            <button type="button" className="missionConsoleBridgeIntro" onClick={() => setBridgeMenuOpen((current) => !current)} aria-expanded={bridgeMenuOpen}>
-              <span>OPS MENU //</span>
-              <strong>{missionPlan?.target_title || targetReference?.title || 'NO TARGET LOCK'}</strong>
-              <em>{captureHistorySummary.count ? `${captureHistorySummary.count} HISTORICAL CAPTURES AVAILABLE` : 'NO MISSION HISTORY ON FILE'}</em>
-              <ChevronDown className="missionConsoleCollapseChevron" size={20} />
-            </button>
 
-            <div className="missionConsoleBridgeLinks">
-              <a href="/admin/missions" className="missionConsoleBridgeLink missionConsoleBridgeLinkPrimary"><Radar size={16} /><span>OPEN MISSIONS</span><ChevronRight size={16} /></a>
-              <a href="/admin/operation" className="missionConsoleBridgeLink missionConsoleBridgeLinkSecondary"><Activity size={16} /><span>OPERATION CONTROL</span><ChevronRight size={16} /></a>
-              <a href="/admin/gallery" className="missionConsoleBridgeLink missionConsoleBridgeLinkTertiary"><Archive size={16} /><span>CAPTURE RECORDS</span><ChevronRight size={16} /></a>
-              <a href="/admin/comms" className="missionConsoleBridgeLink missionConsoleBridgeLinkQuaternary"><SquareTerminal size={16} /><span>CREW COMMS</span><ChevronRight size={16} /></a>
-            </div>
-
-            <div className="missionConsoleBridgeReadouts">
-              <div className="missionConsoleBridgeReadout"><span>CREW AUTH</span><strong>{crew?.callSign || 'CREW READY'}</strong></div>
-              <div className="missionConsoleBridgeReadout"><span>MISSION MEMORY</span><strong>{captureHistorySummary.structuredCount} STRUCTURED LOGS</strong></div>
-              <div className="missionConsoleBridgeReadout"><span>BASELINE SOURCE</span><strong>{lastCapture ? 'FIELD HISTORY' : 'RECOMMENDED PROFILE'}</strong></div>
-              <div className={`missionConsoleBridgeReadout missionConsoleBridgeReadout-${localSystemsStatus}`}><span>LOCAL LINK</span><strong>{localSystemsStatus.toUpperCase()}</strong></div>
-            </div>
-          </section>
 
           <nav className="missionConsoleLcarsStrip" aria-label="Mission console section controls">
             <button type="button" className="missionConsoleLcarsMaster missionConsoleLcarsExpand" onClick={() => setAllPanels(true)}>EXPAND ALL</button>
@@ -1458,10 +1428,8 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
             {[
               ['target', 'TARGET', 'missionConsoleLcarsTarget'],
               ['conditions', 'CONDITIONS', 'missionConsoleLcarsConditions'],
-              ['systems', 'LOCAL SYSTEMS', 'missionConsoleLcarsSystems'],
-              ['recommendation', 'RECOMMENDATION', 'missionConsoleLcarsRecommendation'],
-              ['history', 'HISTORY', 'missionConsoleLcarsHistory'],
-              ['operations', 'OPERATIONS', 'missionConsoleLcarsOperations']
+              ['operations', 'LIVE IMAGING', 'missionConsoleLcarsOperations'],
+              ['systems', 'OBSERVATORY CONTROL SYSTEMS', 'missionConsoleLcarsSystems']
             ].map(([panelName, label, colorClass]) => (
               <button
                 type="button"
@@ -1479,8 +1447,8 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
           <div className="missionConsoleGrid">
             <section className={`missionConsolePanel missionConsolePanelTarget ${openPanels.target ? 'is-open' : 'is-collapsed'}`}>
               <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('target')} aria-expanded={openPanels.target}>
-                <span>TARGET PROFILE</span>
-                <div className="missionConsolePanelBadge">PRIMARY OBJECTIVE</div><ChevronDown className="missionConsolePanelChevron" size={18} />
+                <span>TARGET</span>
+                <div className="missionConsolePanelBadge">OBJECTIVE</div><ChevronDown className="missionConsolePanelChevron" size={18} />
               </button>
 
               <div className="missionConsoleTargetHeading">
@@ -1529,7 +1497,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
 
             <section className={`missionConsolePanel missionConsolePanelTelemetry ${openPanels.conditions ? 'is-open' : 'is-collapsed'}`}>
               <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('conditions')} aria-expanded={openPanels.conditions}>
-                <span>SITE CONDITIONS</span>
+                <span>CONDITIONS</span>
                 <div className={`missionConsolePanelBadge missionConsolePanelBadge-${weatherRating.tone}`}>{weatherRating.label}</div><ChevronDown className="missionConsolePanelChevron" size={18} />
               </button>
 
@@ -1552,16 +1520,286 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               </div>
             </section>
 
+            <section className={`missionConsolePanel missionConsolePanelOperations ${openPanels.operations ? 'is-open' : 'is-collapsed'}`}>
+              <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('operations')} aria-expanded={openPanels.operations}>
+                <span>LIVE IMAGING</span>
+                <div className="missionConsolePanelBadge">TELEMETRY</div><ChevronDown className="missionConsolePanelChevron" size={18} />
+              </button>
+
+              <div className="missionConsoleOpsTop">
+                <div className="missionConsoleTimerBlock">
+                  <small>SESSION ELAPSED</small>
+                  <strong>{activeOperation?.started_at || missionPlan?.started_at ? missionElapsed : '00:00:00'}</strong>
+                </div>
+                <div className="missionConsoleTimerBlock missionConsoleTimerBlockSecondary">
+                  <small>CAPTURE ELAPSED</small>
+                  <strong>{consoleState.captureStartedAt ? captureElapsed : '00:00:00'}</strong>
+                </div>
+                <div className="missionConsoleTimerBlock missionConsoleTimerBlockStatus">
+                  <small>CAPTURE STATE</small>
+                  <strong>{asiimgOnline ? (asiimgStalled ? 'STALLED' : asiimgState) : String(consoleState.captureStatus || 'idle').toUpperCase()}</strong>
+                </div>
+              </div>
+
+              <div className={`missionConsoleAsiimgPanel ${asiimgStalled ? 'is-stalled' : ''}`}>
+                <div className="missionConsoleAsiimgHeader">
+                  <div>
+                    <small>IMAGING LINK</small>
+                    <strong>{asiimgOnline ? 'ONLINE' : 'OFFLINE'}</strong>
+                  </div>
+                  <div className={`missionConsoleAsiimgState ${asiimgStalled ? 'is-alert' : ''}`}>
+                    {asiimgStalled ? 'CAPTURE STALLED' : asiimgState}
+                  </div>
+                </div>
+                <div className="missionConsoleAsiimgGrid">
+                  <div><span>FRAMES COMPLETE</span><strong>{asiimgFrames}</strong></div>
+                  <div><span>FRAMES REMAINING</span><strong>{asiimgRemaining ?? '—'}</strong></div>
+                  <div><span>EXPOSURE</span><strong>{bridgeNumber(asiimgPayload.exposure_seconds, 2, ' SEC')}</strong></div>
+                  <div><span>EST. FINISH</span><strong>{formatEta(asiimgEtaSeconds)}</strong></div>
+                  <div><span>CAMERA TEMP</span><strong>{bridgeNumber(celsiusToFahrenheit(asiimgPayload.camera_temperature_c), 1, '°F')}</strong></div>
+                  <div><span>GAIN</span><strong>{asiimgPayload.gain ?? '—'}</strong></div>
+                  <div><span>LAST FRAME</span><strong>{asiimgPayload.last_frame_at ? formatClock(asiimgPayload.last_frame_at) : '—'}</strong></div>
+                  <div><span>LATEST FILE</span><strong title={asiimgPayload.latest_file || ''}>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong></div>
+                </div>
+
+                <div className="missionConsoleAsiimgPreview">
+                  <div className="missionConsoleAsiimgPreviewHeader">
+                    <span>LATEST FRAME PREVIEW</span>
+                    <strong>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong>
+                  </div>
+                  {asiimgPreviewUrl ? (
+                    <a href={asiimgPreviewUrl} target="_blank" rel="noreferrer" title="Open the latest FITS preview at full size">
+                      <img src={asiimgPreviewUrl} alt={`Latest imaging FITS preview${asiimgPayload.latest_file ? `: ${asiimgPayload.latest_file}` : ''}`} />
+                      <span className="missionConsoleAsiimgPreviewOpen">OPEN PREVIEW</span>
+                    </a>
+                  ) : (
+                    <div className="missionConsoleAsiimgPreviewEmpty">
+                      <span>NO PREVIEW AVAILABLE</span>
+                      <small>The next FITS frame detected by the bridge will appear here automatically.</small>
+                    </div>
+                  )}
+                  {asiimgPayload.preview_error ? <p className="missionConsoleAsiimgPreviewError">Preview generator: {asiimgPayload.preview_error}</p> : null}
+                </div>
+                {asiimgError ? <p className="missionConsoleAsiimgError">{asiimgError}</p> : null}
+                {!asiimgOnline ? <p className="missionConsoleAsiimgHint">Start the imaging monitor bridge before beginning a capture. The current source is ASIImg; ASIAIR support can use the same panel later.</p> : null}
+              </div>
+
+              <div className="missionConsoleFramesSection">
+                {!asiimgOnline ? (
+                  <label className="missionConsoleFramesInput">
+                    <span>COMPLETED FRAMES</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={Number(consoleState.completedFrames || 0)}
+                      title="Enter the completed frame count manually when no imaging bridge is online."
+                      onChange={(event) => setConsoleState((current) => ({ ...current, completedFrames: Number(event.target.value || 0) }))}
+                    />
+                  </label>
+                ) : null}
+
+                <div className="missionConsoleProgressBlock">
+                  <div className="missionConsoleProgressHeader">
+                    <span>CAPTURE PROGRESS</span>
+                    <strong>{frameTarget ? `${consoleState.completedFrames}/${frameTarget}` : `${consoleState.completedFrames} FRAMES`}</strong>
+                  </div>
+                  <div className="missionConsoleProgressBar" role="progressbar" aria-valuemin={0} aria-valuemax={frameTarget || 100} aria-valuenow={frameTarget ? consoleState.completedFrames : progressPercent}>
+                    <div style={{ width: `${frameTarget ? progressPercent : Math.min(100, Number(consoleState.completedFrames || 0))}%` }} />
+                  </div>
+                </div>
+              </div>
+
+              <label className="missionConsoleNotesField">
+                <span>SESSION NOTES</span>
+                <textarea
+                  value={consoleState.notes}
+                  onChange={(event) => setConsoleState((current) => ({ ...current, notes: event.target.value }))}
+                  placeholder="Seeing, focus, clouds, guiding, target notes, or weird telescope behavior..."
+                />
+              </label>
+
+              <div className="missionConsoleActionGrid">
+                <button
+                  type="button"
+                  className="missionConsoleAction missionConsoleActionInitiate"
+                  onClick={handleInitiateMission}
+                  disabled={loading || busyAction === 'initiate' || !missionPlan?.id || isOperationLive}
+                >
+                  <Radar size={20} />
+                  <span>{busyAction === 'initiate' ? 'INITIATING…' : isOperationLive ? 'SESSION ACTIVE' : 'START SESSION'}</span>
+                </button>
+
+
+
+
+
+                <button
+                  type="button"
+                  className="missionConsoleAction missionConsoleActionComplete"
+                  onClick={handleMissionComplete}
+                  disabled={!isOperationLive || busyAction === 'complete'}
+                >
+                  <CheckCircle2 size={20} />
+                  <span>{busyAction === 'complete' ? 'COMPLETING…' : 'COMPLETE SESSION'}</span>
+                </button>
+              </div>
+            </section>
+
+            <section className={`missionConsolePanel missionConsolePanelEquipment missionConsolePanelDrawer missionConsolePanelSubcategory ${openPanels.recommendation ? 'is-open' : 'is-collapsed'}`}>
+              <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('recommendation')} aria-expanded={openPanels.recommendation}>
+                <span>CONFIGURATION</span>
+                <div className="missionConsolePanelBadge">AI INPUT</div><ChevronDown className="missionConsolePanelChevron" size={18} />
+              </button>
+
+              <div className="missionConsoleSettingsSource missionConsoleRecommendationHeader">
+                <div>
+                  <span>CHATGPT CAPTURE PLAN</span>
+                  <strong>{aiRecommendation ? 'LIVE AI PROFILE GENERATED FROM CURRENT CONSOLE TELEMETRY' : 'LOCAL BASELINE READY // REFRESH FOR A LIVE CHATGPT PROFILE'}</strong>
+                  {aiRecommendationUpdatedAt ? <small>UPDATED {formatClock(aiRecommendationUpdatedAt)}</small> : null}
+                </div>
+                <button
+                  type="button"
+                  className="missionConsoleAiRefreshButton"
+                  onClick={refreshAiRecommendation}
+                  disabled={aiRecommendationBusy || (!missionPlan && !targetReference)}
+                >
+                  {aiRecommendationBusy ? <RefreshCw size={17} className="is-spinning" /> : <Sparkles size={17} />}
+                  {aiRecommendationBusy ? 'BUILDING CAPTURE PLAN' : aiRecommendation ? 'REFRESH CAPTURE PLAN' : 'GENERATE CAPTURE PLAN'}
+                </button>
+              </div>
+
+              {aiRecommendationError ? (
+                <div className="missionConsoleAiRecommendationError">
+                  <AlertTriangle size={17} />
+                  <span>{aiRecommendationError}</span>
+                </div>
+              ) : null}
+
+              <div className="missionConsoleRecommendationGrid">
+                <div><span>EXPOSURE / FRAME</span><strong>{missionRecommendation.exposureSeconds} SEC</strong></div>
+                <div><span>FRAMES TO CAPTURE</span><strong>{missionRecommendation.frameCount}</strong></div>
+                <div><span>CAMERA GAIN</span><strong>{missionRecommendation.gain}</strong></div>
+                <div><span>TOTAL INTEGRATION</span><strong>{Math.round(missionRecommendation.totalIntegrationSeconds / 60)} MIN</strong></div>
+              </div>
+
+              <div className="missionConsoleRecommendationReasoning">
+                <Settings2 size={18} />
+                <div>
+                  <span>WHY THESE SETTINGS</span>
+                  <strong>{missionRecommendation.rationale}</strong>
+                  {missionRecommendation.adjustments.length ? (
+                    <ul>
+                      {missionRecommendation.adjustments.map((adjustment) => <li key={adjustment}>{adjustment}</li>)}
+                    </ul>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="missionConsoleStacks">
+                <div className="missionConsoleStackItem">
+                  <small>RECOMMENDED EQUIPMENT CONFIGURATION</small>
+                  <strong>{missionRecommendation.equipment}</strong>
+                </div>
+                {missionRecommendation.targetAssessment ? (
+                  <div className="missionConsoleStackItem">
+                    <small>TARGET ASSESSMENT</small>
+                    <strong>{missionRecommendation.targetAssessment}</strong>
+                  </div>
+                ) : null}
+                {missionRecommendation.dewAdvisory ? (
+                  <div className="missionConsoleStackItem">
+                    <small>DEW / CONDITIONS ADVISORY</small>
+                    <strong>{missionRecommendation.dewAdvisory}</strong>
+                  </div>
+                ) : null}
+              </div>
+
+              {lastCapture ? (
+                <div className="missionConsoleLastCaptureCompare">
+                  <div className="missionConsoleLastCaptureCompareHeader">
+                    <div>
+                      <span>LAST FIELD SETTINGS</span>
+                      <strong>{lastCapture.title} // {formatDateLabel(lastCapture.capture_date)}</strong>
+                    </div>
+                    <em>{missionRecommendation.differsFromLast ? 'RECOMMENDATION ADJUSTED' : 'MATCHES RECOMMENDATION'}</em>
+                  </div>
+
+                  <div className="missionConsoleHistoryGrid">
+                    <div><span>EXPOSURE / FRAME</span><strong>{lastCapture.exposure_seconds != null ? `${lastCapture.exposure_seconds} SEC` : lastCapture.exposure || 'TBD'}</strong></div>
+                    <div><span>FRAMES</span><strong>{lastCapture.frame_count ?? 'TBD'}</strong></div>
+                    <div><span>GAIN</span><strong>{lastCapture.gain ?? 'TBD'}</strong></div>
+                    <div><span>TOTAL INTEGRATION</span><strong>{lastCapture.total_integration_seconds ? `${Math.round(lastCapture.total_integration_seconds / 60)} MIN` : 'TBD'}</strong></div>
+                  </div>
+
+                  <div className="missionConsoleStackItem">
+                    <small>LAST-CAPTURE NOTES</small>
+                    <strong>{lastCapture.notes || lastCapture.processing || 'No notes were recorded for the previous capture.'}</strong>
+                  </div>
+                </div>
+              ) : (
+                <div className="missionConsoleRecommendationNoHistory">
+                  <DatabaseZap size={18} />
+                  <span>No prior capture exists for this target. This recommendation is the starting baseline and should be adjusted after the first test frame.</span>
+                </div>
+              )}
+
+              <div className="missionConsoleQuickLinksRow">
+                <QuickLink href="/admin/missions" label="OPEN MISSIONS" />
+                <QuickLink href="/admin/operation" label="OPERATION CONTROL" />
+                <QuickLink href="/admin/gallery" label="CAPTURE CONTROL" />
+              </div>
+            </section>
+
+            <section className={`missionConsolePanel missionConsolePanelHistory missionConsolePanelDrawer missionConsolePanelSubcategory ${openPanels.history ? 'is-open' : 'is-collapsed'}`}>
+              <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('history')} aria-expanded={openPanels.history}>
+                <span>CAPTURE HISTORY</span>
+                <div className="missionConsolePanelBadge">IMAGING REFERENCE</div><ChevronDown className="missionConsolePanelChevron" size={18} />
+              </button>
+
+              <div className="missionConsoleHistorySummary">
+                <div className="missionConsoleHistorySummaryCard"><span>CAPTURES LOGGED</span><strong>{captureHistorySummary.count || 0}</strong></div>
+                <div className="missionConsoleHistorySummaryCard"><span>AVG EXPOSURE</span><strong>{captureHistorySummary.averageExposure != null ? `${captureHistorySummary.averageExposure.toFixed(1)} SEC` : '—'}</strong></div>
+                <div className="missionConsoleHistorySummaryCard"><span>AVG FRAMES</span><strong>{captureHistorySummary.averageFrames != null ? `${Math.round(captureHistorySummary.averageFrames)}` : '—'}</strong></div>
+                <div className="missionConsoleHistorySummaryCard"><span>AVG GAIN</span><strong>{captureHistorySummary.averageGain != null ? `${Math.round(captureHistorySummary.averageGain)}` : '—'}</strong></div>
+                <div className="missionConsoleHistorySummaryCard"><span>AVG TOTAL INT</span><strong>{captureHistorySummary.averageIntegration != null ? `${Math.round(captureHistorySummary.averageIntegration / 60)} MIN` : '—'}</strong></div>
+              </div>
+
+              {captureHistory.length ? (
+                <div className="missionConsoleHistoryList">
+                  {captureHistory.slice(0, 6).map((capture, index) => (
+                    <article className={`missionConsoleHistoryRow ${index === 0 ? 'missionConsoleHistoryRowCurrent' : ''}`} key={capture.id || `${capture.title}-${capture.capture_date}-${index}`}>
+                      <div className="missionConsoleHistoryRowHeading">
+                        <strong>{capture.title}</strong>
+                        <span>{formatDateLabel(capture.capture_date)}</span>
+                      </div>
+                      <div className="missionConsoleHistoryRowMetrics">
+                        <span>{capture.exposure_seconds != null ? `${capture.exposure_seconds} SEC` : capture.exposure || 'EXP TBD'}</span>
+                        <span>{capture.frame_count != null ? `${capture.frame_count} FRAMES` : 'FRAMES TBD'}</span>
+                        <span>{capture.gain != null ? `GAIN ${capture.gain}` : 'GAIN TBD'}</span>
+                        <span>{capture.total_integration_seconds ? `${Math.round(capture.total_integration_seconds / 60)} MIN TOTAL` : 'TOTAL TBD'}</span>
+                      </div>
+                      <p>{capture.notes || capture.processing || 'No additional crew notes logged for this capture.'}</p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="missionConsoleHistoryEmpty">
+                  <DatabaseZap size={18} />
+                  <span>No historical captures matched this target yet. Once captures are logged with structured settings, they will appear here automatically.</span>
+                </div>
+              )}
+            </section>
+
             <section className={`missionConsolePanel missionConsolePanelSystems ${openPanels.systems ? 'is-open' : 'is-collapsed'}`}>
               <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('systems')} aria-expanded={openPanels.systems}>
-                <span>LOCAL SYSTEMS LINK</span>
+                <span>OBSERVATORY CONTROL SYSTEMS</span>
                 <div className={`missionConsolePanelBadge missionConsolePanelBadge-${systemsLinkTone}`}>{systemsLinkLabel}</div><ChevronDown className="missionConsolePanelChevron" size={18} />
               </button>
 
               <div className="missionConsoleLocalLinkHeader">
                 <div>
                   <small>OBSERVATORY TELEMETRY RELAY</small>
-                  <strong>{localSystemsStatus === 'online' ? 'CPWI CLOUD LINK ESTABLISHED' : hbg3Online ? 'HBG3 CLOUD LINK ESTABLISHED' : 'OBSERVATORY DATA LINK NOT ESTABLISHED'}</strong>
+                  <strong>{localSystemsStatus === 'online' ? 'CPWI BRIDGE CONNECTED' : hbg3Online ? 'HBG3 BRIDGE CONNECTED' : 'OBSERVATORY DATA LINK NOT ESTABLISHED'}</strong>
                   <span>{localSystemsStatus === 'online'
                     ? `Mount updated ${localSystemsUpdatedAt?.toLocaleTimeString() || 'now'}`
                     : localSystemsStatus === 'stale'
@@ -1693,291 +1931,6 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                     {localSystems?.warnings?.length ? <span className="missionConsoleSystemWarning">{localSystems.warnings.join(' // ')}</span> : null}
                   </div>
                 </article>
-              </div>
-            </section>
-
-            <section className={`missionConsolePanel missionConsolePanelEquipment ${openPanels.recommendation ? 'is-open' : 'is-collapsed'}`}>
-              <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('recommendation')} aria-expanded={openPanels.recommendation}>
-                <span>CONFIGURATION</span>
-                <div className="missionConsolePanelBadge">SYSTEM PROFILE</div><ChevronDown className="missionConsolePanelChevron" size={18} />
-              </button>
-
-              <div className="missionConsoleSettingsSource missionConsoleRecommendationHeader">
-                <div>
-                  <span>CHATGPT MISSION RECOMMENDATION</span>
-                  <strong>{aiRecommendation ? 'LIVE AI PROFILE GENERATED FROM CURRENT CONSOLE TELEMETRY' : 'LOCAL BASELINE READY // REFRESH FOR A LIVE CHATGPT PROFILE'}</strong>
-                  {aiRecommendationUpdatedAt ? <small>UPDATED {formatClock(aiRecommendationUpdatedAt)}</small> : null}
-                </div>
-                <button
-                  type="button"
-                  className="missionConsoleAiRefreshButton"
-                  onClick={refreshAiRecommendation}
-                  disabled={aiRecommendationBusy || (!missionPlan && !targetReference)}
-                >
-                  {aiRecommendationBusy ? <RefreshCw size={17} className="is-spinning" /> : <Sparkles size={17} />}
-                  {aiRecommendationBusy ? 'CONSULTING CHATGPT' : aiRecommendation ? 'REFRESH RECOMMENDATION' : 'GENERATE RECOMMENDATION'}
-                </button>
-              </div>
-
-              {aiRecommendationError ? (
-                <div className="missionConsoleAiRecommendationError">
-                  <AlertTriangle size={17} />
-                  <span>{aiRecommendationError}</span>
-                </div>
-              ) : null}
-
-              <div className="missionConsoleRecommendationGrid">
-                <div><span>EXPOSURE / FRAME</span><strong>{missionRecommendation.exposureSeconds} SEC</strong></div>
-                <div><span>FRAMES TO CAPTURE</span><strong>{missionRecommendation.frameCount}</strong></div>
-                <div><span>CAMERA GAIN</span><strong>{missionRecommendation.gain}</strong></div>
-                <div><span>TOTAL INTEGRATION</span><strong>{Math.round(missionRecommendation.totalIntegrationSeconds / 60)} MIN</strong></div>
-              </div>
-
-              <div className="missionConsoleRecommendationReasoning">
-                <Settings2 size={18} />
-                <div>
-                  <span>WHY THESE SETTINGS</span>
-                  <strong>{missionRecommendation.rationale}</strong>
-                  {missionRecommendation.adjustments.length ? (
-                    <ul>
-                      {missionRecommendation.adjustments.map((adjustment) => <li key={adjustment}>{adjustment}</li>)}
-                    </ul>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="missionConsoleStacks">
-                <div className="missionConsoleStackItem">
-                  <small>RECOMMENDED EQUIPMENT CONFIGURATION</small>
-                  <strong>{missionRecommendation.equipment}</strong>
-                </div>
-                {missionRecommendation.targetAssessment ? (
-                  <div className="missionConsoleStackItem">
-                    <small>TARGET ASSESSMENT</small>
-                    <strong>{missionRecommendation.targetAssessment}</strong>
-                  </div>
-                ) : null}
-                {missionRecommendation.dewAdvisory ? (
-                  <div className="missionConsoleStackItem">
-                    <small>DEW / CONDITIONS ADVISORY</small>
-                    <strong>{missionRecommendation.dewAdvisory}</strong>
-                  </div>
-                ) : null}
-              </div>
-
-              {lastCapture ? (
-                <div className="missionConsoleLastCaptureCompare">
-                  <div className="missionConsoleLastCaptureCompareHeader">
-                    <div>
-                      <span>LAST FIELD SETTINGS</span>
-                      <strong>{lastCapture.title} // {formatDateLabel(lastCapture.capture_date)}</strong>
-                    </div>
-                    <em>{missionRecommendation.differsFromLast ? 'RECOMMENDATION ADJUSTED' : 'MATCHES RECOMMENDATION'}</em>
-                  </div>
-
-                  <div className="missionConsoleHistoryGrid">
-                    <div><span>EXPOSURE / FRAME</span><strong>{lastCapture.exposure_seconds != null ? `${lastCapture.exposure_seconds} SEC` : lastCapture.exposure || 'TBD'}</strong></div>
-                    <div><span>FRAMES</span><strong>{lastCapture.frame_count ?? 'TBD'}</strong></div>
-                    <div><span>GAIN</span><strong>{lastCapture.gain ?? 'TBD'}</strong></div>
-                    <div><span>TOTAL INTEGRATION</span><strong>{lastCapture.total_integration_seconds ? `${Math.round(lastCapture.total_integration_seconds / 60)} MIN` : 'TBD'}</strong></div>
-                  </div>
-
-                  <div className="missionConsoleStackItem">
-                    <small>LAST-CAPTURE NOTES</small>
-                    <strong>{lastCapture.notes || lastCapture.processing || 'No notes were recorded for the previous capture.'}</strong>
-                  </div>
-                </div>
-              ) : (
-                <div className="missionConsoleRecommendationNoHistory">
-                  <DatabaseZap size={18} />
-                  <span>No prior capture exists for this target. This recommendation is the starting baseline and should be adjusted after the first test frame.</span>
-                </div>
-              )}
-
-              <div className="missionConsoleQuickLinksRow">
-                <QuickLink href="/admin/missions" label="OPEN MISSIONS" />
-                <QuickLink href="/admin/operation" label="OPERATION CONTROL" />
-                <QuickLink href="/admin/gallery" label="CAPTURE CONTROL" />
-              </div>
-            </section>
-
-            <section className={`missionConsolePanel missionConsolePanelHistory ${openPanels.history ? 'is-open' : 'is-collapsed'}`}>
-              <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('history')} aria-expanded={openPanels.history}>
-                <span>HISTORICAL CAPTURE BANK</span>
-                <div className="missionConsolePanelBadge">MISSION MEMORY</div><ChevronDown className="missionConsolePanelChevron" size={18} />
-              </button>
-
-              <div className="missionConsoleHistorySummary">
-                <div className="missionConsoleHistorySummaryCard"><span>CAPTURES LOGGED</span><strong>{captureHistorySummary.count || 0}</strong></div>
-                <div className="missionConsoleHistorySummaryCard"><span>AVG EXPOSURE</span><strong>{captureHistorySummary.averageExposure != null ? `${captureHistorySummary.averageExposure.toFixed(1)} SEC` : '—'}</strong></div>
-                <div className="missionConsoleHistorySummaryCard"><span>AVG FRAMES</span><strong>{captureHistorySummary.averageFrames != null ? `${Math.round(captureHistorySummary.averageFrames)}` : '—'}</strong></div>
-                <div className="missionConsoleHistorySummaryCard"><span>AVG GAIN</span><strong>{captureHistorySummary.averageGain != null ? `${Math.round(captureHistorySummary.averageGain)}` : '—'}</strong></div>
-                <div className="missionConsoleHistorySummaryCard"><span>AVG TOTAL INT</span><strong>{captureHistorySummary.averageIntegration != null ? `${Math.round(captureHistorySummary.averageIntegration / 60)} MIN` : '—'}</strong></div>
-              </div>
-
-              {captureHistory.length ? (
-                <div className="missionConsoleHistoryList">
-                  {captureHistory.slice(0, 6).map((capture, index) => (
-                    <article className={`missionConsoleHistoryRow ${index === 0 ? 'missionConsoleHistoryRowCurrent' : ''}`} key={capture.id || `${capture.title}-${capture.capture_date}-${index}`}>
-                      <div className="missionConsoleHistoryRowHeading">
-                        <strong>{capture.title}</strong>
-                        <span>{formatDateLabel(capture.capture_date)}</span>
-                      </div>
-                      <div className="missionConsoleHistoryRowMetrics">
-                        <span>{capture.exposure_seconds != null ? `${capture.exposure_seconds} SEC` : capture.exposure || 'EXP TBD'}</span>
-                        <span>{capture.frame_count != null ? `${capture.frame_count} FRAMES` : 'FRAMES TBD'}</span>
-                        <span>{capture.gain != null ? `GAIN ${capture.gain}` : 'GAIN TBD'}</span>
-                        <span>{capture.total_integration_seconds ? `${Math.round(capture.total_integration_seconds / 60)} MIN TOTAL` : 'TOTAL TBD'}</span>
-                      </div>
-                      <p>{capture.notes || capture.processing || 'No additional crew notes logged for this capture.'}</p>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <div className="missionConsoleHistoryEmpty">
-                  <DatabaseZap size={18} />
-                  <span>No historical captures matched this target yet. Once captures are logged with structured settings, they will appear here automatically.</span>
-                </div>
-              )}
-            </section>
-
-            <section className={`missionConsolePanel missionConsolePanelOperations ${openPanels.operations ? 'is-open' : 'is-collapsed'}`}>
-              <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('operations')} aria-expanded={openPanels.operations}>
-                <span>MISSION OPERATIONS</span>
-                <div className="missionConsolePanelBadge">LIVE CONTROL</div><ChevronDown className="missionConsolePanelChevron" size={18} />
-              </button>
-
-              <div className="missionConsoleOpsTop">
-                <div className="missionConsoleTimerBlock">
-                  <small>MISSION ELAPSED</small>
-                  <strong>{activeOperation?.started_at || missionPlan?.started_at ? missionElapsed : '00:00:00'}</strong>
-                </div>
-                <div className="missionConsoleTimerBlock missionConsoleTimerBlockSecondary">
-                  <small>CAPTURE ELAPSED</small>
-                  <strong>{consoleState.captureStartedAt ? captureElapsed : '00:00:00'}</strong>
-                </div>
-                <div className="missionConsoleTimerBlock missionConsoleTimerBlockStatus">
-                  <small>CAPTURE STATE</small>
-                  <strong>{asiimgOnline ? (asiimgStalled ? 'STALLED' : asiimgState) : String(consoleState.captureStatus || 'idle').toUpperCase()}</strong>
-                </div>
-              </div>
-
-              <div className={`missionConsoleAsiimgPanel ${asiimgStalled ? 'is-stalled' : ''}`}>
-                <div className="missionConsoleAsiimgHeader">
-                  <div>
-                    <small>ASIIMG CAPTURE LINK</small>
-                    <strong>{asiimgOnline ? 'ONLINE' : 'OFFLINE'}</strong>
-                  </div>
-                  <div className={`missionConsoleAsiimgState ${asiimgStalled ? 'is-alert' : ''}`}>
-                    {asiimgStalled ? 'CAPTURE STALLED' : asiimgState}
-                  </div>
-                </div>
-                <div className="missionConsoleAsiimgGrid">
-                  <div><span>FRAMES COMPLETE</span><strong>{asiimgFrames}</strong></div>
-                  <div><span>FRAMES REMAINING</span><strong>{asiimgRemaining ?? '—'}</strong></div>
-                  <div><span>EXPOSURE</span><strong>{bridgeNumber(asiimgPayload.exposure_seconds, 2, ' SEC')}</strong></div>
-                  <div><span>EST. FINISH</span><strong>{formatEta(asiimgEtaSeconds)}</strong></div>
-                  <div><span>CAMERA TEMP</span><strong>{bridgeNumber(celsiusToFahrenheit(asiimgPayload.camera_temperature_c), 1, '°F')}</strong></div>
-                  <div><span>GAIN</span><strong>{asiimgPayload.gain ?? '—'}</strong></div>
-                  <div><span>LAST FRAME</span><strong>{asiimgPayload.last_frame_at ? formatClock(asiimgPayload.last_frame_at) : '—'}</strong></div>
-                  <div><span>LATEST FILE</span><strong title={asiimgPayload.latest_file || ''}>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong></div>
-                </div>
-
-                <div className="missionConsoleAsiimgPreview">
-                  <div className="missionConsoleAsiimgPreviewHeader">
-                    <span>LATEST FITS PREVIEW</span>
-                    <strong>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong>
-                  </div>
-                  {asiimgPreviewUrl ? (
-                    <a href={asiimgPreviewUrl} target="_blank" rel="noreferrer" title="Open the latest FITS preview at full size">
-                      <img src={asiimgPreviewUrl} alt={`Latest ASIImg FITS preview${asiimgPayload.latest_file ? `: ${asiimgPayload.latest_file}` : ''}`} />
-                      <span className="missionConsoleAsiimgPreviewOpen">OPEN FULL PREVIEW</span>
-                    </a>
-                  ) : (
-                    <div className="missionConsoleAsiimgPreviewEmpty">
-                      <span>NO PREVIEW AVAILABLE</span>
-                      <small>The next FITS frame detected by the bridge will appear here automatically.</small>
-                    </div>
-                  )}
-                  {asiimgPayload.preview_error ? <p className="missionConsoleAsiimgPreviewError">Preview generator: {asiimgPayload.preview_error}</p> : null}
-                </div>
-                {asiimgError ? <p className="missionConsoleAsiimgError">{asiimgError}</p> : null}
-                {!asiimgOnline ? <p className="missionConsoleAsiimgHint">Start the ASIImg monitor bridge before beginning a capture. The panel counts new FITS files written to the configured ASIImg folder.</p> : null}
-              </div>
-
-              <div className="missionConsoleFramesSection">
-                <label className="missionConsoleFramesInput">
-                  <span>COMPLETED FRAMES</span>
-                  <input
-                    type="number"
-                    min="0"
-                    value={Number(consoleState.completedFrames || 0)}
-                    readOnly={asiimgOnline}
-                    title={asiimgOnline ? 'Live frame count supplied by the ASIImg monitor bridge.' : 'Enter the completed frame count manually.'}
-                    onChange={(event) => setConsoleState((current) => ({ ...current, completedFrames: Number(event.target.value || 0) }))}
-                  />
-                </label>
-
-                <div className="missionConsoleProgressBlock">
-                  <div className="missionConsoleProgressHeader">
-                    <span>PLAN PROGRESS</span>
-                    <strong>{frameTarget ? `${consoleState.completedFrames}/${frameTarget}` : `${consoleState.completedFrames} FRAMES`}</strong>
-                  </div>
-                  <div className="missionConsoleProgressBar" role="progressbar" aria-valuemin={0} aria-valuemax={frameTarget || 100} aria-valuenow={frameTarget ? consoleState.completedFrames : progressPercent}>
-                    <div style={{ width: `${frameTarget ? progressPercent : Math.min(100, Number(consoleState.completedFrames || 0))}%` }} />
-                  </div>
-                </div>
-              </div>
-
-              <label className="missionConsoleNotesField">
-                <span>CREW NOTES</span>
-                <textarea
-                  value={consoleState.notes}
-                  onChange={(event) => setConsoleState((current) => ({ ...current, notes: event.target.value }))}
-                  placeholder="Seeing, focus, clouds, guiding, target notes, or weird telescope behavior..."
-                />
-              </label>
-
-              <div className="missionConsoleActionGrid">
-                <button
-                  type="button"
-                  className="missionConsoleAction missionConsoleActionInitiate"
-                  onClick={handleInitiateMission}
-                  disabled={loading || busyAction === 'initiate' || !missionPlan?.id || isOperationLive}
-                >
-                  <Radar size={20} />
-                  <span>{busyAction === 'initiate' ? 'INITIATING…' : isOperationLive ? 'MISSION ACTIVE' : 'INITIATE MISSION'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="missionConsoleAction missionConsoleActionStart"
-                  onClick={handleBeginOrResumeCapture}
-                  disabled={!isOperationLive || consoleState.captureStatus === 'running' || busyAction === 'complete'}
-                >
-                  <PlayCircle size={20} />
-                  <span>{consoleState.captureStatus === 'paused' ? 'RESUME CAPTURE' : 'BEGIN CAPTURE'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="missionConsoleAction missionConsoleActionPause"
-                  onClick={handlePauseCapture}
-                  disabled={consoleState.captureStatus !== 'running' || busyAction === 'complete' || !isOperationLive}
-                >
-                  <PauseCircle size={20} />
-                  <span>PAUSE CAPTURE</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="missionConsoleAction missionConsoleActionComplete"
-                  onClick={handleMissionComplete}
-                  disabled={!isOperationLive || busyAction === 'complete'}
-                >
-                  <CheckCircle2 size={20} />
-                  <span>{busyAction === 'complete' ? 'COMPLETING…' : 'MISSION COMPLETE'}</span>
-                </button>
               </div>
             </section>
           </div>
