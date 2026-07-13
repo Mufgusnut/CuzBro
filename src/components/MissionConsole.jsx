@@ -46,7 +46,6 @@ const DEFAULT_SITE = {
 };
 
 const STORAGE_PREFIX = 'cuzbro-mission-console-v1';
-const DEFAULT_LOCAL_BRIDGE_URL = 'http://127.0.0.1:4788';
 
 const radians = (degrees) => degrees * Math.PI / 180;
 const degrees = (radiansValue) => radiansValue * 180 / Math.PI;
@@ -435,16 +434,6 @@ function mergeConsoleState(base, stored) {
   };
 }
 
-function getLocalBridgeUrl() {
-  try {
-    return localStorage.getItem('cuzbro-local-bridge-url') ||
-      import.meta.env.VITE_LOCAL_BRIDGE_URL ||
-      DEFAULT_LOCAL_BRIDGE_URL;
-  } catch {
-    return import.meta.env.VITE_LOCAL_BRIDGE_URL || DEFAULT_LOCAL_BRIDGE_URL;
-  }
-}
-
 function bridgeNumber(value, digits = 1, suffix = '') {
   if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '—';
   return `${Number(value).toFixed(digits)}${suffix}`;
@@ -454,35 +443,6 @@ function bridgeBoolean(value) {
   if (value === true) return 'ON';
   if (value === false) return 'OFF';
   return '—';
-}
-
-async function fetchLocalBridgeStatus(url, signal) {
-  const response = await fetch(`${String(url).replace(/\/$/, '')}/status`, {
-    method: 'GET',
-    cache: 'no-store',
-    signal,
-    headers: { Accept: 'application/json' }
-  });
-  if (!response.ok) throw new Error(`Local bridge returned ${response.status}`);
-  return response.json();
-}
-
-async function sendLocalBridgeControl(url, action) {
-  const response = await fetch(`${String(url).replace(/\/$/, '')}/control`, {
-    method: 'POST',
-    cache: 'no-store',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ action })
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || payload?.ok === false) {
-    throw new Error(payload?.error || `Local bridge returned ${response.status}`);
-  }
-  return payload;
 }
 
 function QuickLink({ href, label }) {
@@ -504,7 +464,6 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [busyAction, setBusyAction] = useState('');
   const [now, setNow] = useState(Date.now());
   const [bridgeMenuOpen, setBridgeMenuOpen] = useState(false);
-  const [localBridgeUrl, setLocalBridgeUrl] = useState(getLocalBridgeUrl);
   const [localSystems, setLocalSystems] = useState(null);
   const [localSystemsStatus, setLocalSystemsStatus] = useState('connecting');
   const [localSystemsError, setLocalSystemsError] = useState('');
@@ -596,48 +555,57 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
 
   useEffect(() => {
     let active = true;
-    let currentController = null;
 
-    async function pollLocalSystems() {
-      currentController?.abort();
-      currentController = new AbortController();
-      const timeout = window.setTimeout(() => currentController.abort(), 1800);
+    async function pollCpwiTelemetry() {
+      const { data, error: queryError } = await supabase
+        .from('cpwi_status')
+        .select('*')
+        .eq('station', 'eliot')
+        .maybeSingle();
 
-      try {
-        const payload = await fetchLocalBridgeStatus(localBridgeUrl, currentController.signal);
-        if (!active) return;
-        setLocalSystems(payload);
-        setLocalSystemsStatus('online');
-        setLocalSystemsError('');
-        setLocalSystemsUpdatedAt(new Date());
-      } catch (bridgeError) {
-        if (!active) return;
+      if (!active) return;
+      if (queryError) {
         setLocalSystemsStatus('offline');
-        setLocalSystemsError(bridgeError?.name === 'AbortError' ? 'Local bridge did not respond.' : bridgeError.message || 'Local bridge unavailable.');
-      } finally {
-        window.clearTimeout(timeout);
+        setLocalSystemsError(queryError.message || 'CPWI telemetry unavailable.');
+        return;
       }
+
+      const ageMs = data?.updated_at ? Date.now() - new Date(data.updated_at).getTime() : Infinity;
+      setLocalSystems(data?.payload || null);
+      setLocalSystemsUpdatedAt(data?.updated_at ? new Date(data.updated_at) : null);
+      setLocalSystemsStatus(data?.online && ageMs <= 15000 ? 'online' : data ? 'stale' : 'offline');
+      setLocalSystemsError(data?.last_error || '');
     }
 
-    setLocalSystemsStatus('connecting');
-    pollLocalSystems();
-    const interval = window.setInterval(pollLocalSystems, 2000);
-
-    return () => {
-      active = false;
-      currentController?.abort();
-      window.clearInterval(interval);
-    };
-  }, [localBridgeUrl]);
+    pollCpwiTelemetry();
+    const interval = window.setInterval(pollCpwiTelemetry, 3000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
 
   async function runCpwiControl(action) {
     setCpwiControlBusy(action);
     setCpwiControlError('');
     try {
-      const payload = await sendLocalBridgeControl(localBridgeUrl, action);
-      setLocalSystems(payload);
-      setLocalSystemsStatus('online');
-      setLocalSystemsUpdatedAt(new Date());
+      const { data, error: insertError } = await supabase
+        .from('cpwi_commands')
+        .insert({ station: 'eliot', action, requested_by: session?.user?.id || null })
+        .select('id')
+        .single();
+      if (insertError) throw insertError;
+
+      const deadline = Date.now() + 15000;
+      while (Date.now() < deadline) {
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
+        const { data: command, error: commandError } = await supabase
+          .from('cpwi_commands')
+          .select('status,error,result')
+          .eq('id', data.id)
+          .single();
+        if (commandError) throw commandError;
+        if (command.status === 'completed') return;
+        if (command.status === 'failed') throw new Error(command.error || 'CPWI command failed.');
+      }
+      throw new Error('CPWI command timed out waiting for the observatory bridge.');
     } catch (controlError) {
       setCpwiControlError(controlError.message || 'CPWI command failed.');
     } finally {
@@ -788,14 +756,14 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     : `MANUAL ${Number(hbg3Channel1?.manualPwm || 0).toFixed(0)}%`;
   const systemsLinkTone = localSystemsStatus === 'online' || hbg3Online
     ? 'good'
-    : localSystemsStatus === 'connecting'
+    : localSystemsStatus === 'connecting' || localSystemsStatus === 'stale'
       ? 'warn'
       : 'alert';
   const systemsLinkLabel = localSystemsStatus === 'online' && hbg3Online
     ? 'ONLINE'
     : localSystemsStatus === 'online' || hbg3Online
       ? 'PARTIAL'
-      : localSystemsStatus.toUpperCase();
+      : localSystemsStatus === 'stale' ? 'STALE' : localSystemsStatus.toUpperCase();
   const isOperationLive = activeOperation?.status === 'ACTIVE';
   const missionElapsed = formatOperationElapsed(
     activeOperation?.started_at || missionPlan?.started_at,
@@ -1240,18 +1208,16 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
 
               <div className="missionConsoleLocalLinkHeader">
                 <div>
-                  <small>OBSERVATORY TELEMETRY LINKS</small>
-                  <strong>{localSystemsStatus === 'online' ? 'LOCAL MOUNT LINK ESTABLISHED' : hbg3Online ? 'HBG3 CLOUD LINK ESTABLISHED' : 'LOCAL DATA LINK NOT ESTABLISHED'}</strong>
+                  <small>OBSERVATORY TELEMETRY RELAY</small>
+                  <strong>{localSystemsStatus === 'online' ? 'CPWI CLOUD LINK ESTABLISHED' : hbg3Online ? 'HBG3 CLOUD LINK ESTABLISHED' : 'OBSERVATORY DATA LINK NOT ESTABLISHED'}</strong>
                   <span>{localSystemsStatus === 'online'
                     ? `Mount updated ${localSystemsUpdatedAt?.toLocaleTimeString() || 'now'}`
-                    : hbg3Online
-                      ? `Dew telemetry updated ${new Date(hbg3Record.captured_at).toLocaleTimeString()}`
-                      : localSystemsError || hbg3Error || 'Start the CuzBro Local Bridge on the CPWI computer.'}</span>
+                    : localSystemsStatus === 'stale'
+                      ? 'CPWI bridge telemetry is stale. Restart the bridge on the observatory PC.'
+                      : hbg3Online
+                        ? `Dew telemetry updated ${new Date(hbg3Record.captured_at).toLocaleTimeString()}`
+                        : localSystemsError || hbg3Error || 'Start the CPWI and HBG3 bridges on the observatory computer.'}</span>
                 </div>
-                <label>
-                  <span>BRIDGE URL</span>
-                  <input value={localBridgeUrl} onChange={(event) => { const value = event.target.value; setLocalBridgeUrl(value); try { localStorage.setItem('cuzbro-local-bridge-url', value); } catch {} }} />
-                </label>
               </div>
 
               <div className="missionConsoleSystemsGrid">
@@ -1302,8 +1268,8 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                 <article className="missionConsoleSystemNode missionConsoleSystemNodeWide">
                   <div className="missionConsoleSystemNodeTitle"><Radio size={18} /><span>BRIDGE DIAGNOSTICS</span></div>
                   <div className="missionConsoleSystemDiagnostics">
-                    <span><Wifi size={15} /> {localSystems?.bridge?.host || 'LOCALHOST'} // {localSystems?.bridge?.version || 'BRIDGE NOT DETECTED'}</span>
-                    <span>ASCOM: {localSystems?.cpwi?.driver || 'NOT REPORTED'}</span>
+                    <span><Wifi size={15} /> {localSystems?.bridge?.host || 'OBSERVATORY PC'} // {localSystems?.bridge?.version || 'CPWI RELAY NOT DETECTED'}</span>
+                    <span>CPWI: {localSystemsStatus === 'online' ? 'SUPABASE RELAY ONLINE' : localSystemsStatus.toUpperCase()} // {localSystems?.cpwi?.driver || 'NOT REPORTED'}</span>
                     <span>HBG3: {hbg3Online ? 'SUPABASE RELAY ONLINE' : hbg3Error ? `ERROR // ${hbg3Error}` : hbg3Record ? 'TELEMETRY STALE' : 'NOT REPORTED'}</span>
                     {localSystems?.warnings?.length ? <span className="missionConsoleSystemWarning">{localSystems.warnings.join(' // ')}</span> : null}
                   </div>
