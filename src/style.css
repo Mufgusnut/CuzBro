@@ -34767,3 +34767,922 @@ body.missionPlanningBoardOpen {
     grid-template-columns: 1fr;
   }
 }
+
+/* LCARS manual telescope aiming controls */
+.missionConsoleNudgeConsole{margin:16px 0;background:#050505;border:1px solid rgba(185,220,255,.26);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.75)}
+.missionConsoleNudgeConsole-systems{margin:0 0 4px}
+.missionConsoleNudgeHeader{display:flex;align-items:stretch;justify-content:space-between;gap:14px;background:#000;border-bottom:8px solid #e8deae}
+.missionConsoleNudgeHeader>div{flex:1;padding:14px 18px;background:#92b5c8;border-radius:0 34px 0 0;color:#050505}
+.missionConsoleNudgeHeader small,.missionConsoleNudgeHeader strong{display:block;letter-spacing:.12em}
+.missionConsoleNudgeHeader small{font-size:.64rem;font-weight:800;margin-bottom:5px}.missionConsoleNudgeHeader strong{font-size:1rem;font-weight:950}
+.missionConsoleNudgeHeader>span{align-self:center;margin-right:14px;padding:9px 14px;border-radius:999px;background:#161616;color:#d8d0ac;font-size:.68rem;font-weight:900;letter-spacing:.1em;white-space:nowrap}
+.missionConsoleNudgeHeader>span.is-online{box-shadow:inset 5px 0 #75e6a8}.missionConsoleNudgeHeader>span.is-offline{box-shadow:inset 5px 0 #df795f}
+.missionConsoleNudgeBody{display:grid;grid-template-columns:minmax(280px,420px) minmax(240px,1fr);gap:18px;padding:18px;background:linear-gradient(120deg,#050505 0 58%,#0b0b0b 58%)}
+.missionConsoleNudgePad{display:grid;grid-template-columns:repeat(3,minmax(76px,1fr));grid-template-rows:repeat(3,78px);gap:8px;max-width:390px}
+.missionConsoleNudgePad button,.missionConsoleNudgeCore{border:0;display:flex;align-items:center;justify-content:center;gap:7px;font:950 .75rem/1 inherit;letter-spacing:.08em;color:#050505;min-width:0}
+.missionConsoleNudgePad button{cursor:pointer;transition:transform .08s ease,filter .12s ease}.missionConsoleNudgePad button:active:not(:disabled){transform:scale(.96);filter:brightness(1.12)}.missionConsoleNudgePad button:disabled{opacity:.28;cursor:not-allowed}
+.missionConsoleNudgeNorth{grid-column:2;grid-row:1;background:#e8deae;border-radius:38px 38px 8px 8px!important}.missionConsoleNudgeWest{grid-column:1;grid-row:2;background:#bd9076;border-radius:38px 8px 8px 38px!important}.missionConsoleNudgeEast{grid-column:3;grid-row:2;background:#77a294;border-radius:8px 38px 38px 8px!important}.missionConsoleNudgeSouth{grid-column:2;grid-row:3;background:#de9a68;border-radius:8px 8px 38px 38px!important}
+.missionConsoleNudgeCore{grid-column:2;grid-row:2;flex-direction:column;background:#617ed6;color:#fff;border-radius:10px;box-shadow:inset 0 0 0 4px #000}
+.missionConsoleNudgeSettings{display:grid;align-content:center;gap:13px}.missionConsoleNudgeSettings>div>span,.missionConsoleNudgeSettings label>span{display:block;color:#9bb7cf;font-size:.66rem;font-weight:900;letter-spacing:.12em;margin-bottom:7px}
+.missionConsoleNudgeChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.missionConsoleNudgeChoices button{border:1px solid rgba(232,222,174,.36);background:#171717;color:#d8d0ac;padding:11px 8px;font:900 .7rem/1 inherit;letter-spacing:.08em;cursor:pointer}.missionConsoleNudgeChoices button.is-active{background:#d8b532;color:#050505;border-color:#d8b532}
+.missionConsoleNudgeSettings select{width:100%;border:1px solid rgba(185,220,255,.45);background:#171717;color:#f6edca;padding:11px 12px;font:800 .78rem/1 inherit;letter-spacing:.06em}
+.missionConsoleNudgeAbort{border:0;border-radius:999px;background:#65443c;color:#fff;padding:12px;font:950 .75rem/1 inherit;letter-spacing:.09em;cursor:pointer}.missionConsoleNudgeAbort:disabled{opacity:.35;cursor:not-allowed}
+.missionConsoleNudgeSettings p{margin:0;color:#bdb48d;font-size:.69rem;line-height:1.5}
+.missionConsoleSlewDivider{height:18px;display:flex;align-items:center;background:#000;border-top:8px solid #b28fad;border-bottom:2px solid #000}.missionConsoleSlewDivider span{display:inline-block;padding:5px 14px;background:#b28fad;color:#050505;font-size:.64rem;font-weight:950;letter-spacing:.12em}
+@media(max-width:760px) and (orientation:portrait){.missionConsoleNudgeHeader{align-items:center}.missionConsoleNudgeHeader>div{padding:12px 14px}.missionConsoleNudgeHeader>span{margin-right:8px;padding:8px 10px;font-size:.58rem}.missionConsoleNudgeBody{grid-template-columns:1fr;padding:14px}.missionConsoleNudgePad{width:100%;max-width:none;grid-template-rows:repeat(3,70px)}.missionConsoleNudgeSettings{grid-template-columns:1fr}.missionConsoleNudgePad button span{display:none}}
+@media(orientation:landscape) and (max-height:600px){.missionConsoleNudgeBody{grid-template-columns:minmax(250px,360px) 1fr;padding:12px;gap:12px}.missionConsoleNudgePad{grid-template-rows:repeat(3,62px)}.missionConsoleNudgeHeader>div{padding:10px 16px}.missionConsoleNudgeSettings{gap:9px}}
+
+/* v35: keep manual mount aiming controls impossible to miss */
+.missionConsoleSystemNode > .missionConsoleNudgeConsole-systems{
+  margin:0 0 18px;
+  border:3px solid #e8deae;
+}
+.missionConsoleNudgeConsole-imaging{
+  margin:18px 0;
+  border:3px solid #de9a68;
+}
+.missionConsoleNudgeConsole .missionConsoleNudgeHeader small::before{
+  content:'◉  ';
+}
+.missionConsoleNudgePad button{
+  min-height:74px;
+  touch-action:manipulation;
+  -webkit-user-select:none;
+  user-select:none;
+}
+.missionConsoleNudgePad button:focus-visible{
+  outline:4px solid #fff;
+  outline-offset:3px;
+}
+@media (orientation:landscape){
+  .missionConsoleNudgeBody{grid-template-columns:minmax(320px,430px) minmax(260px,1fr)}
+  .missionConsoleNudgePad{max-width:430px}
+}
+
+/* Refined LCARS circular manual slew console */
+.missionConsoleNudgeConsole{
+  margin:12px;
+  overflow:hidden;
+  border:2px solid #8e82ef;
+  border-radius:28px 28px 18px 18px;
+  background:#020205;
+  box-shadow:inset 0 0 0 1px rgba(238,172,76,.25);
+}
+.missionConsoleNudgeHeader{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  min-height:46px;padding:8px 18px;
+  border-bottom:1px solid rgba(142,130,239,.7);
+  background:linear-gradient(90deg,#2a2654 0,#11101f 45%,#07070a 100%);
+}
+.missionConsoleNudgeHeader>div{display:flex;align-items:baseline;gap:12px;min-width:0}
+.missionConsoleNudgeHeader small{color:#b6adff;font-size:.67rem;font-weight:900;letter-spacing:.14em}
+.missionConsoleNudgeHeader strong{color:#f1e9bd;font-size:.83rem;letter-spacing:.1em}
+.missionConsoleNudgeHeader>span{padding:8px 14px;border:1px solid #756ce0;border-radius:999px;color:#ff8b7d;font-size:.68rem;font-weight:950;letter-spacing:.1em;white-space:nowrap}
+.missionConsoleNudgeHeader>span.is-online{color:#70e38f}
+.missionConsoleNudgeBody{
+  display:grid;grid-template-columns:minmax(130px,.7fr) minmax(300px,1.5fr) minmax(130px,.7fr) minmax(145px,.72fr);
+  gap:18px;align-items:center;padding:20px;
+}
+.missionConsoleSlewRatePanel,.missionConsolePulsePanel,.missionConsoleMountMiniInfo{display:grid;gap:10px;align-content:center}
+.missionConsoleSlewRatePanel>span,.missionConsolePulsePanel>span,.missionConsoleMountMiniInfo>span{color:#a9a0ff;font-size:.7rem;font-weight:950;letter-spacing:.12em}
+.missionConsoleNudgeChoices,.missionConsolePulseChoices{display:grid;gap:8px}
+.missionConsoleNudgeChoices button,.missionConsolePulseChoices button{
+  min-height:44px;border:1px solid rgba(142,130,239,.55);border-radius:10px;background:#171620;color:#d9d5ff;
+  padding:9px 12px;font:inherit;font-size:.72rem;letter-spacing:.07em;cursor:pointer
+}
+.missionConsoleNudgeChoices button{display:flex;justify-content:space-between;align-items:center}
+.missionConsoleNudgeChoices button em{font-style:normal;color:#f4edc6}
+.missionConsoleNudgeChoices button.is-active,.missionConsolePulseChoices button.is-active{border-color:#f1b33f;background:linear-gradient(180deg,#e4b934,#c88c18);color:#120d04;box-shadow:0 0 18px rgba(241,179,63,.18)}
+.missionConsoleSlewRing{
+  position:relative;aspect-ratio:1;max-width:370px;width:100%;margin:auto;border-radius:50%;
+  background:radial-gradient(circle at center,#030305 0 24%,#17152a 24.5% 26%,#050509 26.5% 45%,#665dbb 45.5% 46.5%,#090912 47% 58%,#8b7fee 58.5% 59.5%,#060609 60%);
+  box-shadow:0 0 0 1px #756ce0,0 0 24px rgba(117,108,224,.18),inset 0 0 32px rgba(117,108,224,.12)
+}
+.missionConsoleSlewTicks{position:absolute;inset:4%;border-radius:50%;pointer-events:none;background:repeating-conic-gradient(from 0deg,rgba(155,145,255,.9) 0 1deg,transparent 1deg 7deg);-webkit-mask:radial-gradient(circle,transparent 0 78%,#000 79% 84%,transparent 85%);mask:radial-gradient(circle,transparent 0 78%,#000 79% 84%,transparent 85%)}
+.missionConsoleSlewWedge{
+  position:absolute;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #9388ed;
+  background:linear-gradient(145deg,#7770d9,#49438f);color:#f7f3ff;font:950 1rem/1 inherit;letter-spacing:.08em;cursor:pointer;
+  box-shadow:inset 0 0 18px rgba(255,255,255,.08)
+}
+.missionConsoleSlewWedge:hover:not(:disabled){filter:brightness(1.14)}
+.missionConsoleSlewWedge:active:not(:disabled){transform:scale(.97)}
+.missionConsoleSlewWedge:disabled{opacity:.34;cursor:not-allowed}
+.missionConsoleSlewNorth{left:31%;top:6%;width:38%;height:24%;border-radius:48% 48% 22% 22%}
+.missionConsoleSlewSouth{left:31%;bottom:6%;width:38%;height:24%;border-radius:22% 22% 48% 48%;flex-direction:column}
+.missionConsoleSlewWest{left:6%;top:31%;width:24%;height:38%;border-radius:48% 22% 22% 48%}
+.missionConsoleSlewEast{right:6%;top:31%;width:24%;height:38%;border-radius:22% 48% 48% 22%}
+.missionConsoleSlewStop{
+  position:absolute;left:35%;top:35%;width:30%;height:30%;border-radius:50%;border:1px solid #a04f47;
+  background:radial-gradient(circle,#0b090a 0 55%,#231215 100%);color:#ff5c50;display:grid;place-content:center;gap:5px;
+  font:inherit;cursor:pointer;box-shadow:0 0 0 7px #030305,0 0 0 8px rgba(142,130,239,.6)
+}
+.missionConsoleSlewStop strong{font-size:.9rem;letter-spacing:.08em}.missionConsoleSlewStop span{font-size:.7rem}
+.missionConsolePulseChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
+.missionConsoleNudgeAbort{border:1px solid #ff6155;border-radius:10px;background:linear-gradient(180deg,#6a211f,#35100f);color:#ff9b92;padding:11px 8px;font:900 .68rem/1.1 inherit;letter-spacing:.08em;cursor:pointer}
+.missionConsoleNudgeAbort small{display:block;margin-top:3px;color:#ffb7b0;font-size:.55rem}
+.missionConsoleMountMiniInfo{padding:14px;border:1px solid rgba(142,130,239,.6);border-radius:14px;background:#07070a}
+.missionConsoleMountMiniInfo>div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid rgba(142,130,239,.22)}
+.missionConsoleMountMiniInfo small{color:#a9a0ff;font-size:.58rem;letter-spacing:.08em}.missionConsoleMountMiniInfo strong{color:#f2cf68;font-size:.72rem}.missionConsoleMountMiniInfo strong.is-good{color:#70e38f}
+.missionConsoleNudgeFooter{padding:8px 14px;border-top:1px solid rgba(142,130,239,.4);background:#121120;color:#a9a0ff;text-align:center;font-size:.6rem;font-weight:900;letter-spacing:.08em}.missionConsoleNudgeFooter i{padding:0 8px;color:#e0b240;font-style:normal}
+
+@media(max-width:1180px){
+  .missionConsoleNudgeBody{grid-template-columns:minmax(115px,.65fr) minmax(280px,1.4fr) minmax(125px,.65fr)}
+  .missionConsoleMountMiniInfo{grid-column:1/-1;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end}
+  .missionConsoleMountMiniInfo>span{grid-column:1/-1}.missionConsoleMountMiniInfo>div{display:grid;gap:4px}
+}
+@media(max-width:820px) and (orientation:portrait){
+  .missionConsoleNudgeHeader{align-items:flex-start;flex-direction:column}
+  .missionConsoleNudgeBody{grid-template-columns:1fr 1fr;gap:14px;padding:14px}
+  .missionConsoleSlewRing{grid-column:1/-1;grid-row:1;max-width:320px}
+  .missionConsoleSlewRatePanel{grid-column:1}.missionConsolePulsePanel{grid-column:2}
+  .missionConsoleMountMiniInfo{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .missionConsoleMountMiniInfo>span{grid-column:1/-1}
+}
+@media(max-width:520px) and (orientation:portrait){
+  .missionConsoleNudgeBody{grid-template-columns:1fr}.missionConsoleSlewRing,.missionConsoleSlewRatePanel,.missionConsolePulsePanel,.missionConsoleMountMiniInfo{grid-column:1}
+  .missionConsoleMountMiniInfo{grid-template-columns:1fr 1fr}.missionConsoleNudgeHeader>div{display:grid;gap:4px}
+}
+
+/* v36: tablet/portrait repair for LCARS slew ring */
+@media (orientation: portrait) and (max-width: 1180px) {
+  .missionConsoleNudgeConsole {
+    margin: 10px 0;
+    border-radius: 22px;
+  }
+
+  .missionConsoleNudgeHeader {
+    min-height: 0;
+    padding: 12px 16px;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .missionConsoleNudgeHeader > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 300px;
+  }
+
+  .missionConsoleNudgeHeader small,
+  .missionConsoleNudgeHeader strong {
+    font-size: .68rem;
+    line-height: 1.25;
+  }
+
+  .missionConsoleNudgeHeader > span {
+    margin: 0;
+    padding: 8px 12px;
+    font-size: .62rem;
+  }
+
+  .missionConsoleNudgeBody {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+    padding: 16px;
+    overflow: hidden;
+  }
+
+  .missionConsoleSlewRing {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: min(74vw, 360px);
+    max-width: 100%;
+  }
+
+  .missionConsoleSlewRatePanel {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  .missionConsolePulsePanel {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .missionConsoleNudgeChoices,
+  .missionConsolePulseChoices {
+    grid-template-columns: 1fr;
+  }
+
+  .missionConsoleNudgeChoices button,
+  .missionConsolePulseChoices button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .missionConsoleMountMiniInfo {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
+
+  .missionConsoleMountMiniInfo > span {
+    grid-column: 1 / -1;
+  }
+
+  .missionConsoleMountMiniInfo > div {
+    min-width: 0;
+  }
+
+  .missionConsoleMountMiniInfo strong {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (orientation: portrait) and (max-width: 620px) {
+  .missionConsoleNudgeHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .missionConsoleNudgeHeader > div {
+    display: grid;
+    flex: none;
+  }
+
+  .missionConsoleNudgeBody {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .missionConsoleSlewRing,
+  .missionConsoleSlewRatePanel,
+  .missionConsolePulsePanel,
+  .missionConsoleMountMiniInfo {
+    grid-column: 1;
+  }
+
+  .missionConsoleSlewRing {
+    width: min(88vw, 330px);
+  }
+}
+
+/* v37: component-width responsive repair for slew controls inside split console columns */
+.missionConsoleNudgeConsole {
+  container-type: inline-size;
+  container-name: slew-console;
+}
+
+@container slew-console (max-width: 820px) {
+  .missionConsoleNudgeHeader {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .missionConsoleNudgeHeader > div {
+    display: block;
+    min-width: 0;
+  }
+
+  .missionConsoleNudgeHeader small {
+    display: block;
+    margin: 0 0 3px;
+    font-size: .58rem;
+    line-height: 1.15;
+    letter-spacing: .12em;
+  }
+
+  .missionConsoleNudgeHeader strong {
+    display: block;
+    font-size: .72rem;
+    line-height: 1.15;
+    letter-spacing: .08em;
+    white-space: normal;
+  }
+
+  .missionConsoleNudgeHeader > span {
+    justify-self: end;
+    max-width: 190px;
+    padding: 8px 11px;
+    font-size: .58rem;
+    text-align: center;
+  }
+
+  .missionConsoleNudgeBody {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 16px;
+    overflow: hidden;
+  }
+
+  .missionConsoleSlewRing {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: min(100%, 350px);
+    max-width: 350px;
+  }
+
+  .missionConsoleSlewRatePanel {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  .missionConsolePulsePanel {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  .missionConsoleNudgeChoices,
+  .missionConsolePulseChoices {
+    grid-template-columns: 1fr;
+  }
+
+  .missionConsoleNudgeChoices button,
+  .missionConsolePulseChoices button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .missionConsoleMountMiniInfo {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+  }
+
+  .missionConsoleMountMiniInfo > span {
+    grid-column: 1 / -1;
+  }
+
+  .missionConsoleMountMiniInfo > div {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  .missionConsoleMountMiniInfo strong {
+    overflow-wrap: anywhere;
+  }
+}
+
+@container slew-console (max-width: 560px) {
+  .missionConsoleNudgeHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .missionConsoleNudgeHeader > span {
+    justify-self: start;
+  }
+
+  .missionConsoleNudgeBody {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+
+  .missionConsoleSlewRing,
+  .missionConsoleSlewRatePanel,
+  .missionConsolePulsePanel,
+  .missionConsoleMountMiniInfo {
+    grid-column: 1;
+  }
+
+  .missionConsoleSlewRing {
+    width: min(100%, 310px);
+  }
+
+  .missionConsoleMountMiniInfo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* v38-repair: safe CSS-only live image bracket slew overlay */
+.missionConsoleAsiimgPreview { position: relative; isolation: isolate; }
+.missionConsoleNudgeConsole-imaging {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 6;
+  width: 194px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(230,190,63,.42);
+  border-radius: 16px 16px 16px 4px;
+  background: rgba(3,3,5,.9);
+  box-shadow: 0 12px 28px rgba(0,0,0,.5);
+  backdrop-filter: blur(6px);
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeHeader,
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeFooter,
+.missionConsoleNudgeConsole-imaging .missionConsoleMountMiniInfo,
+.missionConsoleNudgeConsole-imaging .missionConsolePulsePanel > span,
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeAbort { display: none !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeBody {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  align-items: end;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRing {
+  grid-column: 1 / -1;
+  position: relative;
+  width: 142px;
+  height: 132px;
+  margin: 0 auto 2px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewTicks { display: none !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge {
+  position: absolute;
+  width: 54px !important;
+  height: 20px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #e8bc35 !important;
+  box-shadow: none !important;
+  overflow: visible;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge svg { display: none !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge span {
+  position: absolute;
+  color: #e8bc35;
+  font-size: 0 !important;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge span::after { font-size: .5rem; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth { left: 44px !important; top: 0 !important; transform: none !important; border-top: 4px solid currentColor !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth::after,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth::after {
+  content: ""; position: absolute; width: 4px; height: 12px; background: currentColor;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth::before { left: 0; top: -4px; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth::after { right: 0; top: -4px; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth span { left: 50%; top: -17px; transform: translateX(-50%); }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth span::after { content: "UP"; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth { left: 44px !important; bottom: 0 !important; top: auto !important; transform: none !important; border-bottom: 4px solid currentColor !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth::before { left: 0; bottom: -4px; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth::after { right: 0; bottom: -4px; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth span { left: 50%; bottom: -18px; transform: translateX(-50%); }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth span::after { content: "DOWN"; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast {
+  width: 20px !important; height: 54px !important; top: 39px !important; transform: none !important;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest { left: 0 !important; border-left: 4px solid currentColor !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast { right: 0 !important; left: auto !important; border-right: 4px solid currentColor !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest::after,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast::after {
+  content: ""; position: absolute; width: 12px; height: 4px; background: currentColor;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest::before { left: -4px; top: 0; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest::after { left: -4px; bottom: 0; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast::before { right: -4px; top: 0; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast::after { right: -4px; bottom: 0; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest span { right: 27px; top: 50%; transform: translateY(-50%); }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast span { left: 27px; top: 50%; transform: translateY(-50%); }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest span::after { content: "LEFT"; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast span::after { content: "RIGHT"; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop {
+  left: 50% !important; top: 50% !important; transform: translate(-50%,-50%) !important;
+  width: 54px !important; height: 54px !important; min-width: 0 !important;
+  border: 1px solid rgba(255,92,82,.55) !important; border-radius: 50% !important;
+  background: rgba(20,4,4,.68) !important; color: #ff655b !important;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop strong { font-size: .67rem !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop span { font-size: .58rem !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRatePanel,
+.missionConsoleNudgeConsole-imaging .missionConsolePulsePanel { min-width: 0; }
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRatePanel > span { font-size: .48rem; }
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices,
+.missionConsoleNudgeConsole-imaging .missionConsolePulseChoices { display: flex !important; gap: 3px !important; }
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button,
+.missionConsoleNudgeConsole-imaging .missionConsolePulseChoices button {
+  min-width: 0 !important; padding: 5px 4px !important; font-size: .48rem !important;
+}
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button em { display: none; }
+.missionConsoleSystemNode > .missionConsoleNudgeConsole-systems { display: none !important; }
+@media (max-width: 700px) {
+  .missionConsoleNudgeConsole-imaging { left: 8px; bottom: 8px; transform: scale(.86); transform-origin: bottom left; }
+}
+
+/* v39 — compact translucent live-image slew overlay + stable empty preview canvas */
+.missionConsoleAsiimgPreview > a,
+.missionConsoleAsiimgPreviewEmpty {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  min-height: 0 !important;
+  background: #000 !important;
+}
+
+.missionConsoleAsiimgPreview > a {
+  display: grid;
+  place-items: center;
+}
+
+.missionConsoleAsiimgPreview img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+  background: #000;
+}
+
+.missionConsoleAsiimgPreviewEmpty {
+  place-content: center;
+  padding: 18px;
+  color: rgba(201, 222, 247, 0.42);
+}
+
+.missionConsoleAsiimgPreviewEmpty span {
+  font-size: 0.72rem;
+  opacity: 0.5;
+}
+
+.missionConsoleAsiimgPreviewEmpty small {
+  max-width: 360px;
+  color: rgba(144, 167, 194, 0.30);
+  font-size: 0.68rem;
+}
+
+.missionConsoleNudgeConsole-imaging {
+  left: 10px;
+  bottom: 10px;
+  width: 150px;
+  padding: 7px;
+  border-color: rgba(230, 190, 63, 0.24);
+  border-radius: 12px 12px 12px 3px;
+  background: rgba(0, 0, 0, 0.48);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(3px);
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeBody {
+  gap: 5px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRing {
+  width: 108px;
+  height: 98px;
+  margin-bottom: 0;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge {
+  color: rgba(232, 188, 53, 0.78) !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge span {
+  color: rgba(232, 188, 53, 0.68);
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge span::after {
+  font-size: 0.38rem;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth {
+  left: 34px !important;
+  width: 40px !important;
+  height: 16px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth::after,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth::after {
+  width: 3px;
+  height: 9px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth {
+  border-top-width: 3px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth {
+  border-bottom-width: 3px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth span {
+  top: -13px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth span {
+  bottom: -14px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast {
+  top: 29px !important;
+  width: 16px !important;
+  height: 40px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest {
+  border-left-width: 3px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast {
+  border-right-width: 3px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest::after,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast::after {
+  width: 9px;
+  height: 3px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest span {
+  right: 20px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast span {
+  left: 20px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop {
+  width: 42px !important;
+  height: 42px !important;
+  border-color: rgba(255, 92, 82, 0.38) !important;
+  background: rgba(20, 4, 4, 0.38) !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop strong {
+  font-size: 0.52rem !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop span {
+  font-size: 0.44rem !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRatePanel > span {
+  font-size: 0.39rem;
+  opacity: 0.7;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices,
+.missionConsoleNudgeConsole-imaging .missionConsolePulseChoices {
+  gap: 2px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button,
+.missionConsoleNudgeConsole-imaging .missionConsolePulseChoices button {
+  padding: 4px 2px !important;
+  min-height: 26px !important;
+  border-color: rgba(142, 122, 231, 0.40) !important;
+  background: rgba(24, 23, 43, 0.44) !important;
+  font-size: 0.39rem !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button.is-active,
+.missionConsoleNudgeConsole-imaging .missionConsolePulseChoices button.is-active {
+  color: #090909 !important;
+  background: rgba(232, 188, 53, 0.82) !important;
+  border-color: rgba(255, 220, 104, 0.78) !important;
+}
+
+@media (max-width: 700px) {
+  .missionConsoleNudgeConsole-imaging {
+    left: 7px;
+    bottom: 7px;
+    transform: scale(0.88);
+  }
+}
+
+/* v40 — final live-image slew HUD polish */
+.missionConsoleNudgeConsole-imaging {
+  left: 12px;
+  bottom: 12px;
+  width: 138px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  overflow: visible;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeBody {
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 4px;
+  padding: 0;
+  overflow: visible;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRing {
+  width: 100px;
+  height: 90px;
+  margin: 0 auto 1px;
+  overflow: visible;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge {
+  color: rgba(232, 188, 53, 0.58) !important;
+  opacity: 0.9;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge span {
+  color: rgba(232, 188, 53, 0.58);
+  font-size: 0 !important;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWedge span::after {
+  font-size: 0.34rem;
+  letter-spacing: 0.15em;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth {
+  left: 32px !important;
+  width: 36px !important;
+  height: 14px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth {
+  top: 4px !important;
+  border-top-width: 2px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth {
+  bottom: 4px !important;
+  border-bottom-width: 2px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth::after,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth::after {
+  width: 2px;
+  height: 8px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewNorth span {
+  top: -11px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewSouth span {
+  bottom: -12px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast {
+  top: 28px !important;
+  width: 14px !important;
+  height: 34px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest {
+  left: 5px !important;
+  border-left-width: 2px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast {
+  right: 5px !important;
+  border-right-width: 2px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest::after,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast::before,
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast::after {
+  width: 8px;
+  height: 2px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest span {
+  right: auto;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: center;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast span {
+  left: auto;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: center;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop {
+  width: 36px !important;
+  height: 36px !important;
+  border-color: rgba(255, 92, 82, 0.34) !important;
+  background: rgba(15, 2, 2, 0.28) !important;
+  box-shadow: 0 0 0 1px rgba(142, 122, 231, 0.18) !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop strong {
+  font-size: 0.46rem !important;
+  letter-spacing: 0.08em;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewStop span {
+  font-size: 0.38rem !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRatePanel,
+.missionConsoleNudgeConsole-imaging .missionConsolePulsePanel {
+  gap: 2px;
+  margin: 0;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRatePanel > span {
+  font-size: 0.34rem;
+  opacity: 0.64;
+  margin-bottom: 1px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices,
+.missionConsoleNudgeConsole-imaging .missionConsolePulseChoices {
+  gap: 2px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button,
+.missionConsoleNudgeConsole-imaging .missionConsolePulseChoices button {
+  min-height: 22px !important;
+  padding: 3px 2px !important;
+  border-radius: 8px !important;
+  font-size: 0.34rem !important;
+  background: rgba(12, 11, 24, 0.28) !important;
+  border-color: rgba(142, 122, 231, 0.28) !important;
+  backdrop-filter: blur(2px);
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button.is-active,
+.missionConsoleNudgeConsole-imaging .missionConsolePulseChoices button.is-active {
+  background: rgba(232, 188, 53, 0.72) !important;
+  border-color: rgba(255, 220, 104, 0.62) !important;
+}
+
+@media (max-width: 700px) {
+  .missionConsoleNudgeConsole-imaging {
+    left: 9px;
+    bottom: 9px;
+    transform: scale(0.9);
+    transform-origin: bottom left;
+  }
+}
+
+/* v41 — final live-image HUD spacing polish */
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewWest span {
+  left: -15px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewEast span {
+  right: -17px;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRatePanel {
+  grid-column: 1 / -1;
+  width: 100%;
+  align-items: center;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleSlewRatePanel > span {
+  width: 100%;
+  text-align: left;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices {
+  width: 100%;
+  justify-content: center;
+  align-items: stretch;
+  gap: 3px !important;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button {
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  box-sizing: border-box;
+  padding: 3px 1px !important;
+  overflow: hidden;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button b {
+  display: block;
+  width: 100%;
+  font-size: 0.32rem !important;
+  line-height: 1;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button em {
+  display: none !important;
+}

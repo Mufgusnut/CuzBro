@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
+  ArrowDown,
   ArrowLeft,
+  ArrowRight,
+  ArrowUp,
   Archive,
   CheckCircle2,
   ChevronDown,
@@ -510,6 +513,8 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [manualSlewRa, setManualSlewRa] = useState('');
   const [manualSlewDec, setManualSlewDec] = useState('');
   const [slewClearanceConfirmed, setSlewClearanceConfirmed] = useState(false);
+  const [nudgeRate, setNudgeRate] = useState('fine');
+  const [nudgeDurationMs, setNudgeDurationMs] = useState(350);
   const [hbg3Record, setHbg3Record] = useState(null);
   const [hbg3Error, setHbg3Error] = useState('');
   const [asiimgRecord, setAsiimgRecord] = useState(null);
@@ -779,6 +784,123 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     }
   }
 
+
+  async function nudgeMount(direction) {
+    setCpwiControlError('');
+    if (!localSystems?.cpwi?.connected) {
+      setCpwiControlError('Connect CPWI before using manual slew controls.');
+      return;
+    }
+    if (localSystems?.cpwi?.parked) {
+      setCpwiControlError('Unpark the telescope before using manual slew controls.');
+      return;
+    }
+    await runCpwiControl('pulseSlew', {
+      direction,
+      rate: nudgeRate,
+      durationMs: Number(nudgeDurationMs),
+      coordinateFrame: 'altAz',
+      purpose: 'live-centering'
+    });
+  }
+
+  useEffect(() => {
+    const handleSlewKeyboard = (event) => {
+      const target = event.target;
+      const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target?.isContentEditable;
+      if (isTyping || event.repeat) return;
+
+      const directions = { ArrowUp: 'north', ArrowDown: 'south', ArrowLeft: 'west', ArrowRight: 'east' };
+      if (directions[event.key]) {
+        event.preventDefault();
+        nudgeMount(directions[event.key]);
+      } else if (event.code === 'Space') {
+        event.preventDefault();
+        runCpwiControl('abortSlew');
+      }
+    };
+
+    window.addEventListener('keydown', handleSlewKeyboard);
+    return () => window.removeEventListener('keydown', handleSlewKeyboard);
+  }, [localSystems?.cpwi?.connected, localSystems?.cpwi?.parked, nudgeRate, nudgeDurationMs, session?.user?.id]);
+
+  const nudgeControls = (location) => {
+    const mountDisabled = Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.parked;
+    const pulseChoices = [100, 200, 350, 500, 1000, 2000];
+
+    return (
+      <div className={`missionConsoleNudgeConsole missionConsoleNudgeConsole-${location}`}>
+        <div className="missionConsoleNudgeHeader">
+          <div>
+            <small>MANUAL SLEW CONTROLS</small>
+            <strong>LCARS NAVIGATION ARRAY</strong>
+          </div>
+          <span className={localSystems?.cpwi?.connected ? 'is-online' : 'is-offline'}>
+            {localSystems?.cpwi?.connected ? 'MOUNT ONLINE' : 'MOUNT OFFLINE'}
+          </span>
+        </div>
+
+        <div className="missionConsoleNudgeBody">
+          <div className="missionConsoleSlewRatePanel">
+            <span>SLEW RATE</span>
+            <div className="missionConsoleNudgeChoices">
+              {[['fine', '1×'], ['center', '3×'], ['fast', '9×']].map(([rate, multiplier]) => (
+                <button key={rate} type="button" className={nudgeRate === rate ? 'is-active' : ''} onClick={() => setNudgeRate(rate)}>
+                  <b>{rate.toUpperCase()}</b><em>{multiplier}</em>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="missionConsoleSlewRing" aria-label="Telescope directional slew controls">
+            <div className="missionConsoleSlewTicks" aria-hidden="true" />
+            <button type="button" className="missionConsoleSlewWedge missionConsoleSlewNorth" aria-label="Slew telescope north" disabled={mountDisabled} onClick={() => nudgeMount('north')}>
+              <ArrowUp size={24} /><span>N</span>
+            </button>
+            <button type="button" className="missionConsoleSlewWedge missionConsoleSlewWest" aria-label="Slew telescope west" disabled={mountDisabled} onClick={() => nudgeMount('west')}>
+              <ArrowLeft size={24} /><span>W</span>
+            </button>
+            <button type="button" className="missionConsoleSlewWedge missionConsoleSlewEast" aria-label="Slew telescope east" disabled={mountDisabled} onClick={() => nudgeMount('east')}>
+              <span>E</span><ArrowRight size={24} />
+            </button>
+            <button type="button" className="missionConsoleSlewWedge missionConsoleSlewSouth" aria-label="Slew telescope south" disabled={mountDisabled} onClick={() => nudgeMount('south')}>
+              <span>S</span><ArrowDown size={24} />
+            </button>
+            <button type="button" className="missionConsoleSlewStop" disabled={!localSystems?.cpwi?.connected} onClick={() => runCpwiControl('abortSlew')}>
+              <strong>STOP</strong><span>■</span>
+            </button>
+          </div>
+
+          <div className="missionConsolePulsePanel">
+            <span>PULSE DURATION</span>
+            <div className="missionConsolePulseChoices">
+              {pulseChoices.map((duration) => (
+                <button key={duration} type="button" className={Number(nudgeDurationMs) === duration ? 'is-active' : ''} onClick={() => setNudgeDurationMs(duration)}>
+                  {(duration / 1000).toFixed(duration < 1000 ? 1 : 1)}s
+                </button>
+              ))}
+            </div>
+            <button type="button" className="missionConsoleNudgeAbort" disabled={!localSystems?.cpwi?.connected} onClick={() => runCpwiControl('abortSlew')}>
+              ABORT MOTION <small>IMMEDIATE STOP</small>
+            </button>
+          </div>
+
+          <div className="missionConsoleMountMiniInfo">
+            <span>MOUNT INFO</span>
+            <div><small>RA</small><strong>{bridgeNumber(localSystems?.cpwi?.rightAscensionHours, 4, 'h')}</strong></div>
+            <div><small>DEC</small><strong>{bridgeNumber(localSystems?.cpwi?.declinationDegrees, 3, '°')}</strong></div>
+            <div><small>AZIMUTH</small><strong>{bridgeNumber(localSystems?.cpwi?.azimuthDegrees, 1, '°')}</strong></div>
+            <div><small>ALTITUDE</small><strong>{bridgeNumber(localSystems?.cpwi?.altitudeDegrees, 1, '°')}</strong></div>
+            <div><small>TRACKING</small><strong className={localSystems?.cpwi?.tracking ? 'is-good' : ''}>{bridgeBoolean(localSystems?.cpwi?.tracking)}</strong></div>
+          </div>
+        </div>
+
+        <div className="missionConsoleNudgeFooter">
+          TAP A DIRECTION TO NUDGE <i>•</i> ARROW KEYS TO SLEW <i>•</i> SPACEBAR TO STOP
+        </div>
+      </div>
+    );
+  };
 
   const selectedSlewRecord = CPWI_SLEW_TARGETS.find((target) => target.id === selectedSlewTarget) || CPWI_SLEW_TARGETS[0];
   const selectedSlewRaHours = selectedSlewTarget === 'manual' ? Number(manualSlewRa) : selectedSlewRecord.ra;
@@ -1567,6 +1689,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                     <span>LATEST FRAME PREVIEW</span>
                     <strong>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong>
                   </div>
+                  {nudgeControls('imaging')}
                   {asiimgPreviewUrl ? (
                     <a href={asiimgPreviewUrl} target="_blank" rel="noreferrer" title="Open the latest FITS preview at full size">
                       <img src={asiimgPreviewUrl} alt={`Latest imaging FITS preview${asiimgPayload.latest_file ? `: ${asiimgPayload.latest_file}` : ''}`} />
@@ -1840,6 +1963,8 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                       <button type="button" className="is-emergency" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected} onClick={() => runCpwiControl('abortSlew')}>ABORT SLEW</button>
                     </div>
                   </> : <div className="missionConsoleSlewPanel">
+                    <div className="missionConsoleSlewDivider"><span>OBJECT TARGETING</span></div>
+
                     <label className="missionConsoleSlewField">
                       <span>TARGET DATABASE</span>
                       <select value={selectedSlewTarget} onChange={(event) => { setSelectedSlewTarget(event.target.value); setSlewClearanceConfirmed(false); }}>
