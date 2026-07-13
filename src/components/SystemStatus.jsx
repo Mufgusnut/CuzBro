@@ -23,6 +23,7 @@ import {
 import {
   getCrewMember
 } from '../lib/crew.js';
+import Hbg3DewPanel from './Hbg3DewPanel.jsx';
 
 const GALLERY_API =
   'https://cuzbro-gallery-api.dve-hffman.workers.dev';
@@ -728,6 +729,8 @@ export default function SystemStatus({
             }
           )}
         </section>
+
+        <Hbg3DewPanel />
 
         <section className="system-status-footer">
           <div>

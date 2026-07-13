@@ -4,3 +4,10 @@ dist/
 .DS_Store
 .env.local
 node_modules/
+hbg3-update/hbg3-bridge/.env
+
+.env
+
+.env.*
+
+!.env.example

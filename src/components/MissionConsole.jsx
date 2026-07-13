@@ -8,15 +8,19 @@ import {
   ChevronRight,
   Cloud,
   Compass,
+  Cpu,
   DatabaseZap,
   Droplets,
   Gauge,
   PauseCircle,
+  Radio,
   PlayCircle,
   Radar,
   Settings2,
   SquareTerminal,
+  Thermometer,
   TimerReset,
+  Wifi,
   Wind
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
@@ -42,6 +46,7 @@ const DEFAULT_SITE = {
 };
 
 const STORAGE_PREFIX = 'cuzbro-mission-console-v1';
+const DEFAULT_LOCAL_BRIDGE_URL = 'http://127.0.0.1:4788';
 
 const radians = (degrees) => degrees * Math.PI / 180;
 const degrees = (radiansValue) => radiansValue * 180 / Math.PI;
@@ -430,6 +435,56 @@ function mergeConsoleState(base, stored) {
   };
 }
 
+function getLocalBridgeUrl() {
+  try {
+    return localStorage.getItem('cuzbro-local-bridge-url') ||
+      import.meta.env.VITE_LOCAL_BRIDGE_URL ||
+      DEFAULT_LOCAL_BRIDGE_URL;
+  } catch {
+    return import.meta.env.VITE_LOCAL_BRIDGE_URL || DEFAULT_LOCAL_BRIDGE_URL;
+  }
+}
+
+function bridgeNumber(value, digits = 1, suffix = '') {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '—';
+  return `${Number(value).toFixed(digits)}${suffix}`;
+}
+
+function bridgeBoolean(value) {
+  if (value === true) return 'ON';
+  if (value === false) return 'OFF';
+  return '—';
+}
+
+async function fetchLocalBridgeStatus(url, signal) {
+  const response = await fetch(`${String(url).replace(/\/$/, '')}/status`, {
+    method: 'GET',
+    cache: 'no-store',
+    signal,
+    headers: { Accept: 'application/json' }
+  });
+  if (!response.ok) throw new Error(`Local bridge returned ${response.status}`);
+  return response.json();
+}
+
+async function sendLocalBridgeControl(url, action) {
+  const response = await fetch(`${String(url).replace(/\/$/, '')}/control`, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ action })
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload?.ok === false) {
+    throw new Error(payload?.error || `Local bridge returned ${response.status}`);
+  }
+  return payload;
+}
+
 function QuickLink({ href, label }) {
   return (
     <a className="missionConsoleQuickLink" href={href}>
@@ -449,9 +504,19 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [busyAction, setBusyAction] = useState('');
   const [now, setNow] = useState(Date.now());
   const [bridgeMenuOpen, setBridgeMenuOpen] = useState(false);
+  const [localBridgeUrl, setLocalBridgeUrl] = useState(getLocalBridgeUrl);
+  const [localSystems, setLocalSystems] = useState(null);
+  const [localSystemsStatus, setLocalSystemsStatus] = useState('connecting');
+  const [localSystemsError, setLocalSystemsError] = useState('');
+  const [localSystemsUpdatedAt, setLocalSystemsUpdatedAt] = useState(null);
+  const [cpwiControlBusy, setCpwiControlBusy] = useState('');
+  const [cpwiControlError, setCpwiControlError] = useState('');
+  const [hbg3Record, setHbg3Record] = useState(null);
+  const [hbg3Error, setHbg3Error] = useState('');
   const [openPanels, setOpenPanels] = useState({
     target: false,
     conditions: false,
+    systems: false,
     recommendation: false,
     history: false,
     operations: false
@@ -497,6 +562,88 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function pollHbg3Telemetry() {
+      const { data, error: queryError } = await supabase
+        .from('hbg3_dew_status')
+        .select('station,captured_at,connected,raw_data')
+        .eq('station', 'eliot')
+        .order('captured_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!active) return;
+      if (queryError) {
+        setHbg3Error(queryError.message || 'HBG3 telemetry unavailable.');
+        return;
+      }
+
+      setHbg3Record(data || null);
+      setHbg3Error('');
+    }
+
+    pollHbg3Telemetry();
+    const interval = window.setInterval(pollHbg3Telemetry, 5000);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    let currentController = null;
+
+    async function pollLocalSystems() {
+      currentController?.abort();
+      currentController = new AbortController();
+      const timeout = window.setTimeout(() => currentController.abort(), 1800);
+
+      try {
+        const payload = await fetchLocalBridgeStatus(localBridgeUrl, currentController.signal);
+        if (!active) return;
+        setLocalSystems(payload);
+        setLocalSystemsStatus('online');
+        setLocalSystemsError('');
+        setLocalSystemsUpdatedAt(new Date());
+      } catch (bridgeError) {
+        if (!active) return;
+        setLocalSystemsStatus('offline');
+        setLocalSystemsError(bridgeError?.name === 'AbortError' ? 'Local bridge did not respond.' : bridgeError.message || 'Local bridge unavailable.');
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    }
+
+    setLocalSystemsStatus('connecting');
+    pollLocalSystems();
+    const interval = window.setInterval(pollLocalSystems, 2000);
+
+    return () => {
+      active = false;
+      currentController?.abort();
+      window.clearInterval(interval);
+    };
+  }, [localBridgeUrl]);
+
+  async function runCpwiControl(action) {
+    setCpwiControlBusy(action);
+    setCpwiControlError('');
+    try {
+      const payload = await sendLocalBridgeControl(localBridgeUrl, action);
+      setLocalSystems(payload);
+      setLocalSystemsStatus('online');
+      setLocalSystemsUpdatedAt(new Date());
+    } catch (controlError) {
+      setCpwiControlError(controlError.message || 'CPWI command failed.');
+    } finally {
+      setCpwiControlBusy('');
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -614,6 +761,41 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
 
   const weatherRating = getWeatherRating(weather);
   const dewRisk = getDewRisk(weather);
+  const hbg3AgeMs = hbg3Record?.captured_at
+    ? now - new Date(hbg3Record.captured_at).getTime()
+    : Infinity;
+  const hbg3Online = Boolean(hbg3Record?.connected) && hbg3AgeMs <= 30000 && !hbg3Error;
+  const hbg3Channels = Array.isArray(hbg3Record?.raw_data?.channels)
+    ? hbg3Record.raw_data.channels
+    : [];
+  const hbg3Channel1 = hbg3Channels.find((channel) => Number(channel?.index) === 0) || hbg3Channels[0] || null;
+  const hbg3Channel2 = hbg3Channels.find((channel) => Number(channel?.index) === 1) || hbg3Channels[1] || null;
+  const hbg3Sensor1 = Boolean(hbg3Channel1?.sensorDetected ?? Number(hbg3Channel1?.temperatureC || 0) !== 0);
+  const hbg3Sensor2 = Boolean(hbg3Channel2?.sensorDetected ?? Number(hbg3Channel2?.temperatureC || 0) !== 0);
+  const hbg3Environment = hbg3Record?.raw_data?.environment || {};
+  const hbg3DewMargin = Number(hbg3Environment?.dewMarginC);
+  const hbg3RiskState = !hbg3Online || !Number.isFinite(hbg3DewMargin)
+    ? 'UNKNOWN'
+    : hbg3DewMargin <= 0
+      ? 'DEW LIKELY'
+      : hbg3DewMargin < 2
+        ? 'HIGH'
+        : hbg3DewMargin < 5
+          ? 'WATCH'
+          : 'SAFE';
+  const hbg3ControlMode = Number(hbg3Channel1?.aggression || 0) > 0
+    ? `AUTO A${Number(hbg3Channel1.aggression).toFixed(0)}`
+    : `MANUAL ${Number(hbg3Channel1?.manualPwm || 0).toFixed(0)}%`;
+  const systemsLinkTone = localSystemsStatus === 'online' || hbg3Online
+    ? 'good'
+    : localSystemsStatus === 'connecting'
+      ? 'warn'
+      : 'alert';
+  const systemsLinkLabel = localSystemsStatus === 'online' && hbg3Online
+    ? 'ONLINE'
+    : localSystemsStatus === 'online' || hbg3Online
+      ? 'PARTIAL'
+      : localSystemsStatus.toUpperCase();
   const isOperationLive = activeOperation?.status === 'ACTIVE';
   const missionElapsed = formatOperationElapsed(
     activeOperation?.started_at || missionPlan?.started_at,
@@ -860,6 +1042,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     setOpenPanels({
       target: isOpen,
       conditions: isOpen,
+      systems: isOpen,
       recommendation: isOpen,
       history: isOpen,
       operations: isOpen
@@ -945,6 +1128,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               <div className="missionConsoleBridgeReadout"><span>CREW AUTH</span><strong>{crew?.callSign || 'CREW READY'}</strong></div>
               <div className="missionConsoleBridgeReadout"><span>MISSION MEMORY</span><strong>{captureHistorySummary.structuredCount} STRUCTURED LOGS</strong></div>
               <div className="missionConsoleBridgeReadout"><span>BASELINE SOURCE</span><strong>{lastCapture ? 'FIELD HISTORY' : 'RECOMMENDED PROFILE'}</strong></div>
+              <div className={`missionConsoleBridgeReadout missionConsoleBridgeReadout-${localSystemsStatus}`}><span>LOCAL LINK</span><strong>{localSystemsStatus.toUpperCase()}</strong></div>
             </div>
           </section>
 
@@ -954,6 +1138,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
             {[
               ['target', 'TARGET', 'missionConsoleLcarsTarget'],
               ['conditions', 'CONDITIONS', 'missionConsoleLcarsConditions'],
+              ['systems', 'LOCAL SYSTEMS', 'missionConsoleLcarsSystems'],
               ['recommendation', 'RECOMMENDATION', 'missionConsoleLcarsRecommendation'],
               ['history', 'HISTORY', 'missionConsoleLcarsHistory'],
               ['operations', 'OPERATIONS', 'missionConsoleLcarsOperations']
@@ -1044,6 +1229,85 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                 <div className="missionConsoleMetricCard missionConsoleMetricCardIcon"><Wind size={18} /><span>WIND</span><strong>{weather ? `${Math.round(weather.wind_speed_10m ?? 0)} mph` : '—'}</strong></div>
                 <div className="missionConsoleMetricCard missionConsoleMetricCardIcon"><Droplets size={18} /><span>HUMIDITY</span><strong>{weather ? `${Math.round(weather.relative_humidity_2m ?? 0)}%` : '—'}</strong></div>
                 <div className="missionConsoleMetricCard missionConsoleMetricCardIcon"><Gauge size={18} /><span>TEMP</span><strong>{weather ? `${Math.round(weather.temperature_2m ?? 0)}°F` : '—'}</strong></div>
+              </div>
+            </section>
+
+            <section className={`missionConsolePanel missionConsolePanelSystems ${openPanels.systems ? 'is-open' : 'is-collapsed'}`}>
+              <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('systems')} aria-expanded={openPanels.systems}>
+                <span>LOCAL SYSTEMS LINK</span>
+                <div className={`missionConsolePanelBadge missionConsolePanelBadge-${systemsLinkTone}`}>{systemsLinkLabel}</div><ChevronDown className="missionConsolePanelChevron" size={18} />
+              </button>
+
+              <div className="missionConsoleLocalLinkHeader">
+                <div>
+                  <small>OBSERVATORY TELEMETRY LINKS</small>
+                  <strong>{localSystemsStatus === 'online' ? 'LOCAL MOUNT LINK ESTABLISHED' : hbg3Online ? 'HBG3 CLOUD LINK ESTABLISHED' : 'LOCAL DATA LINK NOT ESTABLISHED'}</strong>
+                  <span>{localSystemsStatus === 'online'
+                    ? `Mount updated ${localSystemsUpdatedAt?.toLocaleTimeString() || 'now'}`
+                    : hbg3Online
+                      ? `Dew telemetry updated ${new Date(hbg3Record.captured_at).toLocaleTimeString()}`
+                      : localSystemsError || hbg3Error || 'Start the CuzBro Local Bridge on the CPWI computer.'}</span>
+                </div>
+                <label>
+                  <span>BRIDGE URL</span>
+                  <input value={localBridgeUrl} onChange={(event) => { const value = event.target.value; setLocalBridgeUrl(value); try { localStorage.setItem('cuzbro-local-bridge-url', value); } catch {} }} />
+                </label>
+              </div>
+
+              <div className="missionConsoleSystemsGrid">
+                <article className="missionConsoleSystemNode">
+                  <div className="missionConsoleSystemNodeTitle"><Cpu size={18} /><span>CPWI / ASCOM MOUNT</span></div>
+                  <div className="missionConsoleSystemMetrics">
+                    <div><span>CONNECTION</span><strong>{localSystems?.cpwi?.connected ? 'ONLINE' : 'OFFLINE'}</strong></div>
+                    <div><span>TRACKING</span><strong>{bridgeBoolean(localSystems?.cpwi?.tracking)}</strong></div>
+                    <div><span>SLEWING</span><strong>{bridgeBoolean(localSystems?.cpwi?.slewing)}</strong></div>
+                    <div><span>PARKED</span><strong>{bridgeBoolean(localSystems?.cpwi?.parked)}</strong></div>
+                    <div><span>RA</span><strong>{bridgeNumber(localSystems?.cpwi?.rightAscensionHours, 4, 'h')}</strong></div>
+                    <div><span>DEC</span><strong>{bridgeNumber(localSystems?.cpwi?.declinationDegrees, 3, '°')}</strong></div>
+                    <div><span>ALTITUDE</span><strong>{bridgeNumber(localSystems?.cpwi?.altitudeDegrees, 2, '°')}</strong></div>
+                    <div><span>AZIMUTH</span><strong>{bridgeNumber(localSystems?.cpwi?.azimuthDegrees, 2, '°')}</strong></div>
+                  </div>
+
+                  <div className="missionConsoleMountControls" aria-label="CPWI mount controls">
+                    <button type="button" disabled={Boolean(cpwiControlBusy) || localSystems?.cpwi?.connected} onClick={() => runCpwiControl('connect')}>CONNECT</button>
+                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected} onClick={() => runCpwiControl('disconnect')}>DISCONNECT</button>
+                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.tracking === true} onClick={() => runCpwiControl('trackingOn')}>TRACKING ON</button>
+                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.tracking === false} onClick={() => runCpwiControl('trackingOff')}>TRACKING OFF</button>
+                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || localSystems?.cpwi?.slewing} onClick={() => runCpwiControl('park')}>PARK</button>
+                    <button type="button" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected || !localSystems?.cpwi?.parked} onClick={() => runCpwiControl('unpark')}>UNPARK</button>
+                    <button type="button" className="is-emergency" disabled={Boolean(cpwiControlBusy) || !localSystems?.cpwi?.connected} onClick={() => runCpwiControl('abortSlew')}>ABORT SLEW</button>
+                  </div>
+                  {cpwiControlBusy ? <div className="missionConsoleMountControlMessage">COMMAND IN PROGRESS // {cpwiControlBusy.toUpperCase()}</div> : null}
+                  {cpwiControlError ? <div className="missionConsoleMountControlMessage is-error">{cpwiControlError}</div> : null}
+                </article>
+
+                <article className="missionConsoleSystemNode">
+                  <div className="missionConsoleSystemNodeTitle"><Thermometer size={18} /><span>DEW CONTROL</span></div>
+                  <div className="missionConsoleSystemMetrics">
+                    <div><span>HBG3 LINK</span><strong>{hbg3Online ? 'ONLINE' : hbg3Record ? 'STALE' : 'OFFLINE'}</strong></div>
+                    <div><span>AMBIENT</span><strong>{bridgeNumber(hbg3Environment?.ambientC, 1, '°C')}</strong></div>
+                    <div><span>HUMIDITY</span><strong>{bridgeNumber(hbg3Environment?.humidityPercent, 0, '%')}</strong></div>
+                    <div><span>DEW POINT</span><strong>{bridgeNumber(hbg3Environment?.dewPointC, 1, '°C')}</strong></div>
+                    <div><span>DEW MARGIN</span><strong>{bridgeNumber(hbg3Environment?.dewMarginC, 1, '°C')}</strong></div>
+                    <div><span>HEATER OUTPUT</span><strong>{bridgeNumber(hbg3Channel1?.pwmPercent, 0, '%')}</strong></div>
+                    <div><span>CONTROL MODE</span><strong>{hbg3Channel1 ? hbg3ControlMode : '—'}</strong></div>
+                    <div><span>RISK STATE</span><strong>{hbg3RiskState}</strong></div>
+                    <div><span>RING TEMP</span><strong>{hbg3Sensor1 ? bridgeNumber(hbg3Channel1?.temperatureC, 1, '°C') : '—'}</strong></div>
+                    <div><span>CURRENT DRAW</span><strong>{bridgeNumber(hbg3Channel1?.amps, 2, ' A')}</strong></div>
+                    <div><span>SUPPLY</span><strong>{bridgeNumber(hbg3Environment?.supplyVolts, 2, ' V')}</strong></div>
+                    <div><span>LAST UPDATE</span><strong>{hbg3Record?.captured_at ? new Date(hbg3Record.captured_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '—'}</strong></div>
+                  </div>
+                </article>
+
+                <article className="missionConsoleSystemNode missionConsoleSystemNodeWide">
+                  <div className="missionConsoleSystemNodeTitle"><Radio size={18} /><span>BRIDGE DIAGNOSTICS</span></div>
+                  <div className="missionConsoleSystemDiagnostics">
+                    <span><Wifi size={15} /> {localSystems?.bridge?.host || 'LOCALHOST'} // {localSystems?.bridge?.version || 'BRIDGE NOT DETECTED'}</span>
+                    <span>ASCOM: {localSystems?.cpwi?.driver || 'NOT REPORTED'}</span>
+                    <span>HBG3: {hbg3Online ? 'SUPABASE RELAY ONLINE' : hbg3Error ? `ERROR // ${hbg3Error}` : hbg3Record ? 'TELEMETRY STALE' : 'NOT REPORTED'}</span>
+                    {localSystems?.warnings?.length ? <span className="missionConsoleSystemWarning">{localSystems.warnings.join(' // ')}</span> : null}
+                  </div>
+                </article>
               </div>
             </section>
 

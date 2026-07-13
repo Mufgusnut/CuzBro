@@ -33050,3 +33050,456 @@ body.missionPlanningBoardOpen {
     row-gap: 10px;
   }
 }
+
+/* Local CPWI / HBG3 telemetry bridge */
+.missionConsoleLcarsSystems,
+.missionConsolePanelSystems .missionConsolePanelTop {
+  background: #a6d7f3;
+}
+
+.missionConsoleBridgeReadout-online {
+  background: #7ed0ba;
+}
+
+.missionConsoleBridgeReadout-connecting {
+  background: #e6dcae;
+}
+
+.missionConsoleBridgeReadout-offline {
+  background: #bd7270;
+}
+
+.missionConsoleLocalLinkHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.7fr);
+  gap: 16px;
+  background: #000;
+  border: 6px solid #a6d7f3;
+  padding: 16px;
+}
+
+.missionConsoleLocalLinkHeader small,
+.missionConsoleLocalLinkHeader span,
+.missionConsoleSystemMetrics span,
+.missionConsoleSystemDiagnostics span {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
+.missionConsoleLocalLinkHeader strong {
+  display: block;
+  margin: 6px 0;
+  color: #a6d7f3;
+  font-size: 1.15rem;
+}
+
+.missionConsoleLocalLinkHeader > div > span {
+  color: #e6dcae;
+}
+
+.missionConsoleLocalLinkHeader label {
+  align-self: end;
+}
+
+.missionConsoleLocalLinkHeader label span {
+  color: #e6dcae;
+  margin-bottom: 7px;
+}
+
+.missionConsoleLocalLinkHeader input {
+  width: 100%;
+  background: #111;
+  color: #f5e6bd;
+  border: 3px solid #958ff0;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.missionConsoleSystemsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.missionConsoleSystemNode {
+  background: #000;
+  border: 6px solid #e6dcae;
+}
+
+.missionConsoleSystemNode:nth-child(2) {
+  border-color: #ea9c69;
+}
+
+.missionConsoleSystemNodeWide {
+  grid-column: 1 / -1;
+  border-color: #958ff0;
+}
+
+.missionConsoleSystemNodeTitle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #e6dcae;
+  color: #000;
+  padding: 10px 14px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.missionConsoleSystemNode:nth-child(2) .missionConsoleSystemNodeTitle {
+  background: #ea9c69;
+}
+
+.missionConsoleSystemNodeWide .missionConsoleSystemNodeTitle {
+  background: #958ff0;
+}
+
+.missionConsoleSystemMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px;
+}
+
+.missionConsoleSystemMetrics > div {
+  background: #1a1a1a;
+  padding: 10px;
+  min-height: 64px;
+}
+
+.missionConsoleSystemMetrics span {
+  color: #a6d7f3;
+}
+
+.missionConsoleSystemMetrics strong {
+  display: block;
+  margin-top: 7px;
+  color: #f4e6bd;
+}
+
+.missionConsoleSystemDiagnostics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+}
+
+.missionConsoleSystemDiagnostics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a1a1a;
+  color: #e6dcae;
+  padding: 8px 10px;
+}
+
+.missionConsoleSystemWarning {
+  color: #ffb0a8 !important;
+}
+
+@media (max-width: 960px) {
+  .missionConsoleLocalLinkHeader,
+  .missionConsoleSystemsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .missionConsoleSystemNodeWide {
+    grid-column: auto;
+  }
+
+  .missionConsoleSystemMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================================
+   HBG3 DEW TELEMETRY
+   ========================================================= */
+.hbg3-panel {
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 255, 0.16);
+  border-radius: 22px;
+  background: rgba(5, 10, 24, 0.94);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+}
+
+.hbg3-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 28px;
+  border-bottom: 1px solid rgba(120, 155, 255, 0.12);
+  background: radial-gradient(circle at 8% 0%, rgba(70, 115, 225, 0.14), transparent 38%);
+}
+
+.hbg3-panel-header h2 {
+  margin: 7px 0 6px;
+  color: #f4f7ff;
+}
+
+.hbg3-panel-header p {
+  margin: 0;
+  color: rgba(208, 218, 248, 0.56);
+}
+
+.hbg3-link-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+  padding: 12px 14px;
+  border: 1px solid rgba(120, 155, 255, 0.15);
+  border-radius: 13px;
+  background: rgba(7, 14, 31, 0.84);
+}
+
+.hbg3-link-state i {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #ff6060;
+  box-shadow: 0 0 14px rgba(255, 96, 96, 0.75);
+}
+
+.hbg3-panel-online .hbg3-link-state i {
+  background: #4ce08b;
+  box-shadow: 0 0 16px rgba(76, 224, 139, 0.9);
+}
+
+.hbg3-link-state div {
+  min-width: 0;
+  flex: 1;
+}
+
+.hbg3-link-state span,
+.hbg3-channel-title span,
+.hbg3-channel-footer,
+.hbg3-panel-footer {
+  color: rgba(193, 205, 246, 0.48);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.hbg3-link-state strong {
+  display: block;
+  margin-top: 3px;
+  color: #ff9999;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+}
+
+.hbg3-panel-online .hbg3-link-state strong {
+  color: #8ff0b4;
+}
+
+.hbg3-link-state button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(120, 155, 255, 0.18);
+  border-radius: 9px;
+  color: #aebeff;
+  background: rgba(52, 78, 154, 0.12);
+  cursor: pointer;
+}
+
+.hbg3-channel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 24px;
+}
+
+.hbg3-channel {
+  overflow: hidden;
+  border: 1px solid rgba(120, 155, 255, 0.14);
+  border-radius: 17px;
+  background: linear-gradient(180deg, rgba(12, 20, 42, 0.96), rgba(5, 9, 21, 0.98));
+}
+
+.hbg3-channel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(120, 155, 255, 0.1);
+}
+
+.hbg3-channel-title > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #9db0ff;
+}
+
+.hbg3-channel-title strong {
+  color: #ff9999;
+  font-size: 0.61rem;
+  letter-spacing: 0.1em;
+}
+
+.hbg3-channel-detected .hbg3-channel-title strong {
+  color: #8ff0b4;
+}
+
+.hbg3-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.hbg3-metrics > div {
+  min-width: 0;
+  padding: 20px;
+  border-right: 1px solid rgba(120, 155, 255, 0.09);
+}
+
+.hbg3-metrics > div:last-child {
+  border-right: 0;
+}
+
+.hbg3-metrics svg {
+  color: #8199fb;
+}
+
+.hbg3-metrics span {
+  display: block;
+  margin-top: 12px;
+  color: rgba(193, 205, 246, 0.43);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.hbg3-metrics strong {
+  display: block;
+  margin-top: 6px;
+  color: #f1f5ff;
+  font-size: 1.05rem;
+}
+
+.hbg3-channel-footer,
+.hbg3-panel-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 20px;
+  border-top: 1px solid rgba(120, 155, 255, 0.09);
+  background: rgba(3, 7, 17, 0.56);
+}
+
+.hbg3-panel-footer {
+  padding: 16px 24px;
+}
+
+.hbg3-panel-footer strong {
+  color: #ff9d9d;
+}
+
+.hbg3-message {
+  margin: 24px;
+  padding: 22px;
+  border: 1px dashed rgba(120, 155, 255, 0.22);
+  border-radius: 14px;
+  color: rgba(213, 223, 255, 0.65);
+}
+
+.hbg3-message-error {
+  border-color: rgba(255, 96, 96, 0.28);
+  color: #ffabab;
+}
+
+@media (max-width: 1050px) {
+  .hbg3-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hbg3-metrics > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .hbg3-metrics > div:nth-child(-n+2) {
+    border-bottom: 1px solid rgba(120, 155, 255, 0.09);
+  }
+}
+
+@media (max-width: 760px) {
+  .hbg3-panel-header,
+  .hbg3-panel-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hbg3-link-state {
+    width: 100%;
+  }
+
+  .hbg3-channel-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .hbg3-channel-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* CPWI / ASCOM controls in Mission Console */
+.missionConsoleMountControls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  border-top: 6px solid #000;
+  background: #050505;
+}
+
+.missionConsoleMountControls button {
+  min-height: 42px;
+  border: 2px solid #000;
+  border-radius: 999px 10px 10px 999px;
+  padding: 8px 12px;
+  background: #e8dca9;
+  color: #151515;
+  font: inherit;
+  font-weight: 950;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+}
+
+.missionConsoleMountControls button:nth-child(2n) {
+  border-radius: 10px 999px 999px 10px;
+  background: #9ec9ff;
+}
+
+.missionConsoleMountControls button.is-emergency {
+  grid-column: 1 / -1;
+  border-radius: 999px;
+  background: #ef8b77;
+}
+
+.missionConsoleMountControls button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.missionConsoleMountControlMessage {
+  padding: 9px 13px 12px;
+  background: #050505;
+  color: #f1dfac;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.missionConsoleMountControlMessage.is-error {
+  color: #ff9a8e;
+}
