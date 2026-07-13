@@ -466,6 +466,15 @@ function celsiusDeltaToFahrenheit(value) {
   return Number(value) * 9 / 5;
 }
 
+function formatEta(seconds) {
+  if (seconds === null || seconds === undefined || !Number.isFinite(Number(seconds)) || Number(seconds) < 0) return '—';
+  const total = Math.max(0, Math.round(Number(seconds)));
+  if (total < 60) return `${total} SEC`;
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.ceil((total % 3600) / 60);
+  return hours ? `${hours} HR ${minutes} MIN` : `${minutes} MIN`;
+}
+
 function bridgeBoolean(value) {
   if (value === true) return 'ON';
   if (value === false) return 'OFF';
@@ -504,6 +513,8 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [slewClearanceConfirmed, setSlewClearanceConfirmed] = useState(false);
   const [hbg3Record, setHbg3Record] = useState(null);
   const [hbg3Error, setHbg3Error] = useState('');
+  const [asiimgRecord, setAsiimgRecord] = useState(null);
+  const [asiimgError, setAsiimgError] = useState('');
   const [dewControlMode, setDewControlMode] = useState('auto');
   const [dewAggression, setDewAggression] = useState(5);
   const [dewManualOutput, setDewManualOutput] = useState(35);
@@ -590,6 +601,35 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
 
     pollHbg3Telemetry();
     const interval = window.setInterval(pollHbg3Telemetry, 5000);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function pollAsiimgTelemetry() {
+      const { data, error: queryError } = await supabase
+        .from('asiimg_status')
+        .select('station,updated_at,online,payload,last_error')
+        .eq('station', 'eliot')
+        .maybeSingle();
+
+      if (!active) return;
+      if (queryError) {
+        setAsiimgError(queryError.message || 'ASIImg telemetry unavailable.');
+        return;
+      }
+
+      setAsiimgRecord(data || null);
+      setAsiimgError(data?.last_error || '');
+    }
+
+    pollAsiimgTelemetry();
+    const interval = window.setInterval(pollAsiimgTelemetry, 3000);
 
     return () => {
       active = false;
@@ -961,6 +1001,32 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     now
   );
   const progressPercent = frameTarget ? Math.min(100, Math.round((Number(consoleState.completedFrames || 0) / frameTarget) * 100)) : 0;
+  const asiimgAgeMs = asiimgRecord?.updated_at
+    ? now - new Date(asiimgRecord.updated_at).getTime()
+    : Infinity;
+  const asiimgOnline = Boolean(asiimgRecord?.online) && asiimgAgeMs <= 20000 && !asiimgError;
+  const asiimgPayload = asiimgRecord?.payload || {};
+  const asiimgFrames = Number(asiimgPayload.frames_captured || 0);
+  const asiimgRemaining = frameTarget ? Math.max(0, frameTarget - asiimgFrames) : null;
+  const asiimgCadenceSeconds = Number(asiimgPayload.average_cadence_seconds || asiimgPayload.exposure_seconds || 0);
+  const asiimgEtaSeconds = asiimgRemaining !== null && asiimgCadenceSeconds > 0
+    ? asiimgRemaining * asiimgCadenceSeconds
+    : null;
+  const asiimgLastFrameAge = asiimgPayload.last_frame_at
+    ? Math.max(0, (now - new Date(asiimgPayload.last_frame_at).getTime()) / 1000)
+    : null;
+  const asiimgState = asiimgOnline ? String(asiimgPayload.state || 'waiting').toUpperCase() : 'OFFLINE';
+  const asiimgStalled = asiimgOnline && asiimgPayload.state === 'capturing' && asiimgLastFrameAge !== null && asiimgLastFrameAge > Math.max(60, asiimgCadenceSeconds * 3);
+  const asiimgPreviewUrl = typeof asiimgPayload.preview_url === 'string' ? asiimgPayload.preview_url : '';
+
+  useEffect(() => {
+    if (!asiimgOnline || asiimgFrames < 0) return;
+    setConsoleState((current) => {
+      if (Number(current.completedFrames || 0) === asiimgFrames) return current;
+      return { ...current, completedFrames: asiimgFrames };
+    });
+  }, [asiimgOnline, asiimgFrames]);
+
   const captureHistorySummary = useMemo(() => summarizeCaptureHistory(captureHistory), [captureHistory]);
   const baselineRecommendation = useMemo(() => getMissionRecommendation({ missionPlan, targetReference, weather, lastCapture }), [missionPlan, targetReference, weather, lastCapture]);
   const missionRecommendation = aiRecommendation || baselineRecommendation;
@@ -1792,8 +1858,51 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                 </div>
                 <div className="missionConsoleTimerBlock missionConsoleTimerBlockStatus">
                   <small>CAPTURE STATE</small>
-                  <strong>{String(consoleState.captureStatus || 'idle').toUpperCase()}</strong>
+                  <strong>{asiimgOnline ? (asiimgStalled ? 'STALLED' : asiimgState) : String(consoleState.captureStatus || 'idle').toUpperCase()}</strong>
                 </div>
+              </div>
+
+              <div className={`missionConsoleAsiimgPanel ${asiimgStalled ? 'is-stalled' : ''}`}>
+                <div className="missionConsoleAsiimgHeader">
+                  <div>
+                    <small>ASIIMG CAPTURE LINK</small>
+                    <strong>{asiimgOnline ? 'ONLINE' : 'OFFLINE'}</strong>
+                  </div>
+                  <div className={`missionConsoleAsiimgState ${asiimgStalled ? 'is-alert' : ''}`}>
+                    {asiimgStalled ? 'CAPTURE STALLED' : asiimgState}
+                  </div>
+                </div>
+                <div className="missionConsoleAsiimgGrid">
+                  <div><span>FRAMES COMPLETE</span><strong>{asiimgFrames}</strong></div>
+                  <div><span>FRAMES REMAINING</span><strong>{asiimgRemaining ?? '—'}</strong></div>
+                  <div><span>EXPOSURE</span><strong>{bridgeNumber(asiimgPayload.exposure_seconds, 2, ' SEC')}</strong></div>
+                  <div><span>EST. FINISH</span><strong>{formatEta(asiimgEtaSeconds)}</strong></div>
+                  <div><span>CAMERA TEMP</span><strong>{bridgeNumber(celsiusToFahrenheit(asiimgPayload.camera_temperature_c), 1, '°F')}</strong></div>
+                  <div><span>GAIN</span><strong>{asiimgPayload.gain ?? '—'}</strong></div>
+                  <div><span>LAST FRAME</span><strong>{asiimgPayload.last_frame_at ? formatClock(asiimgPayload.last_frame_at) : '—'}</strong></div>
+                  <div><span>LATEST FILE</span><strong title={asiimgPayload.latest_file || ''}>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong></div>
+                </div>
+
+                <div className="missionConsoleAsiimgPreview">
+                  <div className="missionConsoleAsiimgPreviewHeader">
+                    <span>LATEST FITS PREVIEW</span>
+                    <strong>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong>
+                  </div>
+                  {asiimgPreviewUrl ? (
+                    <a href={asiimgPreviewUrl} target="_blank" rel="noreferrer" title="Open the latest FITS preview at full size">
+                      <img src={asiimgPreviewUrl} alt={`Latest ASIImg FITS preview${asiimgPayload.latest_file ? `: ${asiimgPayload.latest_file}` : ''}`} />
+                      <span className="missionConsoleAsiimgPreviewOpen">OPEN FULL PREVIEW</span>
+                    </a>
+                  ) : (
+                    <div className="missionConsoleAsiimgPreviewEmpty">
+                      <span>NO PREVIEW AVAILABLE</span>
+                      <small>The next FITS frame detected by the bridge will appear here automatically.</small>
+                    </div>
+                  )}
+                  {asiimgPayload.preview_error ? <p className="missionConsoleAsiimgPreviewError">Preview generator: {asiimgPayload.preview_error}</p> : null}
+                </div>
+                {asiimgError ? <p className="missionConsoleAsiimgError">{asiimgError}</p> : null}
+                {!asiimgOnline ? <p className="missionConsoleAsiimgHint">Start the ASIImg monitor bridge before beginning a capture. The panel counts new FITS files written to the configured ASIImg folder.</p> : null}
               </div>
 
               <div className="missionConsoleFramesSection">
@@ -1803,6 +1912,8 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                     type="number"
                     min="0"
                     value={Number(consoleState.completedFrames || 0)}
+                    readOnly={asiimgOnline}
+                    title={asiimgOnline ? 'Live frame count supplied by the ASIImg monitor bridge.' : 'Enter the completed frame count manually.'}
                     onChange={(event) => setConsoleState((current) => ({ ...current, completedFrames: Number(event.target.value || 0) }))}
                   />
                 </label>
