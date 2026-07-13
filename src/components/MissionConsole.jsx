@@ -456,6 +456,16 @@ function bridgeNumber(value, digits = 1, suffix = '') {
   return `${Number(value).toFixed(digits)}${suffix}`;
 }
 
+function celsiusToFahrenheit(value) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return null;
+  return (Number(value) * 9 / 5) + 32;
+}
+
+function celsiusDeltaToFahrenheit(value) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return null;
+  return Number(value) * 9 / 5;
+}
+
 function bridgeBoolean(value) {
   if (value === true) return 'ON';
   if (value === false) return 'OFF';
@@ -494,6 +504,14 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [slewClearanceConfirmed, setSlewClearanceConfirmed] = useState(false);
   const [hbg3Record, setHbg3Record] = useState(null);
   const [hbg3Error, setHbg3Error] = useState('');
+  const [dewControlMode, setDewControlMode] = useState('auto');
+  const [dewAggression, setDewAggression] = useState(5);
+  const [dewManualOutput, setDewManualOutput] = useState(35);
+  const [dewControlBusy, setDewControlBusy] = useState('');
+  const [dewControlError, setDewControlError] = useState('');
+  const [dewControlMessage, setDewControlMessage] = useState('');
+  const [dewControlDirty, setDewControlDirty] = useState(false);
+  const [dewAppliedTarget, setDewAppliedTarget] = useState(null);
   const [aiRecommendation, setAiRecommendation] = useState(null);
   const [aiRecommendationBusy, setAiRecommendationBusy] = useState(false);
   const [aiRecommendationError, setAiRecommendationError] = useState('');
@@ -578,6 +596,88 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
       window.clearInterval(interval);
     };
   }, []);
+
+  async function runDewControl({ mode = dewControlMode, aggression = dewAggression, manualPwm = dewManualOutput } = {}) {
+    setDewControlBusy('apply');
+    setDewControlError('');
+    setDewControlMessage('');
+
+    const normalizedMode = mode === 'manual' ? 'manual' : 'auto';
+    const normalizedAggression = normalizedMode === 'auto'
+      ? Math.max(1, Math.min(10, Math.round(Number(aggression) || 5)))
+      : 0;
+    const normalizedManualPwm = normalizedMode === 'manual'
+      ? Math.max(0, Math.min(100, Math.round(Number(manualPwm) || 0)))
+      : 0;
+
+    try {
+      const { data: queuedCommand, error: insertError } = await supabase
+        .from('hbg3_dew_commands')
+        .insert({
+          station: 'eliot',
+          action: 'set_channel',
+          arguments: {
+            channel: 0,
+            mode: normalizedMode,
+            aggression: normalizedAggression,
+            manualPwm: normalizedManualPwm
+          },
+          requested_by: session?.user?.id || null
+        })
+        .select('id')
+        .single();
+
+      if (insertError) throw insertError;
+      setDewControlMode(normalizedMode);
+      setDewAggression(normalizedAggression || dewAggression);
+      setDewManualOutput(normalizedManualPwm);
+      setDewControlDirty(false);
+      setDewAppliedTarget(null);
+      setDewControlMessage(
+        normalizedMode === 'auto'
+          ? `QUEUED // AUTOMATIC AGGRESSION ${normalizedAggression}/10`
+          : `QUEUED // MANUAL OUTPUT ${normalizedManualPwm}%`
+      );
+
+      let completedCommand = null;
+      for (let attempt = 0; attempt < 30; attempt += 1) {
+        await new Promise((resolve) => window.setTimeout(resolve, 500));
+        const { data: commandStatus, error: statusError } = await supabase
+          .from('hbg3_dew_commands')
+          .select('completed_at,success,result,error')
+          .eq('id', queuedCommand.id)
+          .maybeSingle();
+        if (statusError) throw statusError;
+        if (!commandStatus?.completed_at) {
+          if (attempt >= 1) setDewControlMessage('APPLYING // HBG3 COMMAND IN PROGRESS');
+          continue;
+        }
+        completedCommand = commandStatus;
+        break;
+      }
+
+      if (!completedCommand) throw new Error('Dew command timed out waiting for the observatory bridge.');
+      if (!completedCommand.success) throw new Error(completedCommand.error || 'HBG3 rejected the dew command.');
+
+      setDewAppliedTarget({
+        mode: normalizedMode,
+        aggression: normalizedAggression,
+        manualPwm: normalizedManualPwm
+      });
+      setDewControlMessage('APPLIED // WAITING FOR LIVE TELEMETRY');
+    } catch (commandError) {
+      setDewControlError(commandError?.message || 'Unable to queue HBG3 dew command.');
+    } finally {
+      setDewControlBusy('');
+    }
+  }
+
+  async function shutDownDewHeater() {
+    setDewControlMode('manual');
+    setDewManualOutput(0);
+    setDewControlDirty(true);
+    await runDewControl({ mode: 'manual', aggression: 0, manualPwm: 0 });
+  }
 
   useEffect(() => {
     let active = true;
@@ -815,6 +915,35 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const hbg3ControlMode = Number(hbg3Channel1?.aggression || 0) > 0
     ? `AUTO A${Number(hbg3Channel1.aggression).toFixed(0)}`
     : `MANUAL ${Number(hbg3Channel1?.manualPwm || 0).toFixed(0)}%`;
+
+  useEffect(() => {
+    if (!hbg3Channel1 || dewControlDirty) return;
+    const reportedAggression = Math.max(0, Math.min(10, Number(hbg3Channel1.aggression || 0)));
+    const reportedManual = Math.max(0, Math.min(100, Number(hbg3Channel1.manualPwm || 0)));
+    setDewControlMode(reportedAggression > 0 ? 'auto' : 'manual');
+    setDewAggression(reportedAggression > 0 ? reportedAggression : 5);
+    setDewManualOutput(reportedManual);
+  }, [hbg3Channel1, dewControlDirty]);
+
+  useEffect(() => {
+    if (!dewAppliedTarget || !hbg3Channel1) return;
+    const reportedAggression = Math.round(Number(hbg3Channel1.aggression || 0));
+    const reportedManual = Math.round(Number(hbg3Channel1.manualPwm || 0));
+    const targetMatched = dewAppliedTarget.mode === 'auto'
+      ? reportedAggression === dewAppliedTarget.aggression
+      : reportedAggression === 0 && reportedManual === dewAppliedTarget.manualPwm;
+    if (!targetMatched) return;
+
+    const current = Number(hbg3Channel1.amps);
+    const currentLabel = Number.isFinite(current) ? ` // ${current.toFixed(2)} A` : '';
+    setDewControlMessage(
+      dewAppliedTarget.mode === 'auto'
+        ? `ACTIVE // AUTOMATIC A${dewAppliedTarget.aggression}${currentLabel}`
+        : dewAppliedTarget.manualPwm === 0
+          ? `ACTIVE // HEATER OFF${currentLabel}`
+          : `ACTIVE // MANUAL ${dewAppliedTarget.manualPwm}%${currentLabel}`
+    );
+  }, [dewAppliedTarget, hbg3Channel1]);
   const systemsLinkTone = localSystemsStatus === 'online' || hbg3Online
     ? 'good'
     : localSystemsStatus === 'connecting' || localSystemsStatus === 'stale'
@@ -1442,21 +1571,50 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                   {cpwiControlError ? <div className="missionConsoleMountControlMessage is-error">{cpwiControlError}</div> : null}
                 </article>
 
-                <article className="missionConsoleSystemNode">
+                <article className="missionConsoleSystemNode missionConsoleDewNode">
                   <div className="missionConsoleSystemNodeTitle"><Thermometer size={18} /><span>DEW CONTROL</span></div>
                   <div className="missionConsoleSystemMetrics">
                     <div><span>HBG3 LINK</span><strong>{hbg3Online ? 'ONLINE' : hbg3Record ? 'STALE' : 'OFFLINE'}</strong></div>
-                    <div><span>AMBIENT</span><strong>{bridgeNumber(hbg3Environment?.ambientC, 1, '°C')}</strong></div>
+                    <div><span>AMBIENT</span><strong>{bridgeNumber(celsiusToFahrenheit(hbg3Environment?.ambientC), 1, '°F')}</strong></div>
                     <div><span>HUMIDITY</span><strong>{bridgeNumber(hbg3Environment?.humidityPercent, 0, '%')}</strong></div>
-                    <div><span>DEW POINT</span><strong>{bridgeNumber(hbg3Environment?.dewPointC, 1, '°C')}</strong></div>
-                    <div><span>DEW MARGIN</span><strong>{bridgeNumber(hbg3Environment?.dewMarginC, 1, '°C')}</strong></div>
+                    <div><span>DEW POINT</span><strong>{bridgeNumber(celsiusToFahrenheit(hbg3Environment?.dewPointC), 1, '°F')}</strong></div>
+                    <div><span>DEW MARGIN</span><strong>{bridgeNumber(celsiusDeltaToFahrenheit(hbg3Environment?.dewMarginC), 1, '°F')}</strong></div>
                     <div><span>HEATER OUTPUT</span><strong>{bridgeNumber(hbg3Channel1?.pwmPercent, 0, '%')}</strong></div>
                     <div><span>CONTROL MODE</span><strong>{hbg3Channel1 ? hbg3ControlMode : '—'}</strong></div>
                     <div><span>RISK STATE</span><strong>{hbg3RiskState}</strong></div>
-                    <div><span>RING TEMP</span><strong>{hbg3Sensor1 ? bridgeNumber(hbg3Channel1?.temperatureC, 1, '°C') : '—'}</strong></div>
+                    <div><span>RING TEMP</span><strong>{hbg3Sensor1 ? bridgeNumber(celsiusToFahrenheit(hbg3Channel1?.temperatureC), 1, '°F') : '—'}</strong></div>
                     <div><span>CURRENT DRAW</span><strong>{bridgeNumber(hbg3Channel1?.amps, 2, ' A')}</strong></div>
                     <div><span>SUPPLY</span><strong>{bridgeNumber(hbg3Environment?.supplyVolts, 2, ' V')}</strong></div>
                     <div><span>LAST UPDATE</span><strong>{hbg3Record?.captured_at ? new Date(hbg3Record.captured_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '—'}</strong></div>
+                  </div>
+
+                  <div className="missionConsoleDewControls">
+                    <div className="missionConsoleDewMode" role="group" aria-label="Dew heater mode">
+                      <button type="button" className={dewControlMode === 'auto' ? 'is-active' : ''} onClick={() => { setDewControlMode('auto'); setDewControlDirty(true); setDewControlMessage(''); setDewControlError(''); }}>AUTOMATIC</button>
+                      <button type="button" className={dewControlMode === 'manual' ? 'is-active' : ''} onClick={() => { setDewControlMode('manual'); setDewControlDirty(true); setDewControlMessage(''); setDewControlError(''); }}>MANUAL</button>
+                    </div>
+
+                    {dewControlMode === 'auto' ? (
+                      <label className="missionConsoleDewSlider">
+                        <span><b>AUTO AGGRESSION</b><strong>{dewAggression} / 10</strong></span>
+                        <input type="range" min="1" max="10" step="1" value={dewAggression} onChange={(event) => { setDewAggression(Number(event.target.value)); setDewControlDirty(true); }} />
+                        <small>Higher settings maintain a larger temperature margin above the dew point.</small>
+                      </label>
+                    ) : (
+                      <label className="missionConsoleDewSlider">
+                        <span><b>MANUAL HEATER OUTPUT</b><strong>{dewManualOutput}%</strong></span>
+                        <input type="range" min="0" max="100" step="5" value={dewManualOutput} onChange={(event) => { setDewManualOutput(Number(event.target.value)); setDewControlDirty(true); }} />
+                        <small>Direct PWM output. Use only enough heat to keep the corrector clear.</small>
+                      </label>
+                    )}
+
+                    <div className="missionConsoleDewActions">
+                      <button type="button" disabled={!hbg3Online || Boolean(dewControlBusy)} onClick={() => runDewControl()}>{dewControlBusy ? 'TRANSMITTING…' : 'APPLY DEW SETTINGS'}</button>
+                      <button type="button" className="is-off" disabled={!hbg3Online || Boolean(dewControlBusy)} onClick={shutDownDewHeater}>HEATER OFF</button>
+                    </div>
+                    {!hbg3Online ? <div className="missionConsoleMountControlMessage is-error">HBG3 LINK REQUIRED FOR REMOTE CONTROL</div> : null}
+                    {dewControlMessage ? <div className="missionConsoleMountControlMessage">{dewControlMessage}</div> : null}
+                    {dewControlError ? <div className="missionConsoleMountControlMessage is-error">{dewControlError}</div> : null}
                   </div>
                 </article>
 
