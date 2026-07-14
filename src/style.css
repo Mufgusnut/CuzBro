@@ -36271,15 +36271,38 @@ html.missionConsoleFullscreenMode body {
   .missionConsoleWrap { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
   .missionConsoleLeftRail { display: none; }
   .missionConsoleMain { width: 100%; }
-  .missionConsoleStandaloneTopbar { display: grid; grid-template-columns: 1fr; }
+  .missionConsoleStandaloneTopbar { display: grid; grid-template-columns: 1fr; gap: 12px; }
   .missionConsoleReturnAdmin { width: 100%; justify-content: center; }
-  .missionConsoleDeviceControls { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
-  .missionConsoleDeviceStatus:first-child { grid-column: 1 / -1; }
-  .missionConsoleDeviceStatus, .missionConsoleFullscreenButton { width: 100%; }
-  .missionConsoleDeviceStatusLcars, .missionConsoleFullscreenButtonLcars { min-width: 0; }
-  .missionConsoleDeviceStatusContent, .missionConsoleFullscreenButtonContent { gap: 12px; padding: 0 18px 0 16px; }
-  .missionConsoleDeviceStatusCap, .missionConsoleFullscreenButtonCap { flex-basis: 74px; width: 74px; }
-  .missionConsoleDeviceStatusLabel, .missionConsoleFullscreenButtonContent > span:last-child { white-space: normal; }
+  .missionConsoleDeviceControls {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+  .missionConsoleDeviceStatus,
+  .missionConsoleFullscreenButton {
+    width: 100%;
+    min-height: 54px;
+  }
+  .missionConsoleDeviceStatusLcars,
+  .missionConsoleFullscreenButtonLcars {
+    min-width: 0;
+    width: 100%;
+  }
+  .missionConsoleDeviceStatusContent,
+  .missionConsoleFullscreenButtonContent {
+    justify-content: center;
+    gap: 12px;
+    padding: 0 16px;
+  }
+  .missionConsoleDeviceStatusCap,
+  .missionConsoleFullscreenButtonCap {
+    display: none;
+  }
+  .missionConsoleDeviceStatusLabel,
+  .missionConsoleFullscreenButtonContent > span:last-child {
+    white-space: nowrap;
+  }
   .missionConsoleHeaderBlockMeta { grid-template-columns: 1fr; }
   .missionConsoleHeaderBlockPrimary h1 { font-size: clamp(1.65rem, 8vw, 2.35rem); }
   .missionConsoleSystemsGrid,
