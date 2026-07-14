@@ -36376,3 +36376,179 @@ html.missionConsoleFullscreenMode body {
     margin-top: 46px !important;
   }
 }
+
+
+/* v62 — tablet/mobile console refinement */
+@media (min-width: 761px) and (max-width: 1180px) {
+  .missionConsoleFrame {
+    grid-template-columns: 74px minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .missionConsoleLeftRail {
+    width: 74px !important;
+    min-width: 74px !important;
+    gap: 10px !important;
+  }
+
+  /* Keep all three utility controls on one clean row on tablets. */
+  .missionConsoleStandaloneTopbar {
+    display: grid !important;
+    grid-template-columns: minmax(210px, .8fr) minmax(0, 1.25fr) !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  .missionConsoleReturnAdmin {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    padding-inline: 14px !important;
+    font-size: clamp(.68rem, 1.25vw, .84rem) !important;
+  }
+
+  .missionConsoleDeviceControls {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .missionConsoleDeviceStatus,
+  .missionConsoleFullscreenButton {
+    min-height: 52px !important;
+    width: 100% !important;
+    font-size: clamp(.62rem, 1.2vw, .78rem) !important;
+    letter-spacing: .10em !important;
+  }
+
+  .missionConsoleDeviceStatusCap,
+  .missionConsoleFullscreenButtonCap {
+    display: none !important;
+  }
+
+  .missionConsoleDeviceStatusContent,
+  .missionConsoleFullscreenButtonContent {
+    justify-content: center !important;
+    padding-inline: 12px !important;
+    gap: 10px !important;
+  }
+
+  /* Restore the compact two-column header in landscape tablet widths. */
+  .missionConsoleHeaderCompact {
+    grid-template-columns: minmax(0, 1.25fr) minmax(410px, .9fr) !important;
+    column-gap: 14px !important;
+    row-gap: 10px !important;
+    align-items: end !important;
+  }
+
+  .missionConsoleHeaderCompact .missionConsoleHeaderBlockPrimary {
+    min-height: 124px !important;
+  }
+
+  .missionConsoleHeaderCompact .missionConsoleHeaderBlockPrimary h1 {
+    font-size: clamp(2.1rem, 4.4vw, 3.2rem) !important;
+    line-height: .98 !important;
+  }
+
+  .missionConsoleHeaderCompact .missionConsoleHeaderBlockMeta {
+    min-width: 0 !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .missionConsoleHeaderCompact .missionConsoleMetaPill {
+    min-height: 82px !important;
+    padding: 11px 12px !important;
+  }
+
+  .missionConsoleHeaderCompact .missionConsoleMetaPill strong {
+    font-size: clamp(.72rem, 1.35vw, .92rem) !important;
+  }
+
+  .missionConsoleHeaderCompact .missionConsoleMetaPill span {
+    font-size: clamp(.48rem, .78vw, .60rem) !important;
+  }
+
+  /* Use the full width more intelligently; reserve extra room for Target. */
+  .missionConsoleReadiness {
+    --mission-readiness-elbow-left: -46px;
+    --mission-readiness-elbow-height: 34px;
+    --mission-readiness-elbow-radius: 34px;
+    --mission-readiness-elbow-stroke: 14px;
+    margin-top: 38px !important;
+    margin-bottom: 38px !important;
+  }
+
+  .missionConsoleReadinessGrid {
+    grid-template-columns: .95fr .95fr 1fr 1fr 1.22fr !important;
+    gap: 8px !important;
+    overflow: visible !important;
+  }
+
+  .missionConsoleReadinessTile {
+    min-height: 72px !important;
+    padding: 9px 10px !important;
+    gap: 7px !important;
+  }
+
+  .missionConsoleReadinessTile span {
+    font-size: clamp(.52rem, .85vw, .66rem) !important;
+  }
+
+  .missionConsoleReadinessTile strong {
+    font-size: clamp(.68rem, 1.05vw, .84rem) !important;
+  }
+
+  .missionConsoleReadinessTile:last-child strong {
+    white-space: normal !important;
+    line-height: 1.05 !important;
+  }
+
+  /* Four equal LCARS section controls with readable labels. */
+  .missionConsoleLcarsStrip {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-top: 38px !important;
+  }
+
+  .missionConsoleLcarsStrip .missionConsoleLcarsTab {
+    min-height: 54px !important;
+    padding: 9px 30px 9px 14px !important;
+    font-size: clamp(.56rem, .92vw, .70rem) !important;
+  }
+
+  .missionConsoleLcarsStrip .missionConsoleLcarsTab svg {
+    right: 11px !important;
+  }
+}
+
+@media (min-width: 621px) and (max-width: 900px) and (orientation: portrait) {
+  .missionConsoleFrame {
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .missionConsoleLeftRail {
+    width: 34px !important;
+    min-width: 34px !important;
+  }
+
+  .missionConsoleStandaloneTopbar,
+  .missionConsoleHeaderCompact {
+    grid-template-columns: 1fr !important;
+  }
+
+  .missionConsoleReadinessGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    overflow: visible !important;
+  }
+
+  .missionConsoleReadinessTile:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .missionConsoleLcarsStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
