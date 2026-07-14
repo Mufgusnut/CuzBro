@@ -33,7 +33,8 @@ import {
   Maximize2,
   Minimize2,
   Sun,
-  Wind
+  Wind,
+  X
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
 import { getCrewMember } from '../lib/crew.js';
@@ -509,6 +510,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [now, setNow] = useState(Date.now());
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
   const [isFullscreen, setIsFullscreen] = useState(() => Boolean(document.fullscreenElement));
+  const [isStandaloneMode, setIsStandaloneMode] = useState(() => window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator.standalone === true);
   const [wakeLockActive, setWakeLockActive] = useState(false);
   const [wakeLockSupported] = useState(() => 'wakeLock' in navigator);
   const [localSystems, setLocalSystems] = useState(null);
@@ -599,18 +601,23 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   }, []);
 
   useEffect(() => {
+    const media = window.matchMedia?.('(display-mode: standalone)');
+    const syncDisplayMode = () => setIsStandaloneMode(Boolean(media?.matches || window.navigator.standalone === true));
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     const handleFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
 
+    syncDisplayMode();
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     document.addEventListener('fullscreenchange', handleFullscreen);
+    media?.addEventListener?.('change', syncDisplayMode);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       document.removeEventListener('fullscreenchange', handleFullscreen);
+      media?.removeEventListener?.('change', syncDisplayMode);
     };
   }, []);
 
@@ -649,6 +656,18 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
       if (lock) lock.release().catch(() => {});
     };
   }, [wakeLockSupported]);
+
+  useEffect(() => {
+    const fullscreenLike = isFullscreen || isStandaloneMode;
+
+    document.documentElement.classList.toggle('missionConsoleFullscreenMode', fullscreenLike);
+    document.body.classList.toggle('missionConsoleFullscreenMode', fullscreenLike);
+
+    return () => {
+      document.documentElement.classList.remove('missionConsoleFullscreenMode');
+      document.body.classList.remove('missionConsoleFullscreenMode');
+    };
+  }, [isFullscreen, isStandaloneMode]);
 
   async function toggleFullscreen() {
     try {
@@ -1726,20 +1745,30 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
             </a>
 
             <div className="missionConsoleDeviceControls" aria-label="Tablet display controls">
-              <span className={`missionConsoleDeviceStatus ${isOnline ? 'is-online' : 'is-offline'}`}>
-                {isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
-                {isOnline ? 'NETWORK ONLINE' : 'NETWORK OFFLINE'}
-              </span>
-              {wakeLockSupported ? (
-                <span className={`missionConsoleDeviceStatus ${wakeLockActive ? 'is-online' : 'is-standby'}`}>
-                  <Sun size={16} />
-                  {wakeLockActive ? 'SCREEN AWAKE' : 'WAKE LOCK STANDBY'}
+              <span className={`missionConsoleDeviceStatus missionConsoleDeviceStatusLcars ${isOnline ? 'is-online' : 'is-offline'}`}>
+                <span className="missionConsoleDeviceStatusCap" aria-hidden="true" />
+                <span className="missionConsoleDeviceStatusContent">
+                  <span className="missionConsoleDeviceStatusIcon">{isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}</span>
+                  <span className="missionConsoleDeviceStatusLabel">{isOnline ? 'NETWORK ONLINE' : 'NETWORK OFFLINE'}</span>
                 </span>
-              ) : null}
-              <button type="button" className="missionConsoleFullscreenButton" onClick={toggleFullscreen}>
-                {isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
-                <span>{isFullscreen ? 'EXIT FULLSCREEN' : 'FULLSCREEN'}</span>
-              </button>
+              </span>
+              {!isStandaloneMode ? (
+                <button type="button" className="missionConsoleFullscreenButton missionConsoleFullscreenButtonLcars" onClick={toggleFullscreen}>
+                  <span className="missionConsoleFullscreenButtonCap" aria-hidden="true" />
+                  <span className="missionConsoleFullscreenButtonContent">
+                    <span className="missionConsoleFullscreenButtonIcon">{isFullscreen ? <X size={17} /> : <Maximize2 size={17} />}</span>
+                    <span>{isFullscreen ? 'EXIT FULLSCREEN' : 'ENTER FULLSCREEN'}</span>
+                  </span>
+                </button>
+              ) : (
+                <span className="missionConsoleDeviceStatus missionConsoleDeviceStatusLcars is-online">
+                  <span className="missionConsoleDeviceStatusCap" aria-hidden="true" />
+                  <span className="missionConsoleDeviceStatusContent">
+                    <span className="missionConsoleDeviceStatusIcon"><Maximize2 size={16} /></span>
+                    <span className="missionConsoleDeviceStatusLabel">APP MODE ACTIVE</span>
+                  </span>
+                </span>
+              )}
             </div>
           </div>
 

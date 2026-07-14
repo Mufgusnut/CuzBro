@@ -33610,19 +33610,18 @@ body.missionPlanningBoardOpen {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 0 26px 0 18px;
-  border-radius: 0 999px 999px 0;
-  background: #ea9c69;
+  padding: 0 24px 0 18px;
+  border-radius: 999px;
+  background: #d8a173;
   color: #090909;
   text-decoration: none;
   font-weight: 950;
   letter-spacing: .09em;
-  box-shadow: inset -8px 0 0 #000;
+  white-space: nowrap;
 }
 
 .missionConsoleReturnAdmin:hover {
-  filter: brightness(1.08);
-  transform: translateX(2px);
+  filter: brightness(1.05);
 }
 
 .missionConsoleQuickStatus {
@@ -35987,12 +35986,19 @@ body.missionPlanningBoardOpen {
   min-width: 0;
   white-space: normal;
   text-align: center;
+  transform: translateY(2px);
 }
 
 .missionConsoleLcarsStrip .missionConsoleLcarsTab svg {
   right: 14px;
+  top: 50%;
   width: 15px;
   height: 15px;
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsTab.is-active svg {
+  transform: translateY(-50%) rotate(0deg);
 }
 
 @media (max-width: 760px) {
@@ -36028,6 +36034,17 @@ html { -webkit-text-size-adjust: 100%; }
 body { min-height: 100dvh; }
 button, a, input, select, textarea { touch-action: manipulation; }
 
+html.missionConsoleFullscreenMode,
+body.missionConsoleFullscreenMode {
+  overscroll-behavior: none;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+html.missionConsoleFullscreenMode body {
+  overscroll-behavior: none;
+}
+
 .missionConsoleWrap {
   min-height: 100dvh;
   padding-top: max(0px, env(safe-area-inset-top));
@@ -36037,42 +36054,121 @@ button, a, input, select, textarea { touch-action: manipulation; }
   overscroll-behavior-y: contain;
 }
 
+.missionConsoleFullscreenMode .missionConsoleWrap {
+  overscroll-behavior: none;
+}
+
 .missionConsoleStandaloneTopbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .missionConsoleDeviceControls {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  justify-content: flex-end;
-  gap: 7px;
-  flex-wrap: wrap;
+  justify-content: stretch;
+  gap: 16px;
+  min-width: 0;
 }
 
 .missionConsoleDeviceStatus,
 .missionConsoleFullscreenButton {
-  min-height: 42px;
+  min-height: 56px;
+  width: 100%;
+  display: inline-flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  border: none;
+  background: transparent;
+  color: #161111;
+  padding: 0;
+  font: 900 clamp(.66rem, .82vw, .8rem)/1 inherit;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.missionConsoleDeviceStatusLcars,
+.missionConsoleFullscreenButtonLcars {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  min-width: 0;
+  width: 100%;
+  box-shadow: none;
+  outline: none;
+  filter: none;
+}
+
+.missionConsoleDeviceStatusCap,
+.missionConsoleFullscreenButtonCap {
+  width: clamp(62px, 5.2vw, 88px);
+  align-self: stretch;
+  flex: 0 0 clamp(62px, 5.2vw, 88px);
+  border-radius: 999px 0 0 999px;
+}
+
+.missionConsoleDeviceStatusContent,
+.missionConsoleFullscreenButtonContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 22px 0 18px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.missionConsoleDeviceStatusIcon,
+.missionConsoleFullscreenButtonIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  border: 1px solid rgba(248,242,211,.22);
-  background: #171717;
-  color: #f8f2d3;
-  padding: 8px 12px;
-  font: 900 .64rem/1 inherit;
-  letter-spacing: .08em;
+  flex: 0 0 auto;
 }
 
-.missionConsoleDeviceStatus.is-online { border-color: #73d8a1; color: #9ff0bd; }
-.missionConsoleDeviceStatus.is-offline { border-color: #ef756a; color: #ff9a91; }
-.missionConsoleDeviceStatus.is-standby { border-color: #f0c64a; color: #f5d974; }
-.missionConsoleFullscreenButton { border-radius: 999px; cursor: pointer; }
-.missionConsoleFullscreenButton:active { transform: translateY(1px); }
+.missionConsoleDeviceStatusIcon svg,
+.missionConsoleFullscreenButtonIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.missionConsoleDeviceStatusLabel,
+.missionConsoleFullscreenButtonContent > span:last-child {
+  white-space: nowrap;
+}
+
+.missionConsoleDeviceStatus.is-online {
+  background: #b8d5c6;
+}
+.missionConsoleDeviceStatus.is-online .missionConsoleDeviceStatusCap {
+  background: #81b99f;
+}
+
+.missionConsoleDeviceStatus.is-offline {
+  background: #dfa9a0;
+}
+.missionConsoleDeviceStatus.is-offline .missionConsoleDeviceStatusCap {
+  background: #cc7f73;
+}
+
+.missionConsoleFullscreenButtonLcars {
+  cursor: pointer;
+  background: #cfc4e1;
+}
+
+.missionConsoleFullscreenButtonLcars .missionConsoleFullscreenButtonCap {
+  background: #a18fc6;
+}
+.missionConsoleFullscreenButtonLcars:hover {
+  background: #d5cae6;
+}
+.missionConsoleFullscreenButtonLcars:hover .missionConsoleFullscreenButtonCap {
+  background: #a896cc;
+}
+.missionConsoleFullscreenButtonLcars:active { transform: translateY(1px); }
+.missionConsoleFullscreenButtonLcars:focus-visible { outline: 2px solid #f7d874; outline-offset: 2px; }
 
 .missionConsoleConnectivityBanner {
   position: sticky;
@@ -36101,16 +36197,15 @@ button, a, input, select, textarea { touch-action: manipulation; }
   .missionConsoleLcarsTab { min-height: 48px !important; }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .missionConsoleFrame { width: 100%; }
   .missionConsoleLeftRail { width: 18px; min-width: 18px; }
   .missionConsoleMain { min-width: 0; }
   .missionConsoleHeaderCompact { grid-template-columns: 1fr !important; }
   .missionConsoleHeaderBlockMeta { grid-template-columns: repeat(3, minmax(0,1fr)); }
-  .missionConsoleStandaloneTopbar { align-items: stretch; }
-  .missionConsoleReturnAdmin { flex: 0 0 auto; }
-  .missionConsoleDeviceControls { flex: 1 1 420px; }
-  .missionConsoleDeviceStatus, .missionConsoleFullscreenButton { flex: 1 1 auto; }
+  .missionConsoleStandaloneTopbar { grid-template-columns: 1fr; align-items: stretch; }
+  .missionConsoleReturnAdmin { justify-self: start; }
+  .missionConsoleDeviceControls { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
 }
 
 @media (max-width: 620px) {
@@ -36121,7 +36216,11 @@ button, a, input, select, textarea { touch-action: manipulation; }
   .missionConsoleReturnAdmin { width: 100%; justify-content: center; }
   .missionConsoleDeviceControls { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
   .missionConsoleDeviceStatus:first-child { grid-column: 1 / -1; }
-  .missionConsoleDeviceStatus, .missionConsoleFullscreenButton { width: 100%; padding-inline: 8px; }
+  .missionConsoleDeviceStatus, .missionConsoleFullscreenButton { width: 100%; }
+  .missionConsoleDeviceStatusLcars, .missionConsoleFullscreenButtonLcars { min-width: 0; }
+  .missionConsoleDeviceStatusContent, .missionConsoleFullscreenButtonContent { gap: 12px; padding: 0 18px 0 16px; }
+  .missionConsoleDeviceStatusCap, .missionConsoleFullscreenButtonCap { flex-basis: 74px; width: 74px; }
+  .missionConsoleDeviceStatusLabel, .missionConsoleFullscreenButtonContent > span:last-child { white-space: normal; }
   .missionConsoleHeaderBlockMeta { grid-template-columns: 1fr; }
   .missionConsoleHeaderBlockPrimary h1 { font-size: clamp(1.65rem, 8vw, 2.35rem); }
   .missionConsoleSystemsGrid,
