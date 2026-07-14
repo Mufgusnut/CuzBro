@@ -5,7 +5,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$SupabaseUrl = $env:SUPABASE_URL
+$SupabaseUrl = "https://qhvjhvxhvolywkxgdxxy.supabase.co"
 $ServiceKey = $env:SUPABASE_SERVICE_ROLE_KEY
 if (-not $SupabaseUrl -or -not $ServiceKey) {
   throw 'Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before starting the focuser bridge.'

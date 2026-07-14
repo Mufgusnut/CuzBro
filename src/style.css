@@ -35714,3 +35714,311 @@ body.missionPlanningBoardOpen {
     grid-column: auto;
   }
 }
+
+/* v43 — LCARS system readiness command strip */
+.missionConsoleReadiness {
+  width: fit-content;
+  max-width: calc(100% - 48px);
+  margin: 2px auto 18px;
+  padding: 12px 12px 13px;
+  border: 3px solid #ee9c5f;
+  border-radius: 28px 14px 28px 14px;
+  background: #07090f;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 0 1px rgba(255, 218, 172, 0.16), 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
+.missionConsoleReadinessHeading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -2px 8px 10px;
+  color: #ffd16f;
+  font-weight: 900;
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+}
+
+.missionConsoleReadinessHeading i {
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ef9860 0 18%, #ef70b5 18% 39%, #9f82e8 39% 61%, #72a8e8 61% 79%, #f2bf4e 79% 100%);
+  opacity: 0.9;
+}
+
+.missionConsoleReadinessGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 220px);
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 1px;
+}
+
+.missionConsoleReadinessGrid::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.missionConsoleReadinessTile {
+  position: relative;
+  min-width: 105px;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+  border-radius: 13px 13px 13px 5px;
+  color: #150f1a;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.missionConsoleReadinessTile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.2), transparent 48%, rgba(0,0,0,.08));
+  pointer-events: none;
+  z-index: -1;
+}
+
+.missionConsoleReadinessTile svg { flex: 0 0 auto; }
+.missionConsoleReadinessTile div { min-width: 0; }
+.missionConsoleReadinessTile span,
+.missionConsoleReadinessTile strong {
+  display: block;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.missionConsoleReadinessTile span {
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  font-weight: 850;
+}
+.missionConsoleReadinessTile strong {
+  margin-top: 6px;
+  font-size: 0.88rem;
+  letter-spacing: 0.03em;
+}
+
+.missionConsoleReadinessTile.is-orange { background: #f3a14b; }
+.missionConsoleReadinessTile.is-lavender { background: #a98ae9; }
+.missionConsoleReadinessTile.is-blue { background: #91b8ef; }
+.missionConsoleReadinessTile.is-pink { background: #ed79b7; }
+.missionConsoleReadinessTile.is-peach { background: #f4c39d; }
+.missionConsoleReadinessTile.is-yellow { background: #f0c64a; }
+
+.missionConsoleReadinessLamp {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(20, 15, 25, 0.34);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.18);
+}
+.missionConsoleReadinessTile.is-good .missionConsoleReadinessLamp {
+  background: #30c975;
+  box-shadow: 0 0 9px rgba(48, 201, 117, .9);
+}
+.missionConsoleReadinessTile.is-warn .missionConsoleReadinessLamp {
+  background: #ffce42;
+  box-shadow: 0 0 9px rgba(255, 206, 66, .9);
+}
+.missionConsoleReadinessTile.is-alert .missionConsoleReadinessLamp {
+  background: #d83f55;
+  box-shadow: 0 0 9px rgba(216, 63, 85, .9);
+}
+
+@media (max-width: 1180px) {
+  .missionConsoleReadinessGrid {
+    grid-template-columns: repeat(5, 200px);
+    justify-content: start;
+  }
+}
+
+@media (max-width: 720px) {
+  .missionConsoleReadiness {
+    max-width: calc(100% - 24px);
+    margin-inline: auto;
+    border-radius: 20px 10px 20px 10px;
+  }
+  .missionConsoleReadinessGrid {
+    grid-template-columns: repeat(5, 178px);
+    justify-content: start;
+  }
+  .missionConsoleReadinessTile { min-height: 66px; padding: 9px 11px; }
+  .missionConsoleReadinessHeading { font-size: 0.72rem; }
+}
+
+/* v44 — compact readiness strip: five tiles fit without scrolling */
+.missionConsoleReadiness {
+  width: min(100%, 1220px);
+  max-width: calc(100% - 32px);
+}
+
+.missionConsoleReadinessGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: 100%;
+  max-width: none;
+  overflow-x: hidden;
+  justify-content: stretch;
+  gap: 8px;
+}
+
+.missionConsoleReadinessTile {
+  width: auto;
+  min-width: 0;
+  min-height: 66px;
+  gap: 7px;
+  padding: 9px 10px;
+}
+
+.missionConsoleReadinessTile svg {
+  width: 20px;
+  height: 20px;
+}
+
+.missionConsoleReadinessTile span {
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+}
+
+.missionConsoleReadinessTile strong {
+  margin-top: 5px;
+  font-size: 0.80rem;
+}
+
+/* Only allow horizontal swipe on genuinely narrow phone layouts. */
+@media (max-width: 620px) {
+  .missionConsoleReadinessGrid {
+    grid-template-columns: repeat(5, 150px);
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
+    justify-content: start;
+  }
+}
+
+/* Center the four primary mission-console section buttons — v13.6.8 */
+.missionConsoleLcarsStrip {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsTab {
+  flex: 0 1 312px;
+  width: min(312px, calc(25% - 14px));
+  min-width: 220px;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsTab span {
+  flex: 1;
+  text-align: center;
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsTab svg {
+  position: absolute;
+  right: 24px;
+}
+
+@media (max-width: 1100px) {
+  .missionConsoleLcarsStrip .missionConsoleLcarsTab {
+    flex-basis: calc(50% - 10px);
+    width: calc(50% - 10px);
+    max-width: 390px;
+  }
+}
+
+@media (max-width: 620px) {
+  .missionConsoleLcarsStrip {
+    padding-inline: 14px;
+  }
+
+  .missionConsoleLcarsStrip .missionConsoleLcarsTab {
+    flex-basis: 100%;
+    width: 100%;
+    max-width: 420px;
+    min-width: 0;
+  }
+}
+
+/* Keep the four primary console section buttons on one centered row — v13.6.9 */
+.missionConsoleLcarsStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: min(100%, 1220px);
+  max-width: calc(100% - 32px);
+  margin: 4px auto 8px;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsTab {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  flex: none;
+  min-height: 50px;
+  padding: 10px 34px 10px 18px;
+  font-size: clamp(.60rem, .72vw, .76rem);
+  line-height: 1.05;
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsTab span {
+  min-width: 0;
+  white-space: normal;
+  text-align: center;
+}
+
+.missionConsoleLcarsStrip .missionConsoleLcarsTab svg {
+  right: 14px;
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 760px) {
+  .missionConsoleLcarsStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: calc(100% - 24px);
+  }
+}
+
+@media (max-width: 430px) {
+  .missionConsoleLcarsStrip {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Mission console section navigation */
+#mission-console-target,
+#mission-console-conditions,
+#mission-console-operations,
+#mission-console-systems {
+  scroll-margin-top: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

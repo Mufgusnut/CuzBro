@@ -1569,6 +1569,16 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     setOpenPanels((current) => ({ ...current, [panelName]: !current[panelName] }));
   };
 
+  const navigateToPanel = (panelName) => {
+    setOpenPanels((current) => ({ ...current, [panelName]: true }));
+
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById(`mission-console-${panelName}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
   const setAllPanels = (isOpen) => {
     setOpenPanels({
       target: isOpen,
@@ -1585,6 +1595,47 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     PLANNED: 'standby',
     COMPLETE: 'complete'
   }[missionPlan?.status] || 'standby';
+
+  const readinessTarget = String(missionPlan?.target_title || targetReference?.shortTitle || targetReference?.title || 'NO TARGET')
+    .split('//')[0]
+    .trim();
+  const readinessItems = [
+    {
+      key: 'cpwi',
+      label: 'CPWI',
+      value: localSystems?.cpwi?.connected ? 'CONNECTED' : 'OFFLINE',
+      icon: Cpu,
+      tone: localSystems?.cpwi?.connected ? 'orange good' : 'orange alert'
+    },
+    {
+      key: 'focuser',
+      label: 'FOCUSER',
+      value: focuserStatus === 'online' && focuserRecord?.payload?.connected ? 'ONLINE' : focuserStatus === 'stale' ? 'STALE' : 'OFFLINE',
+      icon: Focus,
+      tone: focuserStatus === 'online' && focuserRecord?.payload?.connected ? 'lavender good' : 'lavender alert'
+    },
+    {
+      key: 'dew-bridge',
+      label: 'DEW BRIDGE',
+      value: hbg3Online ? 'ONLINE' : 'OFFLINE',
+      icon: Droplets,
+      tone: hbg3Online ? 'blue good' : 'blue alert'
+    },
+    {
+      key: 'tracking',
+      label: 'TRACKING',
+      value: localSystems?.cpwi?.tracking === true ? 'ON' : localSystems?.cpwi?.tracking === false ? 'OFF' : 'UNKNOWN',
+      icon: Crosshair,
+      tone: localSystems?.cpwi?.tracking === true ? 'pink good' : 'pink alert'
+    },
+    {
+      key: 'target',
+      label: 'TARGET',
+      value: readinessTarget,
+      icon: Sparkles,
+      tone: 'peach'
+    },
+  ];
 
   return (
     <section className="missionConsoleWrap">
@@ -1644,7 +1695,24 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
           {message ? <div className="missionConsoleNotice missionConsoleNoticeSuccess">{message}</div> : null}
           {error ? <div className="missionConsoleNotice missionConsoleNoticeError">{error}</div> : null}
 
-
+          <section className="missionConsoleReadiness" aria-label="System readiness">
+            <div className="missionConsoleReadinessHeading">
+              <span>SYSTEM READINESS</span>
+              <i aria-hidden="true" />
+            </div>
+            <div className="missionConsoleReadinessGrid">
+              {readinessItems.map(({ key, label, value, icon: Icon, tone }) => (
+                <div key={key} className={`missionConsoleReadinessTile ${tone.split(' ').map((part) => `is-${part}`).join(' ')}`}>
+                  <Icon size={22} strokeWidth={2.3} />
+                  <div>
+                    <span>{label}</span>
+                    <strong title={String(value)}>{value}</strong>
+                  </div>
+                  <b className="missionConsoleReadinessLamp" aria-hidden="true" />
+                </div>
+              ))}
+            </div>
+          </section>
 
           <nav className="missionConsoleLcarsStrip" aria-label="Mission console section controls">
             <button type="button" className="missionConsoleLcarsMaster missionConsoleLcarsExpand" onClick={() => setAllPanels(true)}>EXPAND ALL</button>
@@ -1659,7 +1727,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                 type="button"
                 key={panelName}
                 className={`missionConsoleLcarsTab ${colorClass} ${openPanels[panelName] ? 'is-active' : ''}`}
-                onClick={() => togglePanel(panelName)}
+                onClick={() => navigateToPanel(panelName)}
                 aria-pressed={openPanels[panelName]}
               >
                 <span>{label}</span>
@@ -1669,7 +1737,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
           </nav>
 
           <div className="missionConsoleGrid">
-            <section className={`missionConsolePanel missionConsolePanelTarget ${openPanels.target ? 'is-open' : 'is-collapsed'}`}>
+            <section id="mission-console-target" className={`missionConsolePanel missionConsolePanelTarget ${openPanels.target ? 'is-open' : 'is-collapsed'}`}>
               <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('target')} aria-expanded={openPanels.target}>
                 <span>TARGET</span>
                 <div className="missionConsolePanelBadge">OBJECTIVE</div><ChevronDown className="missionConsolePanelChevron" size={18} />
@@ -1719,7 +1787,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               </div>
             </section>
 
-            <section className={`missionConsolePanel missionConsolePanelTelemetry ${openPanels.conditions ? 'is-open' : 'is-collapsed'}`}>
+            <section id="mission-console-conditions" className={`missionConsolePanel missionConsolePanelTelemetry ${openPanels.conditions ? 'is-open' : 'is-collapsed'}`}>
               <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('conditions')} aria-expanded={openPanels.conditions}>
                 <span>CONDITIONS</span>
                 <div className={`missionConsolePanelBadge missionConsolePanelBadge-${weatherRating.tone}`}>{weatherRating.label}</div><ChevronDown className="missionConsolePanelChevron" size={18} />
@@ -1744,7 +1812,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               </div>
             </section>
 
-            <section className={`missionConsolePanel missionConsolePanelOperations ${openPanels.operations ? 'is-open' : 'is-collapsed'}`}>
+            <section id="mission-console-operations" className={`missionConsolePanel missionConsolePanelOperations ${openPanels.operations ? 'is-open' : 'is-collapsed'}`}>
               <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('operations')} aria-expanded={openPanels.operations}>
                 <span>LIVE IMAGING</span>
                 <div className="missionConsolePanelBadge">VIEWSCREEN</div><ChevronDown className="missionConsolePanelChevron" size={18} />
@@ -2015,7 +2083,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               )}
             </section>
 
-            <section className={`missionConsolePanel missionConsolePanelSystems ${openPanels.systems ? 'is-open' : 'is-collapsed'}`}>
+            <section id="mission-console-systems" className={`missionConsolePanel missionConsolePanelSystems ${openPanels.systems ? 'is-open' : 'is-collapsed'}`}>
               <button type="button" className="missionConsolePanelTop" onClick={() => togglePanel('systems')} aria-expanded={openPanels.systems}>
                 <span>OBSERVATORY CONTROL SYSTEMS</span>
                 <div className={`missionConsolePanelBadge missionConsolePanelBadge-${systemsLinkTone}`}>{systemsLinkLabel}</div><ChevronDown className="missionConsolePanelChevron" size={18} />
