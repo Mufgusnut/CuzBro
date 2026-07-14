@@ -34580,6 +34580,12 @@ body.missionPlanningBoardOpen {
   padding-left: 140px;
 }
 
+
+/* Optical nudge: subordinate Live Imaging rows sit a touch higher. */
+.missionConsolePanelSubcategory {
+  top: -2px;
+}
+
 @media (max-width: 1100px) {
   .missionConsolePanelSubcategory {
     width: calc(100% - 72px);
@@ -35982,11 +35988,14 @@ body.missionPlanningBoardOpen {
   line-height: 1.05;
 }
 
+.missionConsoleLcarsStrip .missionConsoleLcarsTab {
+  transform: translateY(2px);
+}
+
 .missionConsoleLcarsStrip .missionConsoleLcarsTab span {
   min-width: 0;
   white-space: normal;
   text-align: center;
-  transform: translateY(2px);
 }
 
 .missionConsoleLcarsStrip .missionConsoleLcarsTab svg {
@@ -36036,13 +36045,27 @@ button, a, input, select, textarea { touch-action: manipulation; }
 
 html.missionConsoleFullscreenMode,
 body.missionConsoleFullscreenMode {
-  overscroll-behavior: none;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
   touch-action: manipulation;
 }
 
 html.missionConsoleFullscreenMode body {
   overscroll-behavior: none;
+}
+
+/* In browser fullscreen, scroll the console shell rather than the frozen fullscreen root. */
+.missionConsoleFullscreenMode .admin-shell-console-standalone {
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }
 
 .missionConsoleWrap {
@@ -36055,6 +36078,9 @@ html.missionConsoleFullscreenMode body {
 }
 
 .missionConsoleFullscreenMode .missionConsoleWrap {
+  min-height: 100%;
+  height: auto;
+  overflow: visible;
   overscroll-behavior: none;
 }
 
@@ -36143,14 +36169,14 @@ html.missionConsoleFullscreenMode body {
   background: #b8d5c6;
 }
 .missionConsoleDeviceStatus.is-online .missionConsoleDeviceStatusCap {
-  background: #81b99f;
+  background: #b8d5c6;
 }
 
 .missionConsoleDeviceStatus.is-offline {
   background: #dfa9a0;
 }
 .missionConsoleDeviceStatus.is-offline .missionConsoleDeviceStatusCap {
-  background: #cc7f73;
+  background: #dfa9a0;
 }
 
 .missionConsoleFullscreenButtonLcars {
@@ -36159,16 +36185,49 @@ html.missionConsoleFullscreenMode body {
 }
 
 .missionConsoleFullscreenButtonLcars .missionConsoleFullscreenButtonCap {
-  background: #a18fc6;
+  background: #cfc4e1;
 }
 .missionConsoleFullscreenButtonLcars:hover {
   background: #d5cae6;
 }
 .missionConsoleFullscreenButtonLcars:hover .missionConsoleFullscreenButtonCap {
-  background: #a896cc;
+  background: #d5cae6;
 }
 .missionConsoleFullscreenButtonLcars:active { transform: translateY(1px); }
 .missionConsoleFullscreenButtonLcars:focus-visible { outline: 2px solid #f7d874; outline-offset: 2px; }
+
+/* Hard reset: remove any residual shadowing/UA styling from the top display buttons. */
+.missionConsoleDeviceStatus,
+.missionConsoleFullscreenButton,
+.missionConsoleDeviceStatusLcars,
+.missionConsoleFullscreenButtonLcars,
+.missionConsoleDeviceStatusCap,
+.missionConsoleFullscreenButtonCap,
+.missionConsoleDeviceStatusContent,
+.missionConsoleFullscreenButtonContent,
+.missionConsoleDeviceStatus::before,
+.missionConsoleDeviceStatus::after,
+.missionConsoleFullscreenButton::before,
+.missionConsoleFullscreenButton::after,
+.missionConsoleDeviceStatusLcars::before,
+.missionConsoleDeviceStatusLcars::after,
+.missionConsoleFullscreenButtonLcars::before,
+.missionConsoleFullscreenButtonLcars::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.missionConsoleFullscreenButton,
+.missionConsoleFullscreenButtonLcars {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0 !important;
+  outline: none;
+  background-image: none !important;
+}
 
 .missionConsoleConnectivityBanner {
   position: sticky;
