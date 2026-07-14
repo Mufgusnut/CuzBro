@@ -35686,3 +35686,31 @@ body.missionPlanningBoardOpen {
 .missionConsoleNudgeConsole-imaging .missionConsoleNudgeChoices button em {
   display: none !important;
 }
+
+/* Celestron Auto Focuser controls */
+.missionConsoleFocuserNode{border-color:#b9dcff}.missionConsoleFocuserNode .missionConsoleSystemNodeTitle{background:#b9dcff}.missionConsoleFocuserControls{display:grid;gap:12px;padding:14px;background:#000;border-top:2px solid #050505}.missionConsoleFocuserConnection{display:grid;grid-template-columns:1fr 1fr;gap:8px}.missionConsoleFocuserConnection button,.missionConsoleFocuserAbsolute button{border:0;border-radius:999px;background:#b9dcff;color:#050505;padding:12px 10px;font:900 .74rem/1 inherit;letter-spacing:.08em;cursor:pointer}.missionConsoleFocuserConnection button:nth-child(2){background:#333;color:#f8f2d3}.missionConsoleFocuserStepPanel{display:grid;gap:8px;padding:12px;background:#171717;border:1px solid rgba(185,220,255,.25)}.missionConsoleFocuserStepPanel>span,.missionConsoleFocuserAbsolute span{color:#b9dcff;font-size:.7rem;font-weight:900;letter-spacing:.11em}.missionConsoleFocuserStepChoices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}.missionConsoleFocuserStepChoices button{border:1px solid rgba(185,220,255,.35);background:#222;color:#f8f2d3;padding:10px 4px;font:900 .72rem/1 inherit;cursor:pointer}.missionConsoleFocuserStepChoices button.is-active{background:#b9dcff;color:#050505;border-color:#b9dcff}.missionConsoleFocuserMoveRow{display:grid;grid-template-columns:1fr minmax(120px,.8fr) 1fr;gap:8px;align-items:stretch}.missionConsoleFocuserMoveRow>button{display:flex;align-items:center;justify-content:center;gap:7px;border:0;background:#e8deae;color:#050505;padding:14px 10px;font:950 .9rem/1 inherit;letter-spacing:.1em;cursor:pointer}.missionConsoleFocuserMoveRow>button:first-child{border-radius:999px 10px 10px 999px}.missionConsoleFocuserMoveRow>button:last-child{border-radius:10px 999px 999px 10px}.missionConsoleFocuserMoveRow>div{display:grid;place-content:center;text-align:center;background:#191919;padding:8px}.missionConsoleFocuserMoveRow small{color:#b9dcff;font-size:.58rem;letter-spacing:.1em}.missionConsoleFocuserMoveRow strong{color:#f8f2d3;font-size:1.3rem}.missionConsoleFocuserMoveRow span{color:#c6bc91;font-size:.62rem}.missionConsoleFocuserAbsolute{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.missionConsoleFocuserAbsolute label{display:grid;gap:7px}.missionConsoleFocuserAbsolute input{width:100%;box-sizing:border-box;border:1px solid rgba(185,220,255,.55);background:#191919;color:#f8f2d3;padding:12px 13px;font:800 1rem/1 inherit}.missionConsoleFocuserAbsolute button{border-radius:10px;min-height:44px}.missionConsoleFocuserHalt{border:0;border-radius:999px;background:#8f3f36;color:#fff;padding:13px;font:950 .78rem/1 inherit;letter-spacing:.1em;cursor:pointer}.missionConsoleFocuserControls button:disabled{opacity:.35;cursor:not-allowed}@media(max-width:700px){.missionConsoleFocuserStepChoices{grid-template-columns:repeat(3,1fr)}.missionConsoleFocuserMoveRow{grid-template-columns:1fr 100px 1fr}.missionConsoleFocuserAbsolute{grid-template-columns:1fr}.missionConsoleFocuserConnection{grid-template-columns:1fr}}
+.missionConsoleFocuserNode{grid-column:1/-1}.missionConsoleDewNode{border-color:#ea9c69}.missionConsoleDewNode .missionConsoleSystemNodeTitle{background:#ea9c69}@media(max-width:960px) and (orientation:portrait){.missionConsoleFocuserNode{grid-column:auto}}
+
+/* v42 — Observatory systems layout: mount + dew on top, focuser below */
+.missionConsoleSystemsGrid > .missionConsoleSystemNode:nth-child(1) {
+  order: 1;
+}
+
+.missionConsoleSystemsGrid > .missionConsoleDewNode {
+  order: 2;
+}
+
+.missionConsoleSystemsGrid > .missionConsoleFocuserNode {
+  order: 3;
+  grid-column: 1 / -1;
+}
+
+.missionConsoleSystemsGrid > .missionConsoleSystemNodeWide {
+  order: 4;
+}
+
+@media (max-width: 960px) and (orientation: portrait) {
+  .missionConsoleSystemsGrid > .missionConsoleFocuserNode {
+    grid-column: auto;
+  }
+}

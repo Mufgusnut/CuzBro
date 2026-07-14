@@ -17,6 +17,7 @@ import {
   DatabaseZap,
   Droplets,
   Gauge,
+  Focus,
   PauseCircle,
   Radio,
   RefreshCw,
@@ -509,6 +510,14 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [cpwiControlBusy, setCpwiControlBusy] = useState('');
   const [cpwiControlError, setCpwiControlError] = useState('');
   const [cpwiMountTab, setCpwiMountTab] = useState('status');
+  const [focuserRecord, setFocuserRecord] = useState(null);
+  const [focuserStatus, setFocuserStatus] = useState('connecting');
+  const [focuserError, setFocuserError] = useState('');
+  const [focuserControlBusy, setFocuserControlBusy] = useState('');
+  const [focuserControlError, setFocuserControlError] = useState('');
+  const [focuserControlMessage, setFocuserControlMessage] = useState('');
+  const [focuserStepSize, setFocuserStepSize] = useState(100);
+  const [focuserTargetPosition, setFocuserTargetPosition] = useState('');
   const [selectedSlewTarget, setSelectedSlewTarget] = useState('m13');
   const [manualSlewRa, setManualSlewRa] = useState('');
   const [manualSlewDec, setManualSlewDec] = useState('');
@@ -751,6 +760,99 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     const interval = window.setInterval(pollCpwiTelemetry, 3000);
     return () => { active = false; window.clearInterval(interval); };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function pollFocuserTelemetry() {
+      const { data, error: queryError } = await supabase
+        .from('focuser_status')
+        .select('*')
+        .eq('station', 'eliot')
+        .maybeSingle();
+
+      if (!active) return;
+      if (queryError) {
+        setFocuserStatus('offline');
+        setFocuserError(queryError.message || 'Focuser telemetry unavailable.');
+        return;
+      }
+
+      const ageMs = data?.updated_at ? Date.now() - new Date(data.updated_at).getTime() : Infinity;
+      setFocuserRecord(data || null);
+      setFocuserStatus(data?.online && ageMs <= 15000 ? 'online' : data ? 'stale' : 'offline');
+      setFocuserError(data?.last_error || '');
+      if (data?.payload?.position !== null && data?.payload?.position !== undefined) {
+        setFocuserTargetPosition((current) => current === '' ? String(data.payload.position) : current);
+      }
+    }
+
+    pollFocuserTelemetry();
+    const interval = window.setInterval(pollFocuserTelemetry, 3000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, []);
+
+  async function runFocuserControl(action, argumentsPayload = null) {
+    setFocuserControlBusy(action);
+    setFocuserControlError('');
+    setFocuserControlMessage('');
+
+    try {
+      const { data, error: insertError } = await supabase
+        .from('focuser_commands')
+        .insert({ station: 'eliot', action, arguments: argumentsPayload, requested_by: session?.user?.id || null })
+        .select('id')
+        .single();
+      if (insertError) throw insertError;
+
+      const deadline = Date.now() + 20000;
+      while (Date.now() < deadline) {
+        await new Promise((resolve) => window.setTimeout(resolve, 500));
+        const { data: command, error: commandError } = await supabase
+          .from('focuser_commands')
+          .select('status,error,result')
+          .eq('id', data.id)
+          .single();
+        if (commandError) throw commandError;
+        if (command.status === 'completed') {
+          setFocuserControlMessage(command.result?.message || 'FOCUSER COMMAND COMPLETE');
+          return true;
+        }
+        if (command.status === 'failed') throw new Error(command.error || 'Focuser command failed.');
+      }
+      throw new Error('Focuser command timed out waiting for the observatory bridge.');
+    } catch (controlError) {
+      setFocuserControlError(controlError.message || 'Focuser command failed.');
+      return false;
+    } finally {
+      setFocuserControlBusy('');
+    }
+  }
+
+  async function moveFocuserRelative(direction) {
+    const payload = focuserRecord?.payload || {};
+    if (focuserStatus !== 'online' || !payload.connected) {
+      setFocuserControlError('Connect the Celestron focuser before moving it.');
+      return;
+    }
+    const signedSteps = Math.max(1, Math.round(Number(focuserStepSize) || 1)) * (direction === 'in' ? -1 : 1);
+    await runFocuserControl('moveRelative', { steps: signedSteps });
+  }
+
+  async function moveFocuserAbsolute() {
+    const payload = focuserRecord?.payload || {};
+    const position = Math.round(Number(focuserTargetPosition));
+    const maxStep = Number(payload.maxStep);
+    if (!Number.isFinite(position)) {
+      setFocuserControlError('Enter a valid absolute focuser position.');
+      return;
+    }
+    if (Number.isFinite(maxStep) && (position < 0 || position > maxStep)) {
+      setFocuserControlError(`Position must be between 0 and ${maxStep}.`);
+      return;
+    }
+    await runFocuserControl('moveAbsolute', { position });
+  }
 
   async function runCpwiControl(action, argumentsPayload = null) {
     setCpwiControlBusy(action);
@@ -2000,6 +2102,52 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                   {cpwiControlError ? <div className="missionConsoleMountControlMessage is-error">{cpwiControlError}</div> : null}
                 </article>
 
+                <article className="missionConsoleSystemNode missionConsoleFocuserNode">
+                  <div className="missionConsoleSystemNodeTitle"><Focus size={18} /><span>CELESTRON FOCUS CONTROL</span></div>
+                  <div className="missionConsoleSystemMetrics">
+                    <div><span>LINK</span><strong>{focuserStatus === 'online' ? 'ONLINE' : focuserStatus === 'stale' ? 'STALE' : 'OFFLINE'}</strong></div>
+                    <div><span>CONNECTION</span><strong>{focuserRecord?.payload?.connected ? 'CONNECTED' : 'DISCONNECTED'}</strong></div>
+                    <div><span>POSITION</span><strong>{focuserRecord?.payload?.position ?? '—'}</strong></div>
+                    <div><span>MOTION</span><strong>{focuserRecord?.payload?.isMoving ? 'MOVING' : focuserRecord?.payload?.connected ? 'IDLE' : '—'}</strong></div>
+                    <div><span>MAX TRAVEL</span><strong>{focuserRecord?.payload?.maxStep ?? '—'}</strong></div>
+                    <div><span>MAX INCREMENT</span><strong>{focuserRecord?.payload?.maxIncrement ?? '—'}</strong></div>
+                    <div><span>TEMPERATURE</span><strong>{bridgeNumber(celsiusToFahrenheit(focuserRecord?.payload?.temperatureC), 1, '°F')}</strong></div>
+                    <div><span>LAST UPDATE</span><strong>{focuserRecord?.updated_at ? new Date(focuserRecord.updated_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '—'}</strong></div>
+                  </div>
+
+                  <div className="missionConsoleFocuserControls">
+                    <div className="missionConsoleFocuserConnection">
+                      <button type="button" disabled={Boolean(focuserControlBusy) || focuserRecord?.payload?.connected} onClick={() => runFocuserControl('connect')}>CONNECT FOCUSER</button>
+                      <button type="button" disabled={Boolean(focuserControlBusy) || !focuserRecord?.payload?.connected} onClick={() => runFocuserControl('disconnect')}>DISCONNECT</button>
+                    </div>
+
+                    <div className="missionConsoleFocuserStepPanel">
+                      <span>MOVE INCREMENTS</span>
+                      <div className="missionConsoleFocuserStepChoices">
+                        {[1, 10, 50, 100, 500, 1000].map((steps) => (
+                          <button key={steps} type="button" className={Number(focuserStepSize) === steps ? 'is-active' : ''} onClick={() => setFocuserStepSize(steps)}>{steps}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="missionConsoleFocuserMoveRow">
+                      <button type="button" disabled={Boolean(focuserControlBusy) || !focuserRecord?.payload?.connected || focuserRecord?.payload?.isMoving} onClick={() => moveFocuserRelative('in')}><ArrowLeft size={20} /> IN</button>
+                      <div><small>CURRENT POSITION</small><strong>{focuserRecord?.payload?.position ?? '—'}</strong><span>± {focuserStepSize} STEPS</span></div>
+                      <button type="button" disabled={Boolean(focuserControlBusy) || !focuserRecord?.payload?.connected || focuserRecord?.payload?.isMoving} onClick={() => moveFocuserRelative('out')}>OUT <ArrowRight size={20} /></button>
+                    </div>
+
+                    <div className="missionConsoleFocuserAbsolute">
+                      <label><span>ABSOLUTE POSITION</span><input type="number" min="0" max={focuserRecord?.payload?.maxStep || undefined} step="1" value={focuserTargetPosition} onChange={(event) => setFocuserTargetPosition(event.target.value)} /></label>
+                      <button type="button" disabled={Boolean(focuserControlBusy) || !focuserRecord?.payload?.connected || focuserRecord?.payload?.isMoving} onClick={moveFocuserAbsolute}>GO TO POSITION</button>
+                    </div>
+
+                    <button type="button" className="missionConsoleFocuserHalt" disabled={!focuserRecord?.payload?.connected} onClick={() => runFocuserControl('halt')}>HALT FOCUSER MOTION</button>
+                    {focuserControlBusy ? <div className="missionConsoleMountControlMessage">COMMAND IN PROGRESS // {focuserControlBusy.toUpperCase()}</div> : null}
+                    {focuserControlMessage ? <div className="missionConsoleMountControlMessage">{focuserControlMessage}</div> : null}
+                    {focuserControlError || focuserError ? <div className="missionConsoleMountControlMessage is-error">{focuserControlError || focuserError}</div> : null}
+                  </div>
+                </article>
+
                 <article className="missionConsoleSystemNode missionConsoleDewNode">
                   <div className="missionConsoleSystemNodeTitle"><Thermometer size={18} /><span>DEW CONTROL</span></div>
                   <div className="missionConsoleSystemMetrics">
@@ -2053,6 +2201,7 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                     <span><Wifi size={15} /> {localSystems?.bridge?.host || 'OBSERVATORY PC'} // {localSystems?.bridge?.version || 'CPWI RELAY NOT DETECTED'}</span>
                     <span>CPWI: {localSystemsStatus === 'online' ? 'SUPABASE RELAY ONLINE' : localSystemsStatus.toUpperCase()} // {localSystems?.cpwi?.driver || 'NOT REPORTED'}</span>
                     <span>HBG3: {hbg3Online ? 'SUPABASE RELAY ONLINE' : hbg3Error ? `ERROR // ${hbg3Error}` : hbg3Record ? 'TELEMETRY STALE' : 'NOT REPORTED'}</span>
+                    <span>FOCUSER: {focuserStatus === 'online' ? 'SUPABASE RELAY ONLINE' : focuserStatus === 'stale' ? 'TELEMETRY STALE' : focuserError ? `ERROR // ${focuserError}` : 'NOT REPORTED'}</span>
                     {localSystems?.warnings?.length ? <span className="missionConsoleSystemWarning">{localSystems.warnings.join(' // ')}</span> : null}
                   </div>
                 </article>

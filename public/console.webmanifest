@@ -6,13 +6,7 @@
   "start_url": "/admin/console",
   "scope": "/",
   "display": "standalone",
+  "orientation": "landscape",
   "background_color": "#000000",
-  "theme_color": "#000000",
-  "icons": [
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    }
-  ]
+  "theme_color": "#000000"
 }
