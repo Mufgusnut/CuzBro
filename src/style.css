@@ -36325,3 +36325,54 @@ html.missionConsoleFullscreenMode body {
   .missionConsoleWrap { min-height: 100dvh; }
   .missionConsoleStandaloneTopbar { padding-top: 4px; }
 }
+
+
+/* v61 — rounded LCARS elbows framing System Readiness, left edges aligned */
+@media (min-width: 761px) {
+  .missionConsoleReadiness {
+    --mission-readiness-elbow-left: -58px;
+    --mission-readiness-elbow-height: 42px;
+    --mission-readiness-elbow-radius: 42px;
+    --mission-readiness-elbow-stroke: 18px;
+    position: relative;
+    margin-top: 46px;
+    margin-bottom: 46px;
+    overflow: visible;
+    z-index: 1;
+  }
+
+  .missionConsoleReadiness::before,
+  .missionConsoleReadiness::after {
+    content: '';
+    position: absolute;
+    left: var(--mission-readiness-elbow-left);
+    width: calc(100% - var(--mission-readiness-elbow-left));
+    height: var(--mission-readiness-elbow-height);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Upper rail: a broad rounded 90-degree turn into the horizontal band. */
+  .missionConsoleReadiness::before {
+    top: calc(-1 * var(--mission-readiness-elbow-height));
+    border-left: var(--mission-readiness-elbow-stroke) solid #958ff0;
+    border-top: var(--mission-readiness-elbow-stroke) solid #958ff0;
+    border-top-left-radius: var(--mission-readiness-elbow-radius);
+  }
+
+  /* Lower rail: matching rounded turn beneath System Readiness. */
+  .missionConsoleReadiness::after {
+    bottom: calc(-1 * var(--mission-readiness-elbow-height));
+    border-left: var(--mission-readiness-elbow-stroke) solid #b96f70;
+    border-bottom: var(--mission-readiness-elbow-stroke) solid #b96f70;
+    border-bottom-left-radius: var(--mission-readiness-elbow-radius);
+  }
+
+  /* The lower elbow is the divider; keep the older cream line suppressed. */
+  .missionConsoleLcarsStrip {
+    border-top: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 46px !important;
+  }
+}

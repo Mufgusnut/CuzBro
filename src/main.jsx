@@ -31,11 +31,34 @@ if (normalizedPath === CONSOLE_PATH) {
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((error) => {
-      console.debug('Service worker registration unavailable:', error);
+  if (import.meta.env.PROD) {
+    window.addEventListener('load', async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js', {
+          updateViaCache: 'none',
+        });
+        await registration.update();
+      } catch (error) {
+        console.debug('Service worker registration unavailable:', error);
+      }
     });
-  });
+  } else {
+    // Never let an old production service worker control Vite/localhost.
+    // Cached JS/CSS can otherwise make obsolete console layouts reappear.
+    window.addEventListener('load', async () => {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+        }
+      } catch (error) {
+        console.debug('Development cache cleanup unavailable:', error);
+      }
+    });
+  }
 }
 
 /*
