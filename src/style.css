@@ -36022,3 +36022,125 @@ body.missionPlanningBoardOpen {
     scroll-behavior: auto;
   }
 }
+
+/* Mobile / tablet mission-console hardening — v13.7.0 */
+html { -webkit-text-size-adjust: 100%; }
+body { min-height: 100dvh; }
+button, a, input, select, textarea { touch-action: manipulation; }
+
+.missionConsoleWrap {
+  min-height: 100dvh;
+  padding-top: max(0px, env(safe-area-inset-top));
+  padding-right: max(0px, env(safe-area-inset-right));
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+  padding-left: max(0px, env(safe-area-inset-left));
+  overscroll-behavior-y: contain;
+}
+
+.missionConsoleStandaloneTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.missionConsoleDeviceControls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.missionConsoleDeviceStatus,
+.missionConsoleFullscreenButton {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(248,242,211,.22);
+  background: #171717;
+  color: #f8f2d3;
+  padding: 8px 12px;
+  font: 900 .64rem/1 inherit;
+  letter-spacing: .08em;
+}
+
+.missionConsoleDeviceStatus.is-online { border-color: #73d8a1; color: #9ff0bd; }
+.missionConsoleDeviceStatus.is-offline { border-color: #ef756a; color: #ff9a91; }
+.missionConsoleDeviceStatus.is-standby { border-color: #f0c64a; color: #f5d974; }
+.missionConsoleFullscreenButton { border-radius: 999px; cursor: pointer; }
+.missionConsoleFullscreenButton:active { transform: translateY(1px); }
+
+.missionConsoleConnectivityBanner {
+  position: sticky;
+  top: max(0px, env(safe-area-inset-top));
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 12px;
+  padding: 11px 14px;
+  background: #8f3f36;
+  color: #fff;
+  border: 2px solid #ff9a91;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.missionConsoleConnectivityBanner div { display: grid; gap: 3px; }
+.missionConsoleConnectivityBanner strong { font-size: .78rem; letter-spacing: .1em; }
+.missionConsoleConnectivityBanner span { font-size: .68rem; line-height: 1.35; }
+
+@media (pointer: coarse) {
+  .missionConsoleMain button,
+  .missionConsoleMain a,
+  .missionConsoleMain select,
+  .missionConsoleMain input { min-height: 44px; }
+  .missionConsolePanelTop { min-height: 54px !important; }
+  .missionConsoleLcarsTab { min-height: 48px !important; }
+}
+
+@media (max-width: 900px) {
+  .missionConsoleFrame { width: 100%; }
+  .missionConsoleLeftRail { width: 18px; min-width: 18px; }
+  .missionConsoleMain { min-width: 0; }
+  .missionConsoleHeaderCompact { grid-template-columns: 1fr !important; }
+  .missionConsoleHeaderBlockMeta { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .missionConsoleStandaloneTopbar { align-items: stretch; }
+  .missionConsoleReturnAdmin { flex: 0 0 auto; }
+  .missionConsoleDeviceControls { flex: 1 1 420px; }
+  .missionConsoleDeviceStatus, .missionConsoleFullscreenButton { flex: 1 1 auto; }
+}
+
+@media (max-width: 620px) {
+  .missionConsoleWrap { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+  .missionConsoleLeftRail { display: none; }
+  .missionConsoleMain { width: 100%; }
+  .missionConsoleStandaloneTopbar { display: grid; grid-template-columns: 1fr; }
+  .missionConsoleReturnAdmin { width: 100%; justify-content: center; }
+  .missionConsoleDeviceControls { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .missionConsoleDeviceStatus:first-child { grid-column: 1 / -1; }
+  .missionConsoleDeviceStatus, .missionConsoleFullscreenButton { width: 100%; padding-inline: 8px; }
+  .missionConsoleHeaderBlockMeta { grid-template-columns: 1fr; }
+  .missionConsoleHeaderBlockPrimary h1 { font-size: clamp(1.65rem, 8vw, 2.35rem); }
+  .missionConsoleSystemsGrid,
+  .missionConsoleTelemetryGrid,
+  .missionConsoleOperationsGrid { grid-template-columns: 1fr !important; }
+  .missionConsoleConnectivityBanner { margin-inline: 0; }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .missionConsoleHeaderCompact { padding-block: 8px !important; }
+  .missionConsoleAccessHeader { display: none !important; }
+  .missionConsoleHeaderBlockPrimary p { display: none; }
+  .missionConsoleReadiness { margin-block: 7px; }
+  .missionConsoleReadinessGrid { gap: 5px; }
+  .missionConsoleReadinessTile { min-height: 54px; padding: 7px 9px; }
+  .missionConsoleLcarsStrip { position: sticky; top: max(0px, env(safe-area-inset-top)); z-index: 35; background: #000; padding-block: 5px; }
+}
+
+@media (display-mode: standalone) {
+  .missionConsoleWrap { min-height: 100dvh; }
+  .missionConsoleStandaloneTopbar { padding-top: 4px; }
+}

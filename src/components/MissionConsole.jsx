@@ -29,6 +29,10 @@ import {
   Thermometer,
   TimerReset,
   Wifi,
+  WifiOff,
+  Maximize2,
+  Minimize2,
+  Sun,
   Wind
 } from 'lucide-react';
 import { supabase } from '../supabase.js';
@@ -503,6 +507,10 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [error, setError] = useState('');
   const [busyAction, setBusyAction] = useState('');
   const [now, setNow] = useState(Date.now());
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+  const [isFullscreen, setIsFullscreen] = useState(() => Boolean(document.fullscreenElement));
+  const [wakeLockActive, setWakeLockActive] = useState(false);
+  const [wakeLockSupported] = useState(() => 'wakeLock' in navigator);
   const [localSystems, setLocalSystems] = useState(null);
   const [localSystemsStatus, setLocalSystemsStatus] = useState('connecting');
   const [localSystemsError, setLocalSystemsError] = useState('');
@@ -589,6 +597,70 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    const handleFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    document.addEventListener('fullscreenchange', handleFullscreen);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('fullscreenchange', handleFullscreen);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!wakeLockSupported) return undefined;
+
+    let lock = null;
+    let cancelled = false;
+
+    async function requestWakeLock() {
+      if (document.visibilityState !== 'visible') return;
+      try {
+        lock = await navigator.wakeLock.request('screen');
+        if (cancelled) {
+          await lock.release();
+          return;
+        }
+        setWakeLockActive(true);
+        lock.addEventListener('release', () => setWakeLockActive(false), { once: true });
+      } catch (wakeError) {
+        console.debug('Screen wake lock unavailable:', wakeError);
+        setWakeLockActive(false);
+      }
+    }
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && !lock) requestWakeLock();
+    };
+
+    requestWakeLock();
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', handleVisibility);
+      if (lock) lock.release().catch(() => {});
+    };
+  }, [wakeLockSupported]);
+
+  async function toggleFullscreen() {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+      }
+    } catch (fullscreenError) {
+      setError('Fullscreen mode was blocked by this browser. Use Add to Home Screen for the cleanest tablet view.');
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -1653,7 +1725,30 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
               <span>RETURN TO ADMIN</span>
             </a>
 
+            <div className="missionConsoleDeviceControls" aria-label="Tablet display controls">
+              <span className={`missionConsoleDeviceStatus ${isOnline ? 'is-online' : 'is-offline'}`}>
+                {isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
+                {isOnline ? 'NETWORK ONLINE' : 'NETWORK OFFLINE'}
+              </span>
+              {wakeLockSupported ? (
+                <span className={`missionConsoleDeviceStatus ${wakeLockActive ? 'is-online' : 'is-standby'}`}>
+                  <Sun size={16} />
+                  {wakeLockActive ? 'SCREEN AWAKE' : 'WAKE LOCK STANDBY'}
+                </span>
+              ) : null}
+              <button type="button" className="missionConsoleFullscreenButton" onClick={toggleFullscreen}>
+                {isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
+                <span>{isFullscreen ? 'EXIT FULLSCREEN' : 'FULLSCREEN'}</span>
+              </button>
+            </div>
           </div>
+
+          {!isOnline ? (
+            <div className="missionConsoleConnectivityBanner" role="alert">
+              <WifiOff size={19} />
+              <div><strong>NETWORK CONNECTION LOST</strong><span>Controls may not reach the observatory. Existing console data remains visible until the link returns.</span></div>
+            </div>
+          ) : null}
 
           <header className="missionConsoleHeader missionConsoleHeaderCompact">
             <div className="missionConsoleAccessHeader">
