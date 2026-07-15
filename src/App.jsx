@@ -18,9 +18,11 @@ import AdminCommandPalette from './components/AdminCommandPalette.jsx';
 import EasterEggs from './components/EasterEggs.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import Login from './components/Login.jsx';
+import GuestReadOnlyGuard from './components/GuestReadOnlyGuard.jsx';
 import { supabase } from './supabase.js';
 import { LogOut, Menu, X } from 'lucide-react';
 import { getCrewMember } from './lib/crew.js';
+import { getAccessLevel } from './lib/permissions.js';
 import {
   useCrewPresence
 } from './lib/presence.js';
@@ -246,6 +248,13 @@ function PageNav({ scrolled }) {
             </a>
           </div>
         </div>
+
+        <a
+          href="/admin"
+          className={pathname.startsWith('/admin') ? 'active' : ''}
+        >
+          Admin
+        </a>
       </nav>
 
       <ThemeToggle />
@@ -533,6 +542,10 @@ export default function App() {
   const [session, setSession] =
     useState(null);
 
+  const accessLevel = getAccessLevel(session?.user);
+  const isGuest = accessLevel === 'guest';
+  const isAuthorizedAdminUser = accessLevel !== 'none';
+
   const [hasUnreadComms, setHasUnreadComms] =
     useState(false);
 
@@ -670,12 +683,42 @@ export default function App() {
     isAdminMissionsPage ||
     isAdminConsolePage;
 
+  useEffect(() => {
+    if (isAdminPage) {
+      return;
+    }
+
+    const sessionKey = 'cuzbro-public-visit-counted';
+
+    try {
+      if (window.sessionStorage.getItem(sessionKey)) {
+        return;
+      }
+
+      window.sessionStorage.setItem(sessionKey, '1');
+    } catch {
+      // Continue counting when sessionStorage is unavailable.
+    }
+
+    supabase.rpc('record_site_visit').then(({ error }) => {
+      if (error) {
+        console.debug('Public visit counter unavailable:', error.message);
+
+        try {
+          window.sessionStorage.removeItem(sessionKey);
+        } catch {
+          // Storage may be unavailable.
+        }
+      }
+    });
+  }, [isAdminPage]);
+
   useCrewPresence({
     session,
 
     enabled:
       isAdminPage &&
-      Boolean(session),
+      Boolean(session) && accessLevel === 'admin',
 
     pathname
   });
@@ -1792,17 +1835,34 @@ export default function App() {
       return <Login />;
     }
 
+    if (!isAuthorizedAdminUser) {
+      return (
+        <main className="admin-access-denied">
+          <img
+            src={import.meta.env.BASE_URL + 'assets/cuzbro-logo.png'}
+            alt="CuzBro logo"
+          />
+          <h1>Access not authorized</h1>
+          <p>This account is not assigned an admin or guest role.</p>
+          <button type="button" onClick={handleLogout}>Log out</button>
+        </main>
+      );
+    }
+
     if (isAdminHolodeckPage) {
       const holodeckCrew = getCrewMember(session.user?.email);
 
       return (
-        <Suspense fallback={<div className="virtualWatchRouteLoading">AUTHENTICATING CREW // INITIALIZING HOLODECK...</div>}>
+        <>
+          <GuestReadOnlyGuard active={isGuest} />
+          <Suspense fallback={<div className="virtualWatchRouteLoading">AUTHENTICATING CREW // INITIALIZING HOLODECK...</div>}>
           <Holodeck
             gallery={gallery}
             session={session}
             crew={holodeckCrew}
           />
-        </Suspense>
+          </Suspense>
+        </>
       );
     }
 
@@ -1940,6 +2000,7 @@ export default function App() {
 
     return (
       <>
+        <GuestReadOnlyGuard active={isGuest} />
         <EasterEggs />
 
         {!isAdminConsolePage && (

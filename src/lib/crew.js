@@ -2,19 +2,25 @@ const CREW_MEMBERS = {
   'dve.hffman@gmail.com': {
     name: 'Dave',
     callSign: 'DAVE',
-    role: 'Telescope Operations'
+    role: 'Administrator'
   },
 
   'jhoff33@gmail.com': {
     name: 'Justin',
     callSign: 'JUSTIN',
-    role: 'Technology Lead'
+    role: 'Administrator'
   },
 
   'gregg@computerav.com': {
     name: 'Chappy',
     callSign: 'CHAPPY',
-    role: 'Mission Support'
+    role: 'Administrator'
+  },
+
+  'guest@cuzbro.net': {
+    name: 'Guest',
+    callSign: 'GUEST',
+    role: 'View Only'
   }
 };
 

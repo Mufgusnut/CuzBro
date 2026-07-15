@@ -9319,7 +9319,7 @@ footer p {
 .admin-grid {
   display: grid;
   grid-template-columns:
-    repeat(3, minmax(0, 1fr));
+    repeat(4, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -12106,13 +12106,18 @@ footer p {
   }
 }
 
-@media (max-width: 850px) {
+@media (max-width: 1180px) {
   .admin-crew-link-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 700px) {
+  .admin-crew-link-grid {
+    grid-template-columns: 1fr;
+  }
+
   .admin-crew-link-heading {
     align-items: flex-start;
     flex-direction: column;
@@ -36374,5 +36379,188 @@ html.missionConsoleFullscreenMode body {
     border-top: 0 !important;
     padding-top: 0 !important;
     margin-top: 46px !important;
+  }
+}
+
+/* v62 — Keep the decorative LCARS left rail independent of accordion height.
+   Expanding a mission-console panel must not stretch or move the rail segments. */
+@media (min-width: 761px) {
+  .missionConsoleLeftRail {
+    position: sticky;
+    top: 10px;
+    align-self: start;
+    display: grid !important;
+    grid-template-rows: minmax(360px, 58fr) minmax(210px, 28fr) minmax(110px, 14fr);
+    gap: 14px;
+    height: calc(100dvh - 30px);
+    min-height: 720px;
+    max-height: 1080px;
+    overflow: hidden;
+  }
+
+  .missionConsoleRailLarge,
+  .missionConsoleRailAccent,
+  .missionConsoleRailMini {
+    min-height: 0;
+    height: 100%;
+    flex: none !important;
+    flex-basis: auto !important;
+  }
+}
+
+/* v63 — The LCARS left border belongs to the console document.
+   It grows with the expanded panels and scrolls with the console instead of
+   remaining pinned to the viewport. */
+@media (min-width: 761px) {
+  .missionConsoleLeftRail {
+    position: relative !important;
+    top: auto !important;
+    align-self: stretch !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .missionConsoleRailLarge {
+    flex: 1 1 38% !important;
+    height: auto !important;
+  }
+
+  .missionConsoleRailAccent {
+    flex: 1 1 32% !important;
+    height: auto !important;
+  }
+
+  .missionConsoleRailMini {
+    flex: 1 1 30% !important;
+    height: auto !important;
+  }
+}
+
+/* Guest account: authenticated, view-only admin access. */
+.guest-read-only-banner {
+  position: fixed;
+  z-index: 100000;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: min(360px, calc(100vw - 36px));
+  padding: 10px 14px;
+  border: 2px solid #f2c94c;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.94);
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+}
+
+.guest-read-only-banner strong {
+  color: #f2c94c;
+  letter-spacing: 0.12em;
+}
+
+.admin-access-denied {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background: #050505;
+  color: #fff;
+}
+
+.admin-access-denied img {
+  width: min(220px, 60vw);
+}
+
+.admin-access-denied button {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* =========================================================
+   ADMIN HEADER STATUS + PUBLIC VISIT COUNTER
+========================================================= */
+.admin-command-header {
+  align-items: flex-start;
+}
+
+.admin-command-side {
+  width: min(390px, 100%);
+  display: grid;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+
+.admin-command-side .admin-status-card,
+.admin-visit-card {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.admin-visit-card {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 22px 25px;
+  background: rgba(8, 16, 31, 0.8);
+  border: 1px solid rgba(143, 193, 219, 0.17);
+  border-radius: 12px;
+}
+
+.admin-visit-copy {
+  min-width: 0;
+}
+
+.admin-visit-card span {
+  color: rgba(202, 220, 237, 0.58);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+}
+
+.admin-visit-card strong {
+  display: block;
+  margin-top: 7px;
+  color: #ffffff;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+}
+
+.admin-visit-refresh {
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: rgba(185, 222, 240, 0.78);
+  background: rgba(87, 165, 201, 0.07);
+  border: 1px solid rgba(143, 193, 219, 0.14);
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.admin-visit-refresh:hover {
+  color: #ffffff;
+  border-color: rgba(143, 213, 236, 0.42);
+  background: rgba(87, 165, 201, 0.13);
+}
+
+@media (max-width: 950px) {
+  .admin-command-side {
+    width: 100%;
   }
 }

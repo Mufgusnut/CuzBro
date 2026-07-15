@@ -21,6 +21,7 @@ import {
 import { supabase } from '../supabase.js';
 import CrewPresencePanel from './CrewPresencePanel.jsx';
 import ObservingSiteControl from './ObservingSiteControl.jsx';
+import SiteVisitCounter from './SiteVisitCounter.jsx';
 import {
   getCrewMember
 } from '../lib/crew.js';
@@ -725,31 +726,35 @@ export default function AdminDashboard({
             </div>
           </div>
 
-          <div className="admin-status-card">
-            <div className="admin-status-icon">
-              <Settings size={23} />
-            </div>
+          <div className="admin-command-side">
+            <div className="admin-status-card">
+              <div className="admin-status-icon">
+                <Settings size={23} />
+              </div>
 
-            <div>
-              <span>
-                SYSTEM STATUS
-              </span>
+              <div>
+                <span>
+                  SYSTEM STATUS
+                </span>
 
-              <strong>
-                {dashboardStatus ===
-                'loading'
-                  ? 'SYNCING'
-                  : dashboardStatus ===
-                      'error'
-                    ? 'DATA ALERT'
-                    : blackBoxLinkStatus ===
+                <strong>
+                  {dashboardStatus ===
+                  'loading'
+                    ? 'SYNCING'
+                    : dashboardStatus ===
                         'error'
-                      ? 'BLACK BOX ALERT'
-                      : 'ADMIN ONLINE'}
-              </strong>
+                      ? 'DATA ALERT'
+                      : blackBoxLinkStatus ===
+                          'error'
+                        ? 'BLACK BOX ALERT'
+                        : 'ADMIN ONLINE'}
+                </strong>
+              </div>
+
+              <i />
             </div>
 
-            <i />
+            <SiteVisitCounter />
           </div>
         </section>
 

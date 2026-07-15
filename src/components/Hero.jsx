@@ -81,6 +81,8 @@ export default function Hero({
               <a href="/mission-support">Mission Support</a>
             </div>
           </div>
+
+          <a href="/admin">Admin</a>
         </nav>
 
         <ThemeToggle />
