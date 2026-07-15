@@ -414,6 +414,14 @@ function AdminTopNav({
         aria-label="Mission Control navigation"
       >
         <a
+          href="/"
+          onClick={closeNavigation}
+          title="Return to the public CuzBro site"
+        >
+          Main Site
+        </a>
+
+        <a
           href="/admin"
           className={isActive(['/admin']) ? 'active' : ''}
           onClick={closeNavigation}
