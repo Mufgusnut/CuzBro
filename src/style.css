@@ -34137,7 +34137,7 @@ body.missionPlanningBoardOpen {
 .missionConsoleDewControls{display:grid;gap:12px;padding:14px;background:#000;border-top:2px solid #050505}.missionConsoleDewMode{display:grid;grid-template-columns:1fr 1fr;gap:8px}.missionConsoleDewMode button{border:1px solid rgba(232,222,174,.38);background:#171717;color:#b9dcff;padding:12px 8px;font:900 .72rem/1 inherit;letter-spacing:.11em;cursor:pointer}.missionConsoleDewMode button.is-active{background:#e8deae;border-color:#e8deae;color:#050505}.missionConsoleDewSlider{display:grid;gap:9px;padding:13px;background:#191919;border:1px solid rgba(185,220,255,.22)}.missionConsoleDewSlider>span{display:flex;align-items:center;justify-content:space-between;gap:12px}.missionConsoleDewSlider b{color:#b9dcff;font-size:.7rem;letter-spacing:.1em}.missionConsoleDewSlider strong{color:#f8f2d3;font-size:.92rem}.missionConsoleDewSlider input{width:100%;accent-color:#e8deae}.missionConsoleDewSlider small{color:#c6bc91;font-size:.68rem;line-height:1.45}.missionConsoleDewActions{display:grid;grid-template-columns:2fr 1fr;gap:9px}.missionConsoleDewActions button{border:0;border-radius:999px;background:#e8deae;color:#050505;padding:13px 10px;font:900 .76rem/1 inherit;letter-spacing:.08em;cursor:pointer}.missionConsoleDewActions button.is-off{background:#65443c;color:#fff}.missionConsoleDewActions button:disabled{opacity:.38;cursor:not-allowed}@media(max-width:700px){.missionConsoleDewActions{grid-template-columns:1fr}}
 
 
-.missionConsoleAsiimgPanel {
+.missionConsoleAsiairPanel {
   margin-top: 16px;
   background: linear-gradient(180deg, rgba(20, 33, 56, 0.96) 0%, rgba(10, 14, 25, 0.96) 100%);
   border: 1px solid rgba(132, 190, 255, 0.28);
@@ -34145,12 +34145,12 @@ body.missionPlanningBoardOpen {
   padding: 16px;
 }
 
-.missionConsoleAsiimgPanel.is-stalled {
+.missionConsoleAsiairPanel.is-stalled {
   border-color: rgba(255, 132, 112, 0.8);
   box-shadow: 0 0 0 2px rgba(255, 132, 112, 0.12);
 }
 
-.missionConsoleAsiimgHeader {
+.missionConsoleAsiairHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -34158,21 +34158,21 @@ body.missionPlanningBoardOpen {
   margin-bottom: 14px;
 }
 
-.missionConsoleAsiimgHeader small,
-.missionConsoleAsiimgGrid span {
+.missionConsoleAsiairHeader small,
+.missionConsoleAsiairGrid span {
   display: block;
   color: #aed4ff;
   letter-spacing: 0.1em;
   font-weight: 800;
 }
 
-.missionConsoleAsiimgHeader strong {
+.missionConsoleAsiairHeader strong {
   display: block;
   margin-top: 5px;
   font-size: 1.3rem;
 }
 
-.missionConsoleAsiimgState {
+.missionConsoleAsiairState {
   border-radius: 999px;
   padding: 10px 16px;
   background: rgba(126, 208, 186, 0.18);
@@ -34181,18 +34181,18 @@ body.missionPlanningBoardOpen {
   letter-spacing: 0.08em;
 }
 
-.missionConsoleAsiimgState.is-alert {
+.missionConsoleAsiairState.is-alert {
   background: rgba(255, 132, 112, 0.18);
   color: #ffab9b;
 }
 
-.missionConsoleAsiimgGrid {
+.missionConsoleAsiairGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
-.missionConsoleAsiimgGrid > div {
+.missionConsoleAsiairGrid > div {
   min-width: 0;
   background: rgba(29, 37, 59, 0.9);
   border: 1px solid rgba(132, 190, 255, 0.12);
@@ -34200,7 +34200,7 @@ body.missionPlanningBoardOpen {
   padding: 12px;
 }
 
-.missionConsoleAsiimgGrid strong {
+.missionConsoleAsiairGrid strong {
   display: block;
   margin-top: 8px;
   font-size: 1.05rem;
@@ -34209,19 +34209,19 @@ body.missionPlanningBoardOpen {
   text-overflow: ellipsis;
 }
 
-.missionConsoleAsiimgError,
-.missionConsoleAsiimgHint {
+.missionConsoleAsiairError,
+.missionConsoleAsiairHint {
   margin: 12px 0 0;
   padding: 10px 12px;
   border-radius: 12px;
 }
 
-.missionConsoleAsiimgError {
+.missionConsoleAsiairError {
   background: rgba(255, 132, 112, 0.12);
   color: #ffab9b;
 }
 
-.missionConsoleAsiimgHint {
+.missionConsoleAsiairHint {
   background: rgba(132, 190, 255, 0.08);
   color: #c9def7;
 }
@@ -34232,23 +34232,23 @@ body.missionPlanningBoardOpen {
 }
 
 @media (max-width: 900px) {
-  .missionConsoleAsiimgGrid {
+  .missionConsoleAsiairGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 560px) {
-  .missionConsoleAsiimgHeader {
+  .missionConsoleAsiairHeader {
     align-items: flex-start;
     flex-direction: column;
   }
-  .missionConsoleAsiimgGrid {
+  .missionConsoleAsiairGrid {
     grid-template-columns: 1fr;
   }
 }
 
 
-.missionConsoleAsiimgPreview {
+.missionConsoleAsiairPreview {
   margin-top: 14px;
   border: 1px solid rgba(132, 190, 255, 0.18);
   border-radius: 18px 8px 18px 8px;
@@ -34256,7 +34256,7 @@ body.missionPlanningBoardOpen {
   background: rgba(7, 11, 22, 0.72);
 }
 
-.missionConsoleAsiimgPreviewHeader {
+.missionConsoleAsiairPreviewHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -34265,14 +34265,14 @@ body.missionPlanningBoardOpen {
   background: rgba(29, 37, 59, 0.92);
 }
 
-.missionConsoleAsiimgPreviewHeader span {
+.missionConsoleAsiairPreviewHeader span {
   color: #aed4ff;
   font-weight: 900;
   letter-spacing: 0.1em;
   font-size: 0.76rem;
 }
 
-.missionConsoleAsiimgPreviewHeader strong {
+.missionConsoleAsiairPreviewHeader strong {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -34281,14 +34281,14 @@ body.missionPlanningBoardOpen {
   font-size: 0.86rem;
 }
 
-.missionConsoleAsiimgPreview > a {
+.missionConsoleAsiairPreview > a {
   position: relative;
   display: block;
   min-height: 230px;
   background: #02040a;
 }
 
-.missionConsoleAsiimgPreview img {
+.missionConsoleAsiairPreview img {
   display: block;
   width: 100%;
   max-height: 520px;
@@ -34296,7 +34296,7 @@ body.missionPlanningBoardOpen {
   background: #02040a;
 }
 
-.missionConsoleAsiimgPreviewOpen {
+.missionConsoleAsiairPreviewOpen {
   position: absolute;
   right: 12px;
   bottom: 12px;
@@ -34310,7 +34310,7 @@ body.missionPlanningBoardOpen {
   letter-spacing: 0.08em;
 }
 
-.missionConsoleAsiimgPreviewEmpty {
+.missionConsoleAsiairPreviewEmpty {
   min-height: 230px;
   display: grid;
   place-content: center;
@@ -34320,16 +34320,16 @@ body.missionPlanningBoardOpen {
   color: #c9def7;
 }
 
-.missionConsoleAsiimgPreviewEmpty span {
+.missionConsoleAsiairPreviewEmpty span {
   font-weight: 900;
   letter-spacing: 0.1em;
 }
 
-.missionConsoleAsiimgPreviewEmpty small {
+.missionConsoleAsiairPreviewEmpty small {
   color: #90a7c2;
 }
 
-.missionConsoleAsiimgPreviewError {
+.missionConsoleAsiairPreviewError {
   margin: 0;
   padding: 10px 14px;
   color: #ffab9b;
@@ -34338,13 +34338,13 @@ body.missionPlanningBoardOpen {
 }
 
 @media (max-width: 560px) {
-  .missionConsoleAsiimgPreviewHeader {
+  .missionConsoleAsiairPreviewHeader {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .missionConsoleAsiimgPreview > a,
-  .missionConsoleAsiimgPreviewEmpty {
+  .missionConsoleAsiairPreview > a,
+  .missionConsoleAsiairPreviewEmpty {
     min-height: 180px;
   }
 }
@@ -34401,7 +34401,7 @@ body.missionPlanningBoardOpen {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.missionConsoleAsiimgHint {
+.missionConsoleAsiairHint {
   max-width: 760px;
 }
 
@@ -35163,7 +35163,7 @@ body.missionPlanningBoardOpen {
 
 
 /* v38-repair: safe CSS-only live image bracket slew overlay */
-.missionConsoleAsiimgPreview { position: relative; isolation: isolate; }
+.missionConsoleAsiairPreview { position: relative; isolation: isolate; }
 .missionConsoleNudgeConsole-imaging {
   position: absolute;
   left: 14px;
@@ -35283,20 +35283,20 @@ body.missionPlanningBoardOpen {
 }
 
 /* v39 — compact translucent live-image slew overlay + stable empty preview canvas */
-.missionConsoleAsiimgPreview > a,
-.missionConsoleAsiimgPreviewEmpty {
+.missionConsoleAsiairPreview > a,
+.missionConsoleAsiairPreviewEmpty {
   width: 100%;
   aspect-ratio: 3 / 2;
   min-height: 0 !important;
   background: #000 !important;
 }
 
-.missionConsoleAsiimgPreview > a {
+.missionConsoleAsiairPreview > a {
   display: grid;
   place-items: center;
 }
 
-.missionConsoleAsiimgPreview img {
+.missionConsoleAsiairPreview img {
   width: 100%;
   height: 100%;
   max-height: none;
@@ -35304,18 +35304,18 @@ body.missionPlanningBoardOpen {
   background: #000;
 }
 
-.missionConsoleAsiimgPreviewEmpty {
+.missionConsoleAsiairPreviewEmpty {
   place-content: center;
   padding: 18px;
   color: rgba(201, 222, 247, 0.42);
 }
 
-.missionConsoleAsiimgPreviewEmpty span {
+.missionConsoleAsiairPreviewEmpty span {
   font-size: 0.72rem;
   opacity: 0.5;
 }
 
-.missionConsoleAsiimgPreviewEmpty small {
+.missionConsoleAsiairPreviewEmpty small {
   max-width: 360px;
   color: rgba(144, 167, 194, 0.30);
   font-size: 0.68rem;
@@ -36408,35 +36408,29 @@ html.missionConsoleFullscreenMode body {
   }
 }
 
-/* v63 — The LCARS left border belongs to the console document.
-   It grows with the expanded panels and scrolls with the console instead of
-   remaining pinned to the viewport. */
+/* v63 — Lock the decorative LCARS left rail to a stable viewport-sized layout.
+   Accordion panels can grow and scroll without resizing the rail segments. */
 @media (min-width: 761px) {
   .missionConsoleLeftRail {
-    position: relative !important;
-    top: auto !important;
-    align-self: stretch !important;
-    display: flex !important;
-    flex-direction: column !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
+    position: sticky !important;
+    top: 10px !important;
+    align-self: start !important;
+    display: grid !important;
+    grid-template-rows: minmax(360px, 58fr) minmax(210px, 28fr) minmax(110px, 14fr) !important;
+    gap: 14px !important;
+    height: calc(100dvh - 30px) !important;
+    min-height: 720px !important;
+    max-height: 1080px !important;
+    overflow: hidden !important;
   }
 
-  .missionConsoleRailLarge {
-    flex: 1 1 38% !important;
-    height: auto !important;
-  }
-
-  .missionConsoleRailAccent {
-    flex: 1 1 32% !important;
-    height: auto !important;
-  }
-
+  .missionConsoleRailLarge,
+  .missionConsoleRailAccent,
   .missionConsoleRailMini {
-    flex: 1 1 30% !important;
-    height: auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    flex: none !important;
+    flex-basis: auto !important;
   }
 }
 
@@ -36562,5 +36556,259 @@ html.missionConsoleFullscreenMode body {
 @media (max-width: 950px) {
   .admin-command-side {
     width: 100%;
+  }
+}
+
+/* ASIAIR Android app remote controls */
+.missionConsoleAsiairControls {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(255, 190, 75, 0.34);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.34);
+}
+.missionConsoleAsiairControlsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.missionConsoleAsiairControlsHeader > div { display: grid; gap: 2px; }
+.missionConsoleAsiairControlsHeader small { color: rgba(255,255,255,.58); letter-spacing: .13em; }
+.missionConsoleAsiairControlsHeader strong { color: #ffbd59; letter-spacing: .07em; }
+.missionConsoleAsiairControlsHeader > span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 189, 89, .14);
+  color: #ffbd59;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.missionConsoleAsiairControlButtons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.missionConsoleAsiairControlButtons button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #ffbd59;
+  color: #100b04;
+  font: inherit;
+  font-weight: 900;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+.missionConsoleAsiairControlButtons button.is-stop { background: #ff6f91; }
+.missionConsoleAsiairControlButtons button:disabled { opacity: .52; cursor: wait; }
+.missionConsoleAsiairControlNote,
+.missionConsoleAsiairControlMessage { margin: 10px 2px 0; font-size: .82rem; }
+.missionConsoleAsiairControlNote { color: rgba(255,255,255,.58); }
+.missionConsoleAsiairControlMessage { color: #ffbd59; font-weight: 800; letter-spacing: .04em; }
+@media (max-width: 760px) {
+  .missionConsoleAsiairControlButtons { grid-template-columns: 1fr; }
+  .missionConsoleAsiairControlsHeader { align-items: flex-start; }
+}
+
+/* Expanded ASIAIR remote capture deck */
+.missionConsoleAsiairModeSection { display: grid; gap: 8px; margin-bottom: 10px; }
+.missionConsoleAsiairModeSection > small { color: rgba(255,255,255,.58); letter-spacing: .12em; font-weight: 800; }
+.missionConsoleAsiairModeButtons { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.missionConsoleAsiairModeButtons button,
+.missionConsoleAsiairQuickGrid button,
+.missionConsoleAsiairSettingsGrid button {
+  min-height: 44px; border: 0; border-radius: 999px; padding: 9px 12px;
+  background: rgba(255,189,89,.14); color: #ffbd59; font: inherit; font-weight: 900;
+  letter-spacing: .045em; cursor: pointer;
+}
+.missionConsoleAsiairModeButtons button:hover { background: rgba(255,189,89,.24); }
+.missionConsoleAsiairQuickGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }
+.missionConsoleAsiairQuickGrid button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.missionConsoleAsiairQuickGrid button.is-primary { background: #ffbd59; color: #100b04; }
+.missionConsoleAsiairQuickGrid button.is-capture { background: #b9f27c; color: #101507; }
+.missionConsoleAsiairQuickGrid button.is-stop { background: #ff6f91; color: #18040b; }
+.missionConsoleAsiairSettingsGrid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-top: 10px; }
+.missionConsoleAsiairGainControl { display: grid; gap: 6px; padding: 10px; border: 1px solid rgba(255,189,89,.18); border-radius: 14px; }
+.missionConsoleAsiairGainControl > span { color: rgba(255,255,255,.58); font-size: .75rem; font-weight: 900; letter-spacing: .12em; }
+.missionConsoleAsiairGainControl > div { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1fr); gap: 8px; }
+.missionConsoleAsiairGainControl input { min-width: 0; border: 1px solid rgba(255,189,89,.35); border-radius: 999px; padding: 10px 12px; background: #090909; color: #fff; font: inherit; font-weight: 800; }
+.missionConsoleAsiairContinuous { min-height: 100%; }
+.missionConsoleAsiairModeButtons button:disabled,
+.missionConsoleAsiairQuickGrid button:disabled,
+.missionConsoleAsiairSettingsGrid button:disabled { opacity: .52; cursor: wait; }
+@media (max-width: 900px) {
+  .missionConsoleAsiairModeButtons { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .missionConsoleAsiairSettingsGrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .missionConsoleAsiairModeButtons, .missionConsoleAsiairQuickGrid { grid-template-columns: 1fr; }
+}
+
+/* v64 — Scroll the entire mission console as one panel.
+   Keep the left rail's stable segment proportions, but let it move with the page. */
+@media (min-width: 761px) {
+  .missionConsoleLeftRail {
+    position: relative !important;
+    top: auto !important;
+  }
+}
+
+/* v65 — Extend the orange LCARS rail segment to the bottom of the console.
+   Keep the top mauve segment, remove the trailing mini segment, and let the
+   orange segment fill the remainder of the scrolling panel height. */
+@media (min-width: 761px) {
+  .missionConsoleFrame {
+    align-items: stretch;
+  }
+
+  .missionConsoleLeftRail {
+    align-self: stretch !important;
+    display: grid !important;
+    grid-template-rows: clamp(180px, 24vh, 260px) minmax(0, 1fr) !important;
+    gap: 14px !important;
+    height: auto !important;
+    min-height: calc(100dvh - 30px) !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .missionConsoleRailLarge {
+    grid-row: 1;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
+  .missionConsoleRailAccent {
+    grid-row: 2;
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+
+  .missionConsoleRailMini {
+    display: none !important;
+  }
+}
+
+/* v66 — Match the horizontal readiness rails to the left vertical LCARS rail colors.
+   Top rail stays lavender to match the upper rail block.
+   Bottom rail is orange to match the extended lower rail block. */
+@media (min-width: 761px) {
+  .missionConsoleReadiness::before {
+    border-left-color: #958ff0 !important;
+    border-top-color: #958ff0 !important;
+  }
+
+  .missionConsoleReadiness::after {
+    border-left-color: #ee8b69 !important;
+    border-bottom-color: #ee8b69 !important;
+  }
+}
+
+/* v67 — Keep alignment unchanged; switch the lower horizontal readiness rail
+   to the same rose/red tone as the adjacent vertical rail block. */
+@media (min-width: 761px) {
+  .missionConsoleReadiness::after {
+    border-left-color: #b96f70 !important;
+    border-bottom-color: #b96f70 !important;
+  }
+}
+
+/* v68 — Restyle the left vertical LCARS bars to match the reference:
+   flat color blocks with square left edges, a rounded lower-right purple bar,
+   a rounded upper-right rose bar, and a separate orange footer block. */
+@media (min-width: 761px) {
+  .missionConsoleLeftRail {
+    width: 126px;
+    min-width: 126px;
+    display: grid !important;
+    grid-template-rows: clamp(300px, 32vh, 420px) minmax(520px, 1fr) clamp(160px, 16vh, 240px) !important;
+    gap: 14px !important;
+    align-self: stretch !important;
+    height: auto !important;
+    min-height: calc(100dvh - 30px) !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .missionConsoleRailLarge,
+  .missionConsoleRailAccent,
+  .missionConsoleRailMini {
+    display: block !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  .missionConsoleRailLarge {
+    grid-row: 1;
+    background: #958ff0 !important;
+    border-bottom-right-radius: 180px !important;
+  }
+
+  .missionConsoleRailAccent {
+    grid-row: 2;
+    background: #b27d7f !important;
+    border-top-right-radius: 180px !important;
+  }
+
+  .missionConsoleRailMini {
+    grid-row: 3;
+    background: #d7a16e !important;
+  }
+}
+
+/* v69 — Match the red horizontal rail to the red vertical rail,
+   and move the blue/red split downward by about 1.5in on laptop-sized screens. */
+@media (min-width: 761px) {
+  .missionConsoleReadiness::after {
+    border-left-color: #b27d7f !important;
+    border-bottom-color: #b27d7f !important;
+  }
+
+  .missionConsoleRailAccent {
+    background: #b27d7f !important;
+  }
+
+  .missionConsoleLeftRail {
+    grid-template-rows: clamp(440px, 44vh, 560px) minmax(380px, 1fr) clamp(160px, 16vh, 240px) !important;
+  }
+}
+
+/* v70 — Pull the blue/red split back upward by roughly one third of the last move. */
+@media (min-width: 761px) {
+  .missionConsoleLeftRail {
+    grid-template-rows: clamp(395px, 40vh, 515px) minmax(380px, 1fr) clamp(160px, 16vh, 240px) !important;
+  }
+}
+
+/* v71 — Pull the blue/red split back upward by another roughly one third. */
+@media (min-width: 761px) {
+  .missionConsoleLeftRail {
+    grid-template-rows: clamp(350px, 36vh, 470px) minmax(380px, 1fr) clamp(160px, 16vh, 240px) !important;
+  }
+}
+
+/* v71 — Stretch the left reach of the horizontal readiness rails slightly farther.
+   About 0.1in on a typical 13in laptop display. */
+@media (min-width: 761px) {
+  .missionConsoleReadiness {
+    --mission-readiness-elbow-left: -68px;
+  }
+}
+
+/* v72 — Extend only the upper blue/lavender horizontal rail a little farther left.
+   Keep the lower red rail where it is. */
+@media (min-width: 761px) {
+  .missionConsoleReadiness::before {
+    left: -78px !important;
+    width: calc(100% + 78px) !important;
   }
 }

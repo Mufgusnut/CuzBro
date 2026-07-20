@@ -1,0 +1,6 @@
+@echo off
+cd /d "%~dp0"
+py -3 -m pip install -r requirements-preview.txt
+echo.
+echo Preview dependencies installed.
+pause

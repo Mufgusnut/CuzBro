@@ -85,22 +85,43 @@ function commandLineFor(values) {
 
 function parseDewOutput(text) {
   const channels = [];
-  const pattern = /DEW\((\d+)\):\s+dew_pwm_percent=([\d.-]+)\s+dew_aggression=([\d.-]+)\s+dew_manual_pwm=([\d.-]+)\s+dew_temperature=([\d.-]+)\s+dew_amps=([\d.-]+)\s+dew_max_amps=([\d.-]+)/g;
-  let match;
-  while ((match = pattern.exec(text)) !== null) {
-    const temperatureC = Number(match[5]);
+  const linePattern = /DEW\((\d+)\):\s*([^\r\n]*)/g;
+  let lineMatch;
+
+  while ((lineMatch = linePattern.exec(text)) !== null) {
+    const values = {};
+    const keyValuePattern = /(dew_[a-z_]+)=([\d.-]+)/g;
+    let valueMatch;
+
+    while ((valueMatch = keyValuePattern.exec(lineMatch[2])) !== null) {
+      values[valueMatch[1]] = Number(valueMatch[2]);
+    }
+
+    if (!Number.isFinite(values.dew_pwm_percent) ||
+        !Number.isFinite(values.dew_aggression) ||
+        !Number.isFinite(values.dew_manual_pwm) ||
+        !Number.isFinite(values.dew_temperature)) {
+      continue;
+    }
+
+    const temperatureC = values.dew_temperature;
     channels.push({
-      index: Number(match[1]),
-      pwmPercent: Number(match[2]),
-      aggression: Number(match[3]),
-      manualPwm: Number(match[4]),
+      index: Number(lineMatch[1]),
+      pwmPercent: values.dew_pwm_percent,
+      aggression: values.dew_aggression,
+      manualPwm: values.dew_manual_pwm,
       temperatureC,
-      amps: Number(match[6]),
-      maxAmps: Number(match[7]),
+      // HBG3 firmware 9.10+ may omit dew_amps entirely. Treat a missing
+      // current reading as unavailable/zero instead of rejecting telemetry.
+      amps: Number.isFinite(values.dew_amps) ? values.dew_amps : 0,
+      maxAmps: Number.isFinite(values.dew_max_amps) ? values.dew_max_amps : 0,
       sensorDetected: temperatureC !== 0
     });
   }
-  if (!channels.length) throw new Error(`No DEW channel data found in HBG3 response: ${text.trim() || '(empty response)'}`);
+
+  if (!channels.length) {
+    throw new Error(`No DEW channel data found in HBG3 response: ${text.trim() || '(empty response)'}`);
+  }
   return channels;
 }
 
@@ -224,8 +245,14 @@ async function poll() {
   let claimed = null;
   let values = null;
   try {
-    claimed = await claimNextCommand();
-    values = normalizeCommand(claimed);
+    try {
+      claimed = await claimNextCommand();
+      values = normalizeCommand(claimed);
+    } catch (commandQueueError) {
+      claimed = null;
+      values = null;
+      console.warn(`${capturedAt} DEW COMMAND QUEUE WARNING | ${commandQueueError.message}`);
+    }
     if (claimed) console.log(`${capturedAt} CLAIMED DEW COMMAND ${claimed.id}`);
     const { channels, environment, commandResult, rawCommand } = await requestTelemetryData(values);
     if (claimed) {

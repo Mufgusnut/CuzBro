@@ -536,8 +536,12 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   const [nudgeDurationMs, setNudgeDurationMs] = useState(350);
   const [hbg3Record, setHbg3Record] = useState(null);
   const [hbg3Error, setHbg3Error] = useState('');
-  const [asiimgRecord, setAsiimgRecord] = useState(null);
-  const [asiimgError, setAsiimgError] = useState('');
+  const [asiairRecord, setAsiairRecord] = useState(null);
+  const [asiairError, setAsiairError] = useState('');
+  const [asiairControlBusy, setAsiairControlBusy] = useState('');
+  const [asiairControlError, setAsiairControlError] = useState('');
+  const [asiairControlMessage, setAsiairControlMessage] = useState('');
+  const [asiairGainInput, setAsiairGainInput] = useState('120');
   const [dewControlMode, setDewControlMode] = useState('auto');
   const [dewAggression, setDewAggression] = useState(5);
   const [dewManualOutput, setDewManualOutput] = useState(35);
@@ -715,31 +719,90 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
   useEffect(() => {
     let active = true;
 
-    async function pollAsiimgTelemetry() {
+    async function pollAsiairTelemetry() {
       const { data, error: queryError } = await supabase
-        .from('asiimg_status')
+        .from('asiair_status')
         .select('station,updated_at,online,payload,last_error')
         .eq('station', 'eliot')
         .maybeSingle();
 
       if (!active) return;
       if (queryError) {
-        setAsiimgError(queryError.message || 'ASIImg telemetry unavailable.');
+        setAsiairError(queryError.message || 'ASIAIR telemetry unavailable.');
         return;
       }
 
-      setAsiimgRecord(data || null);
-      setAsiimgError(data?.last_error || '');
+      setAsiairRecord(data || null);
+      setAsiairError(data?.last_error || '');
     }
 
-    pollAsiimgTelemetry();
-    const interval = window.setInterval(pollAsiimgTelemetry, 3000);
+    pollAsiairTelemetry();
+    const interval = window.setInterval(pollAsiairTelemetry, 1000);
 
     return () => {
       active = false;
       window.clearInterval(interval);
     };
   }, []);
+
+  async function runAsiairControl(action, argumentsPayload = {}) {
+    setAsiairControlBusy(action);
+    setAsiairControlError('');
+    setAsiairControlMessage('');
+
+    const labels = {
+      capture: 'CAPTURE',
+      capture_preview: 'PREVIEW CAPTURE',
+      start_autorun: 'AUTORUN START',
+      stop_capture: 'CAPTURE STOP',
+      set_mode: `MODE ${String(argumentsPayload.mode || '').toUpperCase()}`,
+      set_gain: `GAIN ${argumentsPayload.gain ?? ''}`,
+      set_exposure: `EXPOSURE ${argumentsPayload.seconds ?? ''} SEC`,
+      configure_autorun: 'AUTORUN CONFIGURE',
+      plate_solve: 'PLATE SOLVE',
+      toggle_continuous_preview: 'CONTINUOUS PREVIEW'
+    };
+
+    try {
+      const { data, error: insertError } = await supabase
+        .from('asiair_commands')
+        .insert({
+          station: 'eliot',
+          action,
+          arguments: argumentsPayload,
+          requested_by: session?.user?.id || null
+        })
+        .select('id')
+        .single();
+      if (insertError) throw insertError;
+
+      setAsiairControlMessage(`QUEUED // ${labels[action] || action.toUpperCase()}`);
+      const deadline = Date.now() + 30000;
+      while (Date.now() < deadline) {
+        await new Promise((resolve) => window.setTimeout(resolve, 600));
+        const { data: command, error: commandError } = await supabase
+          .from('asiair_commands')
+          .select('status,error,result')
+          .eq('id', data.id)
+          .single();
+        if (commandError) throw commandError;
+        if (command.status === 'running') {
+          setAsiairControlMessage(`EXECUTING // ${labels[action] || action.toUpperCase()}`);
+        }
+        if (command.status === 'completed') {
+          setAsiairControlMessage(command.result?.message || `${labels[action] || action.toUpperCase()} COMPLETE`);
+          return true;
+        }
+        if (command.status === 'failed') throw new Error(command.error || 'ASIAIR direct command failed.');
+      }
+      throw new Error('ASIAIR command timed out waiting for the direct bridge.');
+    } catch (controlError) {
+      setAsiairControlError(controlError?.message || 'Unable to control the ASIAIR directly.');
+      return false;
+    } finally {
+      setAsiairControlBusy('');
+    }
+  }
 
   async function runDewControl({ mode = dewControlMode, aggression = dewAggression, manualPwm = dewManualOutput } = {}) {
     setDewControlBusy('apply');
@@ -1314,32 +1377,47 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
     activeOperation?.status === 'COMPLETE' ? activeOperation?.ended_at : null,
     now
   );
-  const progressPercent = frameTarget ? Math.min(100, Math.round((Number(consoleState.completedFrames || 0) / frameTarget) * 100)) : 0;
-  const asiimgAgeMs = asiimgRecord?.updated_at
-    ? now - new Date(asiimgRecord.updated_at).getTime()
+  const progressTarget = Number(asiairRecord?.payload?.sequence?.total_frames || 0) || frameTarget;
+  const progressFrames = Number(asiairRecord?.payload?.sequence?.total_frames || 0)
+    ? Number(asiairRecord?.payload?.sequence?.completed_frames || 0)
+    : Number(consoleState.completedFrames || 0);
+  const progressPercent = progressTarget ? Math.min(100, Math.round((progressFrames / progressTarget) * 100)) : 0;
+  const asiairAgeMs = asiairRecord?.updated_at
+    ? now - new Date(asiairRecord.updated_at).getTime()
     : Infinity;
-  const asiimgOnline = Boolean(asiimgRecord?.online) && asiimgAgeMs <= 20000 && !asiimgError;
-  const asiimgPayload = asiimgRecord?.payload || {};
-  const asiimgFrames = Number(asiimgPayload.frames_captured || 0);
-  const asiimgRemaining = frameTarget ? Math.max(0, frameTarget - asiimgFrames) : null;
-  const asiimgCadenceSeconds = Number(asiimgPayload.average_cadence_seconds || asiimgPayload.exposure_seconds || 0);
-  const asiimgEtaSeconds = asiimgRemaining !== null && asiimgCadenceSeconds > 0
-    ? asiimgRemaining * asiimgCadenceSeconds
+  const asiairOnline = Boolean(asiairRecord?.online) && asiairAgeMs <= 20000 && !asiairError;
+  const asiairPayload = asiairRecord?.payload || {};
+  const asiairSequence = asiairPayload.sequence || {};
+  const sequenceTotal = Number(asiairSequence.total_frames || 0);
+  const sequenceCompleted = Number(asiairSequence.completed_frames || 0);
+  const asiairFrames = sequenceTotal > 0 ? sequenceCompleted : Number(asiairPayload.frames_captured || 0);
+  const effectiveFrameTarget = sequenceTotal > 0 ? sequenceTotal : frameTarget;
+  const asiairRemaining = sequenceTotal > 0
+    ? Math.max(0, Number(asiairSequence.remaining_frames ?? sequenceTotal - sequenceCompleted))
+    : frameTarget ? Math.max(0, frameTarget - asiairFrames) : null;
+  const asiairCadenceSeconds = Number(asiairPayload.average_cadence_seconds || asiairSequence.exposure_seconds || asiairPayload.exposure_seconds || 0);
+  const asiairEtaSeconds = asiairRemaining !== null && asiairCadenceSeconds > 0
+    ? asiairRemaining * asiairCadenceSeconds
     : null;
-  const asiimgLastFrameAge = asiimgPayload.last_frame_at
-    ? Math.max(0, (now - new Date(asiimgPayload.last_frame_at).getTime()) / 1000)
+  const asiairLastFrameAge = asiairPayload.last_frame_at
+    ? Math.max(0, (now - new Date(asiairPayload.last_frame_at).getTime()) / 1000)
     : null;
-  const asiimgState = asiimgOnline ? String(asiimgPayload.state || 'waiting').toUpperCase() : 'OFFLINE';
-  const asiimgStalled = asiimgOnline && asiimgPayload.state === 'capturing' && asiimgLastFrameAge !== null && asiimgLastFrameAge > Math.max(60, asiimgCadenceSeconds * 3);
-  const asiimgPreviewUrl = typeof asiimgPayload.preview_url === 'string' ? asiimgPayload.preview_url : '';
+  const asiairState = asiairOnline ? String(asiairPayload.state || 'waiting').toUpperCase() : 'OFFLINE';
+  const asiairStalled = asiairOnline && asiairPayload.state === 'capturing' && asiairLastFrameAge !== null && asiairLastFrameAge > Math.max(60, asiairCadenceSeconds * 3);
+  const asiairPreviewUrl = typeof asiairPayload.preview_url === 'string' ? asiairPayload.preview_url : '';
+  const asiairProtocol = asiairPayload.protocol || {};
+  const asiairProtocolPorts = Array.isArray(asiairProtocol.connected_ports) ? asiairProtocol.connected_ports : [];
+  const asiairProtocolEvents = Array.isArray(asiairProtocol.recent_events) ? asiairProtocol.recent_events : [];
+  const asiairLatestProtocolEvent = asiairProtocolEvents.length ? asiairProtocolEvents[asiairProtocolEvents.length - 1] : null;
+  const asiairLatestProtocolName = asiairLatestProtocolEvent?.Event || asiairLatestProtocolEvent?.event || 'WAITING';
 
   useEffect(() => {
-    if (!asiimgOnline || asiimgFrames < 0) return;
+    if (!asiairOnline || asiairFrames < 0) return;
     setConsoleState((current) => {
-      if (Number(current.completedFrames || 0) === asiimgFrames) return current;
-      return { ...current, completedFrames: asiimgFrames };
+      if (Number(current.completedFrames || 0) === asiairFrames) return current;
+      return { ...current, completedFrames: asiairFrames };
     });
-  }, [asiimgOnline, asiimgFrames]);
+  }, [asiairOnline, asiairFrames]);
 
   const captureHistorySummary = useMemo(() => summarizeCaptureHistory(captureHistory), [captureHistory]);
   const baselineRecommendation = useMemo(() => getMissionRecommendation({ missionPlan, targetReference, weather, lastCapture }), [missionPlan, targetReference, weather, lastCapture]);
@@ -1699,11 +1777,11 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
       tone: localSystems?.cpwi?.connected ? 'orange good' : 'orange alert'
     },
     {
-      key: 'focuser',
-      label: 'FOCUSER',
-      value: focuserStatus === 'online' && focuserRecord?.payload?.connected ? 'ONLINE' : focuserStatus === 'stale' ? 'STALE' : 'OFFLINE',
-      icon: Focus,
-      tone: focuserStatus === 'online' && focuserRecord?.payload?.connected ? 'lavender good' : 'lavender alert'
+      key: 'live-viewscreen',
+      label: 'LIVE VIEWSCREEN',
+      value: asiairOnline ? 'ONLINE' : 'OFFLINE',
+      icon: Radio,
+      tone: asiairOnline ? 'lavender good' : 'lavender alert'
     },
     {
       key: 'dew-bridge',
@@ -1942,25 +2020,25 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                 <div className="missionConsolePanelBadge">VIEWSCREEN</div><ChevronDown className="missionConsolePanelChevron" size={18} />
               </button>
 
-              <div className={`missionConsoleAsiimgPanel ${asiimgStalled ? 'is-stalled' : ''}`}>
-                <div className="missionConsoleAsiimgPreview">
-                  <div className="missionConsoleAsiimgPreviewHeader">
+              <div className={`missionConsoleAsiairPanel ${asiairStalled ? 'is-stalled' : ''}`}>
+                <div className="missionConsoleAsiairPreview">
+                  <div className="missionConsoleAsiairPreviewHeader">
                     <span>VIEWSCREEN</span>
-                    <strong>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong>
+                    <strong>{asiairPayload.latest_file || 'WAITING FOR FRAME'}</strong>
                   </div>
                   {nudgeControls('imaging')}
-                  {asiimgPreviewUrl ? (
-                    <a href={asiimgPreviewUrl} target="_blank" rel="noreferrer" title="Open the latest FITS preview at full size">
-                      <img src={asiimgPreviewUrl} alt={`Latest imaging FITS preview${asiimgPayload.latest_file ? `: ${asiimgPayload.latest_file}` : ''}`} />
-                      <span className="missionConsoleAsiimgPreviewOpen">OPEN PREVIEW</span>
+                  {asiairPreviewUrl ? (
+                    <a href={asiairPreviewUrl} target="_blank" rel="noreferrer" title="Open the latest FITS preview at full size">
+                      <img src={asiairPreviewUrl} alt={`Latest imaging FITS preview${asiairPayload.latest_file ? `: ${asiairPayload.latest_file}` : ''}`} />
+                      <span className="missionConsoleAsiairPreviewOpen">OPEN PREVIEW</span>
                     </a>
                   ) : (
-                    <div className="missionConsoleAsiimgPreviewEmpty">
+                    <div className="missionConsoleAsiairPreviewEmpty">
                       <span>NO PREVIEW AVAILABLE</span>
-                      <small>The next FITS frame detected by the bridge will appear here automatically.</small>
+                      <small>The next completed FITS frame from the ASIAIR will appear here automatically.</small>
                     </div>
                   )}
-                  {asiimgPayload.preview_error ? <p className="missionConsoleAsiimgPreviewError">Preview generator: {asiimgPayload.preview_error}</p> : null}
+                  {asiairPayload.preview_error ? <p className="missionConsoleAsiairPreviewError">Preview generator: {asiairPayload.preview_error}</p> : null}
                 </div>
 
                 <div className="missionConsoleOpsTop">
@@ -1974,35 +2052,135 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                   </div>
                   <div className="missionConsoleTimerBlock missionConsoleTimerBlockStatus">
                     <small>CAPTURE STATE</small>
-                    <strong>{asiimgOnline ? (asiimgStalled ? 'STALLED' : asiimgState) : String(consoleState.captureStatus || 'idle').toUpperCase()}</strong>
+                    <strong>{asiairOnline ? (asiairStalled ? 'STALLED' : asiairState) : String(consoleState.captureStatus || 'idle').toUpperCase()}</strong>
                   </div>
                 </div>
 
-                <div className="missionConsoleAsiimgHeader">
+                <div className="missionConsoleAsiairHeader">
                   <div>
-                    <small>IMAGING LINK</small>
-                    <strong>{asiimgOnline ? 'ONLINE' : 'OFFLINE'}</strong>
+                    <small>ASIAIR LINK</small>
+                    <strong>{asiairOnline ? 'ONLINE' : 'OFFLINE'}</strong>
                   </div>
-                  <div className={`missionConsoleAsiimgState ${asiimgStalled ? 'is-alert' : ''}`}>
-                    {asiimgStalled ? 'CAPTURE STALLED' : asiimgState}
+                  <div className={`missionConsoleAsiairState ${asiairStalled ? 'is-alert' : ''}`}>
+                    {asiairStalled ? 'CAPTURE STALLED' : asiairState}
                   </div>
                 </div>
-                <div className="missionConsoleAsiimgGrid">
-                  <div><span>FRAMES COMPLETE</span><strong>{asiimgFrames}</strong></div>
-                  <div><span>FRAMES REMAINING</span><strong>{asiimgRemaining ?? '—'}</strong></div>
-                  <div><span>EXPOSURE</span><strong>{bridgeNumber(asiimgPayload.exposure_seconds, 2, ' SEC')}</strong></div>
-                  <div><span>EST. FINISH</span><strong>{formatEta(asiimgEtaSeconds)}</strong></div>
-                  <div><span>CAMERA TEMP</span><strong>{bridgeNumber(celsiusToFahrenheit(asiimgPayload.camera_temperature_c), 1, '°F')}</strong></div>
-                  <div><span>GAIN</span><strong>{asiimgPayload.gain ?? '—'}</strong></div>
-                  <div><span>LAST FRAME</span><strong>{asiimgPayload.last_frame_at ? formatClock(asiimgPayload.last_frame_at) : '—'}</strong></div>
-                  <div><span>LATEST FILE</span><strong title={asiimgPayload.latest_file || ''}>{asiimgPayload.latest_file || 'WAITING FOR FRAME'}</strong></div>
+                <div className="missionConsoleAsiairGrid">
+                  <div><span>FRAMES COMPLETE</span><strong>{asiairFrames}</strong></div>
+                  <div><span>FRAMES REMAINING</span><strong>{asiairRemaining ?? '—'}</strong></div>
+                  <div><span>EXPOSURE</span><strong>{bridgeNumber(asiairPayload.exposure_seconds, 2, ' SEC')}</strong></div>
+                  <div><span>EST. FINISH</span><strong>{formatEta(asiairEtaSeconds)}</strong></div>
+                  <div><span>CAMERA TEMP</span><strong>{bridgeNumber(celsiusToFahrenheit(asiairPayload.camera_temperature_c), 1, '°F')}</strong></div>
+                  <div><span>GAIN</span><strong>{asiairPayload.gain ?? '—'}</strong></div>
+                  <div><span>LAST FRAME</span><strong>{asiairPayload.last_frame_at ? formatClock(asiairPayload.last_frame_at) : '—'}</strong></div>
+                  <div><span>LATEST FILE</span><strong title={asiairPayload.latest_file || ''}>{asiairPayload.latest_file || 'WAITING FOR FRAME'}</strong></div>
                 </div>
-                {asiimgError ? <p className="missionConsoleAsiimgError">{asiimgError}</p> : null}
-                {!asiimgOnline ? <p className="missionConsoleAsiimgHint">Start the imaging monitor bridge before beginning a capture. The current source is ASIImg; ASIAIR support can use the same panel later.</p> : null}
+                <div className="missionConsoleAsiairGrid missionConsoleAsiairProtocolGrid">
+                  <div><span>PROTOCOL MONITOR</span><strong>{asiairProtocol.enabled ? (asiairProtocol.connected ? 'LINKED' : 'PARTIAL') : 'DISABLED'}</strong></div>
+                  <div><span>EVENT PORTS</span><strong>{asiairProtocolPorts.length ? asiairProtocolPorts.join(' / ') : '—'}</strong></div>
+                  <div><span>LATEST EVENT</span><strong title={String(asiairLatestProtocolName)}>{String(asiairLatestProtocolName).toUpperCase()}</strong></div>
+                  <div><span>EVENT RECEIVED</span><strong>{asiairProtocol.last_event_at ? formatClock(asiairProtocol.last_event_at) : '—'}</strong></div>
+                </div>
+                {asiairProtocol.last_error ? <p className="missionConsoleAsiairError">Protocol monitor: {asiairProtocol.last_error}</p> : null}
+                {asiairError ? <p className="missionConsoleAsiairError">{asiairError}</p> : null}
+                {!asiairOnline ? <p className="missionConsoleAsiairHint">Start the ASIAIR feed bridge before beginning a capture. New ASIAIR FITS frames will appear here automatically.</p> : null}
+                <div className="missionConsoleAsiairControls">
+                  <div className="missionConsoleAsiairControlsHeader">
+                    <div>
+                      <small>DIRECT ASIAIR CONTROL</small>
+                      <strong>ASIAIR REMOTE CAPTURE</strong>
+                    </div>
+                    <span>{asiairControlBusy ? 'COMMAND ACTIVE' : 'READY'}</span>
+                  </div>
+
+                  <div className="missionConsoleAsiairModeSection">
+                    <small>CAPTURE MODE</small>
+                    <div className="missionConsoleAsiairModeButtons">
+                      {['preview', 'autorun'].map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => runAsiairControl('set_mode', { mode })}
+                          disabled={Boolean(asiairControlBusy)}
+                        >
+                          {asiairControlBusy === 'set_mode' ? 'WAIT…' : mode.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="missionConsoleAsiairQuickGrid missionConsoleAsiairCaptureGrid">
+                    <button
+                      type="button"
+                      className="is-capture"
+                      onClick={() => runAsiairControl('capture')}
+                      disabled={Boolean(asiairControlBusy)}
+                    >
+                      <PlayCircle size={18} />
+                      {asiairControlBusy === 'capture' ? 'STARTING…' : 'START EXPOSURE'}
+                    </button>
+                    <button
+                      type="button"
+                      className="is-stop"
+                      onClick={() => runAsiairControl('stop_capture')}
+                      disabled={Boolean(asiairControlBusy)}
+                    >
+                      <PauseCircle size={18} />
+                      {asiairControlBusy === 'stop_capture' ? 'STOPPING…' : 'STOP CAPTURE'}
+                    </button>
+                  </div>
+
+                  <div className="missionConsoleAsiairSettingsGrid">
+                    <label className="missionConsoleAsiairGainControl">
+                      <span>GAIN</span>
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          max="9999"
+                          step="1"
+                          value={asiairGainInput}
+                          onChange={(event) => setAsiairGainInput(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => runAsiairControl('set_gain', { gain: Number(asiairGainInput || 0) })}
+                          disabled={Boolean(asiairControlBusy) || asiairGainInput === ''}
+                        >
+                          {asiairControlBusy === 'set_gain' ? 'SETTING…' : 'SET GAIN'}
+                        </button>
+                      </div>
+                    </label>
+                    <label className="missionConsoleAsiairGainControl">
+                      <span>EXPOSURE (SEC)</span>
+                      <div>
+                        <input id="asiairExposureSeconds" type="number" min="0.001" step="0.001" defaultValue="1" />
+                        <button type="button" onClick={() => runAsiairControl('set_exposure', { seconds: Number(document.getElementById('asiairExposureSeconds')?.value || 1) })} disabled={Boolean(asiairControlBusy)}>
+                          {asiairControlBusy === 'set_exposure' ? 'SETTING…' : 'SET EXPOSURE'}
+                        </button>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="missionConsoleAsiairQuickGrid missionConsoleAsiairCaptureGrid">
+                    <button type="button" onClick={() => runAsiairControl('configure_autorun', {
+                      seconds: Number(document.getElementById('asiairExposureSeconds')?.value || 1),
+                      count: Number(window.prompt('Autorun frame count', '10') || 10),
+                      gain: Number(asiairGainInput || 0),
+                      target: window.prompt('Target / group name', 'CuzBro') || 'CuzBro'
+                    })} disabled={Boolean(asiairControlBusy)}>CONFIGURE AUTORUN</button>
+                    <button type="button" onClick={() => runAsiairControl('plate_solve')} disabled={Boolean(asiairControlBusy)}>
+                      {asiairControlBusy === 'plate_solve' ? 'SOLVING…' : 'PLATE SOLVE'}
+                    </button>
+                  </div>
+                  <p className="missionConsoleAsiairControlNote">Direct TCP control is active. Select Preview or Autorun, configure settings, then start or stop the exposure.</p>
+                  {asiairControlMessage ? <p className="missionConsoleAsiairControlMessage">{asiairControlMessage}</p> : null}
+                  {asiairControlError ? <p className="missionConsoleAsiairError">{asiairControlError}</p> : null}
+                </div>
               </div>
 
               <div className="missionConsoleFramesSection">
-                {!asiimgOnline ? (
+                {!asiairOnline ? (
                   <label className="missionConsoleFramesInput">
                     <span>COMPLETED FRAMES</span>
                     <input
@@ -2018,10 +2196,10 @@ export default function MissionConsole({ session, activeSite = DEFAULT_SITE, wea
                 <div className="missionConsoleProgressBlock">
                   <div className="missionConsoleProgressHeader">
                     <span>CAPTURE PROGRESS</span>
-                    <strong>{frameTarget ? `${consoleState.completedFrames}/${frameTarget}` : `${consoleState.completedFrames} FRAMES`}</strong>
+                    <strong>{progressTarget ? `${progressFrames}/${progressTarget}` : `${progressFrames} FRAMES`}</strong>
                   </div>
-                  <div className="missionConsoleProgressBar" role="progressbar" aria-valuemin={0} aria-valuemax={frameTarget || 100} aria-valuenow={frameTarget ? consoleState.completedFrames : progressPercent}>
-                    <div style={{ width: `${frameTarget ? progressPercent : Math.min(100, Number(consoleState.completedFrames || 0))}%` }} />
+                  <div className="missionConsoleProgressBar" role="progressbar" aria-valuemin={0} aria-valuemax={progressTarget || 100} aria-valuenow={progressTarget ? progressFrames : progressPercent}>
+                    <div style={{ width: `${progressTarget ? progressPercent : Math.min(100, progressFrames)}%` }} />
                   </div>
                 </div>
               </div>
